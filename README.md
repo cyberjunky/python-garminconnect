@@ -1,4 +1,4 @@
-# Garmin Connect
+# Garmin
 Python API wrapper for Garmin Connect
 
 See https://connect.garmin.com/
@@ -6,9 +6,9 @@ See https://connect.garmin.com/
 ## Usage
 Create a new connection by supplying your user credentials
 ```
-import garmin_connect
+import garmin
 
-data = garmin_connect.Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+data = garmin.Garmin(YOUR_EMAIL, YOUR_PASSWORD)
 ```
 
 Fetch your Garmin Connect activities data
