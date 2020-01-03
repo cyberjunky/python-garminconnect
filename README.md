@@ -6,9 +6,9 @@ See https://connect.garmin.com/
 ## Usage
 Create a new connection by supplying your user credentials
 ```
-import garmin-connect
+import garmin_connect
 
-data = garmin-connect.Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+data = garmin_connect.Garmin(YOUR_EMAIL, YOUR_PASSWORD)
 ```
 
 Fetch your Garmin Connect activities data
