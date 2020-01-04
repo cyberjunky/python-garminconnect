@@ -1,15 +1,16 @@
-import logging
-import random
 import json
 import re
 import requests
 from datetime import date
-from datetime import timedelta
+
 
 BASE_URL = 'https://connect.garmin.com'
 SSO_URL = 'https://sso.garmin.com/sso'
 MODERN_URL = 'https://connect.garmin.com/modern'
 SIGNIN_URL = 'https://sso.garmin.com/sso/signin'
+HR_URL = 'https://connect.garmin.com/modern/proxy/wellness-service/wellness/dailyHeartRate/'
+
+cdate = str(date.today())
 
 class Garmin(object):
     """
@@ -94,13 +95,20 @@ class Garmin(object):
             text = found.group(1).replace('\\"', '"')
             return json.loads(text)
 
-    def fetch_stats(self):
+    def fetch_stats(self, cdate):   # cDate = 'YYY-mm-dd'
         """
         Fetch all available data
         """
-        today = str(date.today())
-        getURL = self.url + self.display_name + '?' + 'calendarDate=' + today
+        getURL = self.url + self.display_name + '?' + 'calendarDate=' + cdate
         response = self.req.get(getURL, headers=self.headers)
         response.raise_for_status()
-        return(response.json())
+        return response.json()
 
+    def fetch_heart_rates(self, cdate):   #  cDate = 'YYYY-mm-dd'
+        """
+        Fetch all available data
+        """
+        getURL = HR_URL + self.display_name + '?date=' + cdate
+        response = self.req.get(getURL, headers=self.headers)
+        response.raise_for_status()
+        return response.json()
