@@ -13,5 +13,12 @@ data = garmin.Garmin(YOUR_EMAIL, YOUR_PASSWORD)
 
 Fetch your Garmin Connect activities data
 ```
-print(data.fetch_stats())
+print(data.fetch_stats('YYYY-mm-dd'))
+```
+
+
+Fetch your Garmin Connect heart rate data
+
+```
+print(data.fetch_heart_rates('YYYY-mm-dd'))
 ```
