@@ -1,8 +1,5 @@
 # Python: Garmin Connect
 
-[![GitHub Release][releases-shield]][releases]
-[![License][license-shield]](LICENSE.md)
-
 Python 3 API wrapper for Garmin Connect to get your statistics.
 
 ## About
