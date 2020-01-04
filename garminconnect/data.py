@@ -1,16 +1,17 @@
+# -*- coding: utf-8 -*-
+"""Python 3 API wrapper for Garmin Connect to get your statistics."""
+import logging
 import json
 import re
 import requests
 from datetime import date
 
+from .__version__ import __version__
 
 BASE_URL = 'https://connect.garmin.com'
 SSO_URL = 'https://sso.garmin.com/sso'
 MODERN_URL = 'https://connect.garmin.com/modern'
 SIGNIN_URL = 'https://sso.garmin.com/sso/signin'
-HR_URL = 'https://connect.garmin.com/modern/proxy/wellness-service/wellness/dailyHeartRate/'
-
-cdate = str(date.today())
 
 class Garmin(object):
     """
@@ -18,7 +19,9 @@ class Garmin(object):
     See https://connect.garmin.com/
     """
 
-    url = MODERN_URL + '/proxy/usersummary-service/usersummary/daily/'
+    url_activities = MODERN_URL + '/proxy/usersummary-service/usersummary/daily/'
+    url_heartrates = MODERN_URL + '/proxy/wellness-service/wellness/dailyHeartRate/'
+
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
         'origin': 'https://sso.garmin.com'
@@ -97,18 +100,18 @@ class Garmin(object):
 
     def fetch_stats(self, cdate):   # cDate = 'YYY-mm-dd'
         """
-        Fetch all available data
+        Fetch available activity data
         """
-        getURL = self.url + self.display_name + '?' + 'calendarDate=' + cdate
+        getURL = self.url_activities + self.display_name + '?' + 'calendarDate=' + cdate
         response = self.req.get(getURL, headers=self.headers)
         response.raise_for_status()
         return response.json()
 
-    def fetch_heart_rates(self, cdate):   #  cDate = 'YYYY-mm-dd'
+    def fetch_heart_rates(self, cdate):   # cDate = 'YYYY-mm-dd'
         """
-        Fetch all available data
+        Fetch available heart rates data
         """
-        getURL = HR_URL + self.display_name + '?date=' + cdate
+        getURL = self.url_heartrates + self.display_name + '?date=' + cdate
         response = self.req.get(getURL, headers=self.headers)
         response.raise_for_status()
         return response.json()
