@@ -17,14 +17,41 @@ pip install garminconnect
 ## Usage
 
 ```python
-import garminconnect
+from datetime import date
+
+from garminconnect import (
+    Garmin,
+    GarminConnectConnectionError,
+    GarminConnectTooManyRequestsError,
+    GarminConnectAuthenticationError,
+)
+
+today = date.today()
+
 
 """Login to portal using specified credentials"""
-client = garminconnect.Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+    try:
+        client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+    except (
+        GarminConnectConnectionError,
+        GarminConnectAuthenticationError,
+        GarminConnectTooManyRequestsError,
+    ) as err:
+        print("Error occured during Garmin Connect Client setup: %s", err)
+        return
+    except Exception:  # pylint: disable=broad-except
+        print("Unknown error occured during Garmin Connect Client setup")
+        return
+
+"""Get Full name"""
+print(client.get_full_name()
+
+"""Get Unit system"""
+print(client.get_unit_system()
 
 """Fetch your activities data"""
-print(client.fetch_stats('2020-01-04'))
+print(client.get_stats(today.isoformat())
 
 """Fetch your logged heart rates"""
-print(client.fetch_heart_rates('2020-01-04'))
+print(client.get_heart_rates(today.isoformat())
 ```
