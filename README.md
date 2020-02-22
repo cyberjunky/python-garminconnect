@@ -17,7 +17,7 @@ pip install garminconnect
 ## Usage
 
 ```python
-from datetime import date
+#!/usr/bin/env python3
 
 from garminconnect import (
     Garmin,
@@ -25,6 +25,9 @@ from garminconnect import (
     GarminConnectTooManyRequestsError,
     GarminConnectAuthenticationError,
 )
+
+from datetime import date
+
 
 """
 Enable debug logging
@@ -36,13 +39,27 @@ today = date.today()
 
 
 """
-Initialize client with credentials
+Initialize Garmin client with credentials
+Only needed when your program is initialized
 """
-client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+try:
+    client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occured during Garmin Connect Client init: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occured during Garmin Connect Client init")
+    quit()
 
 
 """
-Login to portal
+Login to Garmin Connect portal
+Only needed at start of your program
+The libary will try to relogin when session expires
 """
 try:
     client.login()
