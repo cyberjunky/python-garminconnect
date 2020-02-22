@@ -27,35 +27,47 @@ from garminconnect import (
 )
 
 today = date.today()
-client = None
+client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
 
-
-"""Login to portal using specified credentials"""
+"""
+Login to portal using specified credentials
+"""
 try:
     client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
 except (
     GarminConnectConnectionError,
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
-) as err:
+)
+as err:
     print("Error occured during Garmin Connect Client setup: %s", err)
     return
 except Exception:  # pylint: disable=broad-except
     print("Unknown error occured during Garmin Connect Client setup")
     return
 
-#"""Get Full name"""
+"""
+Get full name
+"""
 print(client.get_full_name())
 
-#"""Get Unit system"""
+"""
+Get unit system
+"""
 print(client.get_unit_system())
 
-#"""Fetch your activities data"""
+"""
+Fetch activities data
+"""
 print(client.get_stats(today.isoformat()))
 
-#"""Fetch your logged heart rates"""
+"""
+Fetch logged heart rates
+"""
 print(client.get_heart_rates(today.isoformat()))
 
-#"""Fetch your body compostion rates"""
+"""
+Fetch body composition rates
+"""
 print(client.get_body_composition(today.isoformat()))
 ```
