@@ -33,10 +33,12 @@ class Garmin(object):
         self.password = password
         self.req = requests.session()
         self.logger = logging.getLogger(__name__)
+        self.display_name = ""
+        self.full_name = ""
+        self.unit_system = ""
 
-        self.login(self.email, self.password)
 
-    def login(self, email, password):
+    def login(self):
         """
         Login to portal
         """
@@ -64,8 +66,8 @@ class Garmin(object):
         }
 
         data = {
-            'username': email,
-            'password': password,
+            'username': self.email,
+            'password': self.password,
             'embed': 'true',
             'lt': 'e1s1',
             '_eventId': 'submit',
@@ -113,6 +115,7 @@ class Garmin(object):
         self.logger.debug("Fullname is %s", self.full_name)
         response.raise_for_status()
 
+
     def parse_json(self, html, key):
         """
         Find and return json data
@@ -122,17 +125,20 @@ class Garmin(object):
             text = found.group(1).replace('\\"', '"')
             return json.loads(text)
 
+
     def get_full_name(self):
         """
         Return full name
         """
         return self.full_name
 
+
     def get_unit_system(self):
         """
         Return unit system
         """
         return self.unit_system
+
 
     def get_stats(self, cdate):   # cDate = 'YYY-mm-dd'
         """
@@ -152,7 +158,7 @@ class Garmin(object):
 
         if response.json()['privacyProtected'] is True:
             self.logger.debug("Session expired - trying relogin")
-            self.login(self.email, self.password)
+            self.login()
             try:
                 response = self.req.get(acturl, headers=self.headers)
                 self.logger.debug("Activities response code %s, and json %s", response.status_code, response.json())
@@ -162,6 +168,7 @@ class Garmin(object):
                 raise GarminConnectConnectionError("Error connecting")
 
         return response.json()
+
 
     def get_heart_rates(self, cdate):   # cDate = 'YYYY-mm-dd'
         """
@@ -175,7 +182,7 @@ class Garmin(object):
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             self.logger.debug("Exception occured during heart rate retrieval - perhaps session expired - trying relogin: %s" % err)
-            self.login(self.email, self.password)
+            self.login()
             try:
                 response = self.req.get(hearturl, headers=self.headers)
                 self.logger.debug("Heart Rates response code %s, and json %s", response.status_code, response.json())
@@ -224,6 +231,7 @@ class GarminConnectConnectionError(Exception):
         super(GarminConnectConnectionError, self).__init__(status)
         self.status = status
 
+
 class GarminConnectTooManyRequestsError(Exception):
     """Raised when rate limit is exceeded."""
 
@@ -231,6 +239,7 @@ class GarminConnectTooManyRequestsError(Exception):
         """Initialize."""
         super(GarminConnectTooManyRequestsError, self).__init__(status)
         self.status = status
+
 
 class GarminConnectAuthenticationError(Exception):
     """Raised when login returns wrong result."""
