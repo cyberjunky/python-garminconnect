@@ -29,9 +29,11 @@ from garminconnect import (
 today = date.today()
 
 
+client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+
 """Login to portal using specified credentials"""
     try:
-        client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+        client.login()
     except (
         GarminConnectConnectionError,
         GarminConnectAuthenticationError,
