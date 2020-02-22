@@ -19,6 +19,7 @@ class Garmin(object):
     """
     url_activities = MODERN_URL + '/proxy/usersummary-service/usersummary/daily/'
     url_heartrates = MODERN_URL + '/proxy/wellness-service/wellness/dailyHeartRate/'
+    url_body_composition = MODERN_URL + '/proxy/weight-service/weight/daterangesnapshot'
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
         'origin': 'https://sso.garmin.com'
@@ -185,6 +186,32 @@ class Garmin(object):
             try:
                 response = self.req.get(hearturl, headers=self.headers)
                 self.logger.debug("Heart Rates response code %s, and json %s", response.status_code, response.json())
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as err:
+                self.logger.debug("Exception occured during stats retrieval, relogin without effect: %s" % err)
+                raise GarminConnectConnectionError("Error connecting")
+
+        if response.status_code == 429:
+            raise GarminConnectTooManyRequestsError("Too many requests")
+
+        return response.json()
+
+    def get_body_composition(self, cdate):   # cDate = 'YYYY-mm-dd'
+        """
+        Fetch available body composition data (only for cDate)
+        """
+        bodycompositionurl = self.url_body_composition + '?startDate=' + cdate + '&endDate=' + cdate
+        self.logger.debug("Fetching body compostion with url %s", bodycompositionurl)
+        try:
+            response = self.req.get(bodycompositionurl, headers=self.headers)
+            self.logger.debug("Body Composition response code %s, and json %s", response.status_code, response.json())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            self.logger.debug("Exception occured during body compostion retrieval - perhaps session expired - trying relogin: %s" % err)
+            self.login(self.email, self.password)
+            try:
+                response = self.req.get(bodycompositionurl, headers=self.headers)
+                self.logger.debug("Body Compostion response code %s, and json %s", response.status_code, response.json())
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 self.logger.debug("Exception occured during stats retrieval, relogin without effect: %s" % err)
