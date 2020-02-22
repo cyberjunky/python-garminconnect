@@ -26,48 +26,120 @@ from garminconnect import (
     GarminConnectAuthenticationError,
 )
 
+"""
+Enable debug logging
+"""
+#import logging
+#logging.basicConfig(level=logging.DEBUG)
+
 today = date.today()
-client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+
 
 """
-Login to portal using specified credentials
+Initialize client with credentials
+"""
+client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+
+
+"""
+Login to portal
 """
 try:
-    client = Garmin(YOUR_EMAIL, YOUR_PASSWORD)
+    client.login()
 except (
     GarminConnectConnectionError,
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
-)
-as err:
-    print("Error occured during Garmin Connect Client setup: %s", err)
-    return
+) as err:
+    print("Error occured during Garmin Connect Client login: %s" % err)
+    quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client setup")
-    return
+    print("Unknown error occured during Garmin Connect Client login")
+    quit()
+
 
 """
-Get full name
+Get full name from profile
 """
-print(client.get_full_name())
+try:
+    print(client.get_full_name())
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occured during Garmin Connect Client get full name: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occured during Garmin Connect Client get full name")
+    quit()
+
 
 """
-Get unit system
+Get unit system from profile
 """
-print(client.get_unit_system())
+try:
+    print(client.get_unit_system())
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occured during Garmin Connect Client get unit system: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occured during Garmin Connect Client get unit system")
+    quit()
+
 
 """
-Fetch activities data
+Get activity data
 """
-print(client.get_stats(today.isoformat()))
+try:
+    print(client.get_stats(today.isoformat()))
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occured during Garmin Connect Client get stats: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occured during Garmin Connect Client get stats")
+    quit()
+
 
 """
-Fetch logged heart rates
+Get heart rate data
 """
-print(client.get_heart_rates(today.isoformat()))
+try:
+    print(client.get_heart_rates(today.isoformat()))
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occured during Garmin Connect Client get heart rates: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occured during Garmin Connect Client get heart rates")
+    quit()
+
 
 """
-Fetch body composition rates
+Get body composition data
 """
-print(client.get_body_composition(today.isoformat()))
+try:
+    print(client.get_body_composition(today.isoformat()))
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occured during Garmin Connect Client get body composition: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occured during Garmin Connect Client get body composition")
+    quit()
+
 ```

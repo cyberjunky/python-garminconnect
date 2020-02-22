@@ -139,6 +139,11 @@ class Garmin(object):
         """
         return self.unit_system
 
+    def get_stats_and_body(self, cdate):
+        """
+        Return activity data and body composition
+        """
+        return self.get_stats(cdate) + self.get_body_composition(cdate)
 
     def get_stats(self, cdate):   # cDate = 'YYY-mm-dd'
         """
@@ -201,13 +206,13 @@ class Garmin(object):
         Fetch available body composition data (only for cDate)
         """
         bodycompositionurl = self.url_body_composition + '?startDate=' + cdate + '&endDate=' + cdate
-        self.logger.debug("Fetching body compostion with url %s", bodycompositionurl)
+        self.logger.debug("Fetching body composition with url %s", bodycompositionurl)
         try:
             response = self.req.get(bodycompositionurl, headers=self.headers)
             self.logger.debug("Body Composition response code %s, and json %s", response.status_code, response.json())
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            self.logger.debug("Exception occured during body compostion retrieval - perhaps session expired - trying relogin: %s" % err)
+            self.logger.debug("Exception occured during body composition retrieval - perhaps session expired - trying relogin: %s" % err)
             self.login(self.email, self.password)
             try:
                 response = self.req.get(bodycompositionurl, headers=self.headers)
