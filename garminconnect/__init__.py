@@ -143,7 +143,7 @@ class Garmin(object):
         """
         Return activity data and body composition
         """
-        return self.get_stats(cdate) + self.get_body_composition(cdate)
+        return ({**self.get_stats(cdate), **self.get_body_composition(cdate)})
 
     def get_stats(self, cdate):   # cDate = 'YYY-mm-dd'
         """
