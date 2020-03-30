@@ -176,4 +176,21 @@ except Exception:  # pylint: disable=broad-except
     print("Unknown error occured during Garmin Connect Client get stats and body composition")
     quit()
 
+
+"""
+Get activities data
+"""
+try:
+    print(client.get_activities(0,1) # 0=start, 1=limit
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occured during Garmin Connect Client get activities: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occured during Garmin Connect Client get activities")
+    quit()
+
 ```

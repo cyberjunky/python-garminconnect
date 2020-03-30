@@ -17,9 +17,11 @@ class Garmin(object):
     Object using Garmin Connect 's API-method.
     See https://connect.garmin.com/
     """
-    url_activities = MODERN_URL + '/proxy/usersummary-service/usersummary/daily/'
+    url_user_summary = MODERN_URL + '/proxy/usersummary-service/usersummary/daily/'
     url_heartrates = MODERN_URL + '/proxy/wellness-service/wellness/dailyHeartRate/'
     url_body_composition = MODERN_URL + '/proxy/weight-service/weight/daterangesnapshot'
+    url_activities = MODERN_URL + '/proxy/activitylist-service/activities/search/activities'
+
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
         'origin': 'https://sso.garmin.com'
@@ -101,6 +103,8 @@ class Garmin(object):
         except requests.exceptions.HTTPError as err:
             raise GarminConnectConnectionError("Error connecting")
 
+        self.logger.debug("Profile info is %s", response.text)
+
         if response.status_code == 429:
             raise GarminConnectTooManyRequestsError("Too many requests")
 
@@ -126,6 +130,31 @@ class Garmin(object):
             return json.loads(text)
 
 
+    def fetch_data(self, url):
+        """
+        Fetch and return data
+        """
+        try:
+            response = self.req.get(url, headers=self.headers)
+            self.logger.debug("Fetch response code %s, and json %s", response.status_code, response.json())
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            self.logger.debug("Exception occured during data retrieval - perhaps session expired - trying relogin: %s" % err)
+            self.login(self.email, self.password)
+            try:
+                response = self.req.get(url, headers=self.headers)
+                self.logger.debug("Fetch response code %s, and json %s", response.status_code, response.json())
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as err:
+                self.logger.debug("Exception occured during data retrieval, relogin without effect: %s" % err)
+                raise GarminConnectConnectionError("Error connecting")
+
+        if response.status_code == 429:
+            raise GarminConnectTooManyRequestsError("Too many requests")
+
+        return response.json()
+
+
     def get_full_name(self):
         """
         Return full name
@@ -139,21 +168,23 @@ class Garmin(object):
         """
         return self.unit_system
 
+
     def get_stats_and_body(self, cdate):
         """
         Return activity data and body composition
         """
         return ({**self.get_stats(cdate), **self.get_body_composition(cdate)})
 
+
     def get_stats(self, cdate):   # cDate = 'YYY-mm-dd'
         """
         Fetch available activity data
         """
-        acturl = self.url_activities + self.display_name + '?' + 'calendarDate=' + cdate
-        self.logger.debug("Fetching activities %s", acturl)
+        summaryurl = self.url_user_summary + self.display_name + '?' + 'calendarDate=' + cdate
+        self.logger.debug("Fetching statistics %s", summaryurl)
         try:
-            response = self.req.get(acturl, headers=self.headers)
-            self.logger.debug("Activities response code %s, and json %s", response.status_code, response.json())
+            response = self.req.get(summaryurl, headers=self.headers)
+            self.logger.debug("Statistics response code %s, and json %s", response.status_code, response.json())
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             raise GarminConnectConnectionError("Error connecting")
@@ -165,11 +196,11 @@ class Garmin(object):
             self.logger.debug("Session expired - trying relogin")
             self.login()
             try:
-                response = self.req.get(acturl, headers=self.headers)
-                self.logger.debug("Activities response code %s, and json %s", response.status_code, response.json())
+                response = self.req.get(summaryurl, headers=self.headers)
+                self.logger.debug("Statistics response code %s, and json %s", response.status_code, response.json())
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
-                self.logger.debug("Exception occured during stats retrieval, relogin without effect: %s" % err)
+                self.logger.debug("Exception occured during statistics retrieval, relogin without effect: %s" % err)
                 raise GarminConnectConnectionError("Error connecting")
 
         return response.json()
@@ -181,25 +212,9 @@ class Garmin(object):
         """
         hearturl = self.url_heartrates + self.display_name + '?date=' + cdate
         self.logger.debug("Fetching heart rates with url %s", hearturl)
-        try:
-            response = self.req.get(hearturl, headers=self.headers)
-            self.logger.debug("Heart Rates response code %s, and json %s", response.status_code, response.json())
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as err:
-            self.logger.debug("Exception occured during heart rate retrieval - perhaps session expired - trying relogin: %s" % err)
-            self.login()
-            try:
-                response = self.req.get(hearturl, headers=self.headers)
-                self.logger.debug("Heart Rates response code %s, and json %s", response.status_code, response.json())
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as err:
-                self.logger.debug("Exception occured during stats retrieval, relogin without effect: %s" % err)
-                raise GarminConnectConnectionError("Error connecting")
 
-        if response.status_code == 429:
-            raise GarminConnectTooManyRequestsError("Too many requests")
+        return self.fetch_data(hearturl)
 
-        return response.json()
 
     def get_body_composition(self, cdate):   # cDate = 'YYYY-mm-dd'
         """
@@ -207,25 +222,18 @@ class Garmin(object):
         """
         bodycompositionurl = self.url_body_composition + '?startDate=' + cdate + '&endDate=' + cdate
         self.logger.debug("Fetching body composition with url %s", bodycompositionurl)
-        try:
-            response = self.req.get(bodycompositionurl, headers=self.headers)
-            self.logger.debug("Body Composition response code %s, and json %s", response.status_code, response.json())
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as err:
-            self.logger.debug("Exception occured during body composition retrieval - perhaps session expired - trying relogin: %s" % err)
-            self.login(self.email, self.password)
-            try:
-                response = self.req.get(bodycompositionurl, headers=self.headers)
-                self.logger.debug("Body Compostion response code %s, and json %s", response.status_code, response.json())
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as err:
-                self.logger.debug("Exception occured during stats retrieval, relogin without effect: %s" % err)
-                raise GarminConnectConnectionError("Error connecting")
 
-        if response.status_code == 429:
-            raise GarminConnectTooManyRequestsError("Too many requests")
+        return self.fetch_data(bodycompositionurl)
 
-        return response.json()
+
+    def get_activities(self, start, limit):
+        """
+        Fetch available activities
+        """
+        activitiesurl = self.url_activities + '?start=' + str(start) + '&limit=' + str(limit)
+        self.logger.debug("Fetching activities with url %s", activitiesurl)
+
+        return self.fetch_data(activitiesurl)
 
 
 class GarminConnectConnectionError(Exception):
