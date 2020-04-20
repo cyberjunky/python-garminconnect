@@ -140,7 +140,7 @@ class Garmin(object):
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             self.logger.debug("Exception occured during data retrieval - perhaps session expired - trying relogin: %s" % err)
-            self.login(self.email, self.password)
+            self.login()
             try:
                 response = self.req.get(url, headers=self.headers)
                 self.logger.debug("Fetch response code %s, and json %s", response.status_code, response.json())
