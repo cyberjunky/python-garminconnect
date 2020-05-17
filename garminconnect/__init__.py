@@ -79,19 +79,16 @@ class Garmin(object):
         self.logger.debug("Login to Garmin Connect using POST url %s", SIGNIN_URL)
         try:
             response = self.req.post(SIGNIN_URL, headers=self.headers, params=params, data=data)
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("Too many requests")
+
+            response.raise_for_status()
+            self.logger.debug("Login response code %s", response.status_code)
         except requests.exceptions.HTTPError as err:
             raise GarminConnectConnectionError("Error connecting")
 
-        if response.status_code == 429:
-            raise GarminConnectTooManyRequestsError("Too many requests")
-
-        self.logger.debug("Login response code %s", response.status_code)
-        response.raise_for_status()
-
-        response_url = re.search(r'"(https:[^"]+?ticket=[^"]+)"', response.text)
         self.logger.debug("Response is %s", response.text)
-        if response.status_code == 429:
-            raise GarminConnectTooManyRequestsError("Too many requests")
+        response_url = re.search(r'"(https:[^"]+?ticket=[^"]+)"', response.text)
 
         if not response_url:
             raise GarminConnectAuthenticationError("Authentication error")
@@ -100,13 +97,14 @@ class Garmin(object):
         self.logger.debug("Fetching profile info using found response url")
         try:
             response = self.req.get(response_url)
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("Too many requests")
+
+            response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             raise GarminConnectConnectionError("Error connecting")
 
         self.logger.debug("Profile info is %s", response.text)
-
-        if response.status_code == 429:
-            raise GarminConnectTooManyRequestsError("Too many requests")
 
         self.user_prefs = self.parse_json(response.text, 'VIEWER_USERPREFERENCES')
         self.unit_system = self.user_prefs['measurementSystem']
@@ -117,7 +115,6 @@ class Garmin(object):
         self.full_name = self.social_profile['fullName']
         self.logger.debug("Display name is %s", self.display_name)
         self.logger.debug("Fullname is %s", self.full_name)
-        response.raise_for_status()
 
 
     def parse_json(self, html, key):
@@ -136,6 +133,9 @@ class Garmin(object):
         """
         try:
             response = self.req.get(url, headers=self.headers)
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("Too many requests")
+
             self.logger.debug("Fetch response code %s, and json %s", response.status_code, response.json())
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
@@ -143,14 +143,14 @@ class Garmin(object):
             self.login()
             try:
                 response = self.req.get(url, headers=self.headers)
+                if response.status_code == 429:
+                    raise GarminConnectTooManyRequestsError("Too many requests")
+
                 self.logger.debug("Fetch response code %s, and json %s", response.status_code, response.json())
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 self.logger.debug("Exception occured during data retrieval, relogin without effect: %s" % err)
                 raise GarminConnectConnectionError("Error connecting")
-
-        if response.status_code == 429:
-            raise GarminConnectTooManyRequestsError("Too many requests")
 
         return response.json()
 
@@ -173,7 +173,7 @@ class Garmin(object):
         """
         Return activity data and body composition
         """
-        return ({**self.get_stats(cdate), **self.get_body_composition(cdate)})
+        return ({**self.get_stats(cdate), **self.get_body_composition(cdate)['totalAverage']})
 
 
     def get_stats(self, cdate):   # cDate = 'YYY-mm-dd'
@@ -184,19 +184,22 @@ class Garmin(object):
         self.logger.debug("Fetching statistics %s", summaryurl)
         try:
             response = self.req.get(summaryurl, headers=self.headers)
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("Too many requests")
+
             self.logger.debug("Statistics response code %s, and json %s", response.status_code, response.json())
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             raise GarminConnectConnectionError("Error connecting")
-
-        if response.status_code == 429:
-            raise GarminConnectTooManyRequestsError("Too many requests")
 
         if response.json()['privacyProtected'] is True:
             self.logger.debug("Session expired - trying relogin")
             self.login()
             try:
                 response = self.req.get(summaryurl, headers=self.headers)
+                if response.status_code == 429:
+                    raise GarminConnectTooManyRequestsError("Too many requests")
+
                 self.logger.debug("Statistics response code %s, and json %s", response.status_code, response.json())
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
