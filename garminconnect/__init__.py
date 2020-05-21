@@ -19,6 +19,7 @@ class Garmin(object):
     """
     url_user_summary = MODERN_URL + '/proxy/usersummary-service/usersummary/daily/'
     url_heartrates = MODERN_URL + '/proxy/wellness-service/wellness/dailyHeartRate/'
+    url_sleepdata = MODERN_URL + '/proxy/wellness-service/wellness/dailySleepData/'
     url_body_composition = MODERN_URL + '/proxy/weight-service/weight/daterangesnapshot'
     url_activities = MODERN_URL + '/proxy/activitylist-service/activities/search/activities'
 
@@ -217,6 +218,16 @@ class Garmin(object):
         self.logger.debug("Fetching heart rates with url %s", hearturl)
 
         return self.fetch_data(hearturl)
+
+
+    def get_sleep_data(self, cdate):   # cDate = 'YYYY-mm-dd'
+        """
+        Fetch available sleep data
+        """
+        sleepurl = self.url_sleepdata + self.display_name + '?date=' + cdate
+        self.logger.debug("Fetching sleep data with url %s", sleepurl)
+
+        return self.fetch_data(sleepurl)
 
 
     def get_body_composition(self, cdate):   # cDate = 'YYYY-mm-dd'
