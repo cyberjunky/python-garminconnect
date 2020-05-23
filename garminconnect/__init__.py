@@ -4,6 +4,7 @@ import logging
 import json
 import re
 import requests
+from enum import Enum, auto
 
 from .__version__ import __version__
 
@@ -22,6 +23,9 @@ class Garmin(object):
     url_sleepdata = MODERN_URL + '/proxy/wellness-service/wellness/dailySleepData/'
     url_body_composition = MODERN_URL + '/proxy/weight-service/weight/daterangesnapshot'
     url_activities = MODERN_URL + '/proxy/activitylist-service/activities/search/activities'
+    url_tcx_download = MODERN_URL + "/proxy/download-service/export/tcx/activity/"
+    url_gpx_download = MODERN_URL + "/proxy/download-service/export/gpx/activity/"
+    url_fit_download = MODERN_URL + "/proxy/download-service/files/activity/"
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
@@ -248,6 +252,35 @@ class Garmin(object):
         self.logger.debug("Fetching activities with url %s", activitiesurl)
 
         return self.fetch_data(activitiesurl)
+
+    class ActivityDownloadFormat(Enum):
+        ORIGINAL = auto()
+        TCX = auto()
+        GPX = auto()
+
+    def download_activity(self, activity_id, dl_fmt=ActivityDownloadFormat.TCX):
+        """
+        Downloads activity in requested format and returns the raw bytes. For
+        "Original" will return the zip file content, up to user to extract it.
+        """
+        activity_id = str(activity_id)
+        urls = {
+            Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.url_fit_download}{activity_id}",
+            Garmin.ActivityDownloadFormat.TCX: f"{self.url_tcx_download}{activity_id}",
+            Garmin.ActivityDownloadFormat.GPX: f"{self.url_gpx_download}{activity_id}",
+        }
+        if dl_fmt not in urls:
+            raise ValueError(f"Unexpected value {dl_fmt} for dl_fmt")
+        url = urls[dl_fmt]
+
+        self.logger.debug(f"Downloading from {url}")
+        try:
+            response = self.req.get(url, headers=self.headers)
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("Too many requests")
+        except requests.exceptions.HTTPError as err:
+            raise GarminConnectConnectionError("Error connecting")
+        return response.content
 
 
 class GarminConnectConnectionError(Exception):
