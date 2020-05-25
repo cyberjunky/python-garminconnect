@@ -181,7 +181,8 @@ except Exception:  # pylint: disable=broad-except
 Get activities data
 """
 try:
-    print(client.get_activities(0,1) # 0=start, 1=limit
+    activities = client.get_activities(0,1) # 0=start, 1=limit
+    print(activities)
 except (
     GarminConnectConnectionError,
     GarminConnectAuthenticationError,
@@ -191,6 +192,39 @@ except (
     quit()
 except Exception:  # pylint: disable=broad-except
     print("Unknown error occured during Garmin Connect Client get activities")
+    quit()
+
+"""
+Download an Activity
+"""
+
+try:
+  for activity in activities:
+      activity_id = activity["activityId"]
+
+      gpx_data = client.download_activity(activity_id, dl_fmt=client.ActivityDownloadFormat.GPX)
+      output_file = f"./{str(activity_id)}.gpx"
+      with open(output_file, "wb") as fb:
+          fb.write(gpx_data)
+
+      tcx_data = client.download_activity(activity_id, dl_fmt=client.ActivityDownloadFormat.TCX)
+      output_file = f"./{str(activity_id)}.tcx"
+      with open(output_file, "wb") as fb:
+          fb.write(tcx_data)
+
+      zip_data = client.download_activity(activity_id, dl_fmt=client.ActivityDownloadFormat.ORIGINAL)
+      output_file = f"./{str(activity_id)}.zip"
+      with open(output_file, "wb") as fb:
+          fb.write(zip_data)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occured during Garmin Connect Client get activity data: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occured during Garmin Connect Client get activity data")
     quit()
 
 """
