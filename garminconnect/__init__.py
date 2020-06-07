@@ -141,7 +141,7 @@ class Garmin(object):
             if response.status_code == 429:
                 raise GarminConnectTooManyRequestsError("Too many requests")
 
-            self.logger.debug("Fetch response code %s, and json %s", response.status_code, response.json())
+            self.logger.debug("Fetch response code %s", response.status_code)
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             self.logger.debug("Exception occurred during data retrieval - perhaps session expired - trying relogin: %s" % err)
@@ -151,13 +151,15 @@ class Garmin(object):
                 if response.status_code == 429:
                     raise GarminConnectTooManyRequestsError("Too many requests")
 
-                self.logger.debug("Fetch response code %s, and json %s", response.status_code, response.json())
+                self.logger.debug("Fetch response code %s", response.status_code)
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 self.logger.debug("Exception occurred during data retrieval, relogin without effect: %s" % err)
                 raise GarminConnectConnectionError("Error connecting") from err
 
-        return response.json()
+        resp_json = response.json()
+        self.logger.debug("Fetch response json %s", resp_json)
+        return resp_json
 
 
     def get_full_name(self):
@@ -192,12 +194,13 @@ class Garmin(object):
             if response.status_code == 429:
                 raise GarminConnectTooManyRequestsError("Too many requests")
 
-            self.logger.debug("Statistics response code %s, and json %s", response.status_code, response.json())
+            self.logger.debug("Statistics response code %s", response.status_code)
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
             raise GarminConnectConnectionError("Error connecting") from err
 
-        if response.json()['privacyProtected'] is True:
+        resp_json = response.json()
+        if resp_json['privacyProtected'] is True:
             self.logger.debug("Session expired - trying relogin")
             self.login()
             try:
@@ -205,13 +208,16 @@ class Garmin(object):
                 if response.status_code == 429:
                     raise GarminConnectTooManyRequestsError("Too many requests")
 
-                self.logger.debug("Statistics response code %s, and json %s", response.status_code, response.json())
+                self.logger.debug("Statistics response code %s", response.status_code)
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 self.logger.debug("Exception occurred during statistics retrieval, relogin without effect: %s" % err)
                 raise GarminConnectConnectionError("Error connecting") from err
+            else:
+                resp_json = response.json()
 
-        return response.json()
+        self.logger.debug("Statistics response json %s", resp_json)
+        return resp_json
 
 
     def get_heart_rates(self, cdate):   # cDate = 'YYYY-mm-dd'
