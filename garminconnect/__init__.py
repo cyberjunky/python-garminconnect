@@ -90,7 +90,7 @@ class Garmin(object):
             response.raise_for_status()
             self.logger.debug("Login response code %s", response.status_code)
         except requests.exceptions.HTTPError as err:
-            raise GarminConnectConnectionError("Error connecting")
+            raise GarminConnectConnectionError("Error connecting") from err
 
         self.logger.debug("Response is %s", response.text)
         response_url = re.search(r'"(https:[^"]+?ticket=[^"]+)"', response.text)
@@ -107,7 +107,7 @@ class Garmin(object):
 
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            raise GarminConnectConnectionError("Error connecting")
+            raise GarminConnectConnectionError("Error connecting") from err
 
         self.logger.debug("Profile info is %s", response.text)
 
@@ -155,7 +155,7 @@ class Garmin(object):
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 self.logger.debug("Exception occurred during data retrieval, relogin without effect: %s" % err)
-                raise GarminConnectConnectionError("Error connecting")
+                raise GarminConnectConnectionError("Error connecting") from err
 
         return response.json()
 
@@ -195,7 +195,7 @@ class Garmin(object):
             self.logger.debug("Statistics response code %s, and json %s", response.status_code, response.json())
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            raise GarminConnectConnectionError("Error connecting")
+            raise GarminConnectConnectionError("Error connecting") from err
 
         if response.json()['privacyProtected'] is True:
             self.logger.debug("Session expired - trying relogin")
@@ -209,7 +209,7 @@ class Garmin(object):
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
                 self.logger.debug("Exception occurred during statistics retrieval, relogin without effect: %s" % err)
-                raise GarminConnectConnectionError("Error connecting")
+                raise GarminConnectConnectionError("Error connecting") from err
 
         return response.json()
 
