@@ -144,7 +144,7 @@ class Garmin(object):
             self.logger.debug("Fetch response code %s, and json %s", response.status_code, response.json())
             response.raise_for_status()
         except requests.exceptions.HTTPError as err:
-            self.logger.debug("Exception occured during data retrieval - perhaps session expired - trying relogin: %s" % err)
+            self.logger.debug("Exception occurred during data retrieval - perhaps session expired - trying relogin: %s" % err)
             self.login()
             try:
                 response = self.req.get(url, headers=self.headers)
@@ -154,7 +154,7 @@ class Garmin(object):
                 self.logger.debug("Fetch response code %s, and json %s", response.status_code, response.json())
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
-                self.logger.debug("Exception occured during data retrieval, relogin without effect: %s" % err)
+                self.logger.debug("Exception occurred during data retrieval, relogin without effect: %s" % err)
                 raise GarminConnectConnectionError("Error connecting")
 
         return response.json()
@@ -208,7 +208,7 @@ class Garmin(object):
                 self.logger.debug("Statistics response code %s, and json %s", response.status_code, response.json())
                 response.raise_for_status()
             except requests.exceptions.HTTPError as err:
-                self.logger.debug("Exception occured during statistics retrieval, relogin without effect: %s" % err)
+                self.logger.debug("Exception occurred during statistics retrieval, relogin without effect: %s" % err)
                 raise GarminConnectConnectionError("Error connecting")
 
         return response.json()

@@ -49,17 +49,17 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client init: %s" % err)
+    print("Error occurred during Garmin Connect Client init: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client init")
+    print("Unknown error occurred during Garmin Connect Client init")
     quit()
 
 
 """
 Login to Garmin Connect portal
 Only needed at start of your program
-The libary will try to relogin when session expires
+The library will try to relogin when session expires
 """
 try:
     client.login()
@@ -68,10 +68,10 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client login: %s" % err)
+    print("Error occurred during Garmin Connect Client login: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client login")
+    print("Unknown error occurred during Garmin Connect Client login")
     quit()
 
 
@@ -85,10 +85,10 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client get full name: %s" % err)
+    print("Error occurred during Garmin Connect Client get full name: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client get full name")
+    print("Unknown error occurred during Garmin Connect Client get full name")
     quit()
 
 
@@ -102,10 +102,10 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client get unit system: %s" % err)
+    print("Error occurred during Garmin Connect Client get unit system: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client get unit system")
+    print("Unknown error occurred during Garmin Connect Client get unit system")
     quit()
 
 
@@ -119,10 +119,10 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client get stats: %s" % err)
+    print("Error occurred during Garmin Connect Client get stats: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client get stats")
+    print("Unknown error occurred during Garmin Connect Client get stats")
     quit()
 
 
@@ -136,10 +136,10 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client get heart rates: %s" % err)
+    print("Error occurred during Garmin Connect Client get heart rates: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client get heart rates")
+    print("Unknown error occurred during Garmin Connect Client get heart rates")
     quit()
 
 
@@ -153,10 +153,10 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client get body composition: %s" % err)
+    print("Error occurred during Garmin Connect Client get body composition: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client get body composition")
+    print("Unknown error occurred during Garmin Connect Client get body composition")
     quit()
 
 
@@ -170,10 +170,10 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client get stats and body composition: %s" % err)
+    print("Error occurred during Garmin Connect Client get stats and body composition: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client get stats and body composition")
+    print("Unknown error occurred during Garmin Connect Client get stats and body composition")
     quit()
 
 
@@ -188,10 +188,10 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client get activities: %s" % err)
+    print("Error occurred during Garmin Connect Client get activities: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client get activities")
+    print("Unknown error occurred during Garmin Connect Client get activities")
     quit()
 
 """
@@ -221,10 +221,10 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client get activity data: %s" % err)
+    print("Error occurred during Garmin Connect Client get activity data: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client get activity data")
+    print("Unknown error occurred during Garmin Connect Client get activity data")
     quit()
 
 """
@@ -237,9 +237,9 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occured during Garmin Connect Client get sleep data: %s" % err)
+    print("Error occurred during Garmin Connect Client get sleep data: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
-    print("Unknown error occured during Garmin Connect Client get sleep data")
+    print("Unknown error occurred during Garmin Connect Client get sleep data")
     quit()
 ```
