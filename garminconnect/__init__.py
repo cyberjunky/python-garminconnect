@@ -23,6 +23,7 @@ class Garmin(object):
     url_sleepdata = MODERN_URL + '/proxy/wellness-service/wellness/dailySleepData/'
     url_body_composition = MODERN_URL + '/proxy/weight-service/weight/daterangesnapshot'
     url_activities = MODERN_URL + '/proxy/activitylist-service/activities/search/activities'
+    url_exercise_sets = MODERN_URL + '/proxy/activity-service/activity/'
     url_tcx_download = MODERN_URL + "/proxy/download-service/export/tcx/activity/"
     url_gpx_download = MODERN_URL + "/proxy/download-service/export/gpx/activity/"
     url_fit_download = MODERN_URL + "/proxy/download-service/files/activity/"
@@ -249,7 +250,6 @@ class Garmin(object):
 
         return self.fetch_data(bodycompositionurl)
 
-
     def get_activities(self, start, limit):
         """
         Fetch available activities
@@ -258,6 +258,13 @@ class Garmin(object):
         self.logger.debug("Fetching activities with url %s", activitiesurl)
 
         return self.fetch_data(activitiesurl)
+
+    def get_excercise_sets(self, activity_id):
+        activity_id = str(activity_id)
+        exercisesetsurl = f"{self.url_exercise_sets}{activity_id}/exerciseSets"
+        self.logger.debug(f"Fetching exercise sets for activity_id {activity_id}")
+
+        return self.fetch_data(exercisesetsurl)
 
     class ActivityDownloadFormat(Enum):
         ORIGINAL = auto()
@@ -314,4 +321,3 @@ class GarminConnectAuthenticationError(Exception):
         """Initialize."""
         super(GarminConnectAuthenticationError, self).__init__(status)
         self.status = status
-
