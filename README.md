@@ -125,6 +125,21 @@ except Exception:  # pylint: disable=broad-except
     print("Unknown error occurred during Garmin Connect Client get stats")
     quit()
 
+"""
+Get steps data
+"""
+try:
+    print(client.get_steps_data(today.isoformat()))
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client get heart rates: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client get steps data")
+    quit()
 
 """
 Get heart rate data
