@@ -135,7 +135,7 @@ except (
     GarminConnectAuthenticationError,
     GarminConnectTooManyRequestsError,
 ) as err:
-    print("Error occurred during Garmin Connect Client get heart rates: %s" % err)
+    print("Error occurred during Garmin Connect Client get steps data: %s" % err)
     quit()
 except Exception:  # pylint: disable=broad-except
     print("Unknown error occurred during Garmin Connect Client get steps data")
