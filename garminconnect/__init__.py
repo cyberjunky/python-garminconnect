@@ -28,6 +28,7 @@ class Garmin(object):
     url_tcx_download = MODERN_URL + "/proxy/download-service/export/tcx/activity/"
     url_gpx_download = MODERN_URL + "/proxy/download-service/export/gpx/activity/"
     url_fit_download = MODERN_URL + "/proxy/download-service/files/activity/"
+    url_csv_download = MODERN_URL + "/proxy/download-service/export/csv/activity/"
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
@@ -280,17 +281,20 @@ class Garmin(object):
         ORIGINAL = auto()
         TCX = auto()
         GPX = auto()
+        CSV = auto()
 
     def download_activity(self, activity_id, dl_fmt=ActivityDownloadFormat.TCX):
         """
         Downloads activity in requested format and returns the raw bytes. For
         "Original" will return the zip file content, up to user to extract it.
+        "CSV" will return a csv of the splits.
         """
         activity_id = str(activity_id)
         urls = {
             Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.url_fit_download}{activity_id}",
             Garmin.ActivityDownloadFormat.TCX: f"{self.url_tcx_download}{activity_id}",
             Garmin.ActivityDownloadFormat.GPX: f"{self.url_gpx_download}{activity_id}",
+            Garmin.ActivityDownloadFormat.CSV: f"{self.url_csv_download}{activity_id}",
         }
         if dl_fmt not in urls:
             raise ValueError(f"Unexpected value {dl_fmt} for dl_fmt")
