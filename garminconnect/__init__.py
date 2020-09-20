@@ -29,6 +29,8 @@ class Garmin(object):
     url_gpx_download = MODERN_URL + "/proxy/download-service/export/gpx/activity/"
     url_fit_download = MODERN_URL + "/proxy/download-service/files/activity/"
     url_csv_download = MODERN_URL + "/proxy/download-service/export/csv/activity/"
+    url_device_list = MODERN_URL + '/proxy/device-service/deviceregistration/devices'
+    url_device_settings = MODERN_URL + '/proxy/device-service/deviceservice/device-info/settings/'
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
@@ -276,6 +278,24 @@ class Garmin(object):
         self.logger.debug(f"Fetching exercise sets for activity_id {activity_id}")
 
         return self.fetch_data(exercisesetsurl)
+
+    def get_devices(self):
+        """
+        Fetch available devices for the current account
+        """
+        devicesurl = self.url_device_list
+        self.logger.debug("Fetching available devices for the current account with url %s", devicesurl)
+
+        return self.fetch_data(devicesurl)
+
+    def get_device_settings(self, device_id):
+        """
+        Fetch device settings for current device
+        """
+        devicesurl = f"{self.url_device_settings}{device_id}"
+        self.logger.debug("Fetching device settings with url %s", devicesurl)
+        return self.fetch_data(devicesurl)
+
 
     class ActivityDownloadFormat(Enum):
         ORIGINAL = auto()
