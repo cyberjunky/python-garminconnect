@@ -27,6 +27,7 @@ class Garmin(object):
     url_exercise_sets = MODERN_URL + '/proxy/activity-service/activity/'
     url_tcx_download = MODERN_URL + "/proxy/download-service/export/tcx/activity/"
     url_gpx_download = MODERN_URL + "/proxy/download-service/export/gpx/activity/"
+    url_kml_download = MODERN_URL + "/proxy/download-service/export/kml/activity/"
     url_fit_download = MODERN_URL + "/proxy/download-service/files/activity/"
     url_csv_download = MODERN_URL + "/proxy/download-service/export/csv/activity/"
     url_device_list = MODERN_URL + '/proxy/device-service/deviceregistration/devices'
@@ -301,6 +302,7 @@ class Garmin(object):
         ORIGINAL = auto()
         TCX = auto()
         GPX = auto()
+        KML = auto()
         CSV = auto()
 
     def download_activity(self, activity_id, dl_fmt=ActivityDownloadFormat.TCX):
@@ -314,6 +316,7 @@ class Garmin(object):
             Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.url_fit_download}{activity_id}",
             Garmin.ActivityDownloadFormat.TCX: f"{self.url_tcx_download}{activity_id}",
             Garmin.ActivityDownloadFormat.GPX: f"{self.url_gpx_download}{activity_id}",
+            Garmin.ActivityDownloadFormat.KML: f"{self.url_kml_download}{activity_id}",
             Garmin.ActivityDownloadFormat.CSV: f"{self.url_csv_download}{activity_id}",
         }
         if dl_fmt not in urls:
