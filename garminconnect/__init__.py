@@ -273,6 +273,41 @@ class Garmin(object):
 
         return self.fetch_data(activitiesurl)
 
+    def get_activities_by_date(self, startdate: str, enddate: str, activitytype = "" ) -> list[json]:
+        """
+        Fetch available activities between specific dates
+
+        :param startdate: String in the format YYYY-MM-DD
+        :param enddate: String in the format YYYY-MM-DD
+        :param activitytype: (Optional) Type of activity you are searching
+                             Possible values are [cycling, running, swimming,
+                             multi_sport, fitness_equipment, hiking, walking, other]
+        :return: list of JSON activities
+        """
+
+        activities = []
+        start = 0
+        limit = 20
+        returndata = True
+        # mimicking the behavior of the web interface that fetches 20 activities at a time
+        # and automatically loads more on scroll
+        if activitytype:
+            activityslug = "&activityType=" + str(activitytype)
+        else:
+            activityslug = ""
+        while returndata:
+            activitiesurl = self.url_activities + '?startDate=' + str(startdate) + '&endDate=' + str(
+                            enddate) + '&start=' + str(start) + '&limit=' + str(limit) + activityslug
+            self.logger.debug("Fetching activities with url %s", activitiesurl)
+            act = self.fetch_data(activitiesurl)
+            if act:
+                activities.extend(act)
+                start = start + limit
+            else:
+                returndata = False
+
+        return activities
+
     def get_excercise_sets(self, activity_id):
         activity_id = str(activity_id)
         exercisesetsurl = f"{self.url_exercise_sets}{activity_id}/exerciseSets"
