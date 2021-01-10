@@ -29,14 +29,15 @@ class Garmin(object):
     url_activities = MODERN_URL + \
         '/proxy/activitylist-service/activities/search/activities'
     url_activity = MODERN_URL + '/proxy/activity-service/activity/'
+    url_personal_record = MODERN_URL + '/proxy/personalrecord-service/personalrecord/'
     url_tcx_download = MODERN_URL + "/proxy/download-service/export/tcx/activity/"
     url_gpx_download = MODERN_URL + "/proxy/download-service/export/gpx/activity/"
     url_kml_download = MODERN_URL + "/proxy/download-service/export/kml/activity/"
     url_fit_download = MODERN_URL + "/proxy/download-service/files/activity/"
     url_csv_download = MODERN_URL + "/proxy/download-service/export/csv/activity/"
     url_device_list = MODERN_URL + '/proxy/device-service/deviceregistration/devices'
-    url_device_settings = MODERN_URL + \
-        '/proxy/device-service/deviceservice/device-info/settings/'
+    url_device_service = MODERN_URL + \
+        '/proxy/device-service/deviceservice/'
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
@@ -369,6 +370,13 @@ class Garmin(object):
 
         return self.fetch_data(details_url)
 
+    def get_personal_record(self, owner_display_name):
+        personal_records_url = f"{self.url_personal_record}prs/{owner_display_name}"
+        self.logger.debug(
+            f"Fetching prs for owner {owner_display_name}")
+
+        return self.fetch_data(personal_records_url)
+
     def get_devices(self):
         """
         Fetch available devices for the current account
@@ -383,9 +391,18 @@ class Garmin(object):
         """
         Fetch device settings for current device
         """
-        devicesurl = f"{self.url_device_settings}{device_id}"
+        devicesurl = f"{self.url_device_service}device-info/settings/{device_id}"
         self.logger.debug("Fetching device settings with url %s", devicesurl)
         return self.fetch_data(devicesurl)
+
+    def get_device_last_used(self):
+        """
+        Fetch device last used
+        """
+        device_last_used_url = f"{self.url_device_service}mylastused"
+        self.logger.debug(
+            "Fetching device last used with url %s", device_last_used_url)
+        return self.fetch_data(device_last_used_url)
 
     class ActivityDownloadFormat(Enum):
         ORIGINAL = auto()
