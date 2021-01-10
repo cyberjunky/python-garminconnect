@@ -7,7 +7,6 @@ Python 3 API wrapper for Garmin Connect to get your statistics.
 This package allows you to request your device, activity and health data from your Garmin Connect account.
 See https://connect.garmin.com/
 
-
 ## Installation
 
 ```bash
@@ -272,6 +271,110 @@ except Exception:  # pylint: disable=broad-except
     quit()
 
 
+first_activity_id = activities[0].get("activityId")
+owner_display_name =  activities[0].get("ownerDisplayName")
+
+
+"""
+Get activity splits
+"""
+print("client.get_activity_splits(%s)", first_activity_id)
+print("----------------------------------------------------------------------------------------")
+try:
+    splits = client.get_activity_splits(first_activity_id)
+    print(splits)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client get activity splits: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client get activity splits")
+    quit()
+
+
+"""
+Get activity split summaries
+"""
+print("client.get_activity_split_summaries(%s)", first_activity_id)
+print("----------------------------------------------------------------------------------------")
+try:
+    split_summaries = client.get_activity_split_summaries(first_activity_id)
+    print(split_summaries)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client get activity split summaries: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client get activity split summaries")
+    quit()
+
+
+"""
+Get activity split summaries
+"""
+print("client.get_activity_weather(%s)", first_activity_id)
+print("----------------------------------------------------------------------------------------")
+try:
+    weather = client.get_activity_weather(first_activity_id)
+    print(weather)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client get activity weather: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client get activity weather")
+    quit()
+
+
+"""
+Get activity hr timezones
+"""
+print("client.get_activity_hr_in_timezones(%s)", first_activity_id)
+print("----------------------------------------------------------------------------------------")
+try:
+    hr_timezones = client.get_activity_hr_in_timezones(first_activity_id)
+    print(hr_timezones)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client get activity hr timezones: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client get activity hr timezones")
+    quit()
+
+
+"""
+Get activity details
+"""
+print("client.get_activity_details(%s)", first_activity_id)
+print("----------------------------------------------------------------------------------------")
+try:
+    details = client.get_activity_details(first_activity_id)
+    print(details)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client get activity details: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client get activity details")
+    quit()
+
+
 """
 Get sleep data
 """
@@ -312,6 +415,26 @@ except Exception:  # pylint: disable=broad-except
 
 
 """
+Get device last used
+"""
+print("client.get_device_last_used()")
+print("----------------------------------------------------------------------------------------")
+try:
+    device_last_used = client.get_device_last_used()
+    print(device_last_used)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client get device last used: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client get device last used")
+    quit()
+
+
+"""
 Get device settings
 """
 try:
@@ -330,5 +453,25 @@ except (
     quit()
 except Exception:  # pylint: disable=broad-except
     print("Unknown error occurred during Garmin Connect Client get device settings")
+    quit()
+
+
+"""
+Get personal record
+"""
+print("client.get_personal_record()")
+print("----------------------------------------------------------------------------------------")
+try:
+    personal_record = client.get_personal_record(owner_display_name)
+    print(personal_record)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client get personal record: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client get personal record")
     quit()
 ```
