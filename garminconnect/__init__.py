@@ -28,6 +28,7 @@ class Garmin(object):
         '/proxy/weight-service/weight/daterangesnapshot'
     url_activities = MODERN_URL + \
         '/proxy/activitylist-service/activities/search/activities'
+    url_hydrationdata = MODERN_URL + '/proxy/usersummary-service/usersummary/hydration/daily/'
     url_activity = MODERN_URL + '/proxy/activity-service/activity/'
     url_personal_record = MODERN_URL + '/proxy/personalrecord-service/personalrecord/'
     url_tcx_download = MODERN_URL + "/proxy/download-service/export/tcx/activity/"
@@ -403,6 +404,15 @@ class Garmin(object):
         self.logger.debug(
             "Fetching device last used with url %s", device_last_used_url)
         return self.fetch_data(device_last_used_url)
+
+    def get_hydration_data(self, cdate):   # cDate = 'YYYY-mm-dd'
+        """
+        Fetch available hydration data
+        """
+        hydration_url = self.url_hydrationdata + cdate
+        self.logger.debug("Fetching hydration data with url %s", hydration_url)
+
+        return self.fetch_data(hydration_url)
 
     class ActivityDownloadFormat(Enum):
         ORIGINAL = auto()

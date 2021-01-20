@@ -474,4 +474,24 @@ except (
 except Exception:  # pylint: disable=broad-except
     print("Unknown error occurred during Garmin Connect Client get personal record")
     quit()
+
+
+"""
+Get hydration data
+"""
+print("client.get_hydration_data(%s)", today.isoformat())
+print("----------------------------------------------------------------------------------------")
+try:
+    print(client.get_hydration_data(today.isoformat()))
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client get hydration data: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client get hydration data")
+    quit()
+
 ```
