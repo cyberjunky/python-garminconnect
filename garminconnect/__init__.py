@@ -10,34 +10,32 @@ from .__version__ import __version__
 
 BASE_URL = 'https://connect.garmin.com'
 SSO_URL = 'https://sso.garmin.com/sso'
-MODERN_URL = 'https://connect.garmin.com/modern'
 SIGNIN_URL = 'https://sso.garmin.com/sso/signin'
-
 
 class Garmin(object):
     """
     Object using Garmin Connect 's API-method.
     See https://connect.garmin.com/
     """
-    url_user_summary = MODERN_URL + '/proxy/usersummary-service/usersummary/daily/'
-    url_user_summary_chart = MODERN_URL + \
+    url_user_summary = BASE_URL + '/proxy/usersummary-service/usersummary/daily/'
+    url_user_summary_chart = BASE_URL + \
         '/proxy/wellness-service/wellness/dailySummaryChart/'
-    url_heartrates = MODERN_URL + '/proxy/wellness-service/wellness/dailyHeartRate/'
-    url_sleepdata = MODERN_URL + '/proxy/wellness-service/wellness/dailySleepData/'
-    url_body_composition = MODERN_URL + \
+    url_heartrates = BASE_URL + '/proxy/wellness-service/wellness/dailyHeartRate/'
+    url_sleepdata = BASE_URL + '/proxy/wellness-service/wellness/dailySleepData/'
+    url_body_composition = BASE_URL + \
         '/proxy/weight-service/weight/daterangesnapshot'
-    url_activities = MODERN_URL + \
+    url_activities = BASE_URL + \
         '/proxy/activitylist-service/activities/search/activities'
-    url_hydrationdata = MODERN_URL + '/proxy/usersummary-service/usersummary/hydration/daily/'
-    url_activity = MODERN_URL + '/proxy/activity-service/activity/'
-    url_personal_record = MODERN_URL + '/proxy/personalrecord-service/personalrecord/'
-    url_tcx_download = MODERN_URL + "/proxy/download-service/export/tcx/activity/"
-    url_gpx_download = MODERN_URL + "/proxy/download-service/export/gpx/activity/"
-    url_kml_download = MODERN_URL + "/proxy/download-service/export/kml/activity/"
-    url_fit_download = MODERN_URL + "/proxy/download-service/files/activity/"
-    url_csv_download = MODERN_URL + "/proxy/download-service/export/csv/activity/"
-    url_device_list = MODERN_URL + '/proxy/device-service/deviceregistration/devices'
-    url_device_service = MODERN_URL + \
+    url_hydrationdata = BASE_URL + '/proxy/usersummary-service/usersummary/hydration/daily/'
+    url_activity = BASE_URL + '/proxy/activity-service/activity/'
+    url_personal_record = BASE_URL + '/proxy/personalrecord-service/personalrecord/'
+    url_tcx_download = BASE_URL + "/proxy/download-service/export/tcx/activity/"
+    url_gpx_download = BASE_URL + "/proxy/download-service/export/gpx/activity/"
+    url_kml_download = BASE_URL + "/proxy/download-service/export/kml/activity/"
+    url_fit_download = BASE_URL + "/proxy/download-service/files/activity/"
+    url_csv_download = BASE_URL + "/proxy/download-service/export/csv/activity/"
+    url_device_list = BASE_URL + '/proxy/device-service/deviceregistration/devices'
+    url_device_service = BASE_URL + \
         '/proxy/device-service/deviceservice/'
 
     headers = {
@@ -63,10 +61,10 @@ class Garmin(object):
         """
         params = {
             'webhost': BASE_URL,
-            'service': MODERN_URL,
+            'service': BASE_URL,
             'source': SIGNIN_URL,
-            'redirectAfterAccountLoginUrl': MODERN_URL,
-            'redirectAfterAccountCreationUrl': MODERN_URL,
+            'redirectAfterAccountLoginUrl': BASE_URL,
+            'redirectAfterAccountCreationUrl': BASE_URL,
             'gauthHost': SSO_URL,
             'locale': 'en_US',
             'id': 'gauth-widget',
