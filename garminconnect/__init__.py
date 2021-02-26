@@ -16,37 +16,17 @@ class Garmin(object):
     """
     Object using Garmin Connect 's API-method.
     See https://connect.garmin.com/
+    or you are in mainland China
+    See https://connect.garmin.cn/
     """
-    url_user_summary = BASE_URL + '/proxy/usersummary-service/usersummary/daily/'
-    url_user_summary_chart = BASE_URL + \
-        '/proxy/wellness-service/wellness/dailySummaryChart/'
-    url_heartrates = BASE_URL + '/proxy/wellness-service/wellness/dailyHeartRate/'
-    url_sleepdata = BASE_URL + '/proxy/wellness-service/wellness/dailySleepData/'
-    url_body_composition = BASE_URL + \
-        '/proxy/weight-service/weight/daterangesnapshot'
-    url_activities = BASE_URL + \
-        '/proxy/activitylist-service/activities/search/activities'
-    url_hydrationdata = BASE_URL + '/proxy/usersummary-service/usersummary/hydration/daily/'
-    url_activity = BASE_URL + '/proxy/activity-service/activity/'
-    url_personal_record = BASE_URL + '/proxy/personalrecord-service/personalrecord/'
-    url_tcx_download = BASE_URL + "/proxy/download-service/export/tcx/activity/"
-    url_gpx_download = BASE_URL + "/proxy/download-service/export/gpx/activity/"
-    url_kml_download = BASE_URL + "/proxy/download-service/export/kml/activity/"
-    url_fit_download = BASE_URL + "/proxy/download-service/files/activity/"
-    url_csv_download = BASE_URL + "/proxy/download-service/export/csv/activity/"
-    url_device_list = BASE_URL + '/proxy/device-service/deviceregistration/devices'
-    url_device_service = BASE_URL + \
-        '/proxy/device-service/deviceservice/'
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
-        'origin': 'https://sso.garmin.com'
-    }
-
-    def __init__(self, email, password):
+    def __init__(self, email, password, is_cn=False):
         """
         Init module
         """
+        global BASE_URL
+        global SSO_URL
+        global SIGNIN_URL
         self.email = email
         self.password = password
         self.req = requests.session()
@@ -54,6 +34,37 @@ class Garmin(object):
         self.display_name = ""
         self.full_name = ""
         self.unit_system = ""
+        self.is_cn = is_cn
+        if is_cn:
+            BASE_URL = BASE_URL.replace(".com", ".cn")
+            SSO_URL = SSO_URL.replace(".com", ".cn")
+            SIGNIN_URL = SIGNIN_URL.replace(".com", ".cn")
+
+        self.url_user_summary = BASE_URL + '/proxy/usersummary-service/usersummary/daily/'
+        self.url_user_summary_chart = BASE_URL + \
+            '/proxy/wellness-service/wellness/dailySummaryChart/'
+        self.url_heartrates = BASE_URL + '/proxy/wellness-service/wellness/dailyHeartRate/'
+        self.url_sleepdata = BASE_URL + '/proxy/wellness-service/wellness/dailySleepData/'
+        self.url_body_composition = BASE_URL + \
+            '/proxy/weight-service/weight/daterangesnapshot'
+        self.url_activities = BASE_URL + \
+            '/proxy/activitylist-service/activities/search/activities'
+        self.url_hydrationdata = BASE_URL + '/proxy/usersummary-service/usersummary/hydration/daily/'
+        self.url_activity = BASE_URL + '/proxy/activity-service/activity/'
+        self.url_personal_record = BASE_URL + '/proxy/personalrecord-service/personalrecord/'
+        self.url_tcx_download = BASE_URL + "/proxy/download-service/export/tcx/activity/"
+        self.url_gpx_download = BASE_URL + "/proxy/download-service/export/gpx/activity/"
+        self.url_kml_download = BASE_URL + "/proxy/download-service/export/kml/activity/"
+        self.url_fit_download = BASE_URL + "/proxy/download-service/files/activity/"
+        self.url_csv_download = BASE_URL + "/proxy/download-service/export/csv/activity/"
+        self.url_device_list = BASE_URL + '/proxy/device-service/deviceregistration/devices'
+        self.url_device_service = BASE_URL + \
+            '/proxy/device-service/deviceservice/'
+
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
+            'origin': 'https://sso.garmin.com' if not self.is_cn else "https://sso.garmin.cn"
+        }
 
     def login(self):
         """
@@ -81,6 +92,8 @@ class Garmin(object):
             'embedWidget': 'false',
             'generateExtraServiceTicket': 'false'
         }
+        if self.is_cn:
+            params['cssUrl'] = 'https://static.garmincdn.cn/cn.garmin.connect/ui/css/gauth-custom-v1.2-min.css'
 
         data = {
             'username': self.email,

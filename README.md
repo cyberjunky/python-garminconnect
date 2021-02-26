@@ -56,6 +56,25 @@ except Exception:  # pylint: disable=broad-except
     print("Unknown error occurred during Garmin Connect Client init")
     quit()
 
+"""
+If you are in mainland China
+Initialize Garmin client with credentials and add `is_cn=True`
+Only needed when your program is initialized
+"""
+print("Garmin(email, password, is_cn=True)")
+print("----------------------------------------------------------------------------------------")
+try:
+    client = Garmin(YOUR_EMAIL, YOUR_PASSWORD, is_cn=True)
+except (
+    GarminConnectConnectionError,
+    GarminConnectAuthenticationError,
+    GarminConnectTooManyRequestsError,
+) as err:
+    print("Error occurred during Garmin Connect Client init: %s" % err)
+    quit()
+except Exception:  # pylint: disable=broad-except
+    print("Unknown error occurred during Garmin Connect Client init")
+    quit()
 
 """
 Login to Garmin Connect portal
