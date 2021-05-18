@@ -107,6 +107,9 @@ class Garmin(object):
         self.logger.debug(
             "Login to Garmin Connect using POST url %s", SIGNIN_URL)
         try:
+            response = self.req.get(
+                SIGNIN_URL, headers=self.headers, params=params)
+
             response = self.req.post(
                 SIGNIN_URL, headers=self.headers, params=params, data=data)
             if response.status_code == 429:
