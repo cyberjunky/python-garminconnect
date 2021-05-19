@@ -338,9 +338,9 @@ class Garmin(object):
 
     def get_excercise_sets(self, activity_id):
         activity_id = str(activity_id)
-        exercisesetsurl = f"{self.url_activity}{activity_id}/exerciseSets"
+        exercisesetsurl = f"{self.url_activity}{activity_id}"
         self.logger.debug(
-            f"Fetching exercise sets for activity_id {activity_id}")
+            f"Fetching excercise sets for activity_id {activity_id}")
 
         return self.fetch_data(exercisesetsurl)
 
