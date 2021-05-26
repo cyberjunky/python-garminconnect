@@ -3,6 +3,7 @@
 import logging
 import json
 import re
+import requests
 import cloudscraper
 from enum import Enum, auto
 
@@ -29,7 +30,8 @@ class Garmin(object):
         global SIGNIN_URL
         self.email = email
         self.password = password
-        self.req = cloudscraper.CloudScraper()
+        self.cf_req = cloudscraper.CloudScraper()
+        self.req = requests.session()
         self.logger = logging.getLogger(__name__)
         self.display_name = ""
         self.full_name = ""
@@ -107,15 +109,15 @@ class Garmin(object):
         self.logger.debug(
             "Login to Garmin Connect using POST url %s", SIGNIN_URL)
         try:
-            response = self.req.get(
+            response = self.cf_req.get(
                 SIGNIN_URL, headers=self.headers, params=params)
 
-            response = self.req.post(
+            response = self.cf_req.post(
                 SIGNIN_URL, headers=self.headers, params=params, data=data)
             if response.status_code == 429:
                 raise GarminConnectTooManyRequestsError("Too many requests")
-
             response.raise_for_status()
+            self.req.cookies = self.cf_req.cookies
             self.logger.debug("Login response code %s", response.status_code)
         except requests.exceptions.HTTPError as err:
             raise GarminConnectConnectionError("Error connecting") from err
