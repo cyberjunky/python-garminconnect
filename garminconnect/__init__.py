@@ -282,12 +282,14 @@ class Garmin(object):
 
         return self.fetch_data(steps_url)
 
-    def get_body_composition(self, cdate):   # cDate = 'YYYY-mm-dd'
+    def get_body_composition(self, startdate, enddate=None):   # date = 'YYYY-mm-dd'
         """
         Fetch available body composition data (only for cDate)
         """
+        if enddate is None:
+            enddate = startdate
         bodycompositionurl = self.url_body_composition + \
-            '?startDate=' + cdate + '&endDate=' + cdate
+            '?startDate=' + str(startdate) + '&endDate=' + str(enddate)
         self.logger.debug(
             "Fetching body composition with url %s", bodycompositionurl)
 
