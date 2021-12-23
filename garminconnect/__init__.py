@@ -158,7 +158,7 @@ class Garmin(object):
         """
         Find and return json data
         """
-        found = re.search(key + r" = JSON.parse\(\"(.*)\"\);", html, re.M)
+        found = re.search(key + r" = (.*);", html, re.M)
         if found:
             text = found.group(1).replace('\\"', '"')
             return json.loads(text)
