@@ -158,10 +158,12 @@ class Garmin(object):
         """
         Find and return json data
         """
-        found = re.search(key + r" = JSON.parse\(\"(.*)\"\);", html, re.M)
-        if found:
-            text = found.group(1).replace('\\"', '"')
-            return json.loads(text)
+
+        regex_list = [re.search(key + r" = (.*);", html, re.M), re.search(key + r" = JSON.parse\(\"(.*)\"\);", html, re.M)]
+        for found in regex_list:
+            if found:
+                text = found.group(1).replace('\\"', '"')
+                return json.loads(text)
 
     def fetch_data(self, url):
         """
