@@ -1,440 +1,450 @@
 # -*- coding: utf-8 -*-
 """Python 3 API wrapper for Garmin Connect to get your statistics."""
-import logging
 import json
+import logging
 import re
-import requests
-import cloudscraper
 from enum import Enum, auto
+from typing import Any, Dict
 
-from .__version__ import __version__
+import cloudscraper
 
-BASE_URL = 'https://connect.garmin.com'
-SSO_URL = 'https://sso.garmin.com/sso'
-SIGNIN_URL = 'https://sso.garmin.com/sso/signin'
+logger = logging.getLogger(__file__)
 
-class Garmin(object):
-    """
-    Object using Garmin Connect 's API-method.
-    See https://connect.garmin.com/
-    or you are in mainland China
-    See https://connect.garmin.cn/
-    """
+
+class ApiClient:
+    """Class for a single API endpoint."""
+
+    default_headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0"
+    }
+
+    def __init__(self, session, baseurl, headers=None, aditional_headers=None):
+        """Return a new Client instance."""
+        self.session = session
+        self.baseurl = baseurl
+        if headers:
+            self.headers = headers
+        else:
+            self.headers = self.default_headers.copy()
+        self.headers.update(aditional_headers)
+
+    def url(self, addurl=None):
+        """Return the url for the API endpoint."""
+
+        path = f"https://{self.baseurl}"
+        if addurl is not None:
+            path += f"/{addurl}"
+
+        return path
+
+    def get(self, addurl, aditional_headers=None, params=None):
+        """Make an API call using the GET method."""
+        total_headers = self.headers.copy()
+        if aditional_headers:
+            total_headers.update(aditional_headers)
+        url = self.url(addurl)
+        try:
+            response = self.session.get(url, headers=total_headers, params=params)
+            response.raise_for_status()
+            return response
+        except Exception as err:
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("Too many requests") from err
+            if response.status_code == 401:
+                raise GarminConnectAuthenticationError("Authentication error") from err
+            if response.status_code == 403:
+                raise GarminConnectConnectionError("Forbidden url") from err
+            if response.status_code == 500:
+                raise GarminConnectConnectionError("Server error") from err
+            if response.status_code == 404:
+                raise GarminConnectConnectionError("Not found") from err
+            try:
+                resp = response.json()
+                error = resp["message"].json()
+            except AttributeError:
+                error = "Unknown"
+
+            raise GarminConnectConnectionError(
+                f"Unknown error {response.status_code} - {error}"
+            ) from err
+
+    def post(self, addurl, aditional_headers, params, data):
+        """Make an API call using the POST method."""
+        total_headers = self.headers.copy()
+        if aditional_headers:
+            total_headers.update(aditional_headers)
+        url = self.url(addurl)
+        try:
+            response = self.session.post(
+                url, headers=total_headers, params=params, data=data
+            )
+            response.raise_for_status()
+            return response
+        except Exception as err:
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("Too many requests") from err
+            if response.status_code == 401:
+                raise GarminConnectAuthenticationError("Authentication error") from err
+            if response.status_code == 403:
+                raise GarminConnectConnectionError("Forbidden url") from err
+            if response.status_code == 500:
+                raise GarminConnectConnectionError("Server error") from err
+            if response.status_code == 404:
+                raise GarminConnectConnectionError("Not found") from err
+            try:
+                resp = response.json()
+                error = resp["message"].json()
+            except AttributeError:
+                error = "Unknown"
+
+            raise GarminConnectConnectionError(
+                f"Unknown error {response.status_code} - {error}"
+            ) from err
+
+
+class Garmin:
+    """Class for fetching data from Garmin Connect."""
 
     def __init__(self, email, password, is_cn=False):
-        """
-        Init module
-        """
-        global BASE_URL
-        global SSO_URL
-        global SIGNIN_URL
-        self.email = email
+        """Create a new class instance."""
+
+        self.username = email
         self.password = password
-        self.cf_req = cloudscraper.CloudScraper()
-        self.req = requests.session()
-        self.logger = logging.getLogger(__name__)
-        self.display_name = ""
-        self.full_name = ""
-        self.unit_system = ""
         self.is_cn = is_cn
-        if is_cn:
-            BASE_URL = BASE_URL.replace(".com", ".cn")
-            SSO_URL = SSO_URL.replace(".com", ".cn")
-            SIGNIN_URL = SIGNIN_URL.replace(".com", ".cn")
 
-        self.url_user_summary = BASE_URL + '/proxy/usersummary-service/usersummary/daily/'
-        self.url_user_summary_chart = BASE_URL + \
-            '/proxy/wellness-service/wellness/dailySummaryChart/'
-        self.url_heartrates = BASE_URL + '/proxy/wellness-service/wellness/dailyHeartRate/'
-        self.url_sleepdata = BASE_URL + '/proxy/wellness-service/wellness/dailySleepData/'
-        self.url_body_composition = BASE_URL + \
-            '/proxy/weight-service/weight/daterangesnapshot'
-        self.url_activities = BASE_URL + \
-            '/proxy/activitylist-service/activities/search/activities'
-        self.url_hydrationdata = BASE_URL + '/proxy/usersummary-service/usersummary/hydration/daily/'
-        self.url_activity = BASE_URL + '/proxy/activity-service/activity/'
-        self.url_personal_record = BASE_URL + '/proxy/personalrecord-service/personalrecord/'
-        self.url_tcx_download = BASE_URL + "/proxy/download-service/export/tcx/activity/"
-        self.url_gpx_download = BASE_URL + "/proxy/download-service/export/gpx/activity/"
-        self.url_kml_download = BASE_URL + "/proxy/download-service/export/kml/activity/"
-        self.url_fit_download = BASE_URL + "/proxy/download-service/files/activity/"
-        self.url_csv_download = BASE_URL + "/proxy/download-service/export/csv/activity/"
-        self.url_device_list = BASE_URL + '/proxy/device-service/deviceregistration/devices'
-        self.url_device_service = BASE_URL + \
-            '/proxy/device-service/deviceservice/'
+        self.garmin_connect_base_url = "https://connect.garmin.com"
+        self.garmin_connect_sso_url = "sso.garmin.com/sso"
+        self.garmin_connect_modern_url = "connect.garmin.com/modern"
+        self.garmin_connect_css_url = "https://static.garmincdn.com/com.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
 
-        self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.88 Safari/537.36',
-            'origin': 'https://sso.garmin.com' if not self.is_cn else "https://sso.garmin.cn"
-        }
+        if self.is_cn:
+            self.garmin_connect_base_url = "https://connect.garmin.cn"
+            self.garmin_connect_sso_url = "sso.garmin.cn/sso"
+            self.garmin_connect_modern_url = "connect.garmin.cn/modern"
+            self.garmin_connect_css_url = "https://static.garmincdn.cn/cn.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
+
+        self.garmin_connect_login_url = self.garmin_connect_base_url + "/en-US/signin"
+        self.garmin_connect_sso_login = "signin"
+
+        self.garmin_connect_devices_url = (
+            "proxy/device-service/deviceregistration/devices"
+        )
+        self.garmin_connect_device_url = "proxy/device-service/deviceservice"
+        self.garmin_connect_weight_url = "proxy/weight-service/weight/dateRange"
+        self.garmin_connect_daily_summary_url = (
+            "proxy/usersummary-service/usersummary/daily"
+        )
+        self.garmin_connect_metrics_url = "proxy/metrics-service/metrics/maxmet/latest"
+        self.garmin_connect_daily_hydration_url = (
+            "proxy/usersummary-service/usersummary/hydration/daily"
+        )
+        self.garmin_connect_personal_record_url = (
+            "proxy/personalrecord-service/personalrecord/prs"
+        )
+        self.garmin_connect_sleep_daily_url = (
+            "proxy/wellness-service/wellness/dailySleepData"
+        )
+        self.garmin_connect_rhr = "proxy/userstats-service/wellness/daily"
+
+        self.garmin_connect_user_summary_chart = (
+            "proxy/wellness-service/wellness/dailySummaryChart"
+        )
+        self.garmin_connect_heartrates_daily_url = (
+            "proxy/wellness-service/wellness/dailyHeartRate"
+        )
+        self.garmin_connect_activities = (
+            "proxy/activitylist-service/activities/search/activities"
+        )
+        self.garmin_connect_activity = "proxy/activity-service/activity"
+
+        self.garmin_connect_fit_download = "proxy/download-service/files/activity"
+        self.garmin_connect_tcx_download = "proxy/download-service/export/tcx/activity"
+        self.garmin_connect_gpx_download = "proxy/download-service/export/gpx/activity"
+        self.garmin_connect_kml_download = "proxy/download-service/export/kml/activity"
+        self.garmin_connect_csv_download = "proxy/download-service/export/csv/activity"
+        self.garmin_connect_gear = "proxy/gear-service/gear/filterGear"
+
+        self.garmin_connect_logout = "auth/logout/?url="
+
+        self.garmin_headers = {"NK": "NT"}
+
+        self.session = cloudscraper.CloudScraper()
+        self.sso_rest_client = ApiClient(
+            self.session,
+            self.garmin_connect_sso_url,
+            aditional_headers=self.garmin_headers,
+        )
+        self.modern_rest_client = ApiClient(
+            self.session,
+            self.garmin_connect_modern_url,
+            aditional_headers=self.garmin_headers,
+        )
+
+        self.display_name = None
+        self.full_name = None
+        self.unit_system = None
+
+    @staticmethod
+    def __get_json(page_html, key):
+        """Return json from text."""
+
+        found = re.search(key + r" = (\{.*\});", page_html, re.M)
+        if found:
+            json_text = found.group(1).replace('\\"', '"')
+            return json.loads(json_text)
+
+        return None
 
     def login(self):
-        """
-        Login to portal
-        """
+        """Login to Garmin Connect."""
+
+        logger.debug("login: %s %s", self.username, self.password)
+        get_headers = {"Referer": self.garmin_connect_login_url}
         params = {
-            'webhost': BASE_URL,
-            'service': BASE_URL,
-            'source': SIGNIN_URL,
-            'redirectAfterAccountLoginUrl': BASE_URL,
-            'redirectAfterAccountCreationUrl': BASE_URL,
-            'gauthHost': SSO_URL,
-            'locale': 'en_US',
-            'id': 'gauth-widget',
-            'cssUrl': 'https://static.garmincdn.com/com.garmin.connect/ui/css/gauth-custom-v1.2-min.css',
-            'clientId': 'GarminConnect',
-            'rememberMeShown': 'true',
-            'rememberMeChecked': 'false',
-            'createAccountShown': 'true',
-            'openCreateAccount': 'false',
-            'usernameShown': 'false',
-            'displayNameShown': 'false',
-            'consumeServiceTicket': 'false',
-            'initialFocus': 'true',
-            'embedWidget': 'false',
-            'generateExtraServiceTicket': 'false'
+            "service": self.modern_rest_client.url(),
+            "webhost": self.garmin_connect_base_url,
+            "source": self.garmin_connect_login_url,
+            "redirectAfterAccountLoginUrl": self.modern_rest_client.url(),
+            "redirectAfterAccountCreationUrl": self.modern_rest_client.url(),
+            "gauthHost": self.sso_rest_client.url(),
+            "locale": "en_US",
+            "id": "gauth-widget",
+            "cssUrl": self.garmin_connect_css_url,
+            "privacyStatementUrl": "//connect.garmin.com/en-US/privacy/",
+            "clientId": "GarminConnect",
+            "rememberMeShown": "true",
+            "rememberMeChecked": "false",
+            "createAccountShown": "true",
+            "openCreateAccount": "false",
+            "displayNameShown": "false",
+            "consumeServiceTicket": "false",
+            "initialFocus": "true",
+            "embedWidget": "false",
+            "generateExtraServiceTicket": "true",
+            "generateTwoExtraServiceTickets": "false",
+            "generateNoServiceTicket": "false",
+            "globalOptInShown": "true",
+            "globalOptInChecked": "false",
+            "mobile": "false",
+            "connectLegalTerms": "true",
+            "locationPromptShown": "true",
+            "showPassword": "true",
         }
+
         if self.is_cn:
-            params['cssUrl'] = 'https://static.garmincdn.cn/cn.garmin.connect/ui/css/gauth-custom-v1.2-min.css'
+            params[
+                "cssUrl"
+            ] = "https://static.garmincdn.cn/cn.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
+
+        response = self.sso_rest_client.get(
+            self.garmin_connect_sso_login, get_headers, params
+        )
+
+        found = re.search(r"name=\"_csrf\" value=\"(\w*)", response.text, re.M)
+        if not found:
+            logger.error("_csrf not found: %s", response.status_code)
+            return False
+        logger.debug("_csrf found (%s).", found.group(1))
 
         data = {
-            'username': self.email,
-            'password': self.password,
-            'embed': 'true',
-            'lt': 'e1s1',
-            '_eventId': 'submit',
-            'displayNameRequired': 'false'
+            "username": self.username,
+            "password": self.password,
+            "embed": "false",
+            "_csrf": found.group(1),
+        }
+        post_headers = {
+            "Referer": response.url,
+            "Content-Type": "application/x-www-form-urlencoded",
         }
 
-        self.logger.debug(
-            "Login to Garmin Connect using POST url %s", SIGNIN_URL)
-        try:
-            response = self.cf_req.get(
-                SIGNIN_URL, headers=self.headers, params=params)
+        response = self.sso_rest_client.post(
+            self.garmin_connect_sso_login, post_headers, params, data
+        )
 
-            response = self.cf_req.post(
-                SIGNIN_URL, headers=self.headers, params=params, data=data)
-            if response.status_code == 429:
-                raise GarminConnectTooManyRequestsError("Too many requests")
-            response.raise_for_status()
-            self.req.cookies = self.cf_req.cookies
-            self.logger.debug("Login response code %s", response.status_code)
-        except requests.exceptions.HTTPError as err:
-            raise GarminConnectConnectionError("Error connecting") from err
+        found = re.search(r"\?ticket=([\w-]*)", response.text, re.M)
+        if not found:
+            logger.error("Login ticket not found (%d).", response.status_code)
+            return False
+        params = {"ticket": found.group(1)}
 
-        self.logger.debug("Response is %s", response.text)
-        response_url = re.search(
-            r'"(https:[^"]+?ticket=[^"]+)"', response.text)
+        response = self.modern_rest_client.get("", params=params)
 
-        if not response_url:
-            raise GarminConnectAuthenticationError("Authentication error")
+        user_prefs = self.__get_json(response.text, "VIEWER_USERPREFERENCES")
+        self.display_name = user_prefs["displayName"]
+        logger.debug("Display name is %s", self.display_name)
 
-        response_url = re.sub(r'\\', '', response_url.group(1))
-        self.logger.debug("Fetching profile info using found response url")
-        try:
-            response = self.req.get(response_url)
-            if response.status_code == 429:
-                raise GarminConnectTooManyRequestsError("Too many requests")
+        self.unit_system = user_prefs["measurementSystem"]
+        logger.debug("Unit system is %s", self.unit_system)
 
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as err:
-            raise GarminConnectConnectionError("Error connecting") from err
+        social_profile = self.__get_json(response.text, "VIEWER_SOCIAL_PROFILE")
+        self.full_name = social_profile["fullName"]
+        logger.debug("Fullname is %s", self.full_name)
 
-        self.logger.debug("Profile info is %s", response.text)
-
-        self.user_prefs = self.parse_json(
-            response.text, 'VIEWER_USERPREFERENCES')
-        self.unit_system = self.user_prefs['measurementSystem']
-        self.logger.debug("Unit system is %s", self.unit_system)
-
-        self.social_profile = self.parse_json(
-            response.text, 'VIEWER_SOCIAL_PROFILE')
-        self.display_name = self.social_profile['displayName']
-        self.full_name = self.social_profile['fullName']
-        self.logger.debug("Display name is %s", self.display_name)
-        self.logger.debug("Fullname is %s", self.full_name)
-
-    def parse_json(self, html, key):
-        """
-        Find and return json data
-        """
-
-        regex_list = [re.search(key + r" = (.*);", html, re.M), re.search(key + r" = JSON.parse\(\"(.*)\"\);", html, re.M)]
-        for found in regex_list:
-            if found:
-                text = found.group(1).replace('\\"', '"')
-                return json.loads(text)
-
-    def fetch_data(self, url):
-        """
-        Fetch and return data
-        """
-        try:
-            response = self.req.get(url, headers=self.headers)
-            if response.status_code == 429:
-                raise GarminConnectTooManyRequestsError("Too many requests")
-
-            self.logger.debug("Fetch response code %s", response.status_code)
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as err:
-            self.logger.debug(
-                "Exception occurred during data retrieval - perhaps session expired - trying relogin: %s" % err)
-            self.login()
-            try:
-                response = self.req.get(url, headers=self.headers)
-                if response.status_code == 429:
-                    raise GarminConnectTooManyRequestsError(
-                        "Too many requests")
-
-                self.logger.debug("Fetch response code %s",
-                                  response.status_code)
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as err:
-                self.logger.debug(
-                    "Exception occurred during data retrieval, relogin without effect: %s" % err)
-                raise GarminConnectConnectionError("Error connecting") from err
-
-        resp_json = response.json()
-        self.logger.debug("Fetch response json %s", resp_json)
-        return resp_json
+        return True
 
     def get_full_name(self):
-        """
-        Return full name
-        """
+        """Return full name."""
+
         return self.full_name
 
     def get_unit_system(self):
-        """
-        Return unit system
-        """
+        """Return unit system."""
+
         return self.unit_system
 
+    def get_stats(self, cdate: str) -> Dict[str, Any]:
+        """Return user activity summary for 'cdate' format 'YYYY-mm-dd' (compat for garminconnect)."""
+
+        return self.get_user_summary(cdate)
+
+    def get_user_summary(self, cdate: str) -> Dict[str, Any]:
+        """Return user activity summary for 'cdate' format 'YYYY-mm-dd'."""
+
+        url = f"{self.garmin_connect_daily_summary_url}/{self.display_name}"
+        params = {
+            "calendarDate": str(cdate),
+        }
+        logger.debug("Requesting user summary with URL: %s", url)
+
+        response = self.modern_rest_client.get(url, params=params).json()
+
+        if response["privacyProtected"] is True:
+            raise GarminConnectAuthenticationError("Authentication error")
+
+        return response
+
+    def get_steps_data(self, cdate):
+        """Fetch available steps data 'cDate' format 'YYYY-mm-dd'."""
+
+        url = f"{self.garmin_connect_user_summary_chart}/{self.display_name}"
+        params = {
+            "date": str(cdate),
+        }
+        logger.debug("Requesting steps data with url %s", url)
+
+        return self.modern_rest_client.get(url, params=params).json()
+
+    def get_heart_rates(self, cdate):  #
+        """Fetch available heart rates data 'cDate' format 'YYYY-mm-dd'."""
+
+        url = f"{self.garmin_connect_heartrates_daily_url}/{self.display_name}"
+        params = {
+            "date": str(cdate),
+        }
+        logger.debug("Requesting heart rates with url %s", url)
+
+        return self.modern_rest_client.get(url, params=params).json()
+
     def get_stats_and_body(self, cdate):
-        """
-        Return activity data and body composition
-        """
-        return ({**self.get_stats(cdate), **self.get_body_composition(cdate)['totalAverage']})
+        """Return activity data and body composition (compat for garminconnect)."""
 
-    def get_stats(self, cdate):   # cDate = 'YYY-mm-dd'
-        """
-        Fetch available activity data
-        """
-        summaryurl = self.url_user_summary + \
-            self.display_name + '?' + 'calendarDate=' + cdate
-        self.logger.debug("Fetching statistics %s", summaryurl)
-        try:
-            response = self.req.get(summaryurl, headers=self.headers)
-            if response.status_code == 429:
-                raise GarminConnectTooManyRequestsError("Too many requests")
+        return {
+            **self.get_stats(cdate),
+            **self.get_body_composition(cdate)["totalAverage"],
+        }
 
-            self.logger.debug("Statistics response code %s",
-                              response.status_code)
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as err:
-            raise GarminConnectConnectionError("Error connecting") from err
+    def get_body_composition(self, startdate: str, enddate=None) -> Dict[str, Any]:
+        """Return available body composition data for 'startdate' format 'YYYY-mm-dd' through enddate 'YYYY-mm-dd'."""
 
-        resp_json = response.json()
-        if resp_json['privacyProtected'] is True:
-            self.logger.debug("Session expired - trying relogin")
-            self.login()
-            try:
-                response = self.req.get(summaryurl, headers=self.headers)
-                if response.status_code == 429:
-                    raise GarminConnectTooManyRequestsError(
-                        "Too many requests")
-
-                self.logger.debug(
-                    "Statistics response code %s", response.status_code)
-                response.raise_for_status()
-            except requests.exceptions.HTTPError as err:
-                self.logger.debug(
-                    "Exception occurred during statistics retrieval, relogin without effect: %s" % err)
-                raise GarminConnectConnectionError("Error connecting") from err
-            else:
-                resp_json = response.json()
-
-        self.logger.debug("Statistics response json %s", resp_json)
-        return resp_json
-
-    def get_heart_rates(self, cdate):   # cDate = 'YYYY-mm-dd'
-        """
-        Fetch available heart rates data
-        """
-        hearturl = self.url_heartrates + self.display_name + '?date=' + cdate
-        self.logger.debug("Fetching heart rates with url %s", hearturl)
-
-        return self.fetch_data(hearturl)
-
-    def get_sleep_data(self, cdate):   # cDate = 'YYYY-mm-dd'
-        """
-        Fetch available sleep data
-        """
-        sleepurl = self.url_sleepdata + self.display_name + '?date=' + cdate
-        self.logger.debug("Fetching sleep data with url %s", sleepurl)
-
-        return self.fetch_data(sleepurl)
-
-    def get_steps_data(self, cdate):   # cDate = 'YYYY-mm-dd'
-        """
-        Fetch available steps data
-        """
-        steps_url = self.url_user_summary_chart + self.display_name + '?date=' + cdate
-        self.logger.debug("Fetching steps data with url %s", steps_url)
-
-        return self.fetch_data(steps_url)
-
-    def get_body_composition(self, startdate, enddate=None):   # date = 'YYYY-mm-dd'
-        """
-        Fetch available body composition data (only for cDate)
-        """
         if enddate is None:
             enddate = startdate
-        bodycompositionurl = self.url_body_composition + \
-            '?startDate=' + str(startdate) + '&endDate=' + str(enddate)
-        self.logger.debug(
-            "Fetching body composition with url %s", bodycompositionurl)
+        url = self.garmin_connect_weight_url
+        params = {"startDate": str(startdate), "endDate": str(enddate)}
+        logger.debug("Requesting body composition with URL: %s", url)
 
-        return self.fetch_data(bodycompositionurl)
+        return self.modern_rest_client.get(url, params=params).json()
 
-    def get_activities(self, start, limit):
-        """
-        Fetch available activities
-        """
-        activitiesurl = self.url_activities + '?start=' + \
-            str(start) + '&limit=' + str(limit)
-        self.logger.debug("Fetching activities with url %s", activitiesurl)
+    def get_max_metrics(self, cdate: str) -> Dict[str, Any]:
+        """Return available max metric data for 'cdate' format 'YYYY-mm-dd'."""
 
-        return self.fetch_data(activitiesurl)
+        url = f"{self.garmin_connect_metrics_url}/{cdate}"
+        logger.debug("Requestng max metrics with URL: %s", url)
 
-    def get_activities_by_date(self, startdate, enddate, activitytype):
-        """
-        Fetch available activities between specific dates
+        return self.modern_rest_client.get(url).json()
 
-        :param startdate: String in the format YYYY-MM-DD
-        :param enddate: String in the format YYYY-MM-DD
-        :param activitytype: (Optional) Type of activity you are searching
-                             Possible values are [cycling, running, swimming,
-                             multi_sport, fitness_equipment, hiking, walking, other]
-        :return: list of JSON activities
-        """
+    def get_hydration_data(self, cdate: str) -> Dict[str, Any]:
+        """Return available hydration data 'cdate' format 'YYYY-mm-dd'."""
 
-        activities = []
-        start = 0
-        limit = 20
-        returndata = True
-        # mimicking the behavior of the web interface that fetches 20 activities at a time
-        # and automatically loads more on scroll
-        if activitytype:
-            activityslug = "&activityType=" + str(activitytype)
-        else:
-            activityslug = ""
-        while returndata:
-            activitiesurl = self.url_activities + '?startDate=' + str(startdate) + '&endDate=' + str(
-                enddate) + '&start=' + str(start) + '&limit=' + str(limit) + activityslug
-            self.logger.debug("Fetching activities with url %s", activitiesurl)
-            act = self.fetch_data(activitiesurl)
-            if act:
-                activities.extend(act)
-                start = start + limit
-            else:
-                returndata = False
+        url = f"{self.garmin_connect_daily_hydration_url}/{cdate}"
+        logger.debug("Requesting hydration data with URL: %s", url)
 
-        return activities
+        return self.modern_rest_client.get(url).json()
 
-    def get_excercise_sets(self, activity_id):
-        activity_id = str(activity_id)
-        exercisesetsurl = f"{self.url_activity}{activity_id}"
-        self.logger.debug(
-            f"Fetching excercise sets for activity_id {activity_id}")
+    def get_personal_record(self) -> Dict[str, Any]:
+        """Return personal records for current user."""
 
-        return self.fetch_data(exercisesetsurl)
+        url = f"{self.garmin_connect_personal_record_url}/{self.display_name}"
+        logger.debug("Requesting personal records for user with URL: %s", url)
 
-    def get_activity_splits(self, activity_id):
-        activity_id = str(activity_id)
-        splits_url = f"{self.url_activity}{activity_id}/splits"
-        self.logger.debug(
-            f"Fetching splits for activity_id {activity_id}")
+        return self.modern_rest_client.get(url).json()
 
-        return self.fetch_data(splits_url)
+    def get_sleep_data(self, cdate: str) -> Dict[str, Any]:
+        """Return sleep data for current user."""
 
-    def get_activity_split_summaries(self, activity_id):
-        activity_id = str(activity_id)
-        split_summaries_url = f"{self.url_activity}{activity_id}/split_summaries"
-        self.logger.debug(
-            f"Fetching split summaries for activity_id {activity_id}")
+        url = f"{self.garmin_connect_sleep_daily_url}/{self.display_name}"
+        params = {"date": str(cdate), "nonSleepBufferMinutes": 60}
 
-        return self.fetch_data(split_summaries_url)
+        logger.debug("Requesting sleep data with url %s", url)
 
-    def get_activity_weather(self, activity_id):
-        activity_id = str(activity_id)
-        activity_weather_url = f"{self.url_activity}{activity_id}/weather"
-        self.logger.debug(
-            f"Fetching weather for activity_id {activity_id}")
+        return self.modern_rest_client.get(url, params=params).json()
 
-        return self.fetch_data(activity_weather_url)
+    def get_rhr_day(self, cdate: str) -> Dict[str, Any]:
+        """Return resting heartrate data for current user."""
 
-    def get_activity_hr_in_timezones(self, activity_id):
-        activity_id = str(activity_id)
-        activity_hr_timezone_url = f"{self.url_activity}{activity_id}/hrTimeInZones"
-        self.logger.debug(
-            f"Fetching split summaries for activity_id {activity_id}")
+        params = {"fromDate": str(cdate), "untilDate": str(cdate), "metricId": 60}
+        url = f"{self.garmin_connect_rhr}/{self.display_name}"
+        logger.debug("Requesting resting heartrate data with url %s", url)
 
-        return self.fetch_data(activity_hr_timezone_url)
+        return self.modern_rest_client.get(url, params=params).json()
 
-    def get_activity_details(self, activity_id, maxChartSize=2000, maxPolylineSize=4000):
-        activity_id = str(activity_id)
-        params = f"maxChartSize={maxChartSize}&maxPolylineSize={maxPolylineSize}"
-        details_url = f"{self.url_activity}{activity_id}/details?{params}"
-        self.logger.debug(
-            f"Fetching details for activity_id {activity_id}")
+    def get_devices(self) -> Dict[str, Any]:
+        """Return available devices for the current user account."""
 
-        return self.fetch_data(details_url)
+        url = self.garmin_connect_devices_url
+        logger.debug("Requesting devices with URL: %s", url)
 
-    def get_personal_record(self, owner_display_name):
-        personal_records_url = f"{self.url_personal_record}prs/{owner_display_name}"
-        self.logger.debug(
-            f"Fetching prs for owner {owner_display_name}")
+        return self.modern_rest_client.get(url).json()
 
-        return self.fetch_data(personal_records_url)
+    def get_device_settings(self, device_id: str) -> Dict[str, Any]:
+        """Return device settings for device with 'device_id'."""
 
-    def get_devices(self):
-        """
-        Fetch available devices for the current account
-        """
-        devicesurl = self.url_device_list
-        self.logger.debug(
-            "Fetching available devices for the current account with url %s", devicesurl)
+        url = f"{self.garmin_connect_device_url}/device-info/settings/{device_id}"
+        logger.debug("Requesting device settings with URL: %s", url)
 
-        return self.fetch_data(devicesurl)
+        return self.modern_rest_client.get(url).json()
 
-    def get_device_settings(self, device_id):
-        """
-        Fetch device settings for current device
-        """
-        devicesurl = f"{self.url_device_service}device-info/settings/{device_id}"
-        self.logger.debug("Fetching device settings with url %s", devicesurl)
-        return self.fetch_data(devicesurl)
+    def get_device_alarms(self) -> Dict[str, Any]:
+        """Get list of active alarms from all devices."""
+
+        logger.debug("Requesting device alarms")
+
+        alarms = []
+        devices = self.get_devices()
+        for device in devices:
+            device_settings = self.get_device_settings(device["deviceId"])
+            alarms += device_settings["alarms"]
+        return alarms
 
     def get_device_last_used(self):
-        """
-        Fetch device last used
-        """
-        device_last_used_url = f"{self.url_device_service}mylastused"
-        self.logger.debug(
-            "Fetching device last used with url %s", device_last_used_url)
-        return self.fetch_data(device_last_used_url)
+        """Return device last used."""
 
-    def get_hydration_data(self, cdate):   # cDate = 'YYYY-mm-dd'
-        """
-        Fetch available hydration data
-        """
-        hydration_url = self.url_hydrationdata + cdate
-        self.logger.debug("Fetching hydration data with url %s", hydration_url)
+        url = f"{self.garmin_connect_device_url}/mylastused"
+        logger.debug("Requesting device last used with url %s", url)
 
-        return self.fetch_data(hydration_url)
+        return self.modern_rest_client.get(url).json()
+
+    def get_activities(self, start, limit):
+        """Return available activities."""
+
+        url = self.garmin_connect_activities
+        params = {"start": str(start), "limit": str(limit)}
+        logger.debug("Requesting activities with url %s", url)
+
+        return self.modern_rest_client.get(url, params=params).json()
 
     class ActivityDownloadFormat(Enum):
+        """Activitie variables."""
+
         ORIGINAL = auto()
         TCX = auto()
         GPX = auto()
@@ -449,48 +459,93 @@ class Garmin(object):
         """
         activity_id = str(activity_id)
         urls = {
-            Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.url_fit_download}{activity_id}",
-            Garmin.ActivityDownloadFormat.TCX: f"{self.url_tcx_download}{activity_id}",
-            Garmin.ActivityDownloadFormat.GPX: f"{self.url_gpx_download}{activity_id}",
-            Garmin.ActivityDownloadFormat.KML: f"{self.url_kml_download}{activity_id}",
-            Garmin.ActivityDownloadFormat.CSV: f"{self.url_csv_download}{activity_id}",
+            Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.garmin_connect_fit_download}/{activity_id}",
+            Garmin.ActivityDownloadFormat.TCX: f"{self.garmin_connect_tcx_download}/{activity_id}",
+            Garmin.ActivityDownloadFormat.GPX: f"{self.garmin_connect_gpx_download}/{activity_id}",
+            Garmin.ActivityDownloadFormat.KML: f"{self.garmin_connect_kml_download}/{activity_id}",
+            Garmin.ActivityDownloadFormat.CSV: f"{self.garmin_connect_csv_download}/{activity_id}",
         }
         if dl_fmt not in urls:
             raise ValueError(f"Unexpected value {dl_fmt} for dl_fmt")
         url = urls[dl_fmt]
 
-        self.logger.debug(f"Downloading from {url}")
-        try:
-            response = self.req.get(url, headers=self.headers)
-            if response.status_code == 429:
-                raise GarminConnectTooManyRequestsError("Too many requests")
-        except requests.exceptions.HTTPError as err:
-            raise GarminConnectConnectionError("Error connecting")
-        return response.content
+        logger.debug("Downloading activities from %s", url)
 
+        return self.modern_rest_client.get(url).content
+
+    def get_activity_splits(self, activity_id):
+        """Return activity splits."""
+
+        activity_id = str(activity_id)
+        url = f"{self.garmin_connect_activity}/{activity_id}/splits"
+        logger.debug("Requesting splits for activity id %s", activity_id)
+
+        return self.modern_rest_client.get(url).json()
+
+    def get_activity_split_summaries(self, activity_id):
+        """Return activity split summaries."""
+
+        activity_id = str(activity_id)
+        url = f"{self.garmin_connect_activity}/{activity_id}/split_summaries"
+        logger.debug("Requesting split summaries for activity id %s", activity_id)
+
+        return self.modern_rest_client.get(url).json()
+
+    def get_activity_weather(self, activity_id):
+        """Return activity weather."""
+
+        activity_id = str(activity_id)
+        url = f"{self.garmin_connect_activity}/{activity_id}/weather"
+        logger.debug("Requesting weather for activity id %s", activity_id)
+
+        return self.modern_rest_client.get(url).json()
+
+    def get_activity_hr_in_timezones(self, activity_id):
+        """Return activity heartrate in timezones."""
+
+        activity_id = str(activity_id)
+        url = f"{self.garmin_connect_activity}/{activity_id}/hrTimeInZones"
+        logger.debug("Requesting split summaries for activity id %s", activity_id)
+
+        return self.modern_rest_client.get(url).json()
+
+    def get_activity_details(self, activity_id, maxchart=2000, maxpoly=4000):
+        """Return activity details."""
+
+        activity_id = str(activity_id)
+        params = {
+            "maxChartSize": str(maxchart),
+            "maxPolylineSize": str(maxpoly),
+        }
+        url = f"{self.garmin_connect_activity}/{activity_id}/details"
+        logger.debug("Requesting details for activity id %s", activity_id)
+
+        return self.modern_rest_client.get(url, params=params).json()
+
+    def get_activity_gear(self, activity_id):
+        """Return gears used for activity id."""
+
+        activity_id = str(activity_id)
+        params = {
+            "activityId": str(activity_id),
+        }
+        url = self.garmin_connect_gear
+        logger.debug("Requesting gear for activity_id %s", activity_id)
+
+        return self.modern_rest_client.get(url, params=params).json()
+    
+    def logout(self):
+        """Log user out of session."""
+
+        self.modern_rest_client.get(self.garmin_connect_logout).json()
 
 class GarminConnectConnectionError(Exception):
     """Raised when communication ended in error."""
-
-    def __init__(self, status):
-        """Initialize."""
-        super(GarminConnectConnectionError, self).__init__(status)
-        self.status = status
 
 
 class GarminConnectTooManyRequestsError(Exception):
     """Raised when rate limit is exceeded."""
 
-    def __init__(self, status):
-        """Initialize."""
-        super(GarminConnectTooManyRequestsError, self).__init__(status)
-        self.status = status
-
 
 class GarminConnectAuthenticationError(Exception):
-    """Raised when login returns wrong result."""
-
-    def __init__(self, status):
-        """Initialize."""
-        super(GarminConnectAuthenticationError, self).__init__(status)
-        self.status = status
+    """Raised when authentication is failed."""
