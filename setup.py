@@ -2,17 +2,9 @@
 # -*- coding: utf-8 -*-
 import io
 import os
-import re
 import sys
 
 from setuptools import setup
-
-
-def get_version():
-    """Get current version from code."""
-    regex = r"__version__\s=\s\"(?P<version>[\d\.]+?)\""
-    path = ("garminconnect", "__version__.py")
-    return re.search(regex, read(*path)).group("version")
 
 
 def read(*parts):
@@ -43,5 +35,5 @@ setup(
     long_description=readme,
     url="https://github.com/cyberjunky/python-garminconnect",
     packages=["garminconnect"],
-    version=get_version(),
+    version="0.1.24",
 )
