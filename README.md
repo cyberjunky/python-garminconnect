@@ -102,6 +102,9 @@ try:
     activities = api.get_activities(0,1) # 0=start, 1=limit
     logger.info(activities)
 
+    # Get last activity
+    logger.info(api.get_last_activity())
+
     ## Download an Activity
     for activity in activities:
         activity_id = activity["activityId"]
