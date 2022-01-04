@@ -53,7 +53,7 @@ class ApiClient:
             if response.status_code == 401:
                 raise GarminConnectAuthenticationError("Authentication error") from err
             if response.status_code == 403:
-                raise GarminConnectConnectionError("Forbidden url") from err
+                raise GarminConnectConnectionError(f"Forbidden url: %s", url) from err
             if response.status_code == 500:
                 raise GarminConnectConnectionError("Server error") from err
             if response.status_code == 404:
@@ -86,7 +86,7 @@ class ApiClient:
             if response.status_code == 401:
                 raise GarminConnectAuthenticationError("Authentication error") from err
             if response.status_code == 403:
-                raise GarminConnectConnectionError("Forbidden url") from err
+                raise GarminConnectConnectionError(f"Forbidden url: %s", url) from err
             if response.status_code == 500:
                 raise GarminConnectConnectionError("Server error") from err
             if response.status_code == 404:
@@ -442,6 +442,15 @@ class Garmin:
 
         return self.modern_rest_client.get(url, params=params).json()
 
+    def get_last_activity(self):
+        """Return last activity."""
+
+        activities = self.get_activities(0,1)
+        if activities:
+            return activities[-1]
+
+        return None
+
     class ActivityDownloadFormat(Enum):
         """Activitie variables."""
 
@@ -533,11 +542,12 @@ class Garmin:
         logger.debug("Requesting gear for activity_id %s", activity_id)
 
         return self.modern_rest_client.get(url, params=params).json()
-    
+
     def logout(self):
         """Log user out of session."""
 
         self.modern_rest_client.get(self.garmin_connect_logout).json()
+
 
 class GarminConnectConnectionError(Exception):
     """Raised when communication ended in error."""
