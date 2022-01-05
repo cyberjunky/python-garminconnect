@@ -88,6 +88,12 @@ try:
 
     ## Get sleep data for today 'YYYY-MM-DD'
     logger.info(api.get_sleep_data(today.isoformat()))
+    
+    ## Get respiration data for today 'YYYY-MM-DD'
+    logger.info(api.get_respiration_data(today.isoformat()))
+
+    ## Get SpO2 data for today 'YYYY-MM-DD'
+    logger.info(api.get_spo2_data(today.isoformat()))
 
     ## Get max metric data (like vo2MaxValue and fitnessAge) for today 'YYYY-MM-DD'
     logger.info(api.get_max_metrics(today.isoformat()))
