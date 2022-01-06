@@ -67,7 +67,6 @@ try:
     ## Get body composition data for multiple days 'YYYY-MM-DD' (to be compatible with garminconnect-ha)
     logger.info(api.get_body_composition(lastweek.isoformat(), today.isoformat()))
 
-
     ## Get stats and body composition data for today 'YYYY-MM-DD'
     logger.info(api.get_stats_and_body(today.isoformat()))
 
