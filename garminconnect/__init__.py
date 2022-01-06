@@ -152,6 +152,12 @@ class Garmin:
         self.garmin_connect_heartrates_daily_url = (
             "proxy/wellness-service/wellness/dailyHeartRate"
         )
+        self.garmin_connect_daily_respiration_url = (
+            "proxy/wellness-service/wellness/daily/respiration"
+        )
+        self.garmin_connect_daily_spo2_url = (
+            "proxy/wellness-service/wellness/daily/spo2"
+        )
         self.garmin_connect_activities = (
             "proxy/activitylist-service/activities/search/activities"
         )
@@ -367,6 +373,22 @@ class Garmin:
 
         url = f"{self.garmin_connect_daily_hydration_url}/{cdate}"
         logger.debug("Requesting hydration data with URL: %s", url)
+
+        return self.modern_rest_client.get(url).json()
+
+    def get_respiration_data(self, cdate: str) -> Dict[str, Any]:
+        """Return available respiration data 'cdate' format 'YYYY-mm-dd'."""
+
+        url = f"{self.garmin_connect_daily_respiration_url}/{cdate}"
+        logger.debug("Requesting respiration data with URL: %s", url)
+
+        return self.modern_rest_client.get(url).json()
+
+    def get_spo2_data(self, cdate: str) -> Dict[str, Any]:
+        """Return available SpO2 data 'cdate' format 'YYYY-mm-dd'."""
+
+        url = f"{self.garmin_connect_daily_spo2_url}/{cdate}"
+        logger.debug("Requesting SpO2 data with URL: %s", url)
 
         return self.modern_rest_client.get(url).json()
 
