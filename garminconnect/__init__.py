@@ -248,17 +248,21 @@ class Garmin:
 
         found = re.search(r"name=\"_csrf\" value=\"(\w*)", response.text, re.M)
         if not found:
-            logger.error("_csrf not found: %s", response.status_code)
+            logger.error("_csrf not found  (%d)", response.status_code)
             return False
-        logger.debug("_csrf found (%s).", found.group(1))
+
+        csrf = found.group(1)
+        logger.debug("_csrf found: %s", csrf)
+        logger.debug("Referer found: %s", response.url)
 
         data = {
             "username": self.username,
             "password": self.password,
             "embed": "false",
-            "_csrf": found.group(1),
+            "_csrf": csrf,
         }
         post_headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0",
             "Referer": response.url,
             "Content-Type": "application/x-www-form-urlencoded",
         }
@@ -568,7 +572,7 @@ class Garmin:
     def logout(self):
         """Log user out of session."""
 
-        self.modern_rest_client.get(self.garmin_connect_logout).json()
+        self.modern_rest_client.get(self.garmin_connect_logout)
 
 
 class GarminConnectConnectionError(Exception):
