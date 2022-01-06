@@ -8,7 +8,7 @@ from typing import Any, Dict
 
 import cloudscraper
 
-logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class ApiClient:
