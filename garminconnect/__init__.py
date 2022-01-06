@@ -22,11 +22,14 @@ class ApiClient:
         """Return a new Client instance."""
         self.session = session
         self.baseurl = baseurl
+
         if headers:
             self.headers = headers
         else:
             self.headers = self.default_headers.copy()
-        self.headers.update(aditional_headers)
+
+        if aditional_headers:
+            self.headers.update(aditional_headers)
 
     def url(self, addurl=None):
         """Return the url for the API endpoint."""
@@ -43,6 +46,10 @@ class ApiClient:
         if aditional_headers:
             total_headers.update(aditional_headers)
         url = self.url(addurl)
+
+        logger.debug("URL: %s", url)
+        logger.debug("Headers: %s", total_headers)
+
         try:
             response = self.session.get(url, headers=total_headers, params=params)
             response.raise_for_status()
@@ -53,20 +60,9 @@ class ApiClient:
             if response.status_code == 401:
                 raise GarminConnectAuthenticationError("Authentication error") from err
             if response.status_code == 403:
-                raise GarminConnectConnectionError(f"Forbidden url: %s", url) from err
-            if response.status_code == 500:
-                raise GarminConnectConnectionError("Server error") from err
-            if response.status_code == 404:
-                raise GarminConnectConnectionError("Not found") from err
-            try:
-                resp = response.json()
-                error = resp["message"].json()
-            except AttributeError:
-                error = "Unknown"
+                raise GarminConnectConnectionError(f"Forbidden url: {url}") from err
 
-            raise GarminConnectConnectionError(
-                f"Unknown error {response.status_code} - {error}"
-            ) from err
+            raise GarminConnectConnectionError(err) from err
 
     def post(self, addurl, aditional_headers, params, data):
         """Make an API call using the POST method."""
@@ -74,6 +70,11 @@ class ApiClient:
         if aditional_headers:
             total_headers.update(aditional_headers)
         url = self.url(addurl)
+
+        logger.debug("URL: %s", url)
+        logger.debug("Headers: %s", total_headers)
+        logger.debug("Data: %s", total_headers)
+
         try:
             response = self.session.post(
                 url, headers=total_headers, params=params, data=data
@@ -86,20 +87,9 @@ class ApiClient:
             if response.status_code == 401:
                 raise GarminConnectAuthenticationError("Authentication error") from err
             if response.status_code == 403:
-                raise GarminConnectConnectionError(f"Forbidden url: %s", url) from err
-            if response.status_code == 500:
-                raise GarminConnectConnectionError("Server error") from err
-            if response.status_code == 404:
-                raise GarminConnectConnectionError("Not found") from err
-            try:
-                resp = response.json()
-                error = resp["message"].json()
-            except AttributeError:
-                error = "Unknown"
+                raise GarminConnectConnectionError(f"Forbidden url: {url}") from err
 
-            raise GarminConnectConnectionError(
-                f"Unknown error {response.status_code} - {error}"
-            ) from err
+            raise GarminConnectConnectionError(err) from err
 
 
 class Garmin:
