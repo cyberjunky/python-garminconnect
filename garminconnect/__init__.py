@@ -420,14 +420,6 @@ class Garmin:
 
         return self.modern_rest_client.get(url).json()
 
-    # def get_adhoc_challenges(self) -> Dict[str, Any]:
-    #     """Return adhoc challenges for current user."""
-
-    #     url = self.garmin_connect_adhoc_challenges_url
-    #     logger.debug("Requesting adhoc challenges for user")
-
-    #     return self.modern_rest_client.get(url).json()
-
     def get_adhoc_challenges(self, start, limit) -> Dict[str, Any]:
         """Return adhoc challenges for current user."""
 
@@ -594,6 +586,16 @@ class Garmin:
 
         return self.modern_rest_client.get(url).json()
 
+    def get_activity_evaluation(self, activity_id):
+        """Return activity self evaluation details."""
+
+        activity_id = str(activity_id)
+
+        url = f"{self.garmin_connect_activity}/{activity_id}"
+        logger.debug("Requesting self evaluation data for activity id %s", activity_id)
+
+        return self.modern_rest_client.get(url).json()
+
     def get_activity_details(self, activity_id, maxchart=2000, maxpoly=4000):
         """Return activity details."""
 
@@ -606,6 +608,7 @@ class Garmin:
         logger.debug("Requesting details for activity id %s", activity_id)
 
         return self.modern_rest_client.get(url, params=params).json()
+
 
     def get_activity_gear(self, activity_id):
         """Return gears used for activity id."""

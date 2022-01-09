@@ -152,20 +152,23 @@ try:
 
     logger.info(api.get_activity_splits(first_activity_id))
 
-    ## Get activity split summaries
+    ## Get activity split summaries for activity id
     logger.info(api.get_activity_split_summaries(first_activity_id))
 
     ## Get activity weather data for activity
     logger.info(api.get_activity_weather(first_activity_id))
 
-    ## Get activity hr timezones
+    ## Get activity hr timezones id
     logger.info(api.get_activity_hr_in_timezones(first_activity_id))
 
-    ## Get activity details for activity
+    ## Get activity details for activity id
     logger.info(api.get_activity_details(first_activity_id))
 
-    # ## Get gear data for activity
+    # ## Get gear data for activity id
     logger.info(api.get_activity_gear(first_activity_id))
+
+    ## Activity self evaluation data for activity id
+    logger.info(api.get_activity_evaluation(first_activity_id))
 
 
     # DEVICES
