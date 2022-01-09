@@ -137,6 +137,15 @@ class Garmin:
         self.garmin_connect_personal_record_url = (
             "proxy/personalrecord-service/personalrecord/prs"
         )
+        self.garmin_connect_earned_badges_url = (
+            "proxy/badge-service/badge/earned"
+        )
+        self.garmin_connect_adhoc_challenges_url = (
+            "proxy/adhocchallenge-service/adHocChallenge/historical"
+        )
+        self.garmin_connect_badge_challenges_url = (
+            "proxy/badgechallenge-service/badgeChallenge/completed"
+        )
         self.garmin_connect_daily_sleep_url = (
             "proxy/wellness-service/wellness/dailySleepData"
         )
@@ -402,6 +411,40 @@ class Garmin:
         logger.debug("Requesting personal records for user")
 
         return self.modern_rest_client.get(url).json()
+
+    def get_earned_badges(self) -> Dict[str, Any]:
+        """Return earned badges for current user."""
+
+        url = self.garmin_connect_earned_badges_url
+        logger.debug("Requesting earned badges for user")
+
+        return self.modern_rest_client.get(url).json()
+
+    # def get_adhoc_challenges(self) -> Dict[str, Any]:
+    #     """Return adhoc challenges for current user."""
+
+    #     url = self.garmin_connect_adhoc_challenges_url
+    #     logger.debug("Requesting adhoc challenges for user")
+
+    #     return self.modern_rest_client.get(url).json()
+
+    def get_adhoc_challenges(self, start, limit) -> Dict[str, Any]:
+        """Return adhoc challenges for current user."""
+
+        url = self.garmin_connect_adhoc_challenges_url
+        params = {"start": str(start), "limit": str(limit)}
+        logger.debug("Requesting adhoc challenges for user")
+
+        return self.modern_rest_client.get(url, params=params).json()
+
+    def get_badge_challenges(self, start, limit) -> Dict[str, Any]:
+        """Return badge challenges for current user."""
+
+        url = self.garmin_connect_badge_challenges_url
+        params = {"start": str(start), "limit": str(limit)}
+        logger.debug("Requesting badge challenges for user")
+
+        return self.modern_rest_client.get(url, params=params).json()
 
     def get_sleep_data(self, cdate: str) -> Dict[str, Any]:
         """Return sleep data for current user."""
