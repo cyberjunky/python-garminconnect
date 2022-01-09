@@ -87,7 +87,10 @@ try:
 
     ## Get sleep data for today 'YYYY-MM-DD'
     logger.info(api.get_sleep_data(today.isoformat()))
-    
+
+    ## Get stress data for today 'YYYY-MM-DD'
+    logger.info(api.get_stress_data(today.isoformat()))
+
     ## Get respiration data for today 'YYYY-MM-DD'
     logger.info(api.get_respiration_data(today.isoformat()))
 
