@@ -100,9 +100,17 @@ try:
     ## Get max metric data (like vo2MaxValue and fitnessAge) for today 'YYYY-MM-DD'
     logger.info(api.get_max_metrics(today.isoformat()))
 
-    ## Get personal record
+    ## Get personal record for user
     logger.info(api.get_personal_record())
 
+    ## Get earned badges for user
+    logger.info(api.get_earned_badges())
+
+    ## Get adhoc challenges data from start and limit
+    logger.info(api.get_adhoc_challenges(1,100)) # 1=start, 100=limit
+
+    # Get badge challenges data from start and limit
+    logger.info(api.get_badge_challenges(1,100)) # 1=start, 100=limit
 
     # ACTIVITIES
 
