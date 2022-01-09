@@ -15,7 +15,9 @@ class ApiClient:
     """Class for a single API endpoint."""
 
     default_headers = {
+        # 'User-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2'
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0"
+
     }
 
     def __init__(self, session, baseurl, headers=None, aditional_headers=None):
@@ -53,8 +55,10 @@ class ApiClient:
         try:
             response = self.session.get(url, headers=total_headers, params=params)
             response.raise_for_status()
+            # logger.debug("Response: %s", response.content)
             return response
         except Exception as err:
+            logger.debug("Response in exception: %s", response.content)
             if response.status_code == 429:
                 raise GarminConnectTooManyRequestsError("Too many requests") from err
             if response.status_code == 401:
@@ -73,15 +77,17 @@ class ApiClient:
 
         logger.debug("URL: %s", url)
         logger.debug("Headers: %s", total_headers)
-        logger.debug("Data: %s", total_headers)
+        logger.debug("Data: %s", data)
 
         try:
             response = self.session.post(
                 url, headers=total_headers, params=params, data=data
             )
             response.raise_for_status()
+            # logger.debug("Response: %s", response.content)
             return response
         except Exception as err:
+            logger.debug("Response in exception: %s", response.content)
             if response.status_code == 429:
                 raise GarminConnectTooManyRequestsError("Too many requests") from err
             if response.status_code == 401:
@@ -131,9 +137,11 @@ class Garmin:
         self.garmin_connect_personal_record_url = (
             "proxy/personalrecord-service/personalrecord/prs"
         )
-        self.garmin_connect_sleep_daily_url = (
+        self.garmin_connect_daily_sleep_url = (
             "proxy/wellness-service/wellness/dailySleepData"
         )
+        self.garmin_connect_daily_stress_url = "proxy/wellness-service/wellness/dailyStress"
+
         self.garmin_connect_rhr = "proxy/userstats-service/wellness/daily"
 
         self.garmin_connect_user_summary_chart = (
@@ -159,6 +167,7 @@ class Garmin:
         self.garmin_connect_kml_download = "proxy/download-service/export/kml/activity"
         self.garmin_connect_csv_download = "proxy/download-service/export/csv/activity"
         self.garmin_connect_gear = "proxy/gear-service/gear/filterGear"
+
 
         self.garmin_connect_logout = "auth/logout/?url="
 
@@ -242,8 +251,9 @@ class Garmin:
             return False
 
         csrf = found.group(1)
+        referer = response.url
         logger.debug("_csrf found: %s", csrf)
-        logger.debug("Referer found: %s", response.url)
+        logger.debug("Referer: %s", referer)
 
         data = {
             "username": self.username,
@@ -252,8 +262,7 @@ class Garmin:
             "_csrf": csrf,
         }
         post_headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0",
-            "Referer": response.url,
+            "Referer": referer,
             "Content-Type": "application/x-www-form-urlencoded",
         }
 
@@ -304,7 +313,7 @@ class Garmin:
         params = {
             "calendarDate": str(cdate),
         }
-        logger.debug("Requesting user summary with URL: %s", url)
+        logger.debug("Requesting user summary")
 
         response = self.modern_rest_client.get(url, params=params).json()
 
@@ -320,7 +329,7 @@ class Garmin:
         params = {
             "date": str(cdate),
         }
-        logger.debug("Requesting steps data with url %s", url)
+        logger.debug("Requesting steps data")
 
         return self.modern_rest_client.get(url, params=params).json()
 
@@ -331,7 +340,7 @@ class Garmin:
         params = {
             "date": str(cdate),
         }
-        logger.debug("Requesting heart rates with url %s", url)
+        logger.debug("Requesting heart rates")
 
         return self.modern_rest_client.get(url, params=params).json()
 
@@ -350,7 +359,7 @@ class Garmin:
             enddate = startdate
         url = self.garmin_connect_weight_url
         params = {"startDate": str(startdate), "endDate": str(enddate)}
-        logger.debug("Requesting body composition with URL: %s", url)
+        logger.debug("Requesting body composition")
 
         return self.modern_rest_client.get(url, params=params).json()
 
@@ -358,7 +367,7 @@ class Garmin:
         """Return available max metric data for 'cdate' format 'YYYY-mm-dd'."""
 
         url = f"{self.garmin_connect_metrics_url}/{cdate}"
-        logger.debug("Requestng max metrics with URL: %s", url)
+        logger.debug("Requestng max metrics")
 
         return self.modern_rest_client.get(url).json()
 
@@ -366,7 +375,7 @@ class Garmin:
         """Return available hydration data 'cdate' format 'YYYY-mm-dd'."""
 
         url = f"{self.garmin_connect_daily_hydration_url}/{cdate}"
-        logger.debug("Requesting hydration data with URL: %s", url)
+        logger.debug("Requesting hydration data")
 
         return self.modern_rest_client.get(url).json()
 
@@ -374,7 +383,7 @@ class Garmin:
         """Return available respiration data 'cdate' format 'YYYY-mm-dd'."""
 
         url = f"{self.garmin_connect_daily_respiration_url}/{cdate}"
-        logger.debug("Requesting respiration data with URL: %s", url)
+        logger.debug("Requesting respiration data")
 
         return self.modern_rest_client.get(url).json()
 
@@ -382,7 +391,7 @@ class Garmin:
         """Return available SpO2 data 'cdate' format 'YYYY-mm-dd'."""
 
         url = f"{self.garmin_connect_daily_spo2_url}/{cdate}"
-        logger.debug("Requesting SpO2 data with URL: %s", url)
+        logger.debug("Requesting SpO2 data")
 
         return self.modern_rest_client.get(url).json()
 
@@ -390,26 +399,34 @@ class Garmin:
         """Return personal records for current user."""
 
         url = f"{self.garmin_connect_personal_record_url}/{self.display_name}"
-        logger.debug("Requesting personal records for user with URL: %s", url)
+        logger.debug("Requesting personal records for user")
 
         return self.modern_rest_client.get(url).json()
 
     def get_sleep_data(self, cdate: str) -> Dict[str, Any]:
         """Return sleep data for current user."""
 
-        url = f"{self.garmin_connect_sleep_daily_url}/{self.display_name}"
+        url = f"{self.garmin_connect_daily_sleep_url}/{self.display_name}"
         params = {"date": str(cdate), "nonSleepBufferMinutes": 60}
 
-        logger.debug("Requesting sleep data with url %s", url)
+        logger.debug("Requesting sleep data")
 
         return self.modern_rest_client.get(url, params=params).json()
+
+    def get_stress_data(self, cdate: str) -> Dict[str, Any]:
+        """Return stress data for current user."""
+
+        url = f"{self.garmin_connect_daily_stress_url}/{cdate}"
+        logger.debug("Requesting stress data")
+
+        return self.modern_rest_client.get(url).json()
 
     def get_rhr_day(self, cdate: str) -> Dict[str, Any]:
         """Return resting heartrate data for current user."""
 
         params = {"fromDate": str(cdate), "untilDate": str(cdate), "metricId": 60}
         url = f"{self.garmin_connect_rhr}/{self.display_name}"
-        logger.debug("Requesting resting heartrate data with url %s", url)
+        logger.debug("Requesting resting heartrate data")
 
         return self.modern_rest_client.get(url, params=params).json()
 
@@ -417,7 +434,7 @@ class Garmin:
         """Return available devices for the current user account."""
 
         url = self.garmin_connect_devices_url
-        logger.debug("Requesting devices with URL: %s", url)
+        logger.debug("Requesting devices")
 
         return self.modern_rest_client.get(url).json()
 
@@ -425,7 +442,7 @@ class Garmin:
         """Return device settings for device with 'device_id'."""
 
         url = f"{self.garmin_connect_device_url}/device-info/settings/{device_id}"
-        logger.debug("Requesting device settings with URL: %s", url)
+        logger.debug("Requesting device settings")
 
         return self.modern_rest_client.get(url).json()
 
@@ -445,7 +462,7 @@ class Garmin:
         """Return device last used."""
 
         url = f"{self.garmin_connect_device_url}/mylastused"
-        logger.debug("Requesting device last used with url %s", url)
+        logger.debug("Requesting device last used")
 
         return self.modern_rest_client.get(url).json()
 
@@ -454,7 +471,7 @@ class Garmin:
 
         url = self.garmin_connect_activities
         params = {"start": str(start), "limit": str(limit)}
-        logger.debug("Requesting activities with url %s", url)
+        logger.debug("Requesting activities")
 
         return self.modern_rest_client.get(url, params=params).json()
 
