@@ -519,6 +519,41 @@ class Garmin:
 
         return None
 
+    def get_activities_by_date(self, startdate, enddate, activitytype):
+        """
+        Fetch available activities between specific dates
+        :param startdate: String in the format YYYY-MM-DD
+        :param enddate: String in the format YYYY-MM-DD
+        :param activitytype: (Optional) Type of activity you are searching
+                             Possible values are [cycling, running, swimming,
+                             multi_sport, fitness_equipment, hiking, walking, other]
+        :return: list of JSON activities
+        """
+
+        activities = []
+        start = 0
+        limit = 20
+        # mimicking the behavior of the web interface that fetches 20 activities at a time
+        # and automatically loads more on scroll
+        url = self.garmin_connect_activities
+        params = {"startDate": str(startdate), "endDate": str(enddate),
+                  "start": str(start), "limit": str(limit) }
+        if activitytype:
+            params["activityType"] = str(activitytype)
+
+        print(f"Requesting activities by date from {startdate} to {enddate}")
+        while True:
+            params["start"] = str(start)
+            logger.debug(f"Requesting activities {start} to {start+limit}")
+            act = self.modern_rest_client.get(url, params=params).json()
+            if act:
+                activities.extend(act)
+                start = start + limit
+            else:
+                break
+
+        return activities
+
     class ActivityDownloadFormat(Enum):
         """Activitie variables."""
 
