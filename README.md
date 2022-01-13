@@ -118,6 +118,10 @@ try:
     activities = api.get_activities(0,1) # 0=start, 1=limit
     logger.info(activities)
 
+    # Get activities data from startdate 'YYYY-MM-DD' to enddate 'YYYY-MM-DD', with (optional) activitytype
+    # Possible values are [cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other]
+    activities = api.get_activities_by_date(startdate, enddate, activitytype)
+
     # Get last activity
     logger.info(api.get_last_activity())
 
