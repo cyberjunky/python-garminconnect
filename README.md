@@ -205,3 +205,48 @@ except (
     ) as err:
     logger.error("Error occurred during Garmin Connect communication: %s", err)
 ```
+
+## Session Saving
+
+```python
+#!/usr/bin/env python3
+import logging
+
+from garminconnect import (
+    Garmin,
+    GarminConnectConnectionError,
+    GarminConnectTooManyRequestsError,
+    GarminConnectAuthenticationError,
+)
+
+# Configure debug logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+try:
+    # API
+
+    ## Initialize Garmin api with your credentials
+    api = Garmin("YOUR EMAIL", "YOUR PASSWORD")
+
+    ## Login to Garmin Connect portal
+    api.login()
+
+    ## Save session dictionary in local variable
+    saved_session = api.session_data
+    
+    ## Do more stuff even you can save the credentials in a file or persist it
+    text_to_save = json.dumps(saved_session)
+    
+    ## Dont do logout... do other stuff
+    ## Restore de saved credentials
+    restored_session = json.loads(text_to_save)
+    
+    ## Pass the session to the api
+    api_with_session = Garmin("YOUR EMAIL", "YOUR PASSWORD", session_data=restored_session)
+    
+    ## Do the login 
+    api_with_session.login()
+    
+    ## Do more stuff
+    ## Save the session again, it can be updated because Garmin closes session aftar x time
