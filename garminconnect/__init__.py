@@ -3,6 +3,7 @@
 import json
 import logging
 import re
+import requests
 from enum import Enum, auto
 from typing import Any, Dict
 
@@ -32,6 +33,10 @@ class ApiClient:
 
         if aditional_headers:
             self.headers.update(aditional_headers)
+            
+    def set_cookies(self, cookies):
+        logger.debug("Restoring cookies for saved session")
+        self.session.cookies.update(cookies)
 
     def url(self, addurl=None):
         """Return the url for the API endpoint."""
@@ -101,8 +106,9 @@ class ApiClient:
 class Garmin:
     """Class for fetching data from Garmin Connect."""
 
-    def __init__(self, email, password, is_cn=False):
+    def __init__(self, email, password, is_cn=False, session_data=None):
         """Create a new class instance."""
+        self.session_data = session_data
 
         self.username = email
         self.password = password
@@ -210,6 +216,48 @@ class Garmin:
         return None
 
     def login(self):
+        if (self.session is None):
+            return self.authenticate()
+        else:
+            return self.login_session()
+
+    def login_session(self):
+        logger.debug("login with cookies")
+
+        session_display_name = self.session_data['display_name']
+        params= self.session_data['params']
+        logger.debug("Set cookies in session")
+        self.modern_rest_client.set_cookies( requests.utils.cookiejar_from_dict(self.session_data['session_cookies']))
+        
+        logger.debug("Get page data with cookies")
+        response = self.modern_rest_client.get("", params=params)
+        logger.debug("Session response %s", response.status_code)
+        if response.status_code != 200:
+            logger.debug("Session expired, authenticating again!")
+            return self.authenticate()
+
+        user_prefs = self.__get_json(response.text, "VIEWER_USERPREFERENCES")
+        if (user_prefs is None):
+            logger.debug("Session expired, authenticating again!")
+            return self.authenticate()
+
+        self.display_name = user_prefs["displayName"]
+        logger.debug("Display name is %s", self.display_name)
+
+        self.unit_system = user_prefs["measurementSystem"]
+        logger.debug("Unit system is %s", self.unit_system)
+
+        social_profile = self.__get_json(response.text, "VIEWER_SOCIAL_PROFILE")
+        self.full_name = social_profile["fullName"]
+        logger.debug("Fullname is %s", self.full_name)
+        
+        if (self.display_name == session_display_name):
+            return True               
+        else:
+            logger.debug("Session not valid for user %s", self.display_name)
+            return self.authenticate()
+
+    def authenticate(self):
         """Login to Garmin Connect."""
 
         logger.debug("login: %s %s", self.username, self.password)
@@ -297,6 +345,11 @@ class Garmin:
         social_profile = self.__get_json(response.text, "VIEWER_SOCIAL_PROFILE")
         self.full_name = social_profile["fullName"]
         logger.debug("Fullname is %s", self.full_name)
+
+        self.session_data = {'params' : params,
+                              'display_name': self.display_name,
+                              'session_cookies' : requests.utils.dict_from_cookiejar(self.session.cookies)}
+        logger.debug("Cookies saved")
 
         return True
 
