@@ -519,7 +519,7 @@ class Garmin:
 
         return None
 
-    def get_activities_by_date(self, startdate, enddate, activitytype):
+    def get_activities_by_date(self, startdate, enddate, activitytype=None):
         """
         Fetch available activities between specific dates
         :param startdate: String in the format YYYY-MM-DD
