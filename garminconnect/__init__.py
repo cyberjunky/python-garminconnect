@@ -216,10 +216,7 @@ class Garmin:
         return None
 
     def login(self):
-        print(f'session: {self.session}')
-        print('skipping session login..')
-        return self.authenticate()
-        if (self.session is None):
+        if (self.session_data is None):
             return self.authenticate()
         else:
             return self.login_session()
@@ -228,7 +225,6 @@ class Garmin:
         logger.debug("login with cookies")
 
         session_display_name = self.session_data['display_name']
-        # breakpoint()
         params= self.session_data['params']
         logger.debug("Set cookies in session")
         self.modern_rest_client.set_cookies( requests.utils.cookiejar_from_dict(self.session_data['session_cookies']))
