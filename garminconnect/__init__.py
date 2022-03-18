@@ -38,6 +38,12 @@ class ApiClient:
         logger.debug("Restoring cookies for saved session")
         self.session.cookies.update(cookies)
 
+    def get_cookies(self):
+        return self.session.cookies
+
+    def clear_cookies(self):
+        self.session.cookies.clear()
+
     def url(self, addurl=None):
         """Return the url for the API endpoint."""
 
@@ -225,12 +231,19 @@ class Garmin:
         logger.debug("login with cookies")
 
         session_display_name = self.session_data['display_name']
-        params= self.session_data['params']
         logger.debug("Set cookies in session")
         self.modern_rest_client.set_cookies( requests.utils.cookiejar_from_dict(self.session_data['session_cookies']))
+        self.sso_rest_client.set_cookies( requests.utils.cookiejar_from_dict(self.session_data['login_cookies']))
         
         logger.debug("Get page data with cookies")
-        response = self.modern_rest_client.get("", params=params)
+        params = {
+            "service": "https://connect.garmin.com/modern/",
+            "webhost": "https://connect.garmin.com",
+            "gateway": "true",
+            "generateExtraServiceTicket": "true",
+            "generateTwoExtraServiceTickets": "true",
+        }
+        response = self.sso_rest_client.get("login", params=params)
         logger.debug("Session response %s", response.status_code)
         if response.status_code != 200:
             logger.debug("Session expired, authenticating again!")
@@ -261,6 +274,9 @@ class Garmin:
         """Login to Garmin Connect."""
 
         logger.debug("login: %s %s", self.username, self.password)
+        self.modern_rest_client.clear_cookies()
+        self.sso_rest_client.clear_cookies()
+
         get_headers = {"Referer": self.garmin_connect_login_url}
         params = {
             "service": self.modern_rest_client.url(),
@@ -346,9 +362,10 @@ class Garmin:
         self.full_name = social_profile["fullName"]
         logger.debug("Fullname is %s", self.full_name)
 
-        self.session_data = {'params' : params,
-                              'display_name': self.display_name,
-                              'session_cookies' : requests.utils.dict_from_cookiejar(self.session.cookies)}
+        self.session_data = {'display_name': self.display_name,
+                              'session_cookies' : requests.utils.dict_from_cookiejar(self.modern_rest_client.get_cookies()),
+                              'login_cookies' : requests.utils.dict_from_cookiejar(self.sso_rest_client.get_cookies())}
+
         logger.debug("Cookies saved")
 
         return True
