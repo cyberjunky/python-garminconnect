@@ -136,7 +136,7 @@ class Garmin:
         self.garmin_connect_daily_summary_url = (
             "proxy/usersummary-service/usersummary/daily"
         )
-        self.garmin_connect_metrics_url = "proxy/metrics-service/metrics/maxmet/latest"
+        self.garmin_connect_metrics_url = "proxy/metrics-service/metrics/maxmet/daily"
         self.garmin_connect_daily_hydration_url = (
             "proxy/usersummary-service/usersummary/hydration/daily"
         )
@@ -428,7 +428,7 @@ class Garmin:
     def get_max_metrics(self, cdate: str) -> Dict[str, Any]:
         """Return available max metric data for 'cdate' format 'YYYY-mm-dd'."""
 
-        url = f"{self.garmin_connect_metrics_url}/{cdate}"
+        url = f"{self.garmin_connect_metrics_url}/{cdate}/{cdate}"
         logger.debug("Requestng max metrics")
 
         return self.modern_rest_client.get(url).json()
