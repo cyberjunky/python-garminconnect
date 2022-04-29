@@ -446,7 +446,7 @@ class Garmin:
         """Return available max metric data for 'cdate' format 'YYYY-mm-dd'."""
 
         url = f"{self.garmin_connect_metrics_url}/{cdate}/{cdate}"
-        logger.debug("Requestng max metrics")
+        logger.debug("Requesting max metrics")
 
         return self.modern_rest_client.get(url).json()
 
