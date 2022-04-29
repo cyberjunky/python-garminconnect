@@ -222,7 +222,7 @@ class Garmin:
         return None
 
     def login(self):
-        if (self.session is None):
+        if (self.session_data is None):
             return self.authenticate()
         else:
             return self.login_session()
