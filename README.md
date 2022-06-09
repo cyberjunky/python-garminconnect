@@ -210,7 +210,7 @@ except (
 
 ```python
 #!/usr/bin/env python3
-import logging
+import logging, json
 
 from garminconnect import (
     Garmin,
@@ -223,30 +223,44 @@ from garminconnect import (
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-try:
-    # API
+# User email / password. Here for example only 
+# Load these securely from somewhere else !!
+email = "YOUR EMAIL"
+password = "YOUR PASSWORD"
 
+try:
+    ## Restore de saved credentials
+    with open('session.json') as f:
+        restored_session = json.load(f)
+
+    input("Found creds from previous login, press any key to continue")
+    
+    ## Pass the session to the api
+    api_with_session = Garmin(email, password, session_data=restored_session)
+    
+    ## Do the login 
+    api_with_session.login()
+
+    input("Logged in using saved creds, press any key to continue")
+
+except Exception as e:
+    print(e)
+    input("Exception occurred trying to use data from last login\nPress any key to try logging in and saving new data")
+    
     ## Initialize Garmin api with your credentials
-    api = Garmin("YOUR EMAIL", "YOUR PASSWORD")
+    api = Garmin(email, password)
 
     ## Login to Garmin Connect portal
     api.login()
 
-    ## Save session dictionary in local variable
-    saved_session = api.session_data
+    ## Save session dictionary to json file for future use 
+    with open('session.json', 'w', encoding='utf-8') as f:
+        json.dump(api.session_data, f, ensure_ascii=False, indent=4)
     
-    ## Do more stuff even you can save the credentials in a file or persist it
-    text_to_save = json.dumps(saved_session)
-    
-    ## Dont do logout... do other stuff
-    ## Restore de saved credentials
-    restored_session = json.loads(text_to_save)
-    
-    ## Pass the session to the api
-    api_with_session = Garmin("YOUR EMAIL", "YOUR PASSWORD", session_data=restored_session)
-    
-    ## Do the login 
-    api_with_session.login()
-    
-    ## Do more stuff
-    ## Save the session again, it can be updated because Garmin closes session aftar x time
+    print("created new saved session for next use")
+    input("press any key to continue")
+    api_with_session = api
+
+# Now do your thing!
+# For example... get last activity
+logger.info(api_with_session.get_last_activity())
