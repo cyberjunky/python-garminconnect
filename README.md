@@ -5,7 +5,7 @@ Python 3 API wrapper for Garmin Connect to get your statistics.
 ## About
 
 This package allows you to request your device, activity and health data from your Garmin Connect account.
-See https://connect.garmin.com/
+See <https://connect.garmin.com/>
 
 ## Installation
 
@@ -17,8 +17,11 @@ pip3 install garminconnect
 
 ```python
 #!/usr/bin/env python3
+
+import os
 import logging
 import datetime
+from dotenv import load_dotenv
 
 from garminconnect import (
     Garmin,
@@ -26,6 +29,7 @@ from garminconnect import (
     GarminConnectTooManyRequestsError,
     GarminConnectAuthenticationError,
 )
+
 
 # Configure debug logging
 logging.basicConfig(level=logging.DEBUG)
@@ -35,11 +39,15 @@ logger = logging.getLogger(__name__)
 today = datetime.date.today()
 lastweek = today - datetime.timedelta(days=7)
 
+# Load Garmin Connect credentials from environment variables
+load_dotenv()
+
 try:
     # API
 
-    ## Initialize Garmin api with your credentials
-    api = Garmin("YOUR EMAIL", "YOUR PASSWORD")
+    ## Initialize Garmin api with your credentials using environement variables,
+    # instead of hardcoded sensitive data.
+    api = Garmin(os.getenv("EMAIL"), os.getenv("PASSWORD"))
 
     ## Login to Garmin Connect portal
     api.login()
@@ -75,7 +83,7 @@ try:
 
     ## Get steps data for today 'YYYY-MM-DD'
     logger.info(api.get_steps_data(today.isoformat()))
-    
+
     ## Get heart rate data for today 'YYYY-MM-DD'
     logger.info(api.get_heart_rates(today.isoformat()))
 
@@ -210,6 +218,7 @@ except (
 
 ```python
 #!/usr/bin/env python3
+
 import logging
 
 from garminconnect import (
@@ -219,34 +228,40 @@ from garminconnect import (
     GarminConnectAuthenticationError,
 )
 
+
 # Configure debug logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+# Load Garmin Connect credentials from environment variables
+load_dotenv()
+
 try:
     # API
 
-    ## Initialize Garmin api with your credentials
-    api = Garmin("YOUR EMAIL", "YOUR PASSWORD")
+    ## Initialize Garmin api with your credentials using environement variables,
+    # instead of hardcoded sensitive data.
+    api = Garmin(os.getenv("EMAIL"), os.getenv("PASSWORD"))
 
     ## Login to Garmin Connect portal
     api.login()
 
     ## Save session dictionary in local variable
     saved_session = api.session_data
-    
+
     ## Do more stuff even you can save the credentials in a file or persist it
     text_to_save = json.dumps(saved_session)
-    
+
     ## Dont do logout... do other stuff
     ## Restore de saved credentials
     restored_session = json.loads(text_to_save)
-    
+
     ## Pass the session to the api
     api_with_session = Garmin("YOUR EMAIL", "YOUR PASSWORD", session_data=restored_session)
-    
-    ## Do the login 
+
+    ## Do the login
     api_with_session.login()
-    
+
     ## Do more stuff
     ## Save the session again, it can be updated because Garmin closes session aftar x time
+```
