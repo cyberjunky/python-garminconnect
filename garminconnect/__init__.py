@@ -158,6 +158,9 @@ class Garmin:
         self.garmin_connect_badge_challenges_url = (
             "proxy/badgechallenge-service/badgeChallenge/completed"
         )
+        self.garmin_connect_available_badge_challenges_url = (
+            "proxy/badgechallenge-service/badgeChallenge/available"
+        )
         self.garmin_connect_daily_sleep_url = (
             "proxy/wellness-service/wellness/dailySleepData"
         )
@@ -516,6 +519,15 @@ class Garmin:
         url = self.garmin_connect_badge_challenges_url
         params = {"start": str(start), "limit": str(limit)}
         logger.debug("Requesting badge challenges for user")
+
+        return self.modern_rest_client.get(url, params=params).json()
+
+    def get_available_badge_challenges(self, start, limit) -> Dict[str, Any]:
+        """Return available badge challenges."""
+
+        url = self.garmin_connect_available_badge_challenges_url
+        params = {"start": str(start), "limit": str(limit)}
+        logger.debug("Requesting available badge challenges")
 
         return self.modern_rest_client.get(url, params=params).json()
 
