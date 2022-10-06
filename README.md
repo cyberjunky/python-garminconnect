@@ -120,6 +120,10 @@ try:
     # Get badge challenges data from start and limit
     logger.info(api.get_badge_challenges(1,100)) # 1=start, 100=limit
 
+    # Get non completed badge challenges data from start and limit
+    logger.info(api.get_non_completed_badge_challenges(1,100)) # 1=start, 100=limit
+
+
     # ACTIVITIES
 
     # Get activities data from start and limit
