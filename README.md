@@ -117,6 +117,9 @@ try:
     ## Get adhoc challenges data from start and limit
     logger.info(api.get_adhoc_challenges(1,100)) # 1=start, 100=limit
 
+    # Get available badge challenges data from start and limit
+    logger.info(api.get_available_badge_challenges(1,100)) # 1=start, 100=limit
+    
     # Get badge challenges data from start and limit
     logger.info(api.get_badge_challenges(1,100)) # 1=start, 100=limit
 
