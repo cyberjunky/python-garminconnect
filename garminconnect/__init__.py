@@ -531,7 +531,7 @@ class Garmin:
         url = self.garmin_connect_available_badge_challenges_url
         params = {"start": str(start), "limit": str(limit)}
         logger.debug("Requesting available badge challenges")
-        
+
         return self.modern_rest_client.get(url, params=params).json()
 
     def get_non_completed_badge_challenges(self, start, limit) -> Dict[str, Any]:
@@ -650,7 +650,7 @@ class Garmin:
         if activitytype:
             params["activityType"] = str(activitytype)
 
-        print(f"Requesting activities by date from {startdate} to {enddate}")
+        logger.debug(f"Requesting activities by date from {startdate} to {enddate}")
         while True:
             params["start"] = str(start)
             logger.debug(f"Requesting activities {start} to {start+limit}")
