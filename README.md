@@ -15,8 +15,9 @@ pip3 install garminconnect
 
 ## API Demo Program 
 
-Usefull for tesing all API calls
-Documenting session store and loading
+Usefull for tesing all available API calls
+
+Documenting session/cooking save and reusing
 
 ```python
 #!/usr/bin/env python3
