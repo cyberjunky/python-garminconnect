@@ -114,7 +114,7 @@ class ApiClient:
 class Garmin:
     """Class for fetching data from Garmin Connect."""
 
-    def __init__(self, email, password, is_cn=False, session_data=None):
+    def __init__(self, email=None, password=None, is_cn=False, session_data=None):
         """Create a new class instance."""
         self.session_data = session_data
 
@@ -235,7 +235,7 @@ class Garmin:
             return self.login_session()
 
     def login_session(self):
-        logger.debug("login with cookies")
+        logger.debug("Login with cookies")
 
         session_display_name = self.session_data["display_name"]
         logger.debug("Set cookies in session")
@@ -398,12 +398,12 @@ class Garmin:
         return self.unit_system
 
     def get_stats(self, cdate: str) -> Dict[str, Any]:
-        """Return user activity summary for 'cdate' format 'YYYY-mm-dd' (compat for garminconnect)."""
+        """Return user activity summary for 'cdate' format 'YYYY-MM-DD' (compat for garminconnect)."""
 
         return self.get_user_summary(cdate)
 
     def get_user_summary(self, cdate: str) -> Dict[str, Any]:
-        """Return user activity summary for 'cdate' format 'YYYY-mm-dd'."""
+        """Return user activity summary for 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_daily_summary_url}/{self.display_name}"
         params = {
@@ -419,7 +419,7 @@ class Garmin:
         return response
 
     def get_steps_data(self, cdate):
-        """Fetch available steps data 'cDate' format 'YYYY-mm-dd'."""
+        """Fetch available steps data 'cDate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_user_summary_chart}/{self.display_name}"
         params = {
@@ -430,7 +430,7 @@ class Garmin:
         return self.modern_rest_client.get(url, params=params).json()
 
     def get_heart_rates(self, cdate):  #
-        """Fetch available heart rates data 'cDate' format 'YYYY-mm-dd'."""
+        """Fetch available heart rates data 'cDate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_heartrates_daily_url}/{self.display_name}"
         params = {
@@ -449,7 +449,7 @@ class Garmin:
         }
 
     def get_body_composition(self, startdate: str, enddate=None) -> Dict[str, Any]:
-        """Return available body composition data for 'startdate' format 'YYYY-mm-dd' through enddate 'YYYY-mm-dd'."""
+        """Return available body composition data for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'."""
 
         if enddate is None:
             enddate = startdate
@@ -460,7 +460,7 @@ class Garmin:
         return self.modern_rest_client.get(url, params=params).json()
 
     def get_max_metrics(self, cdate: str) -> Dict[str, Any]:
-        """Return available max metric data for 'cdate' format 'YYYY-mm-dd'."""
+        """Return available max metric data for 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_metrics_url}/{cdate}/{cdate}"
         logger.debug("Requesting max metrics")
@@ -468,7 +468,7 @@ class Garmin:
         return self.modern_rest_client.get(url).json()
 
     def get_hydration_data(self, cdate: str) -> Dict[str, Any]:
-        """Return available hydration data 'cdate' format 'YYYY-mm-dd'."""
+        """Return available hydration data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_daily_hydration_url}/{cdate}"
         logger.debug("Requesting hydration data")
@@ -476,7 +476,7 @@ class Garmin:
         return self.modern_rest_client.get(url).json()
 
     def get_respiration_data(self, cdate: str) -> Dict[str, Any]:
-        """Return available respiration data 'cdate' format 'YYYY-mm-dd'."""
+        """Return available respiration data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_daily_respiration_url}/{cdate}"
         logger.debug("Requesting respiration data")
@@ -484,7 +484,7 @@ class Garmin:
         return self.modern_rest_client.get(url).json()
 
     def get_spo2_data(self, cdate: str) -> Dict[str, Any]:
-        """Return available SpO2 data 'cdate' format 'YYYY-mm-dd'."""
+        """Return available SpO2 data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_daily_spo2_url}/{cdate}"
         logger.debug("Requesting SpO2 data")
