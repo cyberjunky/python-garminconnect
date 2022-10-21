@@ -8,6 +8,7 @@ import re
 import requests
 from enum import Enum, auto
 from typing import Any, Dict
+import os
 
 import cloudscraper
 
@@ -81,7 +82,7 @@ class ApiClient:
 
             raise GarminConnectConnectionError(err) from err
 
-    def post(self, addurl, aditional_headers, params, data):
+    def post(self, addurl, aditional_headers=None, params=None, data=None, files=None):
         """Make an API call using the POST method."""
         total_headers = self.headers.copy()
         if aditional_headers:
@@ -94,7 +95,7 @@ class ApiClient:
 
         try:
             response = self.session.post(
-                url, headers=total_headers, params=params, data=data
+                url, headers=total_headers, params=params, data=data, files=files
             )
             response.raise_for_status()
             # logger.debug("Response: %s", response.content)
@@ -200,7 +201,7 @@ class Garmin:
         self.garmin_connect_kml_download = "proxy/download-service/export/kml/activity"
         self.garmin_connect_csv_download = "proxy/download-service/export/csv/activity"
 
-        self.garmin_connect_fit_upload_url = "proxy/upload-service/upload/.fit"
+        self.garmin_connect_upload = "proxy/upload-service/upload"
 
         self.garmin_connect_gear = "proxy/gear-service/gear/filterGear"
 
@@ -646,12 +647,22 @@ class Garmin:
 
         return None
 
-    def upload_fit_activity(self, fit_file):
+    def upload_activity(self, activity_path: str):
         """Upload activity in fit format from file."""
+        # This code is borrowed from python-garminconnect-enhanced ;-)
+        file_base_name = os.path.basename(activity_path)
+        file_extension = file_base_name.split(".")[-1]
+        allowed_file_extension = file_extension.upper() in Garmin.ActivityUploadFormat.__members__
 
-        logger.debug("Uploading activity in fit format from file")
-        with open(fit_file, 'rb') as file:
-            return self.modern_rest_client.post(self.garmin_connect_fit_upload_url, {}, {}, file)
+        if allowed_file_extension:
+            files = {
+                "file": (file_base_name, open(activity_path, "rb" or "r")),
+            }
+
+            url = self.garmin_connect_upload
+            return self.modern_rest_client.post(url, files=files).json()
+        else:
+            raise GarminConnectInvalidFileFormatError(f"Could not upload {activity_path}")
 
     def get_activities_by_date(self, startdate, enddate, activitytype=None):
         """
@@ -700,6 +711,11 @@ class Garmin:
         GPX = auto()
         KML = auto()
         CSV = auto()
+
+    class ActivityUploadFormat(Enum):
+        FIT = auto()
+        GPX = auto()
+        TCX = auto()
 
     def download_activity(self, activity_id, dl_fmt=ActivityDownloadFormat.TCX):
         """
@@ -809,3 +825,7 @@ class GarminConnectTooManyRequestsError(Exception):
 
 class GarminConnectAuthenticationError(Exception):
     """Raised when authentication is failed."""
+
+
+class GarminConnectInvalidFileFormatError(Exception):
+    """Raised when an invalid file format is passed to upload."""
