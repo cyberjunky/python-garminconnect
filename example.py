@@ -40,7 +40,7 @@ start = 0
 limit = 100
 start_badge = 1  # badges calls start counting at 1
 activitytype = ""  # Possible values are [cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other]
-activityfitfile = "MY_ACTIVITY.fit"
+activityfile = "MY_ACTIVITY.fit"
 
 menu_options = {
     "1": "Get full name",
@@ -70,7 +70,7 @@ menu_options = {
     "n": f"Get activities data from start '{start}' and limit '{limit}'",
     "o": f"Download activities data by date from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "p": f"Get all kinds of activities data from '{start}'",
-    "r": f"Upload activity data in fit format from file '{activityfitfile}'",
+    "r": f"Upload activity data from file '{activityfile}'",
     "s": "Get all kinds of Garmin device info",
     "Z": "Logout Garmin Connect portal",
     "q": "Exit",
@@ -315,8 +315,8 @@ def switch(api, i):
                 logger.info(api.get_activity_evaluation(first_activity_id))
 
             elif i == "r":
-                # Upload activity from fit file
-                logger.info(api.upload_fit_activity(activityfitfile))
+                # Upload activity from file
+                logger.info(api.upload_activity(activityfile))
 
             # DEVICES
             elif i == "s":
