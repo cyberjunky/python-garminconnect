@@ -40,8 +40,6 @@ python3 ./example.py
 
 *** Garmin Connect API Demo by cyberjunky ***
 
-Login to Garmin Connect using session loaded from 'session.json'...
-
 1 -- Get full name
 2 -- Get unit system
 3 -- Get activity data for '2022-10-21'
@@ -51,7 +49,8 @@ Login to Garmin Connect using session loaded from 'session.json'...
 7 -- Get stats and body composition data for '2022-10-21'
 8 -- Get steps data for '2022-10-21'
 9 -- Get heart rate data for '2022-10-21'
-0 -- Get training readiness for '2022-10-21'
+0 -- Get training readiness data for '2022-10-21'
+. -- Get training status data for '2022-10-21'
 a -- Get resting heart rate data for 2022-10-21'
 b -- Get hydration data for '2022-10-21'
 c -- Get sleep data for '2022-10-21'
@@ -72,6 +71,7 @@ r -- Upload activity data from file 'MY_ACTIVITY.fit'
 s -- Get all kinds of Garmin device info
 Z -- Logout Garmin Connect portal
 q -- Exit
+
 Make your selection: 
 
 ```
