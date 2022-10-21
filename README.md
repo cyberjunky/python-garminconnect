@@ -68,7 +68,7 @@ m -- Get non completed badge challenges data from '1' and limit '100'
 n -- Get activities data from start '0' and limit '100'
 o -- Download activities data by date from '2022-10-14' to '2022-10-21'
 p -- Get all kinds of activities data from '0'
-r -- Upload activity data in fit format from file 'MY_ACTIVITY.fit'
+r -- Upload activity data from file 'MY_ACTIVITY.fit'
 s -- Get all kinds of Garmin device info
 Z -- Logout Garmin Connect portal
 q -- Exit
