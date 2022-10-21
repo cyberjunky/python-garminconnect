@@ -20,7 +20,7 @@ If you run it from the python-garmin connect directory it will use the library c
 
 The code also demostrate how to implement session saving and re-using of the cookies.  
 
-You can set enviroment variable with your credentials like so:
+You can set enviroment variables with your credentials like so, this is optional:
 ```
 export EMAIL=<your garmin email>
 export PASSWORD=<your garmin password>
