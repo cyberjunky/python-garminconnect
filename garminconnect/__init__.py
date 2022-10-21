@@ -171,7 +171,9 @@ class Garmin:
             "proxy/wellness-service/wellness/dailyStress"
         )
 
-        self.garmin_connect_rhr = "proxy/userstats-service/wellness/daily"
+        self.garmin_connect_rhr_url = "proxy/userstats-service/wellness/daily"
+
+        self.garmin_connect_training_readiness_url = "proxy/metrics-service/metrics/trainingreadiness"
 
         self.garmin_connect_user_summary_chart = (
             "proxy/wellness-service/wellness/dailySummaryChart"
@@ -195,6 +197,9 @@ class Garmin:
         self.garmin_connect_gpx_download = "proxy/download-service/export/gpx/activity"
         self.garmin_connect_kml_download = "proxy/download-service/export/kml/activity"
         self.garmin_connect_csv_download = "proxy/download-service/export/csv/activity"
+
+        self.garmin_connect_fit_upload_url = "proxy/upload-service/upload/.fit"
+
         self.garmin_connect_gear = "proxy/gear-service/gear/filterGear"
 
         self.garmin_connect_logout = "auth/logout/?url="
@@ -407,7 +412,7 @@ class Garmin:
 
         url = f"{self.garmin_connect_daily_summary_url}/{self.display_name}"
         params = {
-            "calendarDate": str(cdate),
+            "calendarDate": str(cdate)
         }
         logger.debug("Requesting user summary")
 
@@ -423,18 +428,18 @@ class Garmin:
 
         url = f"{self.garmin_connect_user_summary_chart}/{self.display_name}"
         params = {
-            "date": str(cdate),
+            "date": str(cdate)
         }
         logger.debug("Requesting steps data")
 
         return self.modern_rest_client.get(url, params=params).json()
 
-    def get_heart_rates(self, cdate):  #
+    def get_heart_rates(self, cdate):
         """Fetch available heart rates data 'cDate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_heartrates_daily_url}/{self.display_name}"
         params = {
-            "date": str(cdate),
+            "date": str(cdate)
         }
         logger.debug("Requesting heart rates")
 
@@ -548,7 +553,6 @@ class Garmin:
 
         url = f"{self.garmin_connect_daily_sleep_url}/{self.display_name}"
         params = {"date": str(cdate), "nonSleepBufferMinutes": 60}
-
         logger.debug("Requesting sleep data")
 
         return self.modern_rest_client.get(url, params=params).json()
@@ -564,11 +568,19 @@ class Garmin:
     def get_rhr_day(self, cdate: str) -> Dict[str, Any]:
         """Return resting heartrate data for current user."""
 
+        url = f"{self.garmin_connect_rhr_url}/{self.display_name}"
         params = {"fromDate": str(cdate), "untilDate": str(cdate), "metricId": 60}
-        url = f"{self.garmin_connect_rhr}/{self.display_name}"
         logger.debug("Requesting resting heartrate data")
 
         return self.modern_rest_client.get(url, params=params).json()
+
+    def get_training_readiness(self, cdate: str) -> Dict[str, Any]:
+        """Return training readiness data for current user."""
+
+        url = f"{self.garmin_connect_training_readiness_url}/{cdate}"
+        logger.debug("Requesting training readiness data")
+
+        return self.modern_rest_client.get(url).json()
 
     def get_devices(self) -> Dict[str, Any]:
         """Return available devices for the current user account."""
@@ -623,6 +635,13 @@ class Garmin:
             return activities[-1]
 
         return None
+
+    def upload_fit_activity(self, fit_file):
+        """Upload activity in fit format from file."""
+
+        logger.debug("Uploading activity in fit format from file")
+        with open(fit_file, 'rb') as file:
+            return self.modern_rest_client.post(self.garmin_connect_fit_upload_url, {}, {}, file)
 
     def get_activities_by_date(self, startdate, enddate, activitytype=None):
         """
@@ -734,7 +753,6 @@ class Garmin:
         """Return activity self evaluation details."""
 
         activity_id = str(activity_id)
-
         url = f"{self.garmin_connect_activity}/{activity_id}"
         logger.debug("Requesting self evaluation data for activity id %s", activity_id)
 
