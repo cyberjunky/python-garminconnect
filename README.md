@@ -133,7 +133,8 @@ menu_options = {
     "7": f"Get stats and body composition data for '{today.isoformat()}'",
     "8": f"Get steps data for '{today.isoformat()}'",
     "9": f"Get heart rate data for '{today.isoformat()}'",
-    "0": f"Get training readiness for '{today.isoformat()}'",
+    "0": f"Get training readiness data for '{today.isoformat()}'",
+    ".": f"Get training status data for '{today.isoformat()}'",
     "a": f"Get resting heart rate data for {today.isoformat()}'",
     "b": f"Get hydration data for '{today.isoformat()}'",
     "c": f"Get sleep data for '{today.isoformat()}'",
@@ -268,6 +269,9 @@ def switch(api, i):
             elif i == "0":
                 # Get training readiness data for 'YYYY-MM-DD'
                 logger.info(api.get_training_readiness(today.isoformat()))
+            elif i == ".":
+                # Get training status data for 'YYYY-MM-DD'
+                logger.info(api.get_training_status(today.isoformat()))
             elif i == "a":
                 # Get resting heart rate data for 'YYYY-MM-DD'
                 logger.info(api.get_rhr_day(today.isoformat()))

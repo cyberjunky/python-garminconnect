@@ -175,6 +175,8 @@ class Garmin:
 
         self.garmin_connect_training_readiness_url = "proxy/metrics-service/metrics/trainingreadiness"
 
+        self.garmin_connect_training_status_url = "proxy/metrics-service/metrics/trainingstatus/aggregated"
+
         self.garmin_connect_user_summary_chart = (
             "proxy/wellness-service/wellness/dailySummaryChart"
         )
@@ -579,6 +581,14 @@ class Garmin:
 
         url = f"{self.garmin_connect_training_readiness_url}/{cdate}"
         logger.debug("Requesting training readiness data")
+
+        return self.modern_rest_client.get(url).json()
+
+    def get_training_status(self, cdate: str) -> Dict[str, Any]:
+        """Return training status data for current user."""
+
+        url = f"{self.garmin_connect_training_status_url}/{cdate}"
+        logger.debug("Requesting training status data")
 
         return self.modern_rest_client.get(url).json()
 
