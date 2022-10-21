@@ -4,7 +4,7 @@ Python 3 API wrapper for Garmin Connect to get your statistics.
 
 ## About
 
-This package allows you to request your device, activity and health data from your Garmin Connect account.
+This package allows you to request garmin device, activity and health data from your Garmin Connect account.
 See <https://connect.garmin.com/>
 
 ## Installation
@@ -18,7 +18,7 @@ pip3 install garminconnect
 I wrote this for testing and playing with all available/known API calls.  
 If you run it from the python-garmin connect directory it will use the library code beneath it, so you can develop without reinstalling the package.  
 
-The documenting also demostrate a way to do session saving and reusing.  
+The code also demostrate how to implement session saving and re-using of the cookies.  
 
 You can set enviroment variable with your credentials like so:
 ```
