@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-pip3 install cloudscaper readchar requests json pwinput
+pip3 install cloudscaper requests readchar json pwinput
 
 export EMAIL=<your garmin email>
 export PASSWORD=<your garmin password>
@@ -12,9 +12,9 @@ import logging
 import os
 import sys
 
+import requests
 import pwinput
 import readchar
-import requests
 
 from garminconnect import (
     Garmin,
@@ -33,14 +33,14 @@ email = os.getenv("EMAIL")
 password = os.getenv("PASSWORD")
 api = None
 
-# Example ranges
+# Example selections and settings
 today = datetime.date.today()
-startdate = today - datetime.timedelta(days=7)
+startdate = today - datetime.timedelta(days=7) # Select past week
 start = 0
 limit = 100
-start_badge = 1  # badges calls start counting at 1
-activitytype = ""  # Possible values are [cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other]
-activityfile = "MY_ACTIVITY.fit"
+start_badge = 1  # Badge related calls calls start counting at 1
+activitytype = ""  # Possible values are: cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other
+activityfile = "MY_ACTIVITY.fit" # Supported file types are: .fit .gpx .tcx
 
 menu_options = {
     "1": "Get full name",
@@ -68,13 +68,25 @@ menu_options = {
     "l": f"Get badge challenges data from '{start_badge}' and limit '{limit}'",
     "m": f"Get non completed badge challenges data from '{start_badge}' and limit '{limit}'",
     "n": f"Get activities data from start '{start}' and limit '{limit}'",
-    "o": f"Download activities data by date from '{startdate.isoformat()}' to '{today.isoformat()}'",
-    "p": f"Get all kinds of activities data from '{start}'",
-    "r": f"Upload activity data from file '{activityfile}'",
-    "s": "Get all kinds of Garmin device info",
+    "o": "Get last activity",
+    "p": f"Download activities data by date from '{startdate.isoformat()}' to '{today.isoformat()}'",
+    "r": f"Get all kinds of activities data from '{start}'",
+    "s": f"Upload activity data from file '{activityfile}'",
+    "t": "Get all kinds of Garmin device info",
     "Z": "Logout Garmin Connect portal",
     "q": "Exit",
 }
+
+def display_json(api_call, output):
+    """Format API output for better readability."""
+
+    dashed = "-"*20
+    header = f"{dashed} {api_call} {dashed}"
+    footer = "-"*len(header)
+
+    print(header)
+    print(json.dumps(output, indent=4))
+    print(footer)
 
 
 def get_credentials():
@@ -117,7 +129,7 @@ def init_api(email, password):
             api.login()
 
             # Save session dictionary to json file for future use
-            with open("session.json", "w", encofromding="utf-8") as f:
+            with open("session.json", "w", encoding="utf-8") as f:
                 json.dump(api.session_data, f, ensure_ascii=False, indent=4)
         except (
             GarminConnectConnectionError,
@@ -154,110 +166,109 @@ def switch(api, i):
             # USER BASICS
             if i == "1":
                 # Get full name from profile
-                logger.info(api.get_full_name())
+                display_json("api.get_full_name()", api.get_full_name())
             elif i == "2":
                 # Get unit system from profile
-                logger.info(api.get_unit_system())
+                display_json("api.get_unit_system()", api.get_unit_system())
 
             # USER STATISTIC SUMMARIES
             elif i == "3":
                 # Get activity data for 'YYYY-MM-DD'
-                logger.info(api.get_stats(today.isoformat()))
+                display_json(f"api.get_stats('{today.isoformat()}')", api.get_stats(today.isoformat()))
             elif i == "4":
                 # Get activity data (to be compatible with garminconnect-ha)
-                logger.info(api.get_user_summary(today.isoformat()))
+                display_json(f"api.get_user_summary('{today.isoformat()}')", api.get_user_summary(today.isoformat()))
             elif i == "5":
                 # Get body composition data for 'YYYY-MM-DD' (to be compatible with garminconnect-ha)
-                logger.info(api.get_body_composition(today.isoformat()))
+                display_json(f"api.get_body_composition('{today.isoformat()}')", api.get_body_composition(today.isoformat()))
             elif i == "6":
                 # Get body composition data for multiple days 'YYYY-MM-DD' (to be compatible with garminconnect-ha)
-                logger.info(
+                display_json(f"api.get_body_composition('{startdate.isoformat()}', '{today.isoformat()}')",
                     api.get_body_composition(startdate.isoformat(), today.isoformat())
                 )
             elif i == "7":
                 # Get stats and body composition data for 'YYYY-MM-DD'
-                logger.info(api.get_stats_and_body(today.isoformat()))
+                display_json(f"api.get_stats_and_body('{today.isoformat()}')", api.get_stats_and_body(today.isoformat()))
 
             # USER STATISTICS LOGGED
             elif i == "8":
                 # Get steps data for 'YYYY-MM-DD'
-                logger.info(api.get_steps_data(today.isoformat()))
+                display_json(f"api.get_steps_data('{today.isoformat()}')", api.get_steps_data(today.isoformat()))
             elif i == "9":
                 # Get heart rate data for 'YYYY-MM-DD'
-                logger.info(api.get_heart_rates(today.isoformat()))
+                display_json(f"api.get_heart_rates('{today.isoformat()}')", api.get_heart_rates(today.isoformat()))
             elif i == "0":
                 # Get training readiness data for 'YYYY-MM-DD'
-                logger.info(api.get_training_readiness(today.isoformat()))
+                display_json(f"api.get_training_readiness('{today.isoformat()}')", api.get_training_readiness(today.isoformat()))
             elif i == ".":
                 # Get training status data for 'YYYY-MM-DD'
-                logger.info(api.get_training_status(today.isoformat()))
+                display_json(f"api.get_training_status('{today.isoformat()}')", api.get_training_status(today.isoformat()))
             elif i == "a":
                 # Get resting heart rate data for 'YYYY-MM-DD'
-                logger.info(api.get_rhr_day(today.isoformat()))
+                display_json(f"api.get_rhr_day('{today.isoformat()}')", api.get_rhr_day(today.isoformat()))
             elif i == "b":
                 # Get hydration data 'YYYY-MM-DD'
-                logger.info(api.get_hydration_data(today.isoformat()))
+                display_json(f"api.get_hydration_data('{today.isoformat()}')", api.get_hydration_data(today.isoformat()))
             elif i == "c":
                 # Get sleep data for 'YYYY-MM-DD'
-                logger.info(api.get_sleep_data(today.isoformat()))
+                display_json(f"api.get_sleep_data('{today.isoformat()}')", api.get_sleep_data(today.isoformat()))
             elif i == "d":
                 # Get stress data for 'YYYY-MM-DD'
-                logger.info(api.get_stress_data(today.isoformat()))
+                display_json(f"api.get_stress_data('{today.isoformat()}')", api.get_stress_data(today.isoformat()))
             elif i == "e":
                 # Get respiration data for 'YYYY-MM-DD'
-                logger.info(api.get_respiration_data(today.isoformat()))
+                display_json(f"api.get_respiration_data('{today.isoformat()}')", api.get_respiration_data(today.isoformat()))
             elif i == "f":
                 # Get SpO2 data for 'YYYY-MM-DD'
-                logger.info(api.get_spo2_data(today.isoformat()))
+                display_json(f"api.get_spo2_data('{today.isoformat()}')", api.get_spo2_data(today.isoformat()))
             elif i == "g":
                 # Get max metric data (like vo2MaxValue and fitnessAge) for 'YYYY-MM-DD'
-                logger.info(api.get_max_metrics(today.isoformat()))
+                display_json(f"api.get_max_metrics('{today.isoformat()}')", api.get_max_metrics(today.isoformat()))
             elif i == "h":
                 # Get personal record for user
-                logger.info(api.get_personal_record())
+                display_json("api.get_personal_record()", api.get_personal_record())
             elif i == "i":
                 # Get earned badges for user
-                logger.info(api.get_earned_badges())
+                display_json("api.get_earned_badges()", api.get_earned_badges())
             elif i == "j":
                 # Get adhoc challenges data from start and limit
-                logger.info(
-                    api.get_adhoc_challenges(start, limit)
+                display_json(
+                    f"api.get_adhoc_challenges({start},{limit})", api.get_adhoc_challenges(start, limit)
                 )  # 1=start, 100=limit
             elif i == "k":
                 # Get available badge challenges data from start and limit
-                logger.info(
-                    api.get_available_badge_challenges(start_badge, limit)
+                display_json(
+                    f"api.get_available_badge_challenges({start_badge}, {limit})", api.get_available_badge_challenges(start_badge, limit)
                 )  # 1=start, 100=limit
             elif i == "l":
                 # Get badge challenges data from start and limit
-                logger.info(
-                    api.get_badge_challenges(start_badge, limit)
+                display_json(
+                    f"api.get_badge_challenges({start_badge}, {limit})", api.get_badge_challenges(start_badge, limit)
                 )  # 1=start, 100=limit
             elif i == "m":
                 # Get non completed badge challenges data from start and limit
-                logger.info(
-                    api.get_non_completed_badge_challenges(start_badge, limit)
+                display_json(
+                    f"api.get_non_completed_badge_challenges({start_badge}, {limit})", api.get_non_completed_badge_challenges(start_badge, limit)
                 )  # 1=start, 100=limit
 
             # ACTIVITIES
             elif i == "n":
                 # Get activities data from start and limit
-                activities = api.get_activities(start, limit)  # 0=start, 1=limit
-                logger.info(activities)
+                display_json(f"api.get_activities({start}, {limit})", api.get_activities(start, limit)) # 0=start, 1=limit
             elif i == "o":
+                # Get last activity
+                display_json("api.get_last_activity()", api.get_last_activity())
+            elif i == "p":    
                 # Get activities data from startdate 'YYYY-MM-DD' to enddate 'YYYY-MM-DD', with (optional) activitytype
-                # Possible values are [cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other]
+                # Possible values are: cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other
                 activities = api.get_activities_by_date(
                     startdate.isoformat(), today.isoformat(), activitytype
                 )
 
-                # Get last activity
-                logger.info(api.get_last_activity())
-
-                # Download an Activity
+                # Download activities
                 for activity in activities:
                     activity_id = activity["activityId"]
-                    logger.info("api.download_activities(%s)", activity_id)
+                    display_json(f"api.download_activities({activity_id})", api.download_activities(activity_id))
 
                     gpx_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.GPX
@@ -287,59 +298,55 @@ def switch(api, i):
                     with open(output_file, "wb") as fb:
                         fb.write(csv_data)
 
-            elif i == "p":
+            elif i == "r":
                 # Get activities data from start and limit
                 activities = api.get_activities(start, limit)  # 0=start, 1=limit
 
                 # Get activity splits
                 first_activity_id = activities[0].get("activityId")
 
-                logger.info(api.get_activity_splits(first_activity_id))
+                display_json(f"api.get_activity_splits({first_activity_id})", api.get_activity_splits(first_activity_id))
 
                 # Get activity split summaries for activity id
-                logger.info(api.get_activity_split_summaries(first_activity_id))
+                display_json(f"api.get_activity_split_summaries({first_activity_id})", api.get_activity_split_summaries(first_activity_id))
 
                 # Get activity weather data for activity
-                logger.info(api.get_activity_weather(first_activity_id))
+                display_json(f"api.get_activity_weather({first_activity_id})", api.get_activity_weather(first_activity_id))
 
                 # Get activity hr timezones id
-                logger.info(api.get_activity_hr_in_timezones(first_activity_id))
+                display_json(f"api.get_activity_hr_in_timezones({first_activity_id})", api.get_activity_hr_in_timezones(first_activity_id))
 
                 # Get activity details for activity id
-                logger.info(api.get_activity_details(first_activity_id))
+                display_json(f"api.get_activity_details({first_activity_id})", api.get_activity_details(first_activity_id))
 
                 # Get gear data for activity id
-                logger.info(api.get_activity_gear(first_activity_id))
+                display_json(f"api.get_activity_gear({first_activity_id})", api.get_activity_gear(first_activity_id))
 
                 # Activity self evaluation data for activity id
-                logger.info(api.get_activity_evaluation(first_activity_id))
+                display_json(f"api.get_activity_evaluation({first_activity_id})", api.get_activity_evaluation(first_activity_id))
 
-            elif i == "r":
+            elif i == "s":
                 # Upload activity from file
-                logger.info(api.upload_activity(activityfile))
+                display_json(f"api.upload_activity({activityfile})", api.upload_activity(activityfile))
 
             # DEVICES
-            elif i == "s":
+            elif i == "t":
                 # Get Garmin devices
                 devices = api.get_devices()
-                logger.info(devices)
+                display_json("api.get_devices()", devices)
 
                 # Get device last used
                 device_last_used = api.get_device_last_used()
-                logger.info(device_last_used)
+                display_json("api.get_device_last_used()", device_last_used)
 
+                # Get settings per device
                 for device in devices:
                     device_id = device["deviceId"]
-                    logger.info(api.get_device_settings(device_id))
-
-                # Get device settings
-                for device in devices:
-                    device_id = device["deviceId"]
-                    logger.info(api.get_device_settings(device_id))
+                    display_json(f"api.get_device_settings({device_id})", api.get_device_settings(device_id))
 
             elif i == "Z":
                 # Logout Garmin Connect portal
-                api.logout()
+                display_json("api.logout()", api.logout())
                 api = None
 
         except (
@@ -348,7 +355,7 @@ def switch(api, i):
             GarminConnectTooManyRequestsError,
             requests.exceptions.HTTPError,
         ) as err:
-            logger.error("Error occurred during Garmin Connect communication: %s", err)
+            logger.error("Error occurred: %s", err)
         except KeyError:
             # Invalid menu option choosen
             pass
