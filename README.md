@@ -1,3 +1,5 @@
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
+
 # Python: Garmin Connect
 
 Python 3 API wrapper for Garmin Connect to get your statistics.
@@ -450,3 +452,6 @@ while True:
     option = readchar.readkey()
     switch(api, option)
 ```
+
+## Donations
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
