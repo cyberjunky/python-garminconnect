@@ -24,7 +24,7 @@ class ApiClient:
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0"
     }
 
-    def __init__(self, session, baseurl, headers=None, aditional_headers=None):
+    def __init__(self, session, baseurl, headers=None, additional_headers=None):
         """Return a new Client instance."""
         self.session = session
         self.baseurl = baseurl
@@ -34,8 +34,8 @@ class ApiClient:
         else:
             self.headers = self.default_headers.copy()
 
-        if aditional_headers:
-            self.headers.update(aditional_headers)
+        if additional_headers:
+            self.headers.update(additional_headers)
 
     def set_cookies(self, cookies):
         logger.debug("Restoring cookies for saved session")
@@ -56,11 +56,11 @@ class ApiClient:
 
         return path
 
-    def get(self, addurl, aditional_headers=None, params=None):
+    def get(self, addurl, additional_headers=None, params=None):
         """Make an API call using the GET method."""
         total_headers = self.headers.copy()
-        if aditional_headers:
-            total_headers.update(aditional_headers)
+        if additional_headers:
+            total_headers.update(additional_headers)
         url = self.url(addurl)
 
         logger.debug("URL: %s", url)
@@ -82,11 +82,11 @@ class ApiClient:
 
             raise GarminConnectConnectionError(err) from err
 
-    def post(self, addurl, aditional_headers=None, params=None, data=None, files=None):
+    def post(self, addurl, additional_headers=None, params=None, data=None, files=None):
         """Make an API call using the POST method."""
         total_headers = self.headers.copy()
-        if aditional_headers:
-            total_headers.update(aditional_headers)
+        if additional_headers:
+            total_headers.update(additional_headers)
         url = self.url(addurl)
 
         logger.debug("URL: %s", url)
@@ -172,6 +172,8 @@ class Garmin:
             "proxy/wellness-service/wellness/dailyStress"
         )
 
+        self.garmin_connect_goals_url = "proxy/goal-service/goal/goals"
+
         self.garmin_connect_rhr_url = "proxy/userstats-service/wellness/daily"
 
         self.garmin_connect_training_readiness_url = "proxy/metrics-service/metrics/trainingreadiness"
@@ -213,12 +215,12 @@ class Garmin:
         self.sso_rest_client = ApiClient(
             self.session,
             self.garmin_connect_sso_url,
-            aditional_headers=self.garmin_headers,
+            additional_headers=self.garmin_headers,
         )
         self.modern_rest_client = ApiClient(
             self.session,
             self.garmin_connect_modern_url,
-            aditional_headers=self.garmin_headers,
+            additional_headers=self.garmin_headers,
         )
 
         self.display_name = None
@@ -703,8 +705,42 @@ class Garmin:
 
         return activities
 
+    def get_goals(self, status="active", start=1, limit=30):
+        """
+        Fetch all goals based on status
+        :param status: Status of goals (valid options are "active", "future", or "past")
+        :type status: str
+        :param start: Initial goal index
+        :type start: int
+        :param limit: Pagination limit when retrieving goals
+        :type limit: int
+        :return: list of goals in JSON format
+        """
+
+        goals = []
+        url = self.garmin_connect_goals_url
+        params = {
+            "status": status,
+            "start": str(start),
+            "limit": str(limit),
+            "sortOrder": "asc"
+        }
+
+        logger.debug(f"Requesting {status} goals")
+        while True:
+            params["start"] = str(start)
+            logger.debug(f"Requesting {status} goals {start} to {start + limit - 1}")
+            act = self.modern_rest_client.get(url, params=params).json()
+            if act:
+                goals.extend(act)
+                start = start + limit
+            else:
+                break
+
+        return goals
+
     class ActivityDownloadFormat(Enum):
-        """Activitie variables."""
+        """Activity variables."""
 
         ORIGINAL = auto()
         TCX = auto()
