@@ -730,9 +730,9 @@ class Garmin:
         while True:
             params["start"] = str(start)
             logger.debug(f"Requesting {status} goals {start} to {start + limit - 1}")
-            act = self.modern_rest_client.get(url, params=params).json()
-            if act:
-                goals.extend(act)
+            goals_json = self.modern_rest_client.get(url, params=params).json()
+            if goals_json:
+                goals.extend(goals_json)
                 start = start + limit
             else:
                 break
