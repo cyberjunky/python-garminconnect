@@ -76,6 +76,7 @@ menu_options = {
     "u": "Get active goals",
     "v": "Get future goals",
     "w": "Get past goals",
+    "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
     "Z": "Logout Garmin Connect portal",
     "q": "Exit",
 }
@@ -119,7 +120,7 @@ def init_api(email, password):
             api.login()
 
     except (FileNotFoundError, GarminConnectAuthenticationError):
-        # Login to Garmin Connect portal with credentials since session is invalid or not presentlastweek.
+        # Login to Garmin Connect portal with credentials since session is invalid or not present.
         print(
             "Session file not present or turned invalid, login with your Garmin Connect credentials.\n"
             "NOTE: Credentials will not be stored, the session cookies will be stored in 'session.json' for future use.\n"
@@ -363,6 +364,10 @@ def switch(api, i):
                 # Get past goals
                 goals = api.get_goals("past")
                 display_json("api.get_goals(\"past\")", goals)
+
+            elif i == "x":
+                # Get Heart Rate Variability (hrv) data
+                display_json(f"api.get_hrv_data({today.isoformat()})", api.get_hrv_data(today.isoformat()))
 
             elif i == "Z":
                 # Logout Garmin Connect portal
