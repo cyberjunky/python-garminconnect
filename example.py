@@ -121,7 +121,8 @@ def init_api(email, password):
     except (FileNotFoundError, GarminConnectAuthenticationError):
         # Login to Garmin Connect portal with credentials since session is invalid or not presentlastweek.
         print(
-            "Session file not present or invalid, login with your credentials, please wait...\n"
+            "Session file not present or turned invalid, login with your Garmin Connect credentials.\n"
+            "NOTE: Credentials will not be stored, the session cookies will be stored in 'session.json' for future use.\n"
         )
         try:
             # Ask for credentials if not set as environment variables
@@ -271,7 +272,7 @@ def switch(api, i):
                 # Download activities
                 for activity in activities:
                     activity_id = activity["activityId"]
-                    display_json(f"api.download_activities({activity_id})", api.download_activities(activity_id))
+                    display_json(f"api.download_activity({activity_id})", api.download_activity(activity_id))
 
                     gpx_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.GPX
