@@ -39,27 +39,28 @@ Or you can just run the program and enter your credentials when asked, it will c
 
 ```
 python3 ./example.py
-
 *** Garmin Connect API Demo by cyberjunky ***
+
+Login to Garmin Connect using session loaded from 'session.json'...
 
 1 -- Get full name
 2 -- Get unit system
-3 -- Get activity data for '2022-10-22'
-4 -- Get activity data for '2022-10-22' (compatible with garminconnect-ha)
-5 -- Get body composition data for '2022-10-22' (compatible with garminconnect-ha)
-6 -- Get body composition data for from '2022-10-15' to '2022-10-22' (to be compatible with garminconnect-ha)
-7 -- Get stats and body composition data for '2022-10-22'
-8 -- Get steps data for '2022-10-22'
-9 -- Get heart rate data for '2022-10-22'
-0 -- Get training readiness data for '2022-10-22'
-. -- Get training status data for '2022-10-22'
-a -- Get resting heart rate data for 2022-10-22'
-b -- Get hydration data for '2022-10-22'
-c -- Get sleep data for '2022-10-22'
-d -- Get stress data for '2022-10-22'
-e -- Get respiration data for '2022-10-22'
-f -- Get SpO2 data for '2022-10-22'
-g -- Get max metric data (like vo2MaxValue and fitnessAge) for '2022-10-22'
+3 -- Get activity data for '2022-11-07'
+4 -- Get activity data for '2022-11-07' (compatible with garminconnect-ha)
+5 -- Get body composition data for '2022-11-07' (compatible with garminconnect-ha)
+6 -- Get body composition data for from '2022-10-31' to '2022-11-07' (to be compatible with garminconnect-ha)
+7 -- Get stats and body composition data for '2022-11-07'
+8 -- Get steps data for '2022-11-07'
+9 -- Get heart rate data for '2022-11-07'
+0 -- Get training readiness data for '2022-11-07'
+. -- Get training status data for '2022-11-07'
+a -- Get resting heart rate data for 2022-11-07'
+b -- Get hydration data for '2022-11-07'
+c -- Get sleep data for '2022-11-07'
+d -- Get stress data for '2022-11-07'
+e -- Get respiration data for '2022-11-07'
+f -- Get SpO2 data for '2022-11-07'
+g -- Get max metric data (like vo2MaxValue and fitnessAge) for '2022-11-07'
 h -- Get personal record for user
 i -- Get earned badges for user
 j -- Get adhoc challenges data from start '0' and limit '100'
@@ -68,17 +69,20 @@ l -- Get badge challenges data from '1' and limit '100'
 m -- Get non completed badge challenges data from '1' and limit '100'
 n -- Get activities data from start '0' and limit '100'
 o -- Get last activity
-p -- Download activities data by date from '2022-10-15' to '2022-10-22'
+p -- Download activities data by date from '2022-10-31' to '2022-11-07'
 r -- Get all kinds of activities data from '0'
 s -- Upload activity data from file 'MY_ACTIVITY.fit'
 t -- Get all kinds of Garmin device info
+u -- Get active goals
+v -- Get future goals
+w -- Get past goals
 Z -- Logout Garmin Connect portal
 q -- Exit
 Make your selection: 
 
 ```
 
-This is the example code, also available in example.py.
+This is some example code, and probably older than the latest code which can be found in 'example.py'.
 
 ```python
 #!/usr/bin/env python3
@@ -349,7 +353,7 @@ def switch(api, i):
                 # Download activities
                 for activity in activities:
                     activity_id = activity["activityId"]
-                    display_json(f"api.download_activities({activity_id})", api.download_activities(activity_id))
+                    display_json(f"api.download_activity({activity_id})", api.download_activity(activity_id))
 
                     gpx_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.GPX
