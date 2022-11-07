@@ -176,6 +176,8 @@ class Garmin:
 
         self.garmin_connect_rhr_url = "proxy/userstats-service/wellness/daily"
 
+        self.garmin_connect_hrv_url = "proxy/hrv-service/hrv"
+
         self.garmin_connect_training_readiness_url = "proxy/metrics-service/metrics/trainingreadiness"
 
         self.garmin_connect_training_status_url = "proxy/metrics-service/metrics/trainingstatus/aggregated"
@@ -578,6 +580,14 @@ class Garmin:
         logger.debug("Requesting resting heartrate data")
 
         return self.modern_rest_client.get(url, params=params).json()
+
+    def get_hrv_data(self, cdate: str) -> Dict[str, Any]:
+        """Return Heart Rate Variability (hrv) data for current user."""
+
+        url = f"{self.garmin_connect_hrv_url}/{cdate}"
+        logger.debug("Requesting Heart Rate Variability (hrv) data")
+
+        return self.modern_rest_client.get(url).text #.json()
 
     def get_training_readiness(self, cdate: str) -> Dict[str, Any]:
         """Return training readiness data for current user."""
