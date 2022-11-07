@@ -20,19 +20,19 @@ pip3 install garminconnect
 I wrote this for testing and playing with all available/known API calls.  
 If you run it from the python-garmin connect directory it will use the library code beneath it, so you can develop without reinstalling the package.  
 
-The code also demostrate how to implement session saving and re-using of the cookies.  
+The code also demonstrates how to implement session saving and re-using of the cookies.  
 
-You can set enviroment variables with your credentials like so, this is optional:
-```
+You can set environment variables with your credentials like so, this is optional:
+
+```bash
 export EMAIL=<your garmin email>
 export PASSWORD=<your garmin password>
 ```
 
-Install the pre-requisites for the example program. (not all are needed for using the library package)  
+Install the pre-requisites for the example program (not all are needed for using the library package):
 
 ```bash
-pip3 install cloudscaper readchar requests json pwinput
-
+pip3 install cloudscraper readchar requests pwinput
 ```
 
 Or you can just run the program and enter your credentials when asked, it will create and save a session file and use that until it's outdated/invalid.
@@ -83,7 +83,7 @@ This is the example code, also available in example.py.
 ```python
 #!/usr/bin/env python3
 """
-pip3 install cloudscaper requests readchar json pwinput
+pip3 install cloudscraper requests readchar pwinput
 
 export EMAIL=<your garmin email>
 export PASSWORD=<your garmin password>
@@ -162,11 +162,9 @@ menu_options = {
 
 def display_json(api_call, output):
     """Format API output for better readability."""
-
     dashed = "-"*20
     header = f"{dashed} {api_call} {dashed}"
     footer = "-"*len(header)
-
     print(header)
     print(json.dumps(output, indent=4))
     print(footer)
