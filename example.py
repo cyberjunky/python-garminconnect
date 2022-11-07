@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-pip3 install cloudscaper requests readchar json pwinput
+pip3 install cloudscraper requests readchar pwinput
 
 export EMAIL=<your garmin email>
 export PASSWORD=<your garmin password>
@@ -73,6 +73,9 @@ menu_options = {
     "r": f"Get all kinds of activities data from '{start}'",
     "s": f"Upload activity data from file '{activityfile}'",
     "t": "Get all kinds of Garmin device info",
+    "u": "Get active goals",
+    "v": "Get future goals",
+    "w": "Get past goals",
     "Z": "Logout Garmin Connect portal",
     "q": "Exit",
 }
@@ -343,6 +346,22 @@ def switch(api, i):
                 for device in devices:
                     device_id = device["deviceId"]
                     display_json(f"api.get_device_settings({device_id})", api.get_device_settings(device_id))
+
+            # GOALS
+            elif i == "u":
+                # Get active goals
+                goals = api.get_goals("active")
+                display_json("api.get_goals(\"active\")", goals)
+
+            elif i == "v":
+                # Get future goals
+                goals = api.get_goals("future")
+                display_json("api.get_goals(\"future\")", goals)
+
+            elif i == "w":
+                # Get past goals
+                goals = api.get_goals("past")
+                display_json("api.get_goals(\"past\")", goals)
 
             elif i == "Z":
                 # Logout Garmin Connect portal
