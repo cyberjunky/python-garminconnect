@@ -92,6 +92,16 @@ def display_json(api_call, output):
     print(json.dumps(output, indent=4))
     print(footer)
 
+def display_text(output):
+    """Format API output for better readability."""
+
+    dashed = "-"*60
+    header = f"{dashed}"
+    footer = "-"*len(header)
+
+    print(header)
+    print(json.dumps(output, indent=4))
+    print(footer)
 
 def get_credentials():
     """Get user credentials."""
@@ -272,9 +282,11 @@ def switch(api, i):
 
                 # Download activities
                 for activity in activities:
-                    activity_id = activity["activityId"]
-                    display_json(f"api.download_activity({activity_id})", api.download_activity(activity_id))
 
+                    activity_id = activity["activityId"]
+                    display_text(activity)
+
+                    print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.GPX)")
                     gpx_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.GPX
                     )
@@ -282,6 +294,7 @@ def switch(api, i):
                     with open(output_file, "wb") as fb:
                         fb.write(gpx_data)
 
+                    print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.TCX)")
                     tcx_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.TCX
                     )
@@ -289,6 +302,7 @@ def switch(api, i):
                     with open(output_file, "wb") as fb:
                         fb.write(tcx_data)
 
+                    print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.ORIGINAL)")
                     zip_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.ORIGINAL
                     )
@@ -296,6 +310,7 @@ def switch(api, i):
                     with open(output_file, "wb") as fb:
                         fb.write(zip_data)
 
+                    print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.CSV)")
                     csv_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.CSV
                     )
