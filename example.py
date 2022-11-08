@@ -293,6 +293,7 @@ def switch(api, i):
                     output_file = f"./{str(activity_id)}.gpx"
                     with open(output_file, "wb") as fb:
                         fb.write(gpx_data)
+                    print(f"Activity data downloaded to file {output_file}")
 
                     print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.TCX)")
                     tcx_data = api.download_activity(
@@ -301,6 +302,7 @@ def switch(api, i):
                     output_file = f"./{str(activity_id)}.tcx"
                     with open(output_file, "wb") as fb:
                         fb.write(tcx_data)
+                    print(f"Activity data downloaded to file {output_file}")
 
                     print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.ORIGINAL)")
                     zip_data = api.download_activity(
@@ -309,6 +311,7 @@ def switch(api, i):
                     output_file = f"./{str(activity_id)}.zip"
                     with open(output_file, "wb") as fb:
                         fb.write(zip_data)
+                    print(f"Activity data downloaded to file {output_file}")
 
                     print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.CSV)")
                     csv_data = api.download_activity(
@@ -317,6 +320,7 @@ def switch(api, i):
                     output_file = f"./{str(activity_id)}.csv"
                     with open(output_file, "wb") as fb:
                         fb.write(csv_data)
+                    print(f"Activity data downloaded to file {output_file}")
 
             elif i == "r":
                 # Get activities data from start and limit
