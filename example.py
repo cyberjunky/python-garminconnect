@@ -77,6 +77,7 @@ menu_options = {
     "v": "Get future goals",
     "w": "Get past goals",
     "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
+    "G": f"Get Gear'",
     "Z": "Logout Garmin Connect portal",
     "q": "Exit",
 }
@@ -387,6 +388,20 @@ def switch(api, i):
             elif i == "x":
                 # Get Heart Rate Variability (hrv) data
                 display_json(f"api.get_hrv_data({today.isoformat()})", api.get_hrv_data(today.isoformat()))
+
+            # Gear
+            elif i == "G":
+                last_used_device = api.get_device_last_used()
+                display_json(f"api.get_device_last_used()", last_used_device)
+                userProfileNumber = last_used_device["userProfileNumber"]
+                gear = api.get_gear(userProfileNumber)
+                display_json(f"api.get_gear()", gear)
+                display_json(f"api.get_gear_defaults()", api.get_gear_defaults(userProfileNumber))
+                display_json(f"api.get()", api.get_activity_types())
+                for gear in gear:
+                        uuid=gear["uuid"]
+                        name=gear["displayName"]                                                
+                        display_json(f"api.get_gear_stats({uuid}) / {name}", api.get_gear_stats(uuid))
 
             elif i == "Z":
                 # Logout Garmin Connect portal
