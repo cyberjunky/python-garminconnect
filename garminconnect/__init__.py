@@ -198,6 +198,7 @@ class Garmin:
             "proxy/activitylist-service/activities/search/activities"
         )
         self.garmin_connect_activity = "proxy/activity-service/activity"
+        self.garmin_connect_activity_types = "proxy/activity-service/activity/activityTypes"
 
         self.garmin_connect_fit_download = "proxy/download-service/files/activity"
         self.garmin_connect_tcx_download = "proxy/download-service/export/tcx/activity"
@@ -208,6 +209,7 @@ class Garmin:
         self.garmin_connect_upload = "proxy/upload-service/upload"
 
         self.garmin_connect_gear = "proxy/gear-service/gear/filterGear"
+        self.garmin_connect_gear_baseurl = "proxy/gear-service/gear/"
 
         self.garmin_connect_logout = "auth/logout/?url="
 
@@ -715,6 +717,11 @@ class Garmin:
 
         return activities
 
+    def get_activity_types(self):
+        url = self.garmin_connect_activity_types
+        logger.debug(f"Requesting activy types")
+        return self.modern_rest_client.get(url).json()
+
     def get_goals(self, status="active", start=1, limit=30):
         """
         Fetch all goals based on status
@@ -748,6 +755,29 @@ class Garmin:
                 break
 
         return goals
+
+    def get_gear(self, userProfileNumber):
+        """Return all user gear."""
+        url = f"{self.garmin_connect_gear}?userProfilePk={userProfileNumber}"
+        params = {"userProfilePk": str(userProfileNumber)}
+        logger.debug("Requesting gear for user %s", userProfileNumber)
+
+        return self.modern_rest_client.get(url).json()
+
+    def get_gear_stats(self, gearUUID):
+        url = f"{self.garmin_connect_gear_baseurl}stats/{gearUUID}"
+        logger.debug("Requesting gear stats for gearUUID %s", gearUUID)
+        return self.modern_rest_client.get(url).json()
+
+    def get_gear_defaults(self, userProfileNumber):
+        url = f"{self.garmin_connect_gear_baseurl}user/{userProfileNumber}/activityTypes"
+        logger.debug("Requesting gear for user %s", userProfileNumber)
+        return self.modern_rest_client.get(url).json()
+
+    def set_gear_default(self, activityType, gearUUID, defaultGear=True):
+        defaultGearString = str(defaultGear).lower()
+        url = f"{self.garmin_connect_gear_baseurl}{gearUUID}/activityType/{activityType}/default/{defaultGearString}"
+        return self.modern_rest_client.post(url);
 
     class ActivityDownloadFormat(Enum):
         """Activity variables."""
