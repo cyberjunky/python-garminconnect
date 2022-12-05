@@ -759,7 +759,6 @@ class Garmin:
     def get_gear(self, userProfileNumber):
         """Return all user gear."""
         url = f"{self.garmin_connect_gear}?userProfilePk={userProfileNumber}"
-        params = {"userProfilePk": str(userProfileNumber)}
         logger.debug("Requesting gear for user %s", userProfileNumber)
 
         return self.modern_rest_client.get(url).json()
@@ -777,7 +776,7 @@ class Garmin:
     def set_gear_default(self, activityType, gearUUID, defaultGear=True):
         defaultGearString = str(defaultGear).lower()
         url = f"{self.garmin_connect_gear_baseurl}{gearUUID}/activityType/{activityType}/default/{defaultGearString}"
-        return self.modern_rest_client.post(url);
+        return self.modern_rest_client.post(url, {'x-http-method-override': 'PUT' });
 
     class ActivityDownloadFormat(Enum):
         """Activity variables."""
