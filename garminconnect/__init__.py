@@ -774,9 +774,12 @@ class Garmin:
         return self.modern_rest_client.get(url).json()
 
     def set_gear_default(self, activityType, gearUUID, defaultGear=True):
-        defaultGearString = str(defaultGear).lower()
-        url = f"{self.garmin_connect_gear_baseurl}{gearUUID}/activityType/{activityType}/default/{defaultGearString}"
-        return self.modern_rest_client.post(url, {'x-http-method-override': 'PUT' });
+        defaultGearString = "/default/true" if defaultGear else ""
+        method_override = "PUT" if defaultGear else "DELETE"
+        url = f"{self.garmin_connect_gear_baseurl}{gearUUID}/activityType/{activityType}{defaultGearString}"
+        return self.modern_rest_client.post(
+            url, {"x-http-method-override": method_override}
+        )
 
     class ActivityDownloadFormat(Enum):
         """Activity variables."""
