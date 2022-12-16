@@ -125,13 +125,13 @@ class Garmin:
 
         self.garmin_connect_base_url = "https://connect.garmin.com"
         self.garmin_connect_sso_url = "sso.garmin.com/sso"
-        self.garmin_connect_modern_url = "connect.garmin.com/modern"
+        self.garmin_connect_modern_url = "connect.garmin.com"
         self.garmin_connect_css_url = "https://static.garmincdn.com/com.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
 
         if self.is_cn:
             self.garmin_connect_base_url = "https://connect.garmin.cn"
             self.garmin_connect_sso_url = "sso.garmin.cn/sso"
-            self.garmin_connect_modern_url = "connect.garmin.cn/modern"
+            self.garmin_connect_modern_url = "connect.garmin.cn"
             self.garmin_connect_css_url = "https://static.garmincdn.cn/cn.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
 
         self.garmin_connect_login_url = self.garmin_connect_base_url + "/en-US/signin"
