@@ -875,6 +875,15 @@ class Garmin:
 
         return self.modern_rest_client.get(url, params=params).json()
 
+    def get_activity_exercise_sets(self, activity_id):
+      """Return activity exercise sets."""
+
+      activity_id = str(activity_id)
+      url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
+      logger.debug("Requesting exercise sets for activity id %s", activity_id)
+
+      return self.modern_rest_client.get(url).json()
+
     def get_activity_gear(self, activity_id):
         """Return gears used for activity id."""
 
