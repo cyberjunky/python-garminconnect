@@ -76,6 +76,7 @@ menu_options = {
     "u": "Get active goals",
     "v": "Get future goals",
     "w": "Get past goals",
+    "y": "Get all Garmin device alarms",
     "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
     "G": f"Get Gear'",
     "Z": "Logout Garmin Connect portal",
@@ -384,6 +385,14 @@ def switch(api, i):
                 # Get past goals
                 goals = api.get_goals("past")
                 display_json("api.get_goals(\"past\")", goals)
+            
+            # ALARMS
+            elif i == "y":
+                # Get Garmin device alarms
+                alarms = api.get_device_alarms()
+                for alarm in alarms:
+                    alarm_id = alarm["alarmId"]
+                    display_json(f"api.get_device_alarms({alarm_id})", alarm)
 
             elif i == "x":
                 # Get Heart Rate Variability (hrv) data
