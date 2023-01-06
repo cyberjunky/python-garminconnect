@@ -77,7 +77,7 @@ menu_options = {
     "v": "Get future goals",
     "w": "Get past goals",
     "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
-    "y": f"Get progress summary from '{startdate.isoformat()}' to '{today.isoformat()}'",
+    "z": f"Get progress summary from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "G": f"Get Gear'",
     "Z": "Logout Garmin Connect portal",
     "q": "Exit",
