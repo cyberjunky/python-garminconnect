@@ -78,7 +78,7 @@ menu_options = {
     "w": "Get past goals",
     "y": "Get all Garmin device alarms",
     "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
-    "z": f"Get progress summary from '{startdate.isoformat()}' to '{today.isoformat()}'",
+    "z": f"Get progress summary from '{startdate.isoformat()}' to '{today.isoformat()}' for all metrics",
     "G": f"Get Gear'",
     "Z": "Logout Garmin Connect portal",
     "q": "Exit",
@@ -403,12 +403,13 @@ def switch(api, i):
                 # Get Heart Rate Variability (hrv) data
                 display_json(f"api.get_hrv_data({today.isoformat()})", api.get_hrv_data(today.isoformat()))
 
-            elif i == "y":
+            elif i == "z":
                 # Get progress summary
-                display_json(
-                    f"api.get_progress_summary_between_dates({today.isoformat()})", api.get_progress_summary_between_dates(
-                        startdate.isoformat(), today.isoformat()
-                    ))
+                for metric in ["elevationGain", "duration", "distance", "movingDuration"]:
+                    display_json(
+                        f"api.get_progress_summary_between_dates({today.isoformat()})", api.get_progress_summary_between_dates(
+                            startdate.isoformat(), today.isoformat(), metric
+                        ))
 
             # Gear
             elif i == "G":

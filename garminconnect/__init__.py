@@ -721,11 +721,13 @@ class Garmin:
 
         return activities
 
-    def get_progress_summary_between_dates(self, startdate, enddate):
+    def get_progress_summary_between_dates(self, startdate, enddate, metric="distance"):
         """
         Fetch progress summary data between specific dates
         :param startdate: String in the format YYYY-MM-DD
         :param enddate: String in the format YYYY-MM-DD
+        :param metric: metric to be calculated in the summary:
+            "elevationGain", "duration", "distance", "movingDuration"
         :return: list of JSON activities with their aggregated progress summary
         """
 
@@ -735,11 +737,8 @@ class Garmin:
             "endDate": str(enddate),
             "aggregation": "lifetime",
             "groupByParentActivityType": "true",
-            "metric": "elevationGain"
-            # List further metrics to be calculated in the summary here, e.g.:
-            # "metric": "duration"
-            # "metric": "distance"
-            # "metric": "movingDuration"
+            "metric": str(metric)
+            
         }
 
         logger.debug(
