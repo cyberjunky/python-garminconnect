@@ -200,6 +200,8 @@ class Garmin:
         self.garmin_connect_activity = "proxy/activity-service/activity"
         self.garmin_connect_activity_types = "proxy/activity-service/activity/activityTypes"
 
+        self.garmin_connect_fitnessstats = "proxy/fitnessstats-service/activity"
+
         self.garmin_connect_fit_download = "proxy/download-service/files/activity"
         self.garmin_connect_tcx_download = "proxy/download-service/export/tcx/activity"
         self.garmin_connect_gpx_download = "proxy/download-service/export/gpx/activity"
@@ -718,6 +720,31 @@ class Garmin:
                 break
 
         return activities
+
+    def get_progress_summary_between_dates(self, startdate, enddate):
+        """
+        Fetch progress summary data between specific dates
+        :param startdate: String in the format YYYY-MM-DD
+        :param enddate: String in the format YYYY-MM-DD
+        :return: list of JSON activities with their aggregated progress summary
+        """
+
+        url = self.garmin_connect_fitnessstats
+        params = {
+            "startDate": str(startdate),
+            "endDate": str(enddate),
+            "aggregation": "lifetime",
+            "groupByParentActivityType": "true",
+            "metric": "elevationGain"
+            # List further metrics to be calculated in the summary here, e.g.:
+            # "metric": "duration"
+            # "metric": "distance"
+            # "metric": "movingDuration"
+        }
+
+        logger.debug(
+            f"Requesting fitnessstats by date from {startdate} to {enddate}")
+        return self.modern_rest_client.get(url, params=params).json()
 
     def get_activity_types(self):
         url = self.garmin_connect_activity_types
