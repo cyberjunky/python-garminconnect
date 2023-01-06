@@ -351,6 +351,10 @@ def switch(api, i):
                 # Activity self evaluation data for activity id
                 display_json(f"api.get_activity_evaluation({first_activity_id})", api.get_activity_evaluation(first_activity_id))
 
+                # Get exercise sets in case the activity is a strength_training
+                if activities[0]["activityType"]["typeKey"] == "strength_training":
+                  display_json(f"api.get_activity_exercise_sets({first_activity_id})", api.get_activity_exercise_sets(first_activity_id))
+
             elif i == "s":
                 # Upload activity from file
                 display_json(f"api.upload_activity({activityfile})", api.upload_activity(activityfile))
