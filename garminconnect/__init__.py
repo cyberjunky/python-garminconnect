@@ -632,7 +632,9 @@ class Garmin:
         devices = self.get_devices()
         for device in devices:
             device_settings = self.get_device_settings(device["deviceId"])
-            alarms += device_settings["alarms"]
+            device_alarms = device_settings["alarms"]
+            if device_alarms is not None:
+                alarms += device_alarms
         return alarms
 
     def get_device_last_used(self):
