@@ -79,7 +79,7 @@ w -- Get past goals
 y -- Get all Garmin device alarms
 x -- Get Heart Rate Variability data (HRV) for '2023-01-06'
 z -- Get progress summary from '2022-12-30' to '2023-01-06' for all metrics
-A -- Get gear, the gear defaults and activity types
+A -- Get gear, the defaults, activity types and statistics
 Z -- Logout Garmin Connect portal
 q -- Exit
 
