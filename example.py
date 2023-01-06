@@ -79,7 +79,7 @@ menu_options = {
     "y": "Get all Garmin device alarms",
     "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
     "z": f"Get progress summary from '{startdate.isoformat()}' to '{today.isoformat()}' for all metrics",
-    "G": f"Get Gear'",
+    "A": "Get gear, the gear defaults and activity types",
     "Z": "Logout Garmin Connect portal",
     "q": "Exit",
 }
@@ -412,7 +412,7 @@ def switch(api, i):
                         ))
 
             # Gear
-            elif i == "G":
+            elif i == "A":
                 last_used_device = api.get_device_last_used()
                 display_json(f"api.get_device_last_used()", last_used_device)
                 userProfileNumber = last_used_device["userProfileNumber"]
