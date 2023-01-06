@@ -45,22 +45,22 @@ Login to Garmin Connect using session loaded from 'session.json'...
 
 1 -- Get full name
 2 -- Get unit system
-3 -- Get activity data for '2022-11-07'
-4 -- Get activity data for '2022-11-07' (compatible with garminconnect-ha)
-5 -- Get body composition data for '2022-11-07' (compatible with garminconnect-ha)
-6 -- Get body composition data for from '2022-10-31' to '2022-11-07' (to be compatible with garminconnect-ha)
-7 -- Get stats and body composition data for '2022-11-07'
-8 -- Get steps data for '2022-11-07'
-9 -- Get heart rate data for '2022-11-07'
-0 -- Get training readiness data for '2022-11-07'
-. -- Get training status data for '2022-11-07'
-a -- Get resting heart rate data for 2022-11-07'
-b -- Get hydration data for '2022-11-07'
-c -- Get sleep data for '2022-11-07'
-d -- Get stress data for '2022-11-07'
-e -- Get respiration data for '2022-11-07'
-f -- Get SpO2 data for '2022-11-07'
-g -- Get max metric data (like vo2MaxValue and fitnessAge) for '2022-11-07'
+3 -- Get activity data for '2023-01-06'
+4 -- Get activity data for '2023-01-06' (compatible with garminconnect-ha)
+5 -- Get body composition data for '2023-01-06' (compatible with garminconnect-ha)
+6 -- Get body composition data for from '2022-12-30' to '2023-01-06' (to be compatible with garminconnect-ha)
+7 -- Get stats and body composition data for '2023-01-06'
+8 -- Get steps data for '2023-01-06'
+9 -- Get heart rate data for '2023-01-06'
+0 -- Get training readiness data for '2023-01-06'
+. -- Get training status data for '2023-01-06'
+a -- Get resting heart rate data for 2023-01-06'
+b -- Get hydration data for '2023-01-06'
+c -- Get sleep data for '2023-01-06'
+d -- Get stress data for '2023-01-06'
+e -- Get respiration data for '2023-01-06'
+f -- Get SpO2 data for '2023-01-06'
+g -- Get max metric data (like vo2MaxValue and fitnessAge) for '2023-01-06'
 h -- Get personal record for user
 i -- Get earned badges for user
 j -- Get adhoc challenges data from start '0' and limit '100'
@@ -69,15 +69,20 @@ l -- Get badge challenges data from '1' and limit '100'
 m -- Get non completed badge challenges data from '1' and limit '100'
 n -- Get activities data from start '0' and limit '100'
 o -- Get last activity
-p -- Download activities data by date from '2022-10-31' to '2022-11-07'
+p -- Download activities data by date from '2022-12-30' to '2023-01-06'
 r -- Get all kinds of activities data from '0'
 s -- Upload activity data from file 'MY_ACTIVITY.fit'
 t -- Get all kinds of Garmin device info
 u -- Get active goals
 v -- Get future goals
 w -- Get past goals
+y -- Get all Garmin device alarms
+x -- Get Heart Rate Variability data (HRV) for '2023-01-06'
+z -- Get progress summary from '2022-12-30' to '2023-01-06' for all metrics
+G -- Get Gear'
 Z -- Logout Garmin Connect portal
 q -- Exit
+
 Make your selection: 
 
 ```
