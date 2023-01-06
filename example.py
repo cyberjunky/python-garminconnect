@@ -79,7 +79,7 @@ menu_options = {
     "y": "Get all Garmin device alarms",
     "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
     "z": f"Get progress summary from '{startdate.isoformat()}' to '{today.isoformat()}' for all metrics",
-    "A": "Get gear, the gear defaults and activity types",
+    "A": "Get gear, the defaults, activity types and statistics",
     "Z": "Logout Garmin Connect portal",
     "q": "Exit",
 }
