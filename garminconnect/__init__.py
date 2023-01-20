@@ -149,6 +149,9 @@ class Garmin:
         self.garmin_connect_daily_hydration_url = (
             "proxy/usersummary-service/usersummary/hydration/daily"
         )
+        self.garmin_connect_daily_stats_steps_url = (
+            "proxy/usersummary-service/stats/steps/daily"
+        )
         self.garmin_connect_personal_record_url = (
             "proxy/personalrecord-service/personalrecord/prs"
         )
@@ -444,6 +447,14 @@ class Garmin:
         logger.debug("Requesting steps data")
 
         return self.modern_rest_client.get(url, params=params).json()
+
+    def get_daily_steps(self, start, end):
+        """Fetch available steps data 'start' and 'end' format 'YYYY-MM-DD'."""
+
+        url = f'{self.garmin_connect_daily_stats_steps_url}/{start}/{end}'
+        logger.debug("Requesting daily steps data")
+
+        return self.modern_rest_client.get(url).json()
 
     def get_heart_rates(self, cdate):
         """Fetch available heart rates data 'cDate' format 'YYYY-MM-DD'."""
