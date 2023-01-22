@@ -447,7 +447,7 @@ def switch(api, i):
         ) as err:
             logger.error("Error occurred: %s", err)
         except KeyError:
-            # Invalid menu option choosen
+            # Invalid menu option chosen
             pass
     else:
         print("Could not login to Garmin Connect, try again later.")
