@@ -7,7 +7,7 @@ import logging
 import re
 import requests
 from enum import Enum, auto
-from typing import Any, Dict
+from typing import Any, Dict, List
 import os
 
 import cloudscraper
@@ -173,6 +173,10 @@ class Garmin:
         )
         self.garmin_connect_daily_stress_url = (
             "proxy/wellness-service/wellness/dailyStress"
+        )
+
+        self.garmin_connect_daily_body_battery_url = (
+            "proxy/wellness-service/wellness/bodyBattery/reports/daily"
         )
 
         self.garmin_connect_goals_url = "proxy/goal-service/goal/goals"
@@ -483,6 +487,17 @@ class Garmin:
         url = self.garmin_connect_weight_url
         params = {"startDate": str(startdate), "endDate": str(enddate)}
         logger.debug("Requesting body composition")
+
+        return self.modern_rest_client.get(url, params=params).json()
+
+    def get_body_battery(self, startdate: str, enddate=None) -> List[Dict[str, Any]]:
+        """Return body battery values by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'"""
+
+        if enddate is None:
+            enddate = startdate
+        url = self.garmin_connect_daily_body_battery_url
+        params = {"startDate": str(startdate), "endDate": str(enddate)}
+        logger.debug("Requesting body battery data")
 
         return self.modern_rest_client.get(url, params=params).json()
 
