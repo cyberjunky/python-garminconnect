@@ -7,7 +7,7 @@ import logging
 import re
 import requests
 from enum import Enum, auto
-from typing import Any, Dict
+from typing import Any, Dict, List
 import os
 
 import cloudscraper
@@ -172,6 +172,10 @@ class Garmin:
         )
         self.garmin_connect_daily_stress_url = (
             "proxy/wellness-service/wellness/dailyStress"
+        )
+
+        self.garmin_connect_daily_body_battery_url = (
+            "proxy/wellness-service/wellness/bodyBattery/reports/daily"
         )
 
         self.garmin_connect_goals_url = "proxy/goal-service/goal/goals"
@@ -485,6 +489,17 @@ class Garmin:
 
         return self.modern_rest_client.get(url, params=params).json()
 
+    def get_body_battery(self, startdate: str, enddate=None) -> List[Dict[str, Any]]:
+        """Return body battery values by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'"""
+
+        if enddate is None:
+            enddate = startdate
+        url = self.garmin_connect_daily_body_battery_url
+        params = {"startDate": str(startdate), "endDate": str(enddate)}
+        logger.debug("Requesting body battery data")
+
+        return self.modern_rest_client.get(url, params=params).json()
+
     def get_max_metrics(self, cdate: str) -> Dict[str, Any]:
         """Return available max metric data for 'cdate' format 'YYYY-MM-DD'."""
 
@@ -601,7 +616,7 @@ class Garmin:
         url = f"{self.garmin_connect_hrv_url}/{cdate}"
         logger.debug("Requesting Heart Rate Variability (hrv) data")
 
-        return self.modern_rest_client.get(url).text #.json()
+        return self.modern_rest_client.get(url).json()
 
     def get_training_readiness(self, cdate: str) -> Dict[str, Any]:
         """Return training readiness data for current user."""
