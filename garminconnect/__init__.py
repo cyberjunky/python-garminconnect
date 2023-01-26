@@ -617,7 +617,7 @@ class Garmin:
         url = f"{self.garmin_connect_hrv_url}/{cdate}"
         logger.debug("Requesting Heart Rate Variability (hrv) data")
 
-        return self.modern_rest_client.get(url).text #.json()
+        return self.modern_rest_client.get(url).json()
 
     def get_training_readiness(self, cdate: str) -> Dict[str, Any]:
         """Return training readiness data for current user."""
