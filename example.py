@@ -224,7 +224,7 @@ def switch(api, i):
             elif i == "/":
                 # Get daily body battery data for 'YYYY-MM-DD' to 'YYYY-MM-DD'
                 display_json(f"api.get_body_battery('{startdate.isoformat()}, {today.isoformat()}')", api.get_body_battery(startdate.isoformat(), today.isoformat()))
-            elif i == "bp":
+            elif i == "?":
                 # Get daily blood pressure data for 'YYYY-MM-DD' to 'YYYY-MM-DD'
                 display_json(f"api.get_blood_pressure('{startdate.isoformat()}, {today.isoformat()}')", api.get_body_battery(startdate.isoformat(), today.isoformat()))
             elif i == "-":
