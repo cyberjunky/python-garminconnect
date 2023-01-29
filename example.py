@@ -55,6 +55,7 @@ menu_options = {
     "0": f"Get training readiness data for '{today.isoformat()}'",
     "-": f"Get daily step data for '{startdate.isoformat()}' to '{today.isoformat()}'",
     "/": f"Get body battery data for '{startdate.isoformat()}' to '{today.isoformat()}'",
+    "!": f"Get floors data for '{startdate.isoformat()}'",
     ".": f"Get training status data for '{today.isoformat()}'",
     "a": f"Get resting heart rate data for {today.isoformat()}'",
     "b": f"Get hydration data for '{today.isoformat()}'",
@@ -226,6 +227,9 @@ def switch(api, i):
             elif i == "-":
                 # Get daily step data for 'YYYY-MM-DD'
                 display_json(f"api.get_daily_steps('{startdate.isoformat()}, {today.isoformat()}')", api.get_daily_steps(startdate.isoformat(), today.isoformat()))
+            elif i == "!":
+                # Get daily floors data for 'YYYY-MM-DD'
+                display_json(f"api.get_floors_data('{today.isoformat()}')", api.get_floors_data(today.isoformat()))
             elif i == ".":
                 # Get training status data for 'YYYY-MM-DD'
                 display_json(f"api.get_training_status('{today.isoformat()}')", api.get_training_status(today.isoformat()))
