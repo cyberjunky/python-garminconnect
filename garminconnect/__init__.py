@@ -459,11 +459,11 @@ class Garmin:
 
         return self.modern_rest_client.get(url, params=params).json()
 
-    def get_floors_climbed(self, cdate):
-        """Fetch available floors climbed 'cDate' format 'YYYY-MM-DD'."""
+    def get_floors(self, cdate):
+        """Fetch available floors data 'cDate' format 'YYYY-MM-DD'."""
 
         url = f'{self.garmin_connect_floors_chart_daily_url}/{cdate}'
-        logger.debug("Requesting floors climbed")
+        logger.debug("Requesting floors data")
 
         return self.modern_rest_client.get(url).json()
 
