@@ -179,6 +179,10 @@ class Garmin:
             "proxy/wellness-service/wellness/bodyBattery/reports/daily"
         )
 
+        self.garmin_connect_blood_pressure_endpoint = (
+            "proxy/bloodpressure-service/bloodpressure/range"
+        )
+
         self.garmin_connect_goals_url = "proxy/goal-service/goal/goals"
 
         self.garmin_connect_rhr_url = "proxy/userstats-service/wellness/daily"
@@ -509,6 +513,17 @@ class Garmin:
         url = self.garmin_connect_daily_body_battery_url
         params = {"startDate": str(startdate), "endDate": str(enddate)}
         logger.debug("Requesting body battery data")
+
+        return self.modern_rest_client.get(url, params=params).json()
+
+    def get_blood_pressure(self, startdate: str, enddate=None) -> Dict[str, Any]:
+        """Returns blood pressure by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'"""
+
+        if enddate is None:
+            enddate = startdate
+        url = f"{self.garmin_connect_blood_pressure_endpoint}/{startdate}/{enddate}"
+        params = {"includeAll": True}
+        logger.debug("Requesting blood pressure data")
 
         return self.modern_rest_client.get(url, params=params).json()
 
