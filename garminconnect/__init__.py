@@ -196,6 +196,9 @@ class Garmin:
         self.garmin_connect_user_summary_chart = (
             "proxy/wellness-service/wellness/dailySummaryChart"
         )
+        self.garmin_connect_floors_chart_daily_url = (
+            "proxy/wellness-service/wellness/floorsChartData/daily"
+        )
         self.garmin_connect_heartrates_daily_url = (
             "proxy/wellness-service/wellness/dailyHeartRate"
         )
@@ -455,6 +458,14 @@ class Garmin:
         logger.debug("Requesting steps data")
 
         return self.modern_rest_client.get(url, params=params).json()
+
+    def get_floors_climbed(self, cdate):
+        """Fetch available floors climbed 'cDate' format 'YYYY-MM-DD'."""
+
+        url = f'{self.garmin_connect_floors_chart_daily_url}/{cdate}'
+        logger.debug("Requesting floors climbed")
+
+        return self.modern_rest_client.get(url).json()
 
     def get_daily_steps(self, start, end):
         """Fetch available steps data 'start' and 'end' format 'YYYY-MM-DD'."""
