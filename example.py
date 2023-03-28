@@ -20,7 +20,7 @@ from garminconnect import (
     Garmin,
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
-    GarminConnectTooManyRequestsError,
+    GarminConnectTooManyRequestsError
 )
 
 # Configure debug logging
@@ -156,8 +156,7 @@ def init_api(email, password):
         except (
             GarminConnectConnectionError,
             GarminConnectAuthenticationError,
-            GarminConnectTooManyRequestsError,
-            requests.exceptions.HTTPError,
+            GarminConnectTooManyRequestsError
         ) as err:
             logger.error("Error occurred during Garmin Connect communication: %s", err)
             return None

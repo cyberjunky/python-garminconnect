@@ -68,18 +68,22 @@ class ApiClient:
         try:
             response = self.session.get(url, headers=total_headers, params=params)
             response.raise_for_status()
-            # logger.debug("Response: %s", response.content)
             return response
-        except Exception as err:
-            logger.debug("Response in exception: %s", response.content)
-            if response.status_code == 429:
-                raise GarminConnectTooManyRequestsError("Too many requests") from err
-            if response.status_code == 401:
-                raise GarminConnectAuthenticationError("Authentication error") from err
-            if response.status_code == 403:
-                raise GarminConnectConnectionError(f"Forbidden url: {url}") from err
 
-            raise GarminConnectConnectionError(err) from err
+        except requests.exceptions.HTTPError as err:
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("429 Too many requests: {url}") from err
+            if response.status_code == 401:
+                raise GarminConnectAuthenticationError("401 Authentication error: {url}") from err
+            if response.status_code == 403:
+                raise GarminConnectConnectionError(f"403 Forbidden error: {url}") from err
+        except requests.exceptions.ConnectionError as err:
+            raise GarminConnectConnectionError(f"Connection error: {url}") from err
+        except requests.exceptions.Timeout as err:
+            raise GarminConnectConnectionError(f"Timeout error: {url}") from err
+        except requests.exceptions.RequestException as err:
+            raise GarminConnectConnectionError(f"Request exception error: {url}") from err
+
 
     def post(self, addurl, additional_headers=None, params=None, data=None, files=None):
         """Make an API call using the POST method."""
@@ -97,18 +101,21 @@ class ApiClient:
                 url, headers=total_headers, params=params, data=data, files=files
             )
             response.raise_for_status()
-            # logger.debug("Response: %s", response.content)
             return response
-        except Exception as err:
-            logger.debug("Response in exception: %s", response.content)
-            if response.status_code == 429:
-                raise GarminConnectTooManyRequestsError("Too many requests") from err
-            if response.status_code == 401:
-                raise GarminConnectAuthenticationError("Authentication error") from err
-            if response.status_code == 403:
-                raise GarminConnectConnectionError(f"Forbidden url: {url}") from err
 
-            raise GarminConnectConnectionError(err) from err
+        except requests.exceptions.HTTPError as err:
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("429 Too many requests: {url}") from err
+            if response.status_code == 401:
+                raise GarminConnectAuthenticationError("401 Authentication error: {url}") from err
+            if response.status_code == 403:
+                raise GarminConnectConnectionError(f"403 Forbidden error: {url}") from err
+        except requests.exceptions.ConnectionError as err:
+            raise GarminConnectConnectionError(f"Connection error: {url}") from err
+        except requests.exceptions.Timeout as err:
+            raise GarminConnectConnectionError(f"Timeout error: {url}") from err
+        except requests.exceptions.RequestException as err:
+            raise GarminConnectConnectionError(f"Request exception error: {url}") from err
 
 
 class Garmin:
@@ -720,6 +727,7 @@ class Garmin:
     def upload_activity(self, activity_path: str):
         """Upload activity in fit format from file."""
         # This code is borrowed from python-garminconnect-enhanced ;-)
+
         file_base_name = os.path.basename(activity_path)
         file_extension = file_base_name.split(".")[-1]
         allowed_file_extension = file_extension.upper() in Garmin.ActivityUploadFormat.__members__
@@ -728,7 +736,6 @@ class Garmin:
             files = {
                 "file": (file_base_name, open(activity_path, "rb" or "r")),
             }
-
             url = self.garmin_connect_upload
             return self.modern_rest_client.post(url, files=files).json()
         else:
