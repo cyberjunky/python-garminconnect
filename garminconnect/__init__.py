@@ -2,6 +2,7 @@
 
 """Python 3 API wrapper for Garmin Connect to get your statistics."""
 
+from datetime import datetime
 import json
 import logging
 import re
@@ -85,7 +86,7 @@ class ApiClient:
             raise GarminConnectConnectionError(f"Request exception error: {url}") from err
 
 
-    def post(self, addurl, additional_headers=None, params=None, data=None, files=None):
+    def post(self, addurl, additional_headers=None, params=None, data=None, json=None, files=None):
         """Make an API call using the POST method."""
         total_headers = self.headers.copy()
         if additional_headers:
@@ -98,7 +99,7 @@ class ApiClient:
 
         try:
             response = self.session.post(
-                url, headers=total_headers, params=params, data=data, files=files
+                url, headers=total_headers, params=params, data=data, json=json, files=files
             )
             response.raise_for_status()
             return response
@@ -149,6 +150,8 @@ class Garmin:
         )
         self.garmin_connect_device_url = "proxy/device-service/deviceservice"
         self.garmin_connect_weight_url = "proxy/weight-service/weight/dateRange"
+        self.garmin_connect_set_weight_url = "proxy/weight-service/user-weight"
+
         self.garmin_connect_daily_summary_url = (
             "proxy/usersummary-service/usersummary/daily"
         )
@@ -511,6 +514,21 @@ class Garmin:
         logger.debug("Requesting body composition")
 
         return self.modern_rest_client.get(url, params=params).json()
+
+    def add_weight(self, weight: int, unitKey: str = 'lbs', timestamp: str = ''):
+        """Add a weigh-in (default to lbs)"""
+        url = self.garmin_connect_set_weight_url
+        dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
+        # Apply timezone offset to get UTC/GMT time
+        dtGMT = dt - dt.astimezone().tzinfo.utcoffset(dt)
+        payload = {
+            'dateTimestamp': dt.isoformat()[:22] + '.00',
+            'gmtTimestamp': dtGMT.isoformat()[:22] + '.00',
+            'unitKey': unitKey,
+            'value': weight
+        }
+
+        return self.modern_rest_client.post(url, json=payload)
 
     def get_body_battery(self, startdate: str, enddate=None) -> List[Dict[str, Any]]:
         """Return body battery values by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'"""
