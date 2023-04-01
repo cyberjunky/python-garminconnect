@@ -580,7 +580,6 @@ class Garmin:
 
     def delete_weigh_in(self, weight_pk: str, cdate: str):
         """Delete specific weigh-in"""
-        "https://connect.garmin.com/weight-service/weight/2023-03-28/byversion/1680314307345"
         url = f"{self.garmin_connect_weight_url}/weight/{cdate}/byversion/{weight_pk}"
         logger.debug("Deleting weigh-in")
 
