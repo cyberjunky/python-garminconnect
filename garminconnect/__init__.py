@@ -546,8 +546,8 @@ class Garmin:
 
         return self.modern_rest_client.get(url, params=params).json()
 
-    def add_weigh_in(self, weight: int, unitKey: str = 'lbs', timestamp: str = ''):
-        """Add a weigh-in (default to lbs)"""
+    def add_weigh_in(self, weight: int, unitKey: str = 'kg', timestamp: str = ''):
+        """Add a weigh-in (default to kg)"""
         url = f"{self.garmin_connect_weight_url}/user-weight"
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         # Apply timezone offset to get UTC/GMT time
