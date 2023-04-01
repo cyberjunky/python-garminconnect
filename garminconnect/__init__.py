@@ -119,6 +119,38 @@ class ApiClient:
             raise GarminConnectConnectionError(f"Request exception error: {url}") from err
 
 
+    def delete(self, addurl, additional_headers=None):
+        """Make an API call using the DELETE method."""
+        total_headers = self.headers.copy()
+        if additional_headers:
+            total_headers.update(additional_headers)
+        url = self.url(addurl)
+
+        logger.debug("URL: %s", url)
+        logger.debug("Headers: %s", total_headers)
+
+        try:
+            response = self.session.delete(
+                url, headers=total_headers
+            )
+            response.raise_for_status()
+            return response
+
+        except requests.exceptions.HTTPError as err:
+            if response.status_code == 429:
+                raise GarminConnectTooManyRequestsError("429 Too many requests: {url}") from err
+            if response.status_code == 401:
+                raise GarminConnectAuthenticationError("401 Authentication error: {url}") from err
+            if response.status_code == 403:
+                raise GarminConnectConnectionError(f"403 Forbidden error: {url}") from err
+        except requests.exceptions.ConnectionError as err:
+            raise GarminConnectConnectionError(f"Connection error: {url}") from err
+        except requests.exceptions.Timeout as err:
+            raise GarminConnectConnectionError(f"Timeout error: {url}") from err
+        except requests.exceptions.RequestException as err:
+            raise GarminConnectConnectionError(f"Request exception error: {url}") from err
+
+
 class Garmin:
     """Class for fetching data from Garmin Connect."""
 
@@ -149,8 +181,7 @@ class Garmin:
             "proxy/device-service/deviceregistration/devices"
         )
         self.garmin_connect_device_url = "proxy/device-service/deviceservice"
-        self.garmin_connect_weight_url = "proxy/weight-service/weight/dateRange"
-        self.garmin_connect_set_weight_url = "proxy/weight-service/user-weight"
+        self.garmin_connect_weight_url = "proxy/weight-service"
 
         self.garmin_connect_daily_summary_url = (
             "proxy/usersummary-service/usersummary/daily"
@@ -509,15 +540,15 @@ class Garmin:
 
         if enddate is None:
             enddate = startdate
-        url = self.garmin_connect_weight_url
+        url = f"{self.garmin_connect_weight_url}/weight/dateRange"
         params = {"startDate": str(startdate), "endDate": str(enddate)}
         logger.debug("Requesting body composition")
 
         return self.modern_rest_client.get(url, params=params).json()
 
-    def add_weight(self, weight: int, unitKey: str = 'lbs', timestamp: str = ''):
+    def add_weigh_in(self, weight: int, unitKey: str = 'lbs', timestamp: str = ''):
         """Add a weigh-in (default to lbs)"""
-        url = self.garmin_connect_set_weight_url
+        url = f"{self.garmin_connect_weight_url}/user-weight"
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt - dt.astimezone().tzinfo.utcoffset(dt)
@@ -527,8 +558,50 @@ class Garmin:
             'unitKey': unitKey,
             'value': weight
         }
+        logger.debug("Adding weigh-in")
 
         return self.modern_rest_client.post(url, json=payload)
+
+    def get_weigh_ins(self, startdate: str, enddate: str):
+        """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
+        url = f"{self.garmin_connect_weight_url}/weight/range/{startdate}/{enddate}"
+        params = {"includeAll": True}
+        logger.debug("Requesting weigh-ins")
+
+        return self.modern_rest_client.get(url, params=params).json()
+
+    def get_daily_weigh_ins(self, cdate: str):
+        """Get weigh-ins for 'cdate' format 'YYYY-MM-DD'."""
+        url = f"{self.garmin_connect_weight_url}/weight/dayview/{cdate}"
+        params = {"includeAll": True}
+        logger.debug("Requesting weigh-ins")
+
+        return self.modern_rest_client.get(url, params=params).json()
+
+    def delete_weigh_in(self, weight_pk: str, cdate: str):
+        """Delete specific weigh-in"""
+        "https://connect.garmin.com/weight-service/weight/2023-03-28/byversion/1680314307345"
+        url = f"{self.garmin_connect_weight_url}/weight/{cdate}/byversion/{weight_pk}"
+        logger.debug("Deleting weigh-in")
+
+        return self.modern_rest_client.delete(url)
+
+    def delete_weigh_ins(self, cdate: str, delete_all: bool = False):
+        """Delete weigh-in for 'cdate' format 'YYYY-MM-DD'. Includes option to delete all weigh-ins for that date."""
+        daily_weigh_ins = self.get_daily_weigh_ins(cdate)
+        weigh_ins = daily_weigh_ins.get('dateWeightList', [])
+        if not weigh_ins or len(weigh_ins) == 0:
+            logger.warning(f"No weigh-ins found on {cdate}")
+            return
+        elif len(weigh_ins) > 1:
+            logger.warning(f"Multiple weigh-ins found for {cdate}")
+            if not delete_all:
+                logger.warning(f"Set delete_all to True to delete all {len(weigh_ins)} weigh-ins")
+                return
+
+        for w in weigh_ins:
+            self.delete_weigh_in(w['samplePk'], cdate)
+        return len(weigh_ins)
 
     def get_body_battery(self, startdate: str, enddate=None) -> List[Dict[str, Any]]:
         """Return body battery values by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'"""
