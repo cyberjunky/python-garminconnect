@@ -11,7 +11,7 @@ from typing import Any, Dict, List
 import os
 
 import cloudscraper
-
+from pytimedinput import timedInput
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +143,7 @@ class Garmin:
             self.garmin_connect_login_url = self.garmin_connect_base_url + "/zh-CN/signin"
 
         self.garmin_connect_sso_login = "signin"
+        self.garmin_connect_sso_login_mfa = "verifyMFA/loginEnterMfaCode"
 
         self.garmin_connect_devices_url = (
             "proxy/device-service/deviceregistration/devices"
@@ -318,6 +319,33 @@ class Garmin:
             logger.debug("Session not valid for user %s", self.display_name)
             return self.authenticate()
 
+    def authenticate_mfa(self, response: requests.models.Response, params: dict[str, str],
+                         post_headers: dict[str, str]) -> requests.models.Response:
+        """Handles multi-factor authentication if session.json is not accepted."""
+
+        found = re.search(r"name=\"_csrf\"\s+value=\"(\w*)", response.text, re.M)
+        csrf = found.group(1)
+        referer = response.url
+
+        mfa_device = re.search(r"Code sent to <b>(.*)</b>", response.text, re.M).group(1)
+
+        print(f"Your MFA code was sent to {mfa_device}.")
+        mfa_code = timedInput("Please enter it now: ", timeout=300)
+
+        post_headers["Referer"] = referer
+        params["rememberMyBrowerShown"] = "true"
+        params["rememberMyBrowserChecked"] = "true"
+        data = {
+            "mfa-code": mfa_code,
+            "embed": "false",
+            "_csrf": csrf,
+            "fromPage": "setupEnterMfaCode"
+        }
+
+        return self.sso_rest_client.post(
+            self.garmin_connect_sso_login_mfa, post_headers, params, data
+        )
+
     def authenticate(self):
         """Login to Garmin Connect."""
 
@@ -390,6 +418,9 @@ class Garmin:
         response = self.sso_rest_client.post(
             self.garmin_connect_sso_login, post_headers, params, data
         )
+
+        if self.garmin_connect_sso_login_mfa in response.url:
+            response = self.authenticate_mfa(response, params, post_headers)
 
         found = re.search(r"\?ticket=([\w-]*)", response.text, re.M)
         if not found:
