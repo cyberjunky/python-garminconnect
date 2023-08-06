@@ -11,6 +11,7 @@ from typing import Any, Dict, List
 import os
 
 import cloudscraper
+import garth
 
 
 logger = logging.getLogger(__name__)
@@ -249,10 +250,15 @@ class Garmin:
             self.garmin_connect_modern_url,
             additional_headers=self.garmin_headers,
         )
+        self.garth = garth.Client(domain="garmin.cn" if is_cn else "garmin.com")
 
         self.display_name = None
         self.full_name = None
         self.unit_system = None
+
+    def connectapi(self, url, **kwargs):
+        path = url.lstrip("proxy")
+        return self.garth.connectapi(path, **kwargs)
 
     @staticmethod
     def __get_json(page_html, key):
@@ -548,7 +554,7 @@ class Garmin:
         url = f"{self.garmin_connect_daily_hydration_url}/{cdate}"
         logger.debug("Requesting hydration data")
 
-        return self.modern_rest_client.get(url).json()
+        return self.connectapi(url)
 
     def get_respiration_data(self, cdate: str) -> Dict[str, Any]:
         """Return available respiration data 'cdate' format 'YYYY-MM-DD'."""
