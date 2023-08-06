@@ -30,7 +30,7 @@ setup(
     name="garminconnect",
     keywords=["garmin connect", "api", "client"],
     license="MIT license",
-    install_requires=["requests","cloudscraper"],
+    install_requires=["requests", "cloudscraper", "garth"],
     long_description_content_type="text/markdown",
     long_description=readme,
     url="https://github.com/cyberjunky/python-garminconnect",
