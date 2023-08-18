@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """Python 3 API wrapper for Garmin Connect to get your statistics."""
 
 import logging
@@ -8,7 +6,6 @@ from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
 import garth
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,30 +19,19 @@ class Garmin:
         self.password = password
         self.is_cn = is_cn
 
-        self.garmin_connect_base_url = "https://connect.garmin.com"
-        self.garmin_connect_sso_url = "sso.garmin.com/sso"
-        self.garmin_connect_modern_url = "connect.garmin.com/modern"
-        self.garmin_connect_css_url = "https://static.garmincdn.com/com.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
-        self.garmin_connect_login_url = self.garmin_connect_base_url + "/en-US/signin"
-
-        if self.is_cn:
-            self.garmin_connect_base_url = "https://connect.garmin.cn"
-            self.garmin_connect_sso_url = "sso.garmin.cn/sso"
-            self.garmin_connect_modern_url = "connect.garmin.cn/modern"
-            self.garmin_connect_css_url = "https://static.garmincdn.cn/cn.garmin.connect/ui/css/gauth-custom-v1.2-min.css"
-            self.garmin_connect_login_url = self.garmin_connect_base_url + "/zh-CN/signin"
-
-        self.garmin_connect_sso_login = "signin"
-
         self.garmin_connect_devices_url = (
             "proxy/device-service/deviceregistration/devices"
         )
         self.garmin_connect_device_url = "proxy/device-service/deviceservice"
-        self.garmin_connect_weight_url = "proxy/weight-service/weight/dateRange"
+        self.garmin_connect_weight_url = (
+            "proxy/weight-service/weight/dateRange"
+        )
         self.garmin_connect_daily_summary_url = (
             "proxy/usersummary-service/usersummary/daily"
         )
-        self.garmin_connect_metrics_url = "proxy/metrics-service/metrics/maxmet/daily"
+        self.garmin_connect_metrics_url = (
+            "proxy/metrics-service/metrics/maxmet/daily"
+        )
         self.garmin_connect_daily_hydration_url = (
             "proxy/usersummary-service/usersummary/hydration/daily"
         )
@@ -55,7 +41,9 @@ class Garmin:
         self.garmin_connect_personal_record_url = (
             "proxy/personalrecord-service/personalrecord/prs"
         )
-        self.garmin_connect_earned_badges_url = "proxy/badge-service/badge/earned"
+        self.garmin_connect_earned_badges_url = (
+            "proxy/badge-service/badge/earned"
+        )
         self.garmin_connect_adhoc_challenges_url = (
             "proxy/adhocchallenge-service/adHocChallenge/historical"
         )
@@ -89,9 +77,13 @@ class Garmin:
 
         self.garmin_connect_hrv_url = "proxy/hrv-service/hrv"
 
-        self.garmin_connect_training_readiness_url = "proxy/metrics-service/metrics/trainingreadiness"
+        self.garmin_connect_training_readiness_url = (
+            "proxy/metrics-service/metrics/trainingreadiness"
+        )
 
-        self.garmin_connect_training_status_url = "proxy/metrics-service/metrics/trainingstatus/aggregated"
+        self.garmin_connect_training_status_url = (
+            "proxy/metrics-service/metrics/trainingstatus/aggregated"
+        )
 
         self.garmin_connect_user_summary_chart = (
             "proxy/wellness-service/wellness/dailySummaryChart"
@@ -112,15 +104,29 @@ class Garmin:
             "proxy/activitylist-service/activities/search/activities"
         )
         self.garmin_connect_activity = "proxy/activity-service/activity"
-        self.garmin_connect_activity_types = "proxy/activity-service/activity/activityTypes"
+        self.garmin_connect_activity_types = (
+            "proxy/activity-service/activity/activityTypes"
+        )
 
-        self.garmin_connect_fitnessstats = "proxy/fitnessstats-service/activity"
+        self.garmin_connect_fitnessstats = (
+            "proxy/fitnessstats-service/activity"
+        )
 
-        self.garmin_connect_fit_download = "proxy/download-service/files/activity"
-        self.garmin_connect_tcx_download = "proxy/download-service/export/tcx/activity"
-        self.garmin_connect_gpx_download = "proxy/download-service/export/gpx/activity"
-        self.garmin_connect_kml_download = "proxy/download-service/export/kml/activity"
-        self.garmin_connect_csv_download = "proxy/download-service/export/csv/activity"
+        self.garmin_connect_fit_download = (
+            "proxy/download-service/files/activity"
+        )
+        self.garmin_connect_tcx_download = (
+            "proxy/download-service/export/tcx/activity"
+        )
+        self.garmin_connect_gpx_download = (
+            "proxy/download-service/export/gpx/activity"
+        )
+        self.garmin_connect_kml_download = (
+            "proxy/download-service/export/kml/activity"
+        )
+        self.garmin_connect_csv_download = (
+            "proxy/download-service/export/csv/activity"
+        )
 
         self.garmin_connect_upload = "proxy/upload-service/upload"
 
@@ -131,7 +137,9 @@ class Garmin:
 
         self.garmin_headers = {"NK": "NT"}
 
-        self.garth = garth.Client(domain="garmin.cn" if is_cn else "garmin.com")
+        self.garth = garth.Client(
+            domain="garmin.cn" if is_cn else "garmin.com"
+        )
 
         self.display_name = None
         self.full_name = None
@@ -141,7 +149,7 @@ class Garmin:
         path = url.lstrip("proxy")
         return self.garth.connectapi(path, **kwargs)
 
-    def login(self, /, garth_home: Optional[str]=None):
+    def login(self, /, garth_home: Optional[str] = None):
         """Log in using Garth"""
         garth_home = garth_home or os.getenv("GARTH_HOME")
 
@@ -149,7 +157,7 @@ class Garmin:
             self.garth.load(garth_home)
         else:
             self.garth.login(self.username, self.password)
-        
+
         profile = self.garth.connectapi("/userprofile-service/socialProfile")
         self.display_name = profile["displayName"]
         self.full_name = profile["fullName"]
@@ -157,8 +165,8 @@ class Garmin:
         settings = self.garth.connectapi(
             "/userprofile-service/userprofile/user-settings"
         )
-        self.unit_system = settings['userData']['measurementSystem']
-        
+        self.unit_system = settings["userData"]["measurementSystem"]
+
         return True
 
     def get_full_name(self):
@@ -172,7 +180,10 @@ class Garmin:
         return self.unit_system
 
     def get_stats(self, cdate: str) -> Dict[str, Any]:
-        """Return user activity summary for 'cdate' format 'YYYY-MM-DD' (compat for garminconnect)."""
+        """
+        Return user activity summary for 'cdate' format 'YYYY-MM-DD'
+        (compat for garminconnect).
+        """
 
         return self.get_user_summary(cdate)
 
@@ -180,9 +191,7 @@ class Garmin:
         """Return user activity summary for 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_daily_summary_url}/{self.display_name}"
-        params = {
-            "calendarDate": str(cdate)
-        }
+        params = {"calendarDate": str(cdate)}
         logger.debug("Requesting user summary")
 
         response = self.connectapi(url, params=params)
@@ -196,9 +205,7 @@ class Garmin:
         """Fetch available steps data 'cDate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_user_summary_chart}/{self.display_name}"
-        params = {
-            "date": str(cdate)
-        }
+        params = {"date": str(cdate)}
         logger.debug("Requesting steps data")
 
         return self.connectapi(url, params=params)
@@ -206,7 +213,7 @@ class Garmin:
     def get_floors(self, cdate):
         """Fetch available floors data 'cDate' format 'YYYY-MM-DD'."""
 
-        url = f'{self.garmin_connect_floors_chart_daily_url}/{cdate}'
+        url = f"{self.garmin_connect_floors_chart_daily_url}/{cdate}"
         logger.debug("Requesting floors data")
 
         return self.connectapi(url)
@@ -214,7 +221,7 @@ class Garmin:
     def get_daily_steps(self, start, end):
         """Fetch available steps data 'start' and 'end' format 'YYYY-MM-DD'."""
 
-        url = f'{self.garmin_connect_daily_stats_steps_url}/{start}/{end}'
+        url = f"{self.garmin_connect_daily_stats_steps_url}/{start}/{end}"
         logger.debug("Requesting daily steps data")
 
         return self.connectapi(url)
@@ -223,9 +230,7 @@ class Garmin:
         """Fetch available heart rates data 'cDate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_heartrates_daily_url}/{self.display_name}"
-        params = {
-            "date": str(cdate)
-        }
+        params = {"date": str(cdate)}
         logger.debug("Requesting heart rates")
 
         return self.connectapi(url, params=params)
@@ -238,8 +243,13 @@ class Garmin:
             **self.get_body_composition(cdate)["totalAverage"],
         }
 
-    def get_body_composition(self, startdate: str, enddate=None) -> Dict[str, Any]:
-        """Return available body composition data for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'."""
+    def get_body_composition(
+        self, startdate: str, enddate=None
+    ) -> Dict[str, Any]:
+        """
+        Return available body composition data for 'startdate' format
+        'YYYY-MM-DD' through enddate 'YYYY-MM-DD'.
+        """
 
         if enddate is None:
             enddate = startdate
@@ -249,8 +259,13 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_body_battery(self, startdate: str, enddate=None) -> List[Dict[str, Any]]:
-        """Return body battery values by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'"""
+    def get_body_battery(
+        self, startdate: str, enddate=None
+    ) -> List[Dict[str, Any]]:
+        """
+        Return body battery values by day for 'startdate' format
+        'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
+        """
 
         if enddate is None:
             enddate = startdate
@@ -260,8 +275,13 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_blood_pressure(self, startdate: str, enddate=None) -> Dict[str, Any]:
-        """Returns blood pressure by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'"""
+    def get_blood_pressure(
+        self, startdate: str, enddate=None
+    ) -> Dict[str, Any]:
+        """
+        Returns blood pressure by day for 'startdate' format
+        'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
+        """
 
         if enddate is None:
             enddate = startdate
@@ -346,7 +366,9 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_non_completed_badge_challenges(self, start, limit) -> Dict[str, Any]:
+    def get_non_completed_badge_challenges(
+        self, start, limit
+    ) -> Dict[str, Any]:
         """Return badge non-completed challenges for current user."""
 
         url = self.garmin_connect_non_completed_badge_challenges_url
@@ -376,7 +398,11 @@ class Garmin:
         """Return resting heartrate data for current user."""
 
         url = f"{self.garmin_connect_rhr_url}/{self.display_name}"
-        params = {"fromDate": str(cdate), "untilDate": str(cdate), "metricId": 60}
+        params = {
+            "fromDate": str(cdate),
+            "untilDate": str(cdate),
+            "metricId": 60,
+        }
         logger.debug("Requesting resting heartrate data")
 
         return self.connectapi(url, params=params)
@@ -467,7 +493,9 @@ class Garmin:
 
         file_base_name = os.path.basename(activity_path)
         file_extension = file_base_name.split(".")[-1]
-        allowed_file_extension = file_extension.upper() in Garmin.ActivityUploadFormat.__members__
+        allowed_file_extension = (
+            file_extension.upper() in Garmin.ActivityUploadFormat.__members__
+        )
 
         if allowed_file_extension:
             files = {
@@ -476,7 +504,9 @@ class Garmin:
             url = self.garmin_connect_upload
             return self.modern_rest_client.post(url, files=files)
         else:
-            raise GarminConnectInvalidFileFormatError(f"Could not upload {activity_path}")
+            raise GarminConnectInvalidFileFormatError(
+                f"Could not upload {activity_path}"
+            )
 
     def get_activities_by_date(self, startdate, enddate, activitytype=None):
         """
@@ -492,7 +522,8 @@ class Garmin:
         activities = []
         start = 0
         limit = 20
-        # mimicking the behavior of the web interface that fetches 20 activities at a time
+        # mimicking the behavior of the web interface that fetches
+        # 20 activities at a time
         # and automatically loads more on scroll
         url = self.garmin_connect_activities
         params = {
@@ -504,7 +535,9 @@ class Garmin:
         if activitytype:
             params["activityType"] = str(activitytype)
 
-        logger.debug(f"Requesting activities by date from {startdate} to {enddate}")
+        logger.debug(
+            f"Requesting activities by date from {startdate} to {enddate}"
+        )
         while True:
             params["start"] = str(start)
             logger.debug(f"Requesting activities {start} to {start+limit}")
@@ -517,7 +550,9 @@ class Garmin:
 
         return activities
 
-    def get_progress_summary_between_dates(self, startdate, enddate, metric="distance"):
+    def get_progress_summary_between_dates(
+        self, startdate, enddate, metric="distance"
+    ):
         """
         Fetch progress summary data between specific dates
         :param startdate: String in the format YYYY-MM-DD
@@ -533,17 +568,17 @@ class Garmin:
             "endDate": str(enddate),
             "aggregation": "lifetime",
             "groupByParentActivityType": "true",
-            "metric": str(metric)
-            
+            "metric": str(metric),
         }
 
         logger.debug(
-            f"Requesting fitnessstats by date from {startdate} to {enddate}")
+            f"Requesting fitnessstats by date from {startdate} to {enddate}"
+        )
         return self.connectapi(url, params=params)
 
     def get_activity_types(self):
         url = self.garmin_connect_activity_types
-        logger.debug(f"Requesting activy types")
+        logger.debug("Requesting activy types")
         return self.connectapi(url)
 
     def get_goals(self, status="active", start=1, limit=30):
@@ -564,13 +599,15 @@ class Garmin:
             "status": status,
             "start": str(start),
             "limit": str(limit),
-            "sortOrder": "asc"
+            "sortOrder": "asc",
         }
 
         logger.debug(f"Requesting {status} goals")
         while True:
             params["start"] = str(start)
-            logger.debug(f"Requesting {status} goals {start} to {start + limit - 1}")
+            logger.debug(
+                f"Requesting {status} goals {start} to {start + limit - 1}"
+            )
             goals_json = self.connectapi(url, params=params)
             if goals_json:
                 goals.extend(goals_json)
@@ -593,14 +630,20 @@ class Garmin:
         return self.connectapi(url)
 
     def get_gear_defaults(self, userProfileNumber):
-        url = f"{self.garmin_connect_gear_baseurl}user/{userProfileNumber}/activityTypes"
+        url = (
+            f"{self.garmin_connect_gear_baseurl}user/"
+            f"{userProfileNumber}/activityTypes"
+        )
         logger.debug("Requesting gear for user %s", userProfileNumber)
         return self.connectapi(url)
 
     def set_gear_default(self, activityType, gearUUID, defaultGear=True):
         defaultGearString = "/default/true" if defaultGear else ""
         method_override = "PUT" if defaultGear else "DELETE"
-        url = f"{self.garmin_connect_gear_baseurl}{gearUUID}/activityType/{activityType}{defaultGearString}"
+        url = (
+            f"{self.garmin_connect_gear_baseurl}{gearUUID}/"
+            f"activityType/{activityType}{defaultGearString}"
+        )
         return self.modern_rest_client.post(
             url, {"x-http-method-override": method_override}
         )
@@ -619,7 +662,9 @@ class Garmin:
         GPX = auto()
         TCX = auto()
 
-    def download_activity(self, activity_id, dl_fmt=ActivityDownloadFormat.TCX):
+    def download_activity(
+        self, activity_id, dl_fmt=ActivityDownloadFormat.TCX
+    ):
         """
         Downloads activity in requested format and returns the raw bytes. For
         "Original" will return the zip file content, up to user to extract it.
@@ -655,7 +700,9 @@ class Garmin:
 
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}/split_summaries"
-        logger.debug("Requesting split summaries for activity id %s", activity_id)
+        logger.debug(
+            "Requesting split summaries for activity id %s", activity_id
+        )
 
         return self.connectapi(url)
 
@@ -673,7 +720,9 @@ class Garmin:
 
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}/hrTimeInZones"
-        logger.debug("Requesting split summaries for activity id %s", activity_id)
+        logger.debug(
+            "Requesting split summaries for activity id %s", activity_id
+        )
 
         return self.connectapi(url)
 
@@ -682,7 +731,9 @@ class Garmin:
 
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}"
-        logger.debug("Requesting self evaluation data for activity id %s", activity_id)
+        logger.debug(
+            "Requesting self evaluation data for activity id %s", activity_id
+        )
 
         return self.connectapi(url)
 
@@ -700,13 +751,15 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_activity_exercise_sets(self, activity_id):
-      """Return activity exercise sets."""
+        """Return activity exercise sets."""
 
-      activity_id = str(activity_id)
-      url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
-      logger.debug("Requesting exercise sets for activity id %s", activity_id)
+        activity_id = str(activity_id)
+        url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
+        logger.debug(
+            "Requesting exercise sets for activity id %s", activity_id
+        )
 
-      return self.connectapi(url)
+        return self.connectapi(url)
 
     def get_activity_gear(self, activity_id):
         """Return gears used for activity id."""
