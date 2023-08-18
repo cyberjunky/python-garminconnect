@@ -20,118 +20,118 @@ class Garmin:
         self.is_cn = is_cn
 
         self.garmin_connect_devices_url = (
-            "proxy/device-service/deviceregistration/devices"
+            "/device-service/deviceregistration/devices"
         )
-        self.garmin_connect_device_url = "proxy/device-service/deviceservice"
+        self.garmin_connect_device_url = "/device-service/deviceservice"
         self.garmin_connect_weight_url = (
-            "proxy/weight-service/weight/dateRange"
+            "/weight-service/weight/dateRange"
         )
         self.garmin_connect_daily_summary_url = (
-            "proxy/usersummary-service/usersummary/daily"
+            "/usersummary-service/usersummary/daily"
         )
         self.garmin_connect_metrics_url = (
-            "proxy/metrics-service/metrics/maxmet/daily"
+            "/metrics-service/metrics/maxmet/daily"
         )
         self.garmin_connect_daily_hydration_url = (
-            "proxy/usersummary-service/usersummary/hydration/daily"
+            "/usersummary-service/usersummary/hydration/daily"
         )
         self.garmin_connect_daily_stats_steps_url = (
-            "proxy/usersummary-service/stats/steps/daily"
+            "/usersummary-service/stats/steps/daily"
         )
         self.garmin_connect_personal_record_url = (
-            "proxy/personalrecord-service/personalrecord/prs"
+            "/personalrecord-service/personalrecord/prs"
         )
         self.garmin_connect_earned_badges_url = (
-            "proxy/badge-service/badge/earned"
+            "/badge-service/badge/earned"
         )
         self.garmin_connect_adhoc_challenges_url = (
-            "proxy/adhocchallenge-service/adHocChallenge/historical"
+            "/adhocchallenge-service/adHocChallenge/historical"
         )
         self.garmin_connect_badge_challenges_url = (
-            "proxy/badgechallenge-service/badgeChallenge/completed"
+            "/badgechallenge-service/badgeChallenge/completed"
         )
         self.garmin_connect_available_badge_challenges_url = (
-            "proxy/badgechallenge-service/badgeChallenge/available"
+            "/badgechallenge-service/badgeChallenge/available"
         )
         self.garmin_connect_non_completed_badge_challenges_url = (
-            "proxy/badgechallenge-service/badgeChallenge/non-completed"
+            "/badgechallenge-service/badgeChallenge/non-completed"
         )
         self.garmin_connect_daily_sleep_url = (
-            "proxy/wellness-service/wellness/dailySleepData"
+            "/wellness-service/wellness/dailySleepData"
         )
         self.garmin_connect_daily_stress_url = (
-            "proxy/wellness-service/wellness/dailyStress"
+            "/wellness-service/wellness/dailyStress"
         )
 
         self.garmin_connect_daily_body_battery_url = (
-            "proxy/wellness-service/wellness/bodyBattery/reports/daily"
+            "/wellness-service/wellness/bodyBattery/reports/daily"
         )
 
         self.garmin_connect_blood_pressure_endpoint = (
-            "proxy/bloodpressure-service/bloodpressure/range"
+            "/bloodpressure-service/bloodpressure/range"
         )
 
-        self.garmin_connect_goals_url = "proxy/goal-service/goal/goals"
+        self.garmin_connect_goals_url = "/goal-service/goal/goals"
 
-        self.garmin_connect_rhr_url = "proxy/userstats-service/wellness/daily"
+        self.garmin_connect_rhr_url = "/userstats-service/wellness/daily"
 
-        self.garmin_connect_hrv_url = "proxy/hrv-service/hrv"
+        self.garmin_connect_hrv_url = "/hrv-service/hrv"
 
         self.garmin_connect_training_readiness_url = (
-            "proxy/metrics-service/metrics/trainingreadiness"
+            "/metrics-service/metrics/trainingreadiness"
         )
 
         self.garmin_connect_training_status_url = (
-            "proxy/metrics-service/metrics/trainingstatus/aggregated"
+            "/metrics-service/metrics/trainingstatus/aggregated"
         )
 
         self.garmin_connect_user_summary_chart = (
-            "proxy/wellness-service/wellness/dailySummaryChart"
+            "/wellness-service/wellness/dailySummaryChart"
         )
         self.garmin_connect_floors_chart_daily_url = (
-            "proxy/wellness-service/wellness/floorsChartData/daily"
+            "/wellness-service/wellness/floorsChartData/daily"
         )
         self.garmin_connect_heartrates_daily_url = (
-            "proxy/wellness-service/wellness/dailyHeartRate"
+            "/wellness-service/wellness/dailyHeartRate"
         )
         self.garmin_connect_daily_respiration_url = (
-            "proxy/wellness-service/wellness/daily/respiration"
+            "/wellness-service/wellness/daily/respiration"
         )
         self.garmin_connect_daily_spo2_url = (
-            "proxy/wellness-service/wellness/daily/spo2"
+            "/wellness-service/wellness/daily/spo2"
         )
         self.garmin_connect_activities = (
-            "proxy/activitylist-service/activities/search/activities"
+            "/activitylist-service/activities/search/activities"
         )
-        self.garmin_connect_activity = "proxy/activity-service/activity"
+        self.garmin_connect_activity = "/activity-service/activity"
         self.garmin_connect_activity_types = (
-            "proxy/activity-service/activity/activityTypes"
+            "/activity-service/activity/activityTypes"
         )
 
         self.garmin_connect_fitnessstats = (
-            "proxy/fitnessstats-service/activity"
+            "/fitnessstats-service/activity"
         )
 
         self.garmin_connect_fit_download = (
-            "proxy/download-service/files/activity"
+            "/download-service/files/activity"
         )
         self.garmin_connect_tcx_download = (
-            "proxy/download-service/export/tcx/activity"
+            "/download-service/export/tcx/activity"
         )
         self.garmin_connect_gpx_download = (
-            "proxy/download-service/export/gpx/activity"
+            "/download-service/export/gpx/activity"
         )
         self.garmin_connect_kml_download = (
-            "proxy/download-service/export/kml/activity"
+            "/download-service/export/kml/activity"
         )
         self.garmin_connect_csv_download = (
-            "proxy/download-service/export/csv/activity"
+            "/download-service/export/csv/activity"
         )
 
-        self.garmin_connect_upload = "proxy/upload-service/upload"
+        self.garmin_connect_upload = "/upload-service/upload"
 
-        self.garmin_connect_gear = "proxy/gear-service/gear/filterGear"
-        self.garmin_connect_gear_baseurl = "proxy/gear-service/gear/"
+        self.garmin_connect_gear = "/gear-service/gear/filterGear"
+        self.garmin_connect_gear_baseurl = "/gear-service/gear/"
 
         self.garmin_connect_logout = "auth/logout/?url="
 
@@ -145,8 +145,7 @@ class Garmin:
         self.full_name = None
         self.unit_system = None
 
-    def connectapi(self, url, **kwargs):
-        path = url.lstrip("proxy")
+    def connectapi(self, path, **kwargs):
         return self.garth.connectapi(path, **kwargs)
 
     def login(self, /, garth_home: Optional[str] = None):
