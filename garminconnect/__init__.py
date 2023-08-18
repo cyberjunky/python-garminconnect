@@ -158,9 +158,8 @@ class Garmin:
         else:
             self.garth.login(self.username, self.password)
 
-        profile = self.garth.connectapi("/userprofile-service/socialProfile")
-        self.display_name = profile["displayName"]
-        self.full_name = profile["fullName"]
+        self.display_name = self.garth.profile["displayName"]
+        self.full_name = self.garth.profile["fullName"]
 
         settings = self.garth.connectapi(
             "/userprofile-service/userprofile/user-settings"
