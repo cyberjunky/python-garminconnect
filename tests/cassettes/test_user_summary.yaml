@@ -1,0 +1,182 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      User-Agent:
+      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
+        (KHTML, like Gecko) Mobile/15E148
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
+  response:
+    body:
+      string: '{"id": 2591602, "userData": {"gender": "MALE", "weight": 79800.0, "height":
+        182.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1984-10-17", "measurementSystem":
+        "metric", "activityLevel": null, "handedness": "RIGHT", "powerFormat": {"formatId":
+        30, "formatKey": "watt", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        true, "displayFormat": null}, "heartRateFormat": {"formatId": 21, "formatKey":
+        "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed": false, "displayFormat":
+        null}, "firstDayOfWeek": {"dayId": 2, "dayName": "sunday", "sortOrder": 2,
+        "isPossibleFirstDay": true}, "vo2MaxRunning": 46.0, "vo2MaxCycling": null,
+        "lactateThresholdSpeed": 0.34722125000000004, "lactateThresholdHeartRate":
+        null, "diveNumber": null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+        3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
+        "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
+        null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
+        1044719868, "thresholdHeartRateAutoDetected": true, "ftpAutoDetected": null,
+        "trainingStatusPausedDate": null, "weatherLocation": {"useFixedLocation":
+        false, "latitude": null, "longitude": null, "locationName": null, "isoCountryCode":
+        null, "postalCode": null}, "golfDistanceUnit": "statute_us", "golfElevationUnit":
+        null, "golfSpeedUnit": null, "externalBottomTime": null}, "userSleep": {"sleepTime":
+        80400, "defaultSleepTime": false, "wakeTime": 24000, "defaultWakeTime": false},
+        "connectDate": null, "sourceType": null}'
+    headers:
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-RAY:
+      - 7f873cc1594eb6ed-QRO
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Fri, 18 Aug 2023 03:58:15 GMT
+      NEL:
+      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
+      Report-To:
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=aEek6tpphYzvySDDJURR7L7T%2FYzHg1kFiECinHHd49fQL3L9uzMItVct2bhBMrlxghE246LjQ8ktcvbwRsQthnLRkZIyGzVYOlltlOQYYJnF8s7LTNixQeIQYIvXF1E122T5qlNMlQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      alt-svc:
+      - h3=":443"; ma=86400
+      cache-control:
+      - no-cache, no-store, private
+      pragma:
+      - no-cache
+      set-cookie:
+      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - _cfuvid=SANITIZED; ADRUM_BT1=SANITIZED; ADRUM_BTa=SANITIZED; SameSite=SANITIZED
+      User-Agent:
+      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
+        (KHTML, like Gecko) Mobile/15E148
+    method: GET
+    uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/mtamizi?calendarDate=2023-07-01
+  response:
+    body:
+      string: '{"userProfileId": 2591602, "totalKilocalories": 2498.0, "activeKilocalories":
+        370.0, "bmrKilocalories": 2128.0, "wellnessKilocalories": 2498.0, "burnedKilocalories":
+        null, "consumedKilocalories": null, "remainingKilocalories": 2498.0, "totalSteps":
+        12413, "netCalorieGoal": null, "totalDistanceMeters": 10368, "wellnessDistanceMeters":
+        10368, "wellnessActiveKilocalories": 370.0, "netRemainingKilocalories": 370.0,
+        "userDailySummaryId": 2591602, "calendarDate": "2023-07-01", "rule": {"typeId":
+        2, "typeKey": "private"}, "uuid": "08064eebd5f64e299745fce9e3ae5c19", "dailyStepGoal":
+        7950, "totalPushDistance": 0, "totalPushes": 0, "wellnessStartTimeGmt": "2023-07-01T06:00:00.0",
+        "wellnessStartTimeLocal": "2023-07-01T00:00:00.0", "wellnessEndTimeGmt": "2023-07-02T06:00:00.0",
+        "wellnessEndTimeLocal": "2023-07-02T00:00:00.0", "durationInMilliseconds":
+        86400000, "wellnessDescription": null, "highlyActiveSeconds": 768, "activeSeconds":
+        10219, "sedentarySeconds": 58253, "sleepingSeconds": 17160, "includesWellnessData":
+        true, "includesActivityData": false, "includesCalorieConsumedData": false,
+        "privacyProtected": false, "moderateIntensityMinutes": 0, "vigorousIntensityMinutes":
+        0, "floorsAscendedInMeters": 90.802, "floorsDescendedInMeters": 88.567, "floorsAscended":
+        29.79068, "floorsDescended": 29.05741, "intensityMinutesGoal": 150, "userFloorsAscendedGoal":
+        35, "minHeartRate": 48, "maxHeartRate": 107, "restingHeartRate": 51, "lastSevenDaysAvgRestingHeartRate":
+        49, "source": "GARMIN", "averageStressLevel": 35, "maxStressLevel": 86, "stressDuration":
+        36120, "restStressDuration": 27780, "activityStressDuration": 17400, "uncategorizedStressDuration":
+        5040, "totalStressDuration": 86340, "lowStressDuration": 21780, "mediumStressDuration":
+        12660, "highStressDuration": 1680, "stressPercentage": 41.83, "restStressPercentage":
+        32.18, "activityStressPercentage": 20.15, "uncategorizedStressPercentage":
+        5.84, "lowStressPercentage": 25.23, "mediumStressPercentage": 14.66, "highStressPercentage":
+        1.95, "stressQualifier": "STRESSFUL", "measurableAwakeDuration": 64260, "measurableAsleepDuration":
+        17040, "lastSyncTimestampGMT": null, "minAvgHeartRate": 49, "maxAvgHeartRate":
+        106, "bodyBatteryChargedValue": 43, "bodyBatteryDrainedValue": 43, "bodyBatteryHighestValue":
+        48, "bodyBatteryLowestValue": 5, "bodyBatteryMostRecentValue": 5, "bodyBatteryVersion":
+        2.0, "abnormalHeartRateAlertsCount": null, "averageSpo2": 92.0, "lowestSpo2":
+        85, "latestSpo2": 86, "latestSpo2ReadingTimeGmt": "2023-07-02T06:00:00.0",
+        "latestSpo2ReadingTimeLocal": "2023-07-02T00:00:00.0", "averageMonitoringEnvironmentAltitude":
+        2254.0, "restingCaloriesFromActivity": null, "avgWakingRespirationValue":
+        13.0, "highestRespirationValue": 21.0, "lowestRespirationValue": 9.0, "latestRespirationValue":
+        18.0, "latestRespirationTimeGMT": "2023-07-02T06:00:00.0"}'
+    headers:
+      CF-Cache-Status:
+      - DYNAMIC
+      CF-RAY:
+      - 7f873cc6a8b54659-DFW
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 18 Aug 2023 03:58:16 GMT
+      NEL:
+      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
+      Report-To:
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=l9QNfRD2GFrbmbYPa0jUrwjJxNySHcV%2Fy4Hj2ihXGsjhhe4M6PaV2Oa7HbD2p4ide12TeIY0HlsR52xOurplH8bOicHR8kwOIqH2FsW4Wu7VOMC5DgBtFLnDIEmlDwSByNTflvwIuQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      alt-svc:
+      - h3=":443"; ma=86400
+      cache-control:
+      - no-cache, no-store, private
+      pragma:
+      - no-cache
+      set-cookie:
+      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+      - ADRUM_BTs=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
+        Secure
+    status:
+      code: 200
+      message: OK
+version: 1
