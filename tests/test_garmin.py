@@ -80,3 +80,11 @@ def test_body_battery(garmin):
     body_battery = garmin.get_body_battery(DATE)[0]
     assert "date" in body_battery
     assert "charged" in body_battery
+
+
+@pytest.mark.vcr
+def test_hrv_data(garmin):
+    garmin.login()
+    hrv_data = garmin.get_hrv_data(DATE)
+    assert "hrvSummary" in hrv_data
+    assert "weeklyAvg" in hrv_data["hrvSummary"]
