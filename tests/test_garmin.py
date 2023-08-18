@@ -48,3 +48,35 @@ def test_daily_steps(garmin):
     assert "calendarDate" in daily_steps
     assert "totalSteps" in daily_steps
     assert "stepGoal" in daily_steps
+
+
+@pytest.mark.vcr
+def test_heart_rates(garmin):
+    garmin.login()
+    heart_rates = garmin.get_heart_rates(DATE)
+    assert "calendarDate" in heart_rates
+    assert "restingHeartRate" in heart_rates
+
+
+@pytest.mark.vcr
+def test_stats_and_body(garmin):
+    garmin.login()
+    stats_and_body = garmin.get_stats_and_body(DATE)
+    assert "calendarDate" in stats_and_body
+    assert "metabolicAge" in stats_and_body
+
+
+@pytest.mark.vcr
+def test_body_composition(garmin):
+    garmin.login()
+    body_composition = garmin.get_body_composition(DATE)
+    assert "totalAverage" in body_composition
+    assert "metabolicAge" in body_composition["totalAverage"]
+
+
+@pytest.mark.vcr
+def test_body_battery(garmin):
+    garmin.login()
+    body_battery = garmin.get_body_battery(DATE)[0]
+    assert "date" in body_battery
+    assert "charged" in body_battery
