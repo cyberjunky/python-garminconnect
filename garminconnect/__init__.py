@@ -776,7 +776,7 @@ class Garmin:
     def logout(self):
         """Log user out of session."""
 
-        self.modern_rest_client.get(self.garmin_connect_logout)
+        self.connectapi(self.garmin_connect_logout)
 
 
 class GarminConnectConnectionError(Exception):
