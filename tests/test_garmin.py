@@ -83,6 +83,30 @@ def test_body_battery(garmin):
 
 
 @pytest.mark.vcr
+def test_hydration_data(garmin):
+    garmin.login()
+    hydration_data = garmin.get_hydration_data(DATE)
+    assert hydration_data
+    assert "calendarDate" in hydration_data
+
+
+@pytest.mark.vcr
+def test_respiration_data(garmin):
+    garmin.login()
+    respiration_data = garmin.get_respiration_data(DATE)
+    assert "calendarDate" in respiration_data
+    assert "avgSleepRespirationValue" in respiration_data
+
+
+@pytest.mark.vcr
+def test_spo2_data(garmin):
+    garmin.login()
+    spo2_data = garmin.get_spo2_data(DATE)
+    assert "calendarDate" in spo2_data
+    assert "averageSpO2" in spo2_data
+
+
+@pytest.mark.vcr
 def test_hrv_data(garmin):
     garmin.login()
     hrv_data = garmin.get_hrv_data(DATE)
