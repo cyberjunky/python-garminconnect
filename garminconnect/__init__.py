@@ -135,8 +135,6 @@ class Garmin:
 
         self.garmin_connect_logout = "auth/logout/?url="
 
-        self.garmin_headers = {"NK": "NT"}
-
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
         )
