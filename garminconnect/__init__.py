@@ -145,6 +145,9 @@ class Garmin:
 
     def connectapi(self, path, **kwargs):
         return self.garth.connectapi(path, **kwargs)
+    
+    def download(self, path, **kwargs):
+        return self.garth.download(path, **kwargs)
 
     def login(self, /, garth_home: Optional[str] = None):
         """Log in using Garth"""
@@ -682,7 +685,7 @@ class Garmin:
 
         logger.debug("Downloading activities from %s", url)
 
-        return self.connectapi(url).content
+        return self.download(url)
 
     def get_activity_splits(self, activity_id):
         """Return activity splits."""
