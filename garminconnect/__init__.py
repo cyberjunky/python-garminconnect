@@ -664,7 +664,7 @@ class Garmin:
         return self.modern_rest_client.get(url).json()
 
     def get_endurance_score(self, startdate: str, enddate=None):
-        """Return hill score by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
+        """Return endurance score by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
         Using a single day returns the precise values for that day.  Using a range returns the aggregated weekly values
         for that week"""
 
