@@ -112,3 +112,11 @@ def test_hrv_data(garmin):
     hrv_data = garmin.get_hrv_data(DATE)
     assert "hrvSummary" in hrv_data
     assert "weeklyAvg" in hrv_data["hrvSummary"]
+
+
+@pytest.mark.vcr
+def test_download_activity(garmin):
+    garmin.login()
+    activity_id = "11998957007"
+    activity = garmin.download_activity(activity_id)
+    assert activity
