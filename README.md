@@ -32,11 +32,15 @@ make test
 ## Development
 The tests provide examples of how to use the library.  
 There is a Jupyter notebook provided [here](https://github.com/cyberjunky/python-garminconnect/blob/master/reference.ipynb).  
-And you can check out the example.py code like so.  
+And you can check out the example.py code, you can run it like so:  
 ```
 pip3 install -r requirements-dev.txt
 ./example.py
 ```
+
+## Thanks
+Special thanks to all people contibuted, either by asking questions, coming up with great ideas, or create whole Pull Requests to merge!
+This project deserves more attention, but I'm struggling to free up time sometimes, so thank you for your patience too!
 
 ## Donations
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
