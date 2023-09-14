@@ -1,0 +1,28 @@
+exclude: '.*\.ipynb$'
+
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.3.0
+  hooks:
+  - id: check-yaml
+    args: ['--unsafe']
+  - id: check-toml
+  - id: end-of-file-fixer
+  - id: trailing-whitespace
+
+# - repo: https://github.com/codespell-project/codespell
+#   rev: v2.2.4
+#   hooks:
+#   - id: codespell
+#     additional_dependencies:
+#       - tomli
+#     exclude: 'cassettes/'
+
+- repo: local
+  hooks:
+  - id: lint
+    name: lint
+    entry: make lint
+    types: [python]
+    language: system
+    pass_filenames: false
