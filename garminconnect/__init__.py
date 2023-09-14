@@ -159,12 +159,12 @@ class Garmin:
     def download(self, path, **kwargs):
         return self.garth.download(path, **kwargs)
 
-    def login(self, /, garth_home: Optional[str] = None):
+    def login(self, /, tokenstore: Optional[str] = None):
         """Log in using Garth"""
-        garth_home = garth_home or os.getenv("GARTH_HOME")
+        tokenstore = tokenstore or os.getenv("GARMINTOKENS")
 
-        if garth_home:
-            self.garth.load(garth_home)
+        if tokenstore:
+            self.garth.load(tokenstore)
         else:
             self.garth.login(self.username, self.password)
 

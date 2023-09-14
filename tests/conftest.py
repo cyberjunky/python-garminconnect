@@ -7,8 +7,7 @@ import pytest
 
 @pytest.fixture
 def vcr(vcr):
-    if "GARTH_HOME" not in os.environ:
-        vcr.record_mode = "none"
+    assert "GARMINTOKENS" in os.environ
     return vcr
 
 

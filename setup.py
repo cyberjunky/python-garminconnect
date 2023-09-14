@@ -35,5 +35,5 @@ setup(
     long_description=readme,
     url="https://github.com/cyberjunky/python-garminconnect",
     packages=["garminconnect"],
-    version="0.2.1"
+    version="0.2.2"
 )
