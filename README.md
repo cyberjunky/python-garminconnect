@@ -1,5 +1,7 @@
 # Python: Garmin Connect
 
+![image](https://github.com/cyberjunky/python-garminconnect/assets/5447161/c7ed7155-0f8c-4fdc-8369-1281759dc5c9)
+
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
 
 Python 3 API wrapper for Garmin Connect to get your statistics.
