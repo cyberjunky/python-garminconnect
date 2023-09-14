@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := all
-sources = garminconnect 
+sources = garminconnect tests
 
 .PHONY: .pdm  ## Check that PDM is installed
 .pdm:
@@ -56,9 +56,9 @@ install: .venv
 install-test: .venv install
 	pip3 install -qU -r requirements-test.txt
 
-# .PHONY: test  ## Run tests
-# test:
-# 	pytest --cov=garminconnect --cov-report=term-missing
+.PHONY: test  ## Run tests
+test:
+	pytest --cov=garminconnect --cov-report=term-missing
 
 .PHONY: test  ## Run all tests, skipping the type-checker integration tests
 test: .pdm
