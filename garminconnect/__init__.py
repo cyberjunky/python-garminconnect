@@ -279,6 +279,7 @@ class Garmin:
             'dateTimestamp': dt.isoformat()[:22] + '.00',
             'gmtTimestamp': dtGMT.isoformat()[:22] + '.00',
             'unitKey': unitKey,
+            'sourceType': 'MANUAL',
             'value': weight
         }
         logger.debug("Adding weigh-in")
