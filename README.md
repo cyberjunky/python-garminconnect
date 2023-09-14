@@ -23,11 +23,20 @@ The login credentials generated with Garth are valid for a year to avoid needing
 ## Testing
 
 ```bash
+sudo apt install python3-pytest (some distros)
+
 make install-test
 make test
 ```
 
-The tests provide examples of how to use the library.
+## Development
+The tests provide examples of how to use the library.  
+There is a Jupyter notebook provided [here](https://github.com/cyberjunky/python-garminconnect/blob/master/reference.ipynb).  
+And you can check out the example.py code like so.  
+```
+pip3 install -r requirements-dev.txt
+./example.py
+```
 
 ## Donations
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
