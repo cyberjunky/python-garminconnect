@@ -78,7 +78,7 @@ class Garmin:
             "/bloodpressure-service/bloodpressure/range"
         )
         self.garmin_connect_endurance_score_url = (
-            'proxy/metrics-service/metrics/endurancescore'
+            '/metrics-service/metrics/endurancescore'
         )
 
         self.garmin_connect_goals_url = "/goal-service/goal/goals"
@@ -519,13 +519,14 @@ class Garmin:
             url = self.garmin_connect_endurance_score_url
             params = {"calendarDate": str(startdate)}
             logger.debug("Requesting endurance score data for a single day")
-            return self.modern_rest_client.get(url, params=params).json()
 
+            return self.connectapi(url, params=params)
         else:
             url = f"{self.garmin_connect_endurance_score_url}/stats"
             params = {"startDate": str(startdate), "endDate": str(enddate), "aggregation": 'weekly'}
             logger.debug("Requesting endurance score data for a range of days")
-            return self.modern_rest_client.get(url, params=params).json()
+
+            return self.connectapi(url, params=params)
 
     def get_training_status(self, cdate: str) -> Dict[str, Any]:
         """Return training status data for current user."""
