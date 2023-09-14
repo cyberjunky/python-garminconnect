@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-pip3 install cloudscraper requests readchar pwinput
+pip3 install garth requests readchar
 
 export EMAIL=<your garmin email>
 export PASSWORD=<your garmin password>
@@ -11,16 +11,17 @@ import json
 import logging
 import os
 import sys
+from getpass import getpass
 
-import requests
-import pwinput
 import readchar
+import requests
+from garth.exc import GarthHTTPError
 
 from garminconnect import (
     Garmin,
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
-    GarminConnectTooManyRequestsError
+    GarminConnectTooManyRequestsError,
 )
 
 # Configure debug logging
@@ -31,16 +32,17 @@ logger = logging.getLogger(__name__)
 # Load environment variables if defined
 email = os.getenv("EMAIL")
 password = os.getenv("PASSWORD")
+tokenstore = os.getenv("GARMINTOKENS") or "~/.garminconnect"
 api = None
 
 # Example selections and settings
 today = datetime.date.today()
-startdate = today - datetime.timedelta(days=7) # Select past week
+startdate = today - datetime.timedelta(days=7)  # Select past week
 start = 0
 limit = 100
 start_badge = 1  # Badge related calls calls start counting at 1
 activitytype = ""  # Possible values are: cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other
-activityfile = "MY_ACTIVITY.fit" # Supported file types are: .fit .gpx .tcx
+activityfile = "MY_ACTIVITY.fit"  # Supported file types are: .fit .gpx .tcx
 
 menu_options = {
     "1": "Get full name",
@@ -84,36 +86,40 @@ menu_options = {
     "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
     "z": f"Get progress summary from '{startdate.isoformat()}' to '{today.isoformat()}' for all metrics",
     "A": "Get gear, the defaults, activity types and statistics",
-    "Z": "Logout Garmin Connect portal",
+    "Z": "Removing stored login tokens",
     "q": "Exit",
 }
+
 
 def display_json(api_call, output):
     """Format API output for better readability."""
 
-    dashed = "-"*20
+    dashed = "-" * 20
     header = f"{dashed} {api_call} {dashed}"
-    footer = "-"*len(header)
+    footer = "-" * len(header)
 
     print(header)
     print(json.dumps(output, indent=4))
     print(footer)
+
 
 def display_text(output):
     """Format API output for better readability."""
 
-    dashed = "-"*60
+    dashed = "-" * 60
     header = f"{dashed}"
-    footer = "-"*len(header)
+    footer = "-" * len(header)
 
     print(header)
     print(json.dumps(output, indent=4))
     print(footer)
 
+
 def get_credentials():
     """Get user credentials."""
+
     email = input("Login e-mail: ")
-    password = pwinput.pwinput(prompt='Password: ')
+    password = getpass("Enter password: ")
 
     return email, password
 
@@ -122,46 +128,31 @@ def init_api(email, password):
     """Initialize Garmin API with your credentials."""
 
     try:
-        ## Try to load the previous session
-        with open("session.json") as f:
-            saved_session = json.load(f)
-
-            print(
-                "Login to Garmin Connect using session loaded from 'session.json'...\n"
-            )
-
-            # Use the loaded session for initializing the API (without need for credentials)
-            api = Garmin(session_data=saved_session)
-
-            # Login using the
-            api.login()
-
-    except (FileNotFoundError, GarminConnectAuthenticationError):
-        # Login to Garmin Connect portal with credentials since session is invalid or not present.
         print(
-            "Session file not present or turned invalid, login with your Garmin Connect credentials.\n"
-            "NOTE: Credentials will not be stored, the session cookies will be stored in 'session.json' for future use.\n"
+            f"Trying to login to Garmin Connect using token data from '{tokenstore}'...\n"
+        )
+        garmin = Garmin()
+        garmin.login(tokenstore)
+    except (FileNotFoundError, GarthHTTPError, GarminConnectAuthenticationError):
+        # Session is expired. You'll need to log in again
+        print(
+            "Login tokens not present, login with your Garmin Connect credentials to generate them.\n"
+            f"They will be stored in '{tokenstore}' for future use.\n"
         )
         try:
             # Ask for credentials if not set as environment variables
             if not email or not password:
                 email, password = get_credentials()
 
-            api = Garmin(email, password)
-            api.login()
+            garmin = Garmin(email, password)
+            garmin.login()
+            garmin.garth.dump(tokenstore)
 
-            # Save session dictionary to json file for future use
-            with open("session.json", "w", encoding="utf-8") as f:
-                json.dump(api.session_data, f, ensure_ascii=False, indent=4)
-        except (
-            GarminConnectConnectionError,
-            GarminConnectAuthenticationError,
-            GarminConnectTooManyRequestsError
-        ) as err:
+        except GarminConnectAuthenticationError as err:
             logger.error("Error occurred during Garmin Connect communication: %s", err)
             return None
 
-    return api
+    return garmin
 
 
 def print_menu():
@@ -195,68 +186,126 @@ def switch(api, i):
             # USER STATISTIC SUMMARIES
             elif i == "3":
                 # Get activity data for 'YYYY-MM-DD'
-                display_json(f"api.get_stats('{today.isoformat()}')", api.get_stats(today.isoformat()))
+                display_json(
+                    f"api.get_stats('{today.isoformat()}')",
+                    api.get_stats(today.isoformat()),
+                )
             elif i == "4":
                 # Get activity data (to be compatible with garminconnect-ha)
-                display_json(f"api.get_user_summary('{today.isoformat()}')", api.get_user_summary(today.isoformat()))
+                display_json(
+                    f"api.get_user_summary('{today.isoformat()}')",
+                    api.get_user_summary(today.isoformat()),
+                )
             elif i == "5":
                 # Get body composition data for 'YYYY-MM-DD' (to be compatible with garminconnect-ha)
-                display_json(f"api.get_body_composition('{today.isoformat()}')", api.get_body_composition(today.isoformat()))
+                display_json(
+                    f"api.get_body_composition('{today.isoformat()}')",
+                    api.get_body_composition(today.isoformat()),
+                )
             elif i == "6":
                 # Get body composition data for multiple days 'YYYY-MM-DD' (to be compatible with garminconnect-ha)
-                display_json(f"api.get_body_composition('{startdate.isoformat()}', '{today.isoformat()}')",
-                    api.get_body_composition(startdate.isoformat(), today.isoformat())
+                display_json(
+                    f"api.get_body_composition('{startdate.isoformat()}', '{today.isoformat()}')",
+                    api.get_body_composition(startdate.isoformat(), today.isoformat()),
                 )
             elif i == "7":
                 # Get stats and body composition data for 'YYYY-MM-DD'
-                display_json(f"api.get_stats_and_body('{today.isoformat()}')", api.get_stats_and_body(today.isoformat()))
+                display_json(
+                    f"api.get_stats_and_body('{today.isoformat()}')",
+                    api.get_stats_and_body(today.isoformat()),
+                )
 
             # USER STATISTICS LOGGED
             elif i == "8":
                 # Get steps data for 'YYYY-MM-DD'
-                display_json(f"api.get_steps_data('{today.isoformat()}')", api.get_steps_data(today.isoformat()))
+                display_json(
+                    f"api.get_steps_data('{today.isoformat()}')",
+                    api.get_steps_data(today.isoformat()),
+                )
             elif i == "9":
                 # Get heart rate data for 'YYYY-MM-DD'
-                display_json(f"api.get_heart_rates('{today.isoformat()}')", api.get_heart_rates(today.isoformat()))
+                display_json(
+                    f"api.get_heart_rates('{today.isoformat()}')",
+                    api.get_heart_rates(today.isoformat()),
+                )
             elif i == "0":
                 # Get training readiness data for 'YYYY-MM-DD'
-                display_json(f"api.get_training_readiness('{today.isoformat()}')", api.get_training_readiness(today.isoformat()))
+                display_json(
+                    f"api.get_training_readiness('{today.isoformat()}')",
+                    api.get_training_readiness(today.isoformat()),
+                )
             elif i == "/":
                 # Get daily body battery data for 'YYYY-MM-DD' to 'YYYY-MM-DD'
-                display_json(f"api.get_body_battery('{startdate.isoformat()}, {today.isoformat()}')", api.get_body_battery(startdate.isoformat(), today.isoformat()))
+                display_json(
+                    f"api.get_body_battery('{startdate.isoformat()}, {today.isoformat()}')",
+                    api.get_body_battery(startdate.isoformat(), today.isoformat()),
+                )
             elif i == "?":
                 # Get daily blood pressure data for 'YYYY-MM-DD' to 'YYYY-MM-DD'
-                display_json(f"api.get_blood_pressure('{startdate.isoformat()}, {today.isoformat()}')", api.get_blood_pressure(startdate.isoformat(), today.isoformat()))
+                display_json(
+                    f"api.get_blood_pressure('{startdate.isoformat()}, {today.isoformat()}')",
+                    api.get_blood_pressure(startdate.isoformat(), today.isoformat()),
+                )
             elif i == "-":
                 # Get daily step data for 'YYYY-MM-DD'
-                display_json(f"api.get_daily_steps('{startdate.isoformat()}, {today.isoformat()}')", api.get_daily_steps(startdate.isoformat(), today.isoformat()))
+                display_json(
+                    f"api.get_daily_steps('{startdate.isoformat()}, {today.isoformat()}')",
+                    api.get_daily_steps(startdate.isoformat(), today.isoformat()),
+                )
             elif i == "!":
                 # Get daily floors data for 'YYYY-MM-DD'
-                display_json(f"api.get_floors('{today.isoformat()}')", api.get_floors(today.isoformat()))
+                display_json(
+                    f"api.get_floors('{today.isoformat()}')",
+                    api.get_floors(today.isoformat()),
+                )
             elif i == ".":
                 # Get training status data for 'YYYY-MM-DD'
-                display_json(f"api.get_training_status('{today.isoformat()}')", api.get_training_status(today.isoformat()))
+                display_json(
+                    f"api.get_training_status('{today.isoformat()}')",
+                    api.get_training_status(today.isoformat()),
+                )
             elif i == "a":
                 # Get resting heart rate data for 'YYYY-MM-DD'
-                display_json(f"api.get_rhr_day('{today.isoformat()}')", api.get_rhr_day(today.isoformat()))
+                display_json(
+                    f"api.get_rhr_day('{today.isoformat()}')",
+                    api.get_rhr_day(today.isoformat()),
+                )
             elif i == "b":
                 # Get hydration data 'YYYY-MM-DD'
-                display_json(f"api.get_hydration_data('{today.isoformat()}')", api.get_hydration_data(today.isoformat()))
+                display_json(
+                    f"api.get_hydration_data('{today.isoformat()}')",
+                    api.get_hydration_data(today.isoformat()),
+                )
             elif i == "c":
                 # Get sleep data for 'YYYY-MM-DD'
-                display_json(f"api.get_sleep_data('{today.isoformat()}')", api.get_sleep_data(today.isoformat()))
+                display_json(
+                    f"api.get_sleep_data('{today.isoformat()}')",
+                    api.get_sleep_data(today.isoformat()),
+                )
             elif i == "d":
                 # Get stress data for 'YYYY-MM-DD'
-                display_json(f"api.get_stress_data('{today.isoformat()}')", api.get_stress_data(today.isoformat()))
+                display_json(
+                    f"api.get_stress_data('{today.isoformat()}')",
+                    api.get_stress_data(today.isoformat()),
+                )
             elif i == "e":
                 # Get respiration data for 'YYYY-MM-DD'
-                display_json(f"api.get_respiration_data('{today.isoformat()}')", api.get_respiration_data(today.isoformat()))
+                display_json(
+                    f"api.get_respiration_data('{today.isoformat()}')",
+                    api.get_respiration_data(today.isoformat()),
+                )
             elif i == "f":
                 # Get SpO2 data for 'YYYY-MM-DD'
-                display_json(f"api.get_spo2_data('{today.isoformat()}')", api.get_spo2_data(today.isoformat()))
+                display_json(
+                    f"api.get_spo2_data('{today.isoformat()}')",
+                    api.get_spo2_data(today.isoformat()),
+                )
             elif i == "g":
                 # Get max metric data (like vo2MaxValue and fitnessAge) for 'YYYY-MM-DD'
-                display_json(f"api.get_max_metrics('{today.isoformat()}')", api.get_max_metrics(today.isoformat()))
+                display_json(
+                    f"api.get_max_metrics('{today.isoformat()}')",
+                    api.get_max_metrics(today.isoformat()),
+                )
             elif i == "h":
                 # Get personal record for user
                 display_json("api.get_personal_record()", api.get_personal_record())
@@ -266,32 +315,39 @@ def switch(api, i):
             elif i == "j":
                 # Get adhoc challenges data from start and limit
                 display_json(
-                    f"api.get_adhoc_challenges({start},{limit})", api.get_adhoc_challenges(start, limit)
+                    f"api.get_adhoc_challenges({start},{limit})",
+                    api.get_adhoc_challenges(start, limit),
                 )  # 1=start, 100=limit
             elif i == "k":
                 # Get available badge challenges data from start and limit
                 display_json(
-                    f"api.get_available_badge_challenges({start_badge}, {limit})", api.get_available_badge_challenges(start_badge, limit)
+                    f"api.get_available_badge_challenges({start_badge}, {limit})",
+                    api.get_available_badge_challenges(start_badge, limit),
                 )  # 1=start, 100=limit
             elif i == "l":
                 # Get badge challenges data from start and limit
                 display_json(
-                    f"api.get_badge_challenges({start_badge}, {limit})", api.get_badge_challenges(start_badge, limit)
+                    f"api.get_badge_challenges({start_badge}, {limit})",
+                    api.get_badge_challenges(start_badge, limit),
                 )  # 1=start, 100=limit
             elif i == "m":
                 # Get non completed badge challenges data from start and limit
                 display_json(
-                    f"api.get_non_completed_badge_challenges({start_badge}, {limit})", api.get_non_completed_badge_challenges(start_badge, limit)
+                    f"api.get_non_completed_badge_challenges({start_badge}, {limit})",
+                    api.get_non_completed_badge_challenges(start_badge, limit),
                 )  # 1=start, 100=limit
 
             # ACTIVITIES
             elif i == "n":
                 # Get activities data from start and limit
-                display_json(f"api.get_activities({start}, {limit})", api.get_activities(start, limit)) # 0=start, 1=limit
+                display_json(
+                    f"api.get_activities({start}, {limit})",
+                    api.get_activities(start, limit),
+                )  # 0=start, 1=limit
             elif i == "o":
                 # Get last activity
                 display_json("api.get_last_activity()", api.get_last_activity())
-            elif i == "p":    
+            elif i == "p":
                 # Get activities data from startdate 'YYYY-MM-DD' to enddate 'YYYY-MM-DD', with (optional) activitytype
                 # Possible values are: cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other
                 activities = api.get_activities_by_date(
@@ -300,42 +356,50 @@ def switch(api, i):
 
                 # Download activities
                 for activity in activities:
-
                     activity_id = activity["activityId"]
+                    activity_name = activity["activityName"]
                     display_text(activity)
 
-                    print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.GPX)")
+                    print(
+                        f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.GPX)"
+                    )
                     gpx_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.GPX
                     )
-                    output_file = f"./{str(activity_id)}.gpx"
+                    output_file = f"./{str(activity_name)}.gpx"
                     with open(output_file, "wb") as fb:
                         fb.write(gpx_data)
                     print(f"Activity data downloaded to file {output_file}")
 
-                    print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.TCX)")
+                    print(
+                        f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.TCX)"
+                    )
                     tcx_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.TCX
                     )
-                    output_file = f"./{str(activity_id)}.tcx"
+                    output_file = f"./{str(activity_name)}.tcx"
                     with open(output_file, "wb") as fb:
                         fb.write(tcx_data)
                     print(f"Activity data downloaded to file {output_file}")
 
-                    print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.ORIGINAL)")
+                    print(
+                        f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.ORIGINAL)"
+                    )
                     zip_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.ORIGINAL
                     )
-                    output_file = f"./{str(activity_id)}.zip"
+                    output_file = f"./{str(activity_name)}.zip"
                     with open(output_file, "wb") as fb:
                         fb.write(zip_data)
                     print(f"Activity data downloaded to file {output_file}")
 
-                    print(f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.CSV)")
+                    print(
+                        f"api.download_activity({activity_id}, dl_fmt=api.ActivityDownloadFormat.CSV)"
+                    )
                     csv_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.CSV
                     )
-                    output_file = f"./{str(activity_id)}.csv"
+                    output_file = f"./{str(activity_name)}.csv"
                     with open(output_file, "wb") as fb:
                         fb.write(csv_data)
                     print(f"Activity data downloaded to file {output_file}")
@@ -347,34 +411,63 @@ def switch(api, i):
                 # Get activity splits
                 first_activity_id = activities[0].get("activityId")
 
-                display_json(f"api.get_activity_splits({first_activity_id})", api.get_activity_splits(first_activity_id))
+                display_json(
+                    f"api.get_activity_splits({first_activity_id})",
+                    api.get_activity_splits(first_activity_id),
+                )
 
                 # Get activity split summaries for activity id
-                display_json(f"api.get_activity_split_summaries({first_activity_id})", api.get_activity_split_summaries(first_activity_id))
+                display_json(
+                    f"api.get_activity_split_summaries({first_activity_id})",
+                    api.get_activity_split_summaries(first_activity_id),
+                )
 
                 # Get activity weather data for activity
-                display_json(f"api.get_activity_weather({first_activity_id})", api.get_activity_weather(first_activity_id))
+                display_json(
+                    f"api.get_activity_weather({first_activity_id})",
+                    api.get_activity_weather(first_activity_id),
+                )
 
                 # Get activity hr timezones id
-                display_json(f"api.get_activity_hr_in_timezones({first_activity_id})", api.get_activity_hr_in_timezones(first_activity_id))
+                display_json(
+                    f"api.get_activity_hr_in_timezones({first_activity_id})",
+                    api.get_activity_hr_in_timezones(first_activity_id),
+                )
 
                 # Get activity details for activity id
-                display_json(f"api.get_activity_details({first_activity_id})", api.get_activity_details(first_activity_id))
+                display_json(
+                    f"api.get_activity_details({first_activity_id})",
+                    api.get_activity_details(first_activity_id),
+                )
 
                 # Get gear data for activity id
-                display_json(f"api.get_activity_gear({first_activity_id})", api.get_activity_gear(first_activity_id))
+                display_json(
+                    f"api.get_activity_gear({first_activity_id})",
+                    api.get_activity_gear(first_activity_id),
+                )
 
                 # Activity self evaluation data for activity id
-                display_json(f"api.get_activity_evaluation({first_activity_id})", api.get_activity_evaluation(first_activity_id))
+                display_json(
+                    f"api.get_activity_evaluation({first_activity_id})",
+                    api.get_activity_evaluation(first_activity_id),
+                )
 
                 # Get exercise sets in case the activity is a strength_training
                 if activities[0]["activityType"]["typeKey"] == "strength_training":
-                    display_json(f"api.get_activity_exercise_sets({first_activity_id})", api.get_activity_exercise_sets(first_activity_id))
+                    display_json(
+                        f"api.get_activity_exercise_sets({first_activity_id})",
+                        api.get_activity_exercise_sets(first_activity_id),
+                    )
 
             elif i == "s":
-                # Upload activity from file
-                display_json(f"api.upload_activity({activityfile})", api.upload_activity(activityfile))
-
+                try:
+                    # Upload activity from file
+                    display_json(
+                        f"api.upload_activity({activityfile})",
+                        api.upload_activity(activityfile),
+                    )
+                except FileNotFoundError:
+                    print(f"File to upload not found: {activityfile}")
             # DEVICES
             elif i == "t":
                 # Get Garmin devices
@@ -388,24 +481,27 @@ def switch(api, i):
                 # Get settings per device
                 for device in devices:
                     device_id = device["deviceId"]
-                    display_json(f"api.get_device_settings({device_id})", api.get_device_settings(device_id))
+                    display_json(
+                        f"api.get_device_settings({device_id})",
+                        api.get_device_settings(device_id),
+                    )
 
             # GOALS
             elif i == "u":
                 # Get active goals
                 goals = api.get_goals("active")
-                display_json("api.get_goals(\"active\")", goals)
+                display_json('api.get_goals("active")', goals)
 
             elif i == "v":
                 # Get future goals
                 goals = api.get_goals("future")
-                display_json("api.get_goals(\"future\")", goals)
+                display_json('api.get_goals("future")', goals)
 
             elif i == "w":
                 # Get past goals
                 goals = api.get_goals("past")
-                display_json("api.get_goals(\"past\")", goals)
-            
+                display_json('api.get_goals("past")', goals)
+
             # ALARMS
             elif i == "y":
                 # Get Garmin device alarms
@@ -416,33 +512,58 @@ def switch(api, i):
 
             elif i == "x":
                 # Get Heart Rate Variability (hrv) data
-                display_json(f"api.get_hrv_data({today.isoformat()})", api.get_hrv_data(today.isoformat()))
+                display_json(
+                    f"api.get_hrv_data({today.isoformat()})",
+                    api.get_hrv_data(today.isoformat()),
+                )
 
             elif i == "z":
                 # Get progress summary
-                for metric in ["elevationGain", "duration", "distance", "movingDuration"]:
+                for metric in [
+                    "elevationGain",
+                    "duration",
+                    "distance",
+                    "movingDuration",
+                ]:
                     display_json(
-                        f"api.get_progress_summary_between_dates({today.isoformat()})", api.get_progress_summary_between_dates(
+                        f"api.get_progress_summary_between_dates({today.isoformat()})",
+                        api.get_progress_summary_between_dates(
                             startdate.isoformat(), today.isoformat(), metric
-                        ))
+                        ),
+                    )
 
             # Gear
             elif i == "A":
                 last_used_device = api.get_device_last_used()
-                display_json(f"api.get_device_last_used()", last_used_device)
+                display_json("api.get_device_last_used()", last_used_device)
                 userProfileNumber = last_used_device["userProfileNumber"]
                 gear = api.get_gear(userProfileNumber)
-                display_json(f"api.get_gear()", gear)
-                display_json(f"api.get_gear_defaults()", api.get_gear_defaults(userProfileNumber))
-                display_json(f"api.get()", api.get_activity_types())
+                display_json("api.get_gear()", gear)
+                display_json(
+                    "api.get_gear_defaults()", api.get_gear_defaults(userProfileNumber)
+                )
+                display_json("api.get()", api.get_activity_types())
                 for gear in gear:
-                        uuid=gear["uuid"]
-                        name=gear["displayName"]                                                
-                        display_json(f"api.get_gear_stats({uuid}) / {name}", api.get_gear_stats(uuid))
+                    uuid = gear["uuid"]
+                    name = gear["displayName"]
+                    display_json(
+                        f"api.get_gear_stats({uuid}) / {name}", api.get_gear_stats(uuid)
+                    )
 
             elif i == "Z":
-                # Logout Garmin Connect portal
-                display_json("api.logout()", api.logout())
+                # Remove stored login tokens for Garmin Connect portal
+                tokendir = os.path.expanduser(tokenstore)
+                print(f"Removing stored login tokens from: {tokendir}")
+                
+                try:
+                    for root, dirs, files in os.walk(tokendir, topdown=False):
+                        for name in files:
+                            os.remove(os.path.join(root, name))
+                        for name in dirs:
+                            os.rmdir(os.path.join(root, name))
+                    print(f"Directory {tokendir} removed")
+                except FileNotFoundError:
+                    print(f"Directory not found: {tokendir}")
                 api = None
 
         except (
@@ -457,6 +578,7 @@ def switch(api, i):
             pass
     else:
         print("Could not login to Garmin Connect, try again later.")
+
 
 # Main program loop
 while True:

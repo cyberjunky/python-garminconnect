@@ -3,16 +3,16 @@ sources = garminconnect tests setup.py
 
 .PHONY: .venv  ## Install virtual environment
 .venv:
-	python -m venv .venv
-	python -m pip install -qU pip
+	python3 -m venv .venv
+	python3 -m pip install -qU pip
 
 .PHONY: install  ## Install package
 install: .venv
-	pip install -qUe .
+	pip3 install -qUe .
 
 .PHONY: install-test  ## Install package in development mode
 install-test: .venv install
-	pip install -qU -r requirements-test.txt
+	pip3 install -qU -r requirements-test.txt
 
 .PHONY: test  ## Run tests
 test:
