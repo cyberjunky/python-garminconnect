@@ -57,6 +57,9 @@ class Garmin:
         self.garmin_connect_non_completed_badge_challenges_url = (
             "/badgechallenge-service/badgeChallenge/non-completed"
         )
+        self.garmin_connect_inprogress_virtual_challenges_url = (
+            "proxy/badgechallenge-service/virtualChallenge/inProgress"
+        )
         self.garmin_connect_daily_sleep_url = (
             "/wellness-service/wellness/dailySleepData"
         )
@@ -445,6 +448,15 @@ class Garmin:
         logger.debug("Requesting badge challenges for user")
 
         return self.connectapi(url, params=params)
+
+    def get_inprogress_virtual_challenges(self, start, limit) -> Dict[str, Any]:
+        """Return in-progress virtual challenges for current user."""
+
+        url = self.garmin_connect_inprogress_virtual_challenges_url
+        params = {"start": str(start), "limit": str(limit)}
+        logger.debug("Requesting in-progress virtual challenges for user")
+
+        return self.modern_rest_client.get(url, params=params).json()
 
     def get_sleep_data(self, cdate: str) -> Dict[str, Any]:
         """Return sleep data for current user."""
