@@ -94,6 +94,7 @@ menu_options = {
     "E": f"Add a weigh-in of {weight}{weightunit} on '{today.isoformat()}')",
     "F": f"Get virual challenges/expeditions from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "G": f"Get hill score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
+    "H": f"Get endurance score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "Z": "Removing stored login tokens",
     "q": "Exit",
 }
@@ -596,6 +597,12 @@ def switch(api, i):
                 display_json(
                     f"api.get_hill_score({startdate.isoformat()}, {today.isoformat()})",
                     api.get_hill_score(startdate.isoformat(), today.isoformat())
+                )
+            elif i == "H":
+                # Get endurance score data
+                display_json(
+                    f"api.get_endurance_score({startdate.isoformat()}, {today.isoformat()})",
+                    api.get_endurance_score(startdate.isoformat(), today.isoformat())
                 )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
