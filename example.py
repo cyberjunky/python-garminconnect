@@ -95,7 +95,7 @@ menu_options = {
     "F": f"Get virual challenges/expeditions from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "G": f"Get hill score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "H": f"Get endurance score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
-    "Z": "Removing stored login tokens",
+    "Z": "Remove stored login tokens (to reauth)",
     "q": "Exit",
 }
 
@@ -176,7 +176,7 @@ def switch(api, i):
 
     # Exit example program
     if i == "q":
-        print("Bye!")
+        print("Be active, generate some data to fetch next time ;-) Bye!")
         sys.exit()
 
     # Skip requests if login failed
