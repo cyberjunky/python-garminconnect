@@ -67,7 +67,7 @@ class Garmin:
             "/wellness-service/wellness/dailyStress"
         )
         self.garmin_connect_hill_score_url = (
-            "proxy/metrics-service/metrics/hillscore"
+            "/metrics-service/metrics/hillscore"
         )
 
         self.garmin_connect_daily_body_battery_url = (
@@ -522,13 +522,15 @@ class Garmin:
             url = self.garmin_connect_hill_score_url
             params = {"calendarDate": str(startdate)}
             logger.debug("Requesting hill score data for a single day")
-            return self.modern_rest_client.get(url, params=params).json()
+
+            return self.connectapi(url, params=params)
 
         else:
             url = f"{self.garmin_connect_hill_score_url}/stats"
             params = {"startDate": str(startdate), "endDate": str(enddate), "aggregation":'daily'}
             logger.debug("Requesting hill score data for a range of days")
-            return self.modern_rest_client.get(url, params=params).json()
+
+            return self.connectapi(url, params=params)
 
     def get_devices(self) -> Dict[str, Any]:
         """Return available devices for the current user account."""
