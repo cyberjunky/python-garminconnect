@@ -23,6 +23,7 @@ The login credentials generated with Garth are valid for a year to avoid needing
 ## Testing
 
 ```bash
+pip3 install -r requirements-test.txt
 make install-test
 make test
 ```
