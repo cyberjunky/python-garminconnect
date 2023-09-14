@@ -44,7 +44,7 @@ pip3 install -r requirements-dev.txt
 ./example.py
 ```
 
-## Thanks
+## Thank you :heart:
 
 Special thanks to all people contibuted, either by asking questions, coming up with great ideas, or create whole Pull Requests to merge!
 This project deserves more attention, but I'm struggling to free up time sometimes, so thank you for your patience too!
