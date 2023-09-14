@@ -48,7 +48,7 @@ pip3 install -r requirements-dev.txt
 
 ## Credits
 
-:heart: Special thanks to all people contibuted, either by asking questions, reporting bugs, coming up with great ideas, or even create whole Pull Requests to merge!
+:heart: Special thanks to all people contibuted, either by asking questions, reporting bugs, coming up with great ideas, or even by creating whole Pull Requests to add new features!
 This project deserves more attention, but I'm struggling to free up time sometimes, so thank you for your patience too!
 
 ## Donations
