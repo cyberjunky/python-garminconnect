@@ -17,7 +17,7 @@ See <https://connect.garmin.com/>
 ## Installation
 
 ```bash
-python3 -m pip install garminconnect
+pip3 install garminconnect
 ```
 
 ## Authentication
