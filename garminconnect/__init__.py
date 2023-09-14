@@ -24,9 +24,7 @@ class Garmin:
             "/device-service/deviceregistration/devices"
         )
         self.garmin_connect_device_url = "/device-service/deviceservice"
-        self.garmin_connect_weight_url = (
-            "/weight-service"
-        )
+        self.garmin_connect_weight_url = "/weight-service"
         self.garmin_connect_daily_summary_url = (
             "/usersummary-service/usersummary/daily"
         )
@@ -42,9 +40,7 @@ class Garmin:
         self.garmin_connect_personal_record_url = (
             "/personalrecord-service/personalrecord/prs"
         )
-        self.garmin_connect_earned_badges_url = (
-            "/badge-service/badge/earned"
-        )
+        self.garmin_connect_earned_badges_url = "/badge-service/badge/earned"
         self.garmin_connect_adhoc_challenges_url = (
             "/adhocchallenge-service/adHocChallenge/historical"
         )
@@ -78,7 +74,7 @@ class Garmin:
             "/bloodpressure-service/bloodpressure/range"
         )
         self.garmin_connect_endurance_score_url = (
-            '/metrics-service/metrics/endurancescore'
+            "/metrics-service/metrics/endurancescore"
         )
 
         self.garmin_connect_goals_url = "/goal-service/goal/goals"
@@ -118,13 +114,9 @@ class Garmin:
             "/activity-service/activity/activityTypes"
         )
 
-        self.garmin_connect_fitnessstats = (
-            "/fitnessstats-service/activity"
-        )
+        self.garmin_connect_fitnessstats = "/fitnessstats-service/activity"
 
-        self.garmin_connect_fit_download = (
-            "/download-service/files/activity"
-        )
+        self.garmin_connect_fit_download = "/download-service/files/activity"
         self.garmin_connect_tcx_download = (
             "/download-service/export/tcx/activity"
         )
@@ -155,7 +147,7 @@ class Garmin:
 
     def connectapi(self, path, **kwargs):
         return self.garth.connectapi(path, **kwargs)
-    
+
     def download(self, path, **kwargs):
         return self.garth.download(path, **kwargs)
 
@@ -268,7 +260,9 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def add_weigh_in(self, weight: int, unitKey: str = 'kg', timestamp: str = ''):
+    def add_weigh_in(
+        self, weight: int, unitKey: str = "kg", timestamp: str = ""
+    ):
         """Add a weigh-in (default to kg)"""
 
         url = f"{self.garmin_connect_weight_url}/user-weight"
@@ -276,19 +270,15 @@ class Garmin:
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt - dt.astimezone().tzinfo.utcoffset(dt)
         payload = {
-            'dateTimestamp': dt.isoformat()[:22] + '.00',
-            'gmtTimestamp': dtGMT.isoformat()[:22] + '.00',
-            'unitKey': unitKey,
-            'sourceType': 'MANUAL',
-            'value': weight
+            "dateTimestamp": dt.isoformat()[:22] + ".00",
+            "gmtTimestamp": dtGMT.isoformat()[:22] + ".00",
+            "unitKey": unitKey,
+            "sourceType": "MANUAL",
+            "value": weight,
         }
         logger.debug("Adding weigh-in")
 
-        return self.garth.post(
-            "connectapi",
-            url,
-            json=payload
-        )
+        return self.garth.post("connectapi", url, json=payload)
 
     def get_weigh_ins(self, startdate: str, enddate: str):
         """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
@@ -314,27 +304,30 @@ class Garmin:
         logger.debug("Deleting weigh-in")
 
         return self.garth.post(
-            "connectapi",
-            url,
-            {"x-http-method-override": "DELETE"}
+            "connectapi", url, {"x-http-method-override": "DELETE"}
         )
-    
+
     def delete_weigh_ins(self, cdate: str, delete_all: bool = False):
-        """Delete weigh-in for 'cdate' format 'YYYY-MM-DD'. Includes option to delete all weigh-ins for that date."""
+        """
+        Delete weigh-in for 'cdate' format 'YYYY-MM-DD'.
+        Includes option to delete all weigh-ins for that date.
+        """
 
         daily_weigh_ins = self.get_daily_weigh_ins(cdate)
-        weigh_ins = daily_weigh_ins.get('dateWeightList', [])
+        weigh_ins = daily_weigh_ins.get("dateWeightList", [])
         if not weigh_ins or len(weigh_ins) == 0:
             logger.warning(f"No weigh-ins found on {cdate}")
             return
         elif len(weigh_ins) > 1:
             logger.warning(f"Multiple weigh-ins found for {cdate}")
             if not delete_all:
-                logger.warning(f"Set delete_all to True to delete all {len(weigh_ins)} weigh-ins")
+                logger.warning(
+                    f"Set delete_all to True to delete all {len(weigh_ins)} weigh-ins"
+                )
                 return
 
         for w in weigh_ins:
-            self.delete_weigh_in(w['samplePk'], cdate)
+            self.delete_weigh_in(w["samplePk"], cdate)
 
         return len(weigh_ins)
 
@@ -456,7 +449,9 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_inprogress_virtual_challenges(self, start, limit) -> Dict[str, Any]:
+    def get_inprogress_virtual_challenges(
+        self, start, limit
+    ) -> Dict[str, Any]:
         """Return in-progress virtual challenges for current user."""
 
         url = self.garmin_connect_inprogress_virtual_challenges_url
@@ -512,9 +507,12 @@ class Garmin:
         return self.connectapi(url)
 
     def get_endurance_score(self, startdate: str, enddate=None):
-        """Return endurance score by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
-        Using a single day returns the precise values for that day.  Using a range returns the aggregated weekly values
-        for that week"""
+        """
+        Return endurance score by day for 'startdate' format 'YYYY-MM-DD'
+        through enddate 'YYYY-MM-DD'.
+        Using a single day returns the precise values for that day.
+        Using a range returns the aggregated weekly values for that week.
+        """
 
         if enddate is None:
             url = self.garmin_connect_endurance_score_url
@@ -524,7 +522,11 @@ class Garmin:
             return self.connectapi(url, params=params)
         else:
             url = f"{self.garmin_connect_endurance_score_url}/stats"
-            params = {"startDate": str(startdate), "endDate": str(enddate), "aggregation": 'weekly'}
+            params = {
+                "startDate": str(startdate),
+                "endDate": str(enddate),
+                "aggregation": "weekly",
+            }
             logger.debug("Requesting endurance score data for a range of days")
 
             return self.connectapi(url, params=params)
@@ -538,7 +540,10 @@ class Garmin:
         return self.connectapi(url)
 
     def get_hill_score(self, startdate: str, enddate=None):
-        """Return hill score by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'"""
+        """
+        Return hill score by day from 'startdate' format 'YYYY-MM-DD'
+        to enddate 'YYYY-MM-DD'
+        """
 
         if enddate is None:
             url = self.garmin_connect_hill_score_url
@@ -549,7 +554,11 @@ class Garmin:
 
         else:
             url = f"{self.garmin_connect_hill_score_url}/stats"
-            params = {"startDate": str(startdate), "endDate": str(enddate), "aggregation":'daily'}
+            params = {
+                "startDate": str(startdate),
+                "endDate": str(enddate),
+                "aggregation": "daily",
+            }
             logger.debug("Requesting hill score data for a range of days")
 
             return self.connectapi(url, params=params)
@@ -768,9 +777,7 @@ class Garmin:
             f"activityType/{activityType}{defaultGearString}"
         )
         return self.garth.post(
-            "connectapi",
-            url,
-            {"x-http-method-override": method_override}
+            "connectapi", url, {"x-http-method-override": method_override}
         )
 
     class ActivityDownloadFormat(Enum):
