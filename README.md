@@ -12,7 +12,7 @@ See <https://connect.garmin.com/>
 ## Installation
 
 ```bash
-python -m pip install garminconnect
+python3 -m pip install garminconnect
 ```
 
 ## Authentication
