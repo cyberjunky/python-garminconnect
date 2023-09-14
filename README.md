@@ -1,5 +1,7 @@
 # Python: Garmin Connect
 
+![image](https://github.com/cyberjunky/python-garminconnect/assets/5447161/c7ed7155-0f8c-4fdc-8369-1281759dc5c9)
+
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
 
 Python 3 API wrapper for Garmin Connect to get your statistics.
@@ -17,7 +19,7 @@ See <https://connect.garmin.com/>
 ## Installation
 
 ```bash
-python3 -m pip install garminconnect
+pip3 install garminconnect
 ```
 
 ## Authentication
@@ -44,9 +46,9 @@ pip3 install -r requirements-dev.txt
 ./example.py
 ```
 
-## Thanks
+## Credits
 
-Special thanks to all people contibuted, either by asking questions, coming up with great ideas, or create whole Pull Requests to merge!
+:heart: Special thanks to all people contibuted, either by asking questions, reporting bugs, coming up with great ideas, or even by creating whole Pull Requests to add new features!
 This project deserves more attention, but I'm struggling to free up time sometimes, so thank you for your patience too!
 
 ## Donations
