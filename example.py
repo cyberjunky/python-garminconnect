@@ -86,6 +86,10 @@ menu_options = {
     "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
     "z": f"Get progress summary from '{startdate.isoformat()}' to '{today.isoformat()}' for all metrics",
     "A": "Get gear, the defaults, activity types and statistics",
+    "B": f"Get weight-ins from '{startdate.isoformat()}' to '{today.isoformat()}'",
+    "C": f"Get daily weigh-ins for '{today.isoformat()}'",
+    "D": f"Delete weigh-ins for '{today.isoformat()}'",
+    "E": f"Add a weigh-in",
     "Z": "Removing stored login tokens",
     "q": "Exit",
 }
@@ -549,6 +553,33 @@ def switch(api, i):
                     display_json(
                         f"api.get_gear_stats({uuid}) / {name}", api.get_gear_stats(uuid)
                     )
+            # WEIGHT-INS
+            elif i == "B":
+                # Get weigh-ins data
+                display_json(
+                    f"api.get_weigh_ins({startdate.isoformat()}, {today.isoformat()})",
+                    api.get_weigh_ins(startdate.isoformat(), today.isoformat())
+                )
+            elif i == "C":
+                # Get daily weigh-ins data
+                display_json(
+                    f"api.get_daily_weigh_ins({today.isoformat()})",
+                    api.get_daily_weigh_ins(today.isoformat())
+                )
+            elif i == "D":
+                # Delete weigh-ins data for
+                display_json(
+                    f"api.delete_weigh_ins({today.isoformat()})",
+                    api.delete_weigh_ins(today.isoformat())
+                )
+            elif i == "E":
+                # Add a weigh-in
+                weight = 89.6
+                unit = 'kg'
+                display_json(
+                    f"api.add_weigh_in(weight = {weight}, unitKey = {unit})",
+                    api.add_weigh_in(weight = weight, unitKey = unit)
+                )
 
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
