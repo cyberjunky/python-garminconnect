@@ -155,10 +155,11 @@ def init_api(email, password):
 
             garmin = Garmin(email, password)
             garmin.login()
+            # Save tokens for next login
             garmin.garth.dump(tokenstore)
 
-        except GarminConnectAuthenticationError as err:
-            logger.error("Error occurred during Garmin Connect communication: %s", err)
+        except (FileNotFoundError, GarthHTTPError, GarminConnectAuthenticationError, requests.exceptions.HTTPError) as err:
+            logger.error(err)
             return None
 
     return garmin
@@ -644,7 +645,10 @@ while True:
     if not api:
         api = init_api(email, password)
 
-    # Display menu
-    print_menu()
-    option = readchar.readkey()
-    switch(api, option)
+    if api:
+        # Display menu
+        print_menu()
+        option = readchar.readkey()
+        switch(api, option)
+    else:
+        api = init_api(email, password)
