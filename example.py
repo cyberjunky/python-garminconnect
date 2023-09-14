@@ -43,6 +43,8 @@ limit = 100
 start_badge = 1  # Badge related calls calls start counting at 1
 activitytype = ""  # Possible values are: cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other
 activityfile = "MY_ACTIVITY.fit"  # Supported file types are: .fit .gpx .tcx
+weight = 89.6
+weightunit = 'kg'
 
 menu_options = {
     "1": "Get full name",
@@ -88,8 +90,9 @@ menu_options = {
     "A": "Get gear, the defaults, activity types and statistics",
     "B": f"Get weight-ins from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "C": f"Get daily weigh-ins for '{today.isoformat()}'",
-    "D": f"Delete weigh-ins for '{today.isoformat()}'",
-    "E": f"Add a weigh-in",
+    "D": f"Delete all weigh-ins for '{today.isoformat()}'",
+    "E": f"Add a weigh-in of {weight}{weightunit} on '{today.isoformat()}')",
+    "F": f"Get virual challenges/expeditions from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "Z": "Removing stored login tokens",
     "q": "Exit",
 }
@@ -567,20 +570,26 @@ def switch(api, i):
                     api.get_daily_weigh_ins(today.isoformat())
                 )
             elif i == "D":
-                # Delete weigh-ins data for
+                # Delete weigh-ins data for today
                 display_json(
-                    f"api.delete_weigh_ins({today.isoformat()})",
-                    api.delete_weigh_ins(today.isoformat())
+                    f"api.delete_weigh_ins({today.isoformat()}, delete_all=True)",
+                    api.delete_weigh_ins(today.isoformat(), delete_all=True)
                 )
             elif i == "E":
                 # Add a weigh-in
                 weight = 89.6
                 unit = 'kg'
                 display_json(
-                    f"api.add_weigh_in(weight = {weight}, unitKey = {unit})",
-                    api.add_weigh_in(weight = weight, unitKey = unit)
+                    f"api.add_weigh_in(weight={weight}, unitKey={unit})",
+                    api.add_weigh_in(weight=weight, unitKey=unit)
                 )
-
+            # Challenges/expeditions
+            elif i == "F":
+                # Get virtual challenges/expeditions
+                display_json(
+                    f"api.get_inprogress_virtual_challenges({startdate.isoformat()}, {today.isoformat()})",
+                    api.get_inprogress_virtual_challenges(startdate.isoformat(), today.isoformat())
+                )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
                 tokendir = os.path.expanduser(tokenstore)
@@ -602,8 +611,9 @@ def switch(api, i):
             GarminConnectAuthenticationError,
             GarminConnectTooManyRequestsError,
             requests.exceptions.HTTPError,
+            GarthHTTPError
         ) as err:
-            logger.error("Error occurred: %s", err)
+            logger.error(err)
         except KeyError:
             # Invalid menu option chosen
             pass
