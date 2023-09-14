@@ -1,4 +1,3 @@
-session.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -104,6 +103,7 @@ celerybeat.pid
 
 # Environments
 .env
+.envrc
 .venv
 env/
 venv/
@@ -128,3 +128,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
