@@ -55,8 +55,6 @@ interactions:
       - 7f96736daf684654-DFW
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -137,8 +135,6 @@ interactions:
       - 7f96736f6f5c46cb-DFW
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -220,8 +216,6 @@ interactions:
       - 7f9673718c4e4612-DFW
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
