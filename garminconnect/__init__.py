@@ -113,7 +113,9 @@ class Garmin:
         self.garmin_connect_activity_types = (
             "/activity-service/activity/activityTypes"
         )
-
+        self.garmin_connect_activity_fordate = (
+            "/mobile-gateway/heartRate/forDate"
+        )
         self.garmin_connect_fitnessstats = "/fitnessstats-service/activity"
 
         self.garmin_connect_fit_download = "/download-service/files/activity"
@@ -612,6 +614,14 @@ class Garmin:
         logger.debug("Requesting activities")
 
         return self.connectapi(url, params=params)
+
+    def get_activities_fordate(self, fordate: str):
+        """Return available activities for date."""
+
+        url = f"{self.garmin_connect_activity_fordate}/{fordate}"
+        logger.debug(f"Requesting activities for date {fordate}")
+
+        return self.connectapi(url)
 
     def get_last_activity(self):
         """Return last activity."""

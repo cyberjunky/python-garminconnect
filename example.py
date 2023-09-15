@@ -95,6 +95,7 @@ menu_options = {
     "F": f"Get virual challenges/expeditions from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "G": f"Get hill score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "H": f"Get endurance score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
+    "I": f"Get activities for date '{today.isoformat()}'",
     "Z": "Remove stored login tokens (to reauth)",
     "q": "Exit",
 }
@@ -604,6 +605,12 @@ def switch(api, i):
                 display_json(
                     f"api.get_endurance_score({startdate.isoformat()}, {today.isoformat()})",
                     api.get_endurance_score(startdate.isoformat(), today.isoformat())
+                )
+            elif i == "I":
+                # Get activities for date
+                display_json(
+                    f"api.get_activities_fordate({today.isoformat()})",
+                    api.get_activities_fordate(today.isoformat())
                 )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
