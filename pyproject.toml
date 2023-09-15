@@ -6,9 +6,8 @@ authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "garth>=0.4.23"
+    "garth"
 ]
-requires-python = ">=3.10"
 readme = "README.md"
 license = {text = "MIT"}
 classifiers = [
@@ -19,6 +18,9 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
 keywords=["garmin connect", "api", "garmin"]
+[project.urls]
+"Homepage" = "https://github.com/cyberjunky/python-garminconnect"
+"Bug Tracker" = "https://github.com/cyberjunky/python-garminconnect/issues"
 
 [build-system]
 requires = ["pdm-backend"]

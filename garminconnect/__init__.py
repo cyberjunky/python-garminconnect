@@ -303,8 +303,11 @@ class Garmin:
         url = f"{self.garmin_connect_weight_url}/weight/{cdate}/byversion/{weight_pk}"
         logger.debug("Deleting weigh-in")
 
-        return self.garth.post(
-            "connectapi", url, {"x-http-method-override": "DELETE"}
+        return self.garth.request(
+            "DELETE",
+            "connectapi",
+            url,
+            api=True,
         )
 
     def delete_weigh_ins(self, cdate: str, delete_all: bool = False):
