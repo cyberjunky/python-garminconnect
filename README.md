@@ -29,8 +29,11 @@ The login credentials generated with Garth are valid for a year to avoid needing
 
 ## Testing
 
+The test files use the credential tokens created by `example.py` script, so use that first.
+
 ```bash
-sudo apt install python3-pytest (some distros)
+export GARMINTOKENS=~/.garminconnect
+sudo apt install python3-pytest (needed some distros)
 
 make install-test
 make test
