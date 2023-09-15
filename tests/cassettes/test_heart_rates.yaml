@@ -55,8 +55,6 @@ interactions:
       - 7f8a4dfd38ceb6ee-QRO
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -137,8 +135,6 @@ interactions:
       - 7f8a4dfdf980b6e5-QRO
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -386,8 +382,6 @@ interactions:
       - 7f8a4dfee830b6e8-QRO
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:

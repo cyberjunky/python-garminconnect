@@ -44,8 +44,6 @@ interactions:
       - 7f8742c799e3477e-DFW
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
@@ -108,8 +106,6 @@ interactions:
       - 7f8742c8d857154a-QRO
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json
       Date:
