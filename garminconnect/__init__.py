@@ -88,7 +88,7 @@ class Garmin:
         )
 
         self.garmin_connect_race_predictor_url = (
-            "/metrics-service/metrics/racepredictions/{_type}/"
+            "/metrics-service/metrics/racepredictions"
         )
         self.garmin_connect_training_status_url = (
             "/metrics-service/metrics/trainingstatus/aggregated"
@@ -557,11 +557,11 @@ class Garmin:
             raise ValueError("results: _type must be one of %r." % valid)
 
         if _type is None and startdate is None and enddate is None:
-            url = self.garmin_connect_race_predictor_url.format(_type='latest') + self.display_name
+            url = self.garmin_connect_race_predictor_url + f"/latest/{self.display_name}"
             return self.connectapi(url)
 
         elif _type is not None and startdate is not None and enddate is not None:
-            url = self.garmin_connect_race_predictor_url.format(_type=_type) + self.display_name
+            url = self.garmin_connect_race_predictor_url + f"/{_type}/{self.display_name}"
             params = {"fromCalendarDate": str(startdate), "toCalendarDate": str(enddate)}
             return self.connectapi(url, params=params)
 
