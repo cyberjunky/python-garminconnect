@@ -87,10 +87,12 @@ class Garmin:
             "/metrics-service/metrics/trainingreadiness"
         )
 
+        self.garmin_connect_race_predictor_url = (
+            "/metrics-service/metrics/racepredictions"
+        )
         self.garmin_connect_training_status_url = (
             "/metrics-service/metrics/trainingstatus/aggregated"
         )
-
         self.garmin_connect_user_summary_chart = (
             "/wellness-service/wellness/dailySummaryChart"
         )
@@ -535,6 +537,36 @@ class Garmin:
             logger.debug("Requesting endurance score data for a range of days")
 
             return self.connectapi(url, params=params)
+
+    def get_race_predictions(self, startdate=None, enddate=None, _type=None):
+        """
+        Return race predictions for the 5k, 10k, half marathon and marathon.  Accepts either 0 parameters or all three:
+        If all parameters are empty, returns the race predictions for the current date
+        Otherwise, returns the race predictions for each day or month in the range provided
+
+        Keyword Arguments:
+        startdate -- the date of the earliest race predictions you'd like to see. Cannot be more than one year before
+        enddate
+        enddate -- the date of the last race predictions you'd like to see
+        _type -- either 'daily' (to provide the predictions for each day in the range) or 'monthly' (to provide the
+        aggregated monthly prediction for each month in the range)
+        """
+
+        valid = {'daily', 'monthly', None}
+        if _type not in valid:
+            raise ValueError("results: _type must be one of %r." % valid)
+
+        if _type is None and startdate is None and enddate is None:
+            url = self.garmin_connect_race_predictor_url + f"/latest/{self.display_name}"
+            return self.connectapi(url)
+
+        elif _type is not None and startdate is not None and enddate is not None:
+            url = self.garmin_connect_race_predictor_url + f"/{_type}/{self.display_name}"
+            params = {"fromCalendarDate": str(startdate), "toCalendarDate": str(enddate)}
+            return self.connectapi(url, params=params)
+
+        else:
+            raise ValueError('You must either provide all parameters or no parameters')
 
     def get_training_status(self, cdate: str) -> Dict[str, Any]:
         """Return training status data for current user."""
