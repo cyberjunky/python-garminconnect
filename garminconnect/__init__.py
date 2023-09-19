@@ -552,21 +552,34 @@ class Garmin:
         aggregated monthly prediction for each month in the range)
         """
 
-        valid = {'daily', 'monthly', None}
+        valid = {"daily", "monthly", None}
         if _type not in valid:
             raise ValueError("results: _type must be one of %r." % valid)
 
         if _type is None and startdate is None and enddate is None:
-            url = self.garmin_connect_race_predictor_url + f"/latest/{self.display_name}"
+            url = (
+                self.garmin_connect_race_predictor_url
+                + f"/latest/{self.display_name}"
+            )
             return self.connectapi(url)
 
-        elif _type is not None and startdate is not None and enddate is not None:
-            url = self.garmin_connect_race_predictor_url + f"/{_type}/{self.display_name}"
-            params = {"fromCalendarDate": str(startdate), "toCalendarDate": str(enddate)}
+        elif (
+            _type is not None and startdate is not None and enddate is not None
+        ):
+            url = (
+                self.garmin_connect_race_predictor_url
+                + f"/{_type}/{self.display_name}"
+            )
+            params = {
+                "fromCalendarDate": str(startdate),
+                "toCalendarDate": str(enddate),
+            }
             return self.connectapi(url, params=params)
 
         else:
-            raise ValueError('You must either provide all parameters or no parameters')
+            raise ValueError(
+                "You must either provide all parameters or no parameters"
+            )
 
     def get_training_status(self, cdate: str) -> Dict[str, Any]:
         """Return training status data for current user."""
