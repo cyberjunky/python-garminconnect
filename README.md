@@ -25,7 +25,9 @@ pip3 install garminconnect
 ## Authentication
 
 The library uses the same authentication method as the app using [Garth](https://github.com/matin/garth).
-The login credentials generated with Garth are valid for a year to avoid needing to login each time.
+The login credentials generated with Garth are valid for a year to avoid needing to login each time.  
+NOTE: We obtain the OAuth tokens using the consumer key and secret as the Connect app does.
+`garth.sso.OAUTH_CONSUMER` can be set manually prior to calling api.login() if someone wants to use a custom consumer key and secret.
 
 ## Testing
 
