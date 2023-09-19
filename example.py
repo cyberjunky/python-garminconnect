@@ -96,6 +96,7 @@ menu_options = {
     "G": f"Get hill score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "H": f"Get endurance score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "I": f"Get activities for date '{today.isoformat()}'",
+    "J": "Get race predictions",
     "Z": "Remove stored login tokens (to reauth)",
     "q": "Exit",
 }
@@ -109,9 +110,13 @@ def display_json(api_call, output):
     footer = "-" * len(header)
 
     print(header)
-    print(json.dumps(output, indent=4))
-    print(footer)
 
+    if isinstance(output, (int, str, dict, list)):
+        print(json.dumps(output, indent=4))
+    else:
+        print(output)
+
+    print(footer)
 
 def display_text(output):
     """Format API output for better readability."""
@@ -611,6 +616,12 @@ def switch(api, i):
                 display_json(
                     f"api.get_activities_fordate({today.isoformat()})",
                     api.get_activities_fordate(today.isoformat())
+                )
+            elif i == "J":
+                # Get race predictions
+                display_json(
+                    f"api.get_race_predictions()",
+                    api.get_race_predictions()
                 )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
