@@ -71,7 +71,7 @@ testcov: test
 	@echo "building coverage xml"
 	@pdm run coverage xml -o coverage/coverage.xml
 
-.PHONE: publish  ## Publish to PyPi
+.PHONY: publish  ## Publish to PyPi
 publish: .pdm
 	pdm build
 	twine upload dist/*
