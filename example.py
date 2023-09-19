@@ -97,7 +97,7 @@ menu_options = {
     "H": f"Get endurance score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "I": f"Get activities for date '{today.isoformat()}'",
     "J": "Get race predictions",
-    "Z": "Remove stored login tokens (to reauth)",
+    "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
 
