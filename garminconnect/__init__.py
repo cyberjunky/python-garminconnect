@@ -139,8 +139,6 @@ class Garmin:
         self.garmin_connect_gear = "/gear-service/gear/filterGear"
         self.garmin_connect_gear_baseurl = "/gear-service/gear/"
 
-        self.garmin_connect_logout = "auth/logout/?url="
-
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
         )
@@ -966,7 +964,7 @@ class Garmin:
     def logout(self):
         """Log user out of session."""
 
-        self.connectapi(self.garmin_connect_logout)
+        logger.error("Deprecated: Alternative is to delete login tokens to logout.")
 
 
 class GarminConnectConnectionError(Exception):
