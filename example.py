@@ -97,6 +97,7 @@ menu_options = {
     "H": f"Get endurance score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "I": f"Get activities for date '{today.isoformat()}'",
     "J": "Get race predictions",
+    "K": f"Get all day stress data for '{today.isoformat()}'",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -622,6 +623,12 @@ def switch(api, i):
                 display_json(
                     f"api.get_race_predictions()",
                     api.get_race_predictions()
+                )
+            elif i == "K":
+                # Get all day stress data for date
+                display_json(
+                    f"api.get_all_day_stress({today.isoformat()})",
+                    api.get_all_day_stress(today.isoformat())
                 )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
