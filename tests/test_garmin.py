@@ -119,3 +119,11 @@ def test_download_activity(garmin):
     activity_id = "11998957007"
     activity = garmin.download_activity(activity_id)
     assert activity
+
+
+@pytest.mark.vcr
+def test_all_day_stress(garmin):
+    garmin.login()
+    all_day_stress = garmin.get_all_day_stress(DATE)
+    assert "bodyBatteryValuesArray" in all_day_stress
+    assert "calendarDate" in all_day_stress
