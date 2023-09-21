@@ -39,10 +39,6 @@ lint: .pdm
 codespell: .pre-commit
 	pre-commit run codespell --all-files
 
-.PHONY: typecheck  ## Perform type-checking
-typecheck: .pre-commit .pdm
-	pre-commit run typecheck --all-files
-
 .PHONY: .venv  ## Install virtual environment
 .venv:
 	python3 -m venv .venv
