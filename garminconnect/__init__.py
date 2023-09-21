@@ -108,6 +108,9 @@ class Garmin:
         self.garmin_connect_daily_spo2_url = (
             "/wellness-service/wellness/daily/spo2"
         )
+        self.garmin_all_day_stress_url = (
+            "/wellness-service/wellness/dailyStress"
+        )
         self.garmin_connect_activities = (
             "/activitylist-service/activities/search/activities"
         )
@@ -397,6 +400,14 @@ class Garmin:
 
         url = f"{self.garmin_connect_daily_spo2_url}/{cdate}"
         logger.debug("Requesting SpO2 data")
+
+        return self.connectapi(url)
+
+    def get_all_day_stress(self, cdate: str) -> Dict[str, Any]:
+        """Return available all day stress data 'cdate' format 'YYYY-MM-DD'."""
+
+        url = f"{self.garmin_all_day_stress_url}/{cdate}"
+        logger.debug("Requesting all day stress data")
 
         return self.connectapi(url)
 
@@ -964,7 +975,9 @@ class Garmin:
     def logout(self):
         """Log user out of session."""
 
-        logger.error("Deprecated: Alternative is to delete login tokens to logout.")
+        logger.error(
+            "Deprecated: Alternative is to delete login tokens to logout."
+        )
 
 
 class GarminConnectConnectionError(Exception):
