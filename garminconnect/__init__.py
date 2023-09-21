@@ -549,16 +549,17 @@ class Garmin:
 
     def get_race_predictions(self, startdate=None, enddate=None, _type=None):
         """
-        Return race predictions for the 5k, 10k, half marathon and marathon.  Accepts either 0 parameters or all three:
+        Return race predictions for the 5k, 10k, half marathon and marathon.
+        Accepts either 0 parameters or all three:
         If all parameters are empty, returns the race predictions for the current date
-        Otherwise, returns the race predictions for each day or month in the range provided
+        Or returns the race predictions for each day or month in the range provided
 
         Keyword Arguments:
-        startdate -- the date of the earliest race predictions you'd like to see. Cannot be more than one year before
-        enddate
-        enddate -- the date of the last race predictions you'd like to see
-        _type -- either 'daily' (to provide the predictions for each day in the range) or 'monthly' (to provide the
-        aggregated monthly prediction for each month in the range)
+        'startdate' the date of the earliest race predictions
+        Cannot be more than one year before 'enddate'
+        'enddate' the date of the last race predictions
+        '_type' either 'daily' (the predictions for each day in the range) or
+        'monthly' (the aggregated monthly prediction for each month in the range)
         """
 
         valid = {"daily", "monthly", None}
@@ -777,7 +778,7 @@ class Garmin:
 
     def get_activity_types(self):
         url = self.garmin_connect_activity_types
-        logger.debug("Requesting activy types")
+        logger.debug("Requesting activity types")
         return self.connectapi(url)
 
     def get_goals(self, status="active", start=1, limit=30):
@@ -871,11 +872,11 @@ class Garmin:
         """
         activity_id = str(activity_id)
         urls = {
-            Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.garmin_connect_fit_download}/{activity_id}",
-            Garmin.ActivityDownloadFormat.TCX: f"{self.garmin_connect_tcx_download}/{activity_id}",
-            Garmin.ActivityDownloadFormat.GPX: f"{self.garmin_connect_gpx_download}/{activity_id}",
-            Garmin.ActivityDownloadFormat.KML: f"{self.garmin_connect_kml_download}/{activity_id}",
-            Garmin.ActivityDownloadFormat.CSV: f"{self.garmin_connect_csv_download}/{activity_id}",
+            Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.garmin_connect_fit_download}/{activity_id}",  # noqa
+            Garmin.ActivityDownloadFormat.TCX: f"{self.garmin_connect_tcx_download}/{activity_id}",  # noqa
+            Garmin.ActivityDownloadFormat.GPX: f"{self.garmin_connect_gpx_download}/{activity_id}",  # noqa
+            Garmin.ActivityDownloadFormat.KML: f"{self.garmin_connect_kml_download}/{activity_id}",  # noqa
+            Garmin.ActivityDownloadFormat.CSV: f"{self.garmin_connect_csv_download}/{activity_id}",  # noqa
         }
         if dl_fmt not in urls:
             raise ValueError(f"Unexpected value {dl_fmt} for dl_fmt")
