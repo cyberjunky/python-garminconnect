@@ -92,7 +92,7 @@ menu_options = {
     "C": f"Get daily weigh-ins for '{today.isoformat()}'",
     "D": f"Delete all weigh-ins for '{today.isoformat()}'",
     "E": f"Add a weigh-in of {weight}{weightunit} on '{today.isoformat()}')",
-    "F": f"Get virual challenges/expeditions from '{startdate.isoformat()}' to '{today.isoformat()}'",
+    "F": f"Get virtual challenges/expeditions from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "G": f"Get hill score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "H": f"Get endurance score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "I": f"Get activities for date '{today.isoformat()}'",
