@@ -114,6 +114,13 @@ def test_hrv_data(garmin):
 
 
 @pytest.mark.vcr
+def test_no_hrv_data(garmin):
+    garmin.login()
+    hrv_data = garmin.get_hrv_data("2000-01-01")
+    assert hrv_data is None
+
+
+@pytest.mark.vcr
 def test_download_activity(garmin):
     garmin.login()
     activity_id = "11998957007"
