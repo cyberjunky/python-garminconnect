@@ -17,10 +17,14 @@ def sanitize_cookie(cookie_value) -> str:
 
 def sanitize_request(request):
     if request.body:
-        body = request.body.decode("utf8")
-        for key in ["username", "password", "refresh_token"]:
-            body = re.sub(key + r"=[^&]*", f"{key}=SANITIZED", body)
-        request.body = body.encode("utf8")
+        try:
+            body = request.body.decode("utf8")
+        except UnicodeDecodeError:
+            ...
+        else:
+            for key in ["username", "password", "refresh_token"]:
+                body = re.sub(key + r"=[^&]*", f"{key}=SANITIZED", body)
+            request.body = body.encode("utf8")
 
     if "Cookie" in request.headers:
         cookies = request.headers["Cookie"].split("; ")
