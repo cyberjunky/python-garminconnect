@@ -127,3 +127,10 @@ def test_all_day_stress(garmin):
     all_day_stress = garmin.get_all_day_stress(DATE)
     assert "bodyBatteryValuesArray" in all_day_stress
     assert "calendarDate" in all_day_stress
+
+
+@pytest.mark.vcr
+def test_upload(garmin):
+    garmin.login()
+    fpath = "tests/12129115726_ACTIVITY.fit"
+    assert garmin.upload_activity(fpath)
