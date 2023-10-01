@@ -702,7 +702,7 @@ class Garmin:
                 "file": (file_base_name, open(activity_path, "rb" or "r")),
             }
             url = self.garmin_connect_upload
-            return self.garth.post("connectapi", url, files=files)
+            return self.garth.post("connectapi", url, files=files, api=True)
         else:
             raise GarminConnectInvalidFileFormatError(
                 f"Could not upload {activity_path}"
