@@ -91,7 +91,7 @@ menu_options = {
     "B": f"Get weight-ins from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "C": f"Get daily weigh-ins for '{today.isoformat()}'",
     "D": f"Delete all weigh-ins for '{today.isoformat()}'",
-    "E": f"Add a weigh-in of {weight}{weightunit} on '{today.isoformat()}')",
+    "E": f"Add a weigh-in of {weight}{weightunit} on '{today.isoformat()}'",
     "F": f"Get virtual challenges/expeditions from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "G": f"Get hill score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "H": f"Get endurance score data from '{startdate.isoformat()}' to '{today.isoformat()}'",
