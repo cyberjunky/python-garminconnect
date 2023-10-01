@@ -1,6 +1,67 @@
 # Python: Garmin Connect
 
-![image](https://github.com/cyberjunky/python-garminconnect/assets/5447161/c7ed7155-0f8c-4fdc-8369-1281759dc5c9)
+```
+$ ./example.py 
+
+*** Garmin Connect API Demo by cyberjunky ***
+
+Trying to login to Garmin Connect using token data from '~/.garminconnect'...
+
+1 -- Get full name
+2 -- Get unit system
+3 -- Get activity data for '2023-10-01'
+4 -- Get activity data for '2023-10-01' (compatible with garminconnect-ha)
+5 -- Get body composition data for '2023-10-01' (compatible with garminconnect-ha)
+6 -- Get body composition data for from '2023-09-24' to '2023-10-01' (to be compatible with garminconnect-ha)
+7 -- Get stats and body composition data for '2023-10-01'
+8 -- Get steps data for '2023-10-01'
+9 -- Get heart rate data for '2023-10-01'
+0 -- Get training readiness data for '2023-10-01'
+- -- Get daily step data for '2023-09-24' to '2023-10-01'
+/ -- Get body battery data for '2023-09-24' to '2023-10-01'
+! -- Get floors data for '2023-09-24'
+? -- Get blood pressure data for '2023-09-24' to '2023-10-01'
+. -- Get training status data for '2023-10-01'
+a -- Get resting heart rate data for 2023-10-01'
+b -- Get hydration data for '2023-10-01'
+c -- Get sleep data for '2023-10-01'
+d -- Get stress data for '2023-10-01'
+e -- Get respiration data for '2023-10-01'
+f -- Get SpO2 data for '2023-10-01'
+g -- Get max metric data (like vo2MaxValue and fitnessAge) for '2023-10-01'
+h -- Get personal record for user
+i -- Get earned badges for user
+j -- Get adhoc challenges data from start '0' and limit '100'
+k -- Get available badge challenges data from '1' and limit '100'
+l -- Get badge challenges data from '1' and limit '100'
+m -- Get non completed badge challenges data from '1' and limit '100'
+n -- Get activities data from start '0' and limit '100'
+o -- Get last activity
+p -- Download activities data by date from '2023-09-24' to '2023-10-01'
+r -- Get all kinds of activities data from '0'
+s -- Upload activity data from file 'MY_ACTIVITY.fit'
+t -- Get all kinds of Garmin device info
+u -- Get active goals
+v -- Get future goals
+w -- Get past goals
+y -- Get all Garmin device alarms
+x -- Get Heart Rate Variability data (HRV) for '2023-10-01'
+z -- Get progress summary from '2023-09-24' to '2023-10-01' for all metrics
+A -- Get gear, the defaults, activity types and statistics
+B -- Get weight-ins from '2023-09-24' to '2023-10-01'
+C -- Get daily weigh-ins for '2023-10-01'
+D -- Delete all weigh-ins for '2023-10-01'
+E -- Add a weigh-in of 89.6kg on '2023-10-01'
+F -- Get virtual challenges/expeditions from '2023-09-24' to '2023-10-01'
+G -- Get hill score data from '2023-09-24' to '2023-10-01'
+H -- Get endurance score data from '2023-09-24' to '2023-10-01'
+I -- Get activities for date '2023-10-01'
+J -- Get race predictions
+K -- Get all day stress data for '2023-10-01'
+Z -- Remove stored login tokens (logout)
+q -- Exit
+Make your selection: 
+```
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
 
