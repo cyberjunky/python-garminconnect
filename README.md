@@ -104,6 +104,18 @@ make test
 
 ## Development
 
+To create a development enviroment to commit code.
+
+```
+sudo apt install pdm
+snap install ruff
+pdm init
+
+sudo apt install pre-commit
+pip3 install pre-commit
+```
+
+## Example
 The tests provide examples of how to use the library.  
 There is a Jupyter notebook called `reference.ipynb` provided [here](https://github.com/cyberjunky/python-garminconnect/blob/master/reference.ipynb).  
 And you can check out the `example.py` code you can find [here](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py), you can run it like so:  
