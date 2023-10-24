@@ -98,6 +98,7 @@ menu_options = {
     "I": f"Get activities for date '{today.isoformat()}'",
     "J": "Get race predictions",
     "K": f"Get all day stress data for '{today.isoformat()}'",
+    "L": f"Add body composition for '{today.isoformat()}'",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -629,6 +630,38 @@ def switch(api, i):
                 display_json(
                     f"api.get_all_day_stress({today.isoformat()})",
                     api.get_all_day_stress(today.isoformat())
+                )
+            elif i == "L":
+                # Get all day stress data for date
+                weight = 70.0
+                percent_fat = 15.4
+                percent_hydration = 54.8
+                visceral_fat_mass = 10.8
+                bone_mass = 2.9
+                muscle_mass = 55.2
+                basal_met = 1454.1
+                active_met = None
+                physique_rating = None
+                metabolic_age = 33.0
+                visceral_fat_rating = None
+                bmi = 22.2
+                display_json(
+                    f"api.add_body_composition({today.isoformat()}, {weight}, {percent_fat}, {percent_hydration}, {visceral_fat_mass}, {bone_mass}, {muscle_mass}, {basal_met}, {active_met}, {physique_rating}, {metabolic_age}, {visceral_fat_rating}, {bmi})",
+                    api.add_body_composition(
+                        today.isoformat(),
+                        weight=weight,
+                        percent_fat=percent_fat,
+                        percent_hydration=percent_hydration,
+                        visceral_fat_mass=visceral_fat_mass,
+                        bone_mass=bone_mass,
+                        muscle_mass=muscle_mass,
+                        basal_met=basal_met,
+                        active_met=active_met,
+                        physique_rating=physique_rating,
+                        metabolic_age=metabolic_age,
+                        visceral_fat_rating=visceral_fat_rating,
+                        bmi=bmi,
+                    ),
                 )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
