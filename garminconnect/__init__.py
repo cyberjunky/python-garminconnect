@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
+from withings_sync import fit
 
 import garth
 
@@ -264,6 +265,50 @@ class Garmin:
         logger.debug("Requesting body composition")
 
         return self.connectapi(url, params=params)
+
+    def add_body_composition(
+        self,
+        timestamp: Optional[str],
+        weight: float,
+        percent_fat: Optional[float]=None,
+        percent_hydration: Optional[float]=None,
+        visceral_fat_mass: Optional[float]=None,
+        bone_mass: Optional[float]=None,
+        muscle_mass: Optional[float]=None,
+        basal_met: Optional[float]=None,
+        active_met: Optional[float]=None,
+        physique_rating: Optional[float]=None,
+        metabolic_age: Optional[float]=None,
+        visceral_fat_rating: Optional[float]=None,
+        bmi: Optional[float]=None,
+    ):
+        dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
+        fitEncoder = fit.FitEncoderWeight()
+        fitEncoder.write_file_info()
+        fitEncoder.write_file_creator()
+        fitEncoder.write_device_info(dt)
+        fitEncoder.write_weight_scale(
+            dt,
+            weight=weight,
+            percent_fat=percent_fat,
+            percent_hydration=percent_hydration,
+            visceral_fat_mass=visceral_fat_mass,
+            bone_mass=bone_mass,
+            muscle_mass=muscle_mass,
+            basal_met=basal_met,
+            active_met=active_met,
+            physique_rating=physique_rating,
+            metabolic_age=metabolic_age,
+            visceral_fat_rating=visceral_fat_rating,
+            bmi=bmi,
+        )
+        fitEncoder.finish()
+
+        url = self.garmin_connect_upload
+        files = {
+            "file": ("body_composition.fit", fitEncoder.getvalue()),
+        }
+        return self.garth.post("connectapi", url, files=files, api=True)
 
     def add_weigh_in(
         self, weight: int, unitKey: str = "kg", timestamp: str = ""
