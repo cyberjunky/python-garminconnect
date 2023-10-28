@@ -73,6 +73,11 @@ class Garmin:
         self.garmin_connect_blood_pressure_endpoint = (
             "/bloodpressure-service/bloodpressure/range"
         )
+
+        self.garmin_connect_set_blood_pressure_endpoint = (
+            "/bloodpressure-service/bloodpressure"
+        )
+
         self.garmin_connect_endurance_score_url = (
             "/metrics-service/metrics/endurancescore"
         )
@@ -354,6 +359,32 @@ class Garmin:
         logger.debug("Requesting body battery data")
 
         return self.connectapi(url, params=params)
+
+    def set_blood_pressure(
+        self, systolic: int, diastolic: int, pulse:int,
+        timestamp: str = "", notes: str = ""
+    ):
+        """
+        Add blood pressure measurement
+        """
+
+        url = f"{self.garmin_connect_set_blood_pressure_endpoint}"
+        dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
+        # Apply timezone offset to get UTC/GMT time
+        dtGMT = dt - dt.astimezone().tzinfo.utcoffset(dt)
+        payload = {
+            "measurementTimestampLocal": dt.isoformat()[:22] + ".00",
+            "measurementTimestampGMT": dtGMT.isoformat()[:22] + ".00",
+            "systolic": systolic,
+            "diastolic": diastolic,
+            "pulse": pulse,
+            "sourceType": "MANUAL",
+            "notes": notes
+        }
+
+        logger.debug("Adding blood pressure")
+
+        return self.garth.post("connectapi", url, json=payload)
 
     def get_blood_pressure(
         self, startdate: str, enddate=None
