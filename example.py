@@ -99,6 +99,7 @@ menu_options = {
     "J": "Get race predictions",
     "K": f"Get all day stress data for '{today.isoformat()}'",
     "L": f"Add body composition for '{today.isoformat()}'",
+    "M": "Set blood pressure '120,80,80,notes='Testing with example.py'",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -632,7 +633,7 @@ def switch(api, i):
                     api.get_all_day_stress(today.isoformat())
                 )
             elif i == "L":
-                # Get all day stress data for date
+                # Add body composition
                 weight = 70.0
                 percent_fat = 15.4
                 percent_hydration = 54.8
@@ -661,7 +662,12 @@ def switch(api, i):
                         metabolic_age=metabolic_age,
                         visceral_fat_rating=visceral_fat_rating,
                         bmi=bmi,
-                    ),
+                    )
+             elif i == "M":
+                # Set blood pressure values
+                display_json(
+                    f"api.set_blood_pressure(120,80,80,notes=`Testing with example.py`)",
+                    api.set_blood_pressure(120,80,80,notes="Testing with example.py")
                 )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
