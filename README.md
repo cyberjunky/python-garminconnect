@@ -65,7 +65,7 @@ Make your selection:
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
 
-Python 3 API wrapper for Garmin Connect to get your statistics.
+Python 3 API wrapper for Garmin Connect.
 
 ## NOTE: For developers using this package
 From `version 0.2.1 onwards`, this package uses `garth` to authenticate and perform API calls.  
