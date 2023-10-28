@@ -100,6 +100,7 @@ menu_options = {
     "K": f"Get all day stress data for '{today.isoformat()}'",
     "L": f"Add body composition for '{today.isoformat()}'",
     "M": "Set blood pressure '120,80,80,notes='Testing with example.py'",
+    "N": "Get user profile/settings",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -669,6 +670,12 @@ def switch(api, i):
                 display_json(
                     f"api.set_blood_pressure(120,80,80,notes=`Testing with example.py`)",
                     api.set_blood_pressure(120,80,80,notes="Testing with example.py")
+                )
+            elif i == "N":
+                # Get user profile
+                display_json(
+                    "api.get_user_profile()",
+                    api.get_user_profile()
                 )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
