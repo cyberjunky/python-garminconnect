@@ -875,8 +875,11 @@ class Garmin:
             f"{self.garmin_connect_gear_baseurl}{gearUUID}/"
             f"activityType/{activityType}{defaultGearString}"
         )
-        return self.garth.post(
-            "connectapi", url, {"x-http-method-override": method_override}
+        return self.garth.request(
+            method_override,
+            "connectapi",
+            url,
+            api=True
         )
 
     class ActivityDownloadFormat(Enum):
