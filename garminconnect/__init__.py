@@ -21,6 +21,9 @@ class Garmin:
         self.password = password
         self.is_cn = is_cn
 
+        self.garmin_connect_user_settings_url = (
+            "/userprofile-service/userprofile/user-settings"
+        )
         self.garmin_connect_devices_url = (
             "/device-service/deviceregistration/devices"
         )
@@ -175,7 +178,7 @@ class Garmin:
         self.full_name = self.garth.profile["fullName"]
 
         settings = self.garth.connectapi(
-            "/userprofile-service/userprofile/user-settings"
+            self.garmin_connect_user_settings_url
         )
         self.unit_system = settings["userData"]["measurementSystem"]
 
@@ -754,6 +757,14 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def set_activity_name(self, activity_id, title):
+        """Set name for activity with id."""
+
+        url = f"{self.garmin_connect_activity}/{activity_id}"
+        payload = {"activityId": activity_id, "activityName": title}
+
+        return self.garth.put("connectapi", url, json=payload, api=True)
+
     def get_last_activity(self):
         """Return last activity."""
 
@@ -1051,6 +1062,14 @@ class Garmin:
         logger.debug("Requesting gear for activity_id %s", activity_id)
 
         return self.connectapi(url, params=params)
+
+    def get_user_profile(self):
+        """Get all users settings."""
+
+        url = self.garmin_connect_user_settings_url
+        logger.debug("Requesting user profile.")
+        
+        return self.connectapi(url)
 
     def logout(self):
         """Log user out of session."""
