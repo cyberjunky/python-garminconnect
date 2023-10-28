@@ -1,4 +1,4 @@
-"""Python 3 API wrapper for Garmin Connect to get your statistics."""
+"""Python 3 API wrapper for Garmin Connect."""
 
 import logging
 import os
