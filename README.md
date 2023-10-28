@@ -104,7 +104,7 @@ make test
 
 ## Development
 
-To create a development enviroment to commit code.
+To create a development environment to commit code.
 
 ```
 sudo apt install pdm

@@ -5,9 +5,9 @@ import os
 from datetime import datetime
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
-from withings_sync import fit
 
 import garth
+from withings_sync import fit
 
 logger = logging.getLogger(__name__)
 
@@ -177,9 +177,7 @@ class Garmin:
         self.display_name = self.garth.profile["displayName"]
         self.full_name = self.garth.profile["fullName"]
 
-        settings = self.garth.connectapi(
-            self.garmin_connect_user_settings_url
-        )
+        settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
         self.unit_system = settings["userData"]["measurementSystem"]
 
         return True
@@ -278,17 +276,17 @@ class Garmin:
         self,
         timestamp: Optional[str],
         weight: float,
-        percent_fat: Optional[float]=None,
-        percent_hydration: Optional[float]=None,
-        visceral_fat_mass: Optional[float]=None,
-        bone_mass: Optional[float]=None,
-        muscle_mass: Optional[float]=None,
-        basal_met: Optional[float]=None,
-        active_met: Optional[float]=None,
-        physique_rating: Optional[float]=None,
-        metabolic_age: Optional[float]=None,
-        visceral_fat_rating: Optional[float]=None,
-        bmi: Optional[float]=None,
+        percent_fat: Optional[float] = None,
+        percent_hydration: Optional[float] = None,
+        visceral_fat_mass: Optional[float] = None,
+        bone_mass: Optional[float] = None,
+        muscle_mass: Optional[float] = None,
+        basal_met: Optional[float] = None,
+        active_met: Optional[float] = None,
+        physique_rating: Optional[float] = None,
+        metabolic_age: Optional[float] = None,
+        visceral_fat_rating: Optional[float] = None,
+        bmi: Optional[float] = None,
     ):
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         fitEncoder = fit.FitEncoderWeight()
@@ -409,8 +407,12 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def set_blood_pressure(
-        self, systolic: int, diastolic: int, pulse:int,
-        timestamp: str = "", notes: str = ""
+        self,
+        systolic: int,
+        diastolic: int,
+        pulse: int,
+        timestamp: str = "",
+        notes: str = "",
     ):
         """
         Add blood pressure measurement
@@ -427,7 +429,7 @@ class Garmin:
             "diastolic": diastolic,
             "pulse": pulse,
             "sourceType": "MANUAL",
-            "notes": notes
+            "notes": notes,
         }
 
         logger.debug("Adding blood pressure")
@@ -931,12 +933,7 @@ class Garmin:
             f"{self.garmin_connect_gear_baseurl}{gearUUID}/"
             f"activityType/{activityType}{defaultGearString}"
         )
-        return self.garth.request(
-            method_override,
-            "connectapi",
-            url,
-            api=True
-        )
+        return self.garth.request(method_override, "connectapi", url, api=True)
 
     class ActivityDownloadFormat(Enum):
         """Activity variables."""
@@ -1068,7 +1065,7 @@ class Garmin:
 
         url = self.garmin_connect_user_settings_url
         logger.debug("Requesting user profile.")
-        
+
         return self.connectapi(url)
 
     def logout(self):
