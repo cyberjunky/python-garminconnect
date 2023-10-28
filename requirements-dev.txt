@@ -1,3 +1,4 @@
 garth >= 0.4.23
+withings-sync>=4.1.0
 readchar
 requests
