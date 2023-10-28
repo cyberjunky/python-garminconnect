@@ -98,6 +98,7 @@ menu_options = {
     "I": f"Get activities for date '{today.isoformat()}'",
     "J": "Get race predictions",
     "K": f"Get all day stress data for '{today.isoformat()}'",
+    "L": "Set blood pressure '120,80,80,notes='Testing with example.py'",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -629,6 +630,12 @@ def switch(api, i):
                 display_json(
                     f"api.get_all_day_stress({today.isoformat()})",
                     api.get_all_day_stress(today.isoformat())
+                )
+            elif i == "L":
+                # Set blood pressure values
+                display_json(
+                    f"api.set_blood_pressure(120,80,80,notes=`Testing with example.py`)",
+                    api.set_blood_pressure(120,80,80,notes="Testing with example.py")
                 )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
