@@ -663,7 +663,8 @@ def switch(api, i):
                         visceral_fat_rating=visceral_fat_rating,
                         bmi=bmi,
                     )
-             elif i == "M":
+                )
+            elif i == "M":
                 # Set blood pressure values
                 display_json(
                     f"api.set_blood_pressure(120,80,80,notes=`Testing with example.py`)",
