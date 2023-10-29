@@ -134,3 +134,13 @@ def test_upload(garmin):
     garmin.login()
     fpath = "tests/12129115726_ACTIVITY.fit"
     assert garmin.upload_activity(fpath)
+
+
+@pytest.mark.vcr
+def test_request_reload(garmin):
+    garmin.login()
+    cdate = "2021-01-01"
+    assert sum(steps['steps'] for steps in garmin.get_steps_data(cdate)) == 0
+    assert garmin.request_reload(cdate)
+    # In practice, the data can take a while to load
+    assert sum(steps['steps'] for steps in garmin.get_steps_data(cdate)) > 0
