@@ -140,7 +140,7 @@ def test_upload(garmin):
 def test_request_reload(garmin):
     garmin.login()
     cdate = "2021-01-01"
-    assert sum(steps['steps'] for steps in garmin.get_steps_data(cdate)) == 0
+    assert sum(steps["steps"] for steps in garmin.get_steps_data(cdate)) == 0
     assert garmin.request_reload(cdate)
     # In practice, the data can take a while to load
-    assert sum(steps['steps'] for steps in garmin.get_steps_data(cdate)) > 0
+    assert sum(steps["steps"] for steps in garmin.get_steps_data(cdate)) > 0

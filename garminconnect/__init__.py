@@ -151,7 +151,9 @@ class Garmin:
         self.garmin_connect_gear = "/gear-service/gear/filterGear"
         self.garmin_connect_gear_baseurl = "/gear-service/gear/"
 
-        self.garmin_request_reload_url = "/wellness-service/wellness/epoch/request"
+        self.garmin_request_reload_url = (
+            "/wellness-service/wellness/epoch/request"
+        )
 
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
@@ -722,7 +724,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_device_alarms(self) -> Dict[str, Any]:
+    def get_device_alarms(self) -> List[str, Any]:
         """Get list of active alarms from all devices."""
 
         logger.debug("Requesting device alarms")
