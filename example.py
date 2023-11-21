@@ -101,6 +101,7 @@ menu_options = {
     "L": f"Add body composition for '{today.isoformat()}'",
     "M": "Set blood pressure '120,80,80,notes='Testing with example.py'",
     "N": "Get user profile/settings",
+    "O": f"Reload epoch data for {today.isoformat()}",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -676,6 +677,12 @@ def switch(api, i):
                 display_json(
                     "api.get_user_profile()",
                     api.get_user_profile()
+                )
+            elif i == "O":
+                # Reload epoch data for date
+                display_json(
+                    f"api.request_reload({today.isoformat()})",
+                    api.request_reload(today.isoformat())
                 )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
