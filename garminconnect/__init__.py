@@ -151,6 +151,8 @@ class Garmin:
         self.garmin_connect_gear = "/gear-service/gear/filterGear"
         self.garmin_connect_gear_baseurl = "/gear-service/gear/"
 
+        self.garmin_request_reload_url = "/wellness-service/wellness/epoch/request"
+
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
         )
@@ -1067,6 +1069,17 @@ class Garmin:
         logger.debug("Requesting user profile.")
 
         return self.connectapi(url)
+
+    def request_reload(self, cdate: str):
+        """
+        Request reload of data for a specific date. This is necessary because
+        Garmin offloads older data.
+        """
+
+        url = f"{self.garmin_request_reload_url}/{cdate}"
+        logger.debug(f"Requesting reload of data for {cdate}.")
+
+        return self.garth.post("connectapi", url, api=True)
 
     def logout(self):
         """Log user out of session."""
