@@ -724,7 +724,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_device_alarms(self) -> List[str, Any]:
+    def get_device_alarms(self) -> Dict[str, Any]:
         """Get list of active alarms from all devices."""
 
         logger.debug("Requesting device alarms")
