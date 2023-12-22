@@ -6,7 +6,7 @@ authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "garth>=0.4.23",
+    "garth>=0.4.42",
     "withings-sync>=4.1.0",
 ]
 readme = "README.md"
