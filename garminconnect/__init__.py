@@ -2,7 +2,7 @@
 
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
@@ -155,6 +155,8 @@ class Garmin:
             "/wellness-service/wellness/epoch/request"
         )
 
+        self.garmin_workouts = "/workout-service"
+
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
         )
@@ -174,7 +176,10 @@ class Garmin:
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
 
         if tokenstore:
-            self.garth.load(tokenstore)
+            if len(tokenstore) > 512:
+                self.garth.loads(tokenstore)
+            else:
+                self.garth.load(tokenstore)
         else:
             self.garth.login(self.username, self.password)
 
@@ -328,7 +333,7 @@ class Garmin:
         url = f"{self.garmin_connect_weight_url}/user-weight"
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         # Apply timezone offset to get UTC/GMT time
-        dtGMT = dt - dt.astimezone().tzinfo.utcoffset(dt)
+        dtGMT = dt.astimezone(timezone.utc)
         payload = {
             "dateTimestamp": dt.isoformat()[:22] + ".00",
             "gmtTimestamp": dtGMT.isoformat()[:22] + ".00",
@@ -425,7 +430,7 @@ class Garmin:
         url = f"{self.garmin_connect_set_blood_pressure_endpoint}"
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         # Apply timezone offset to get UTC/GMT time
-        dtGMT = dt - dt.astimezone().tzinfo.utcoffset(dt)
+        dtGMT = dt.astimezone(timezone.utc)
         payload = {
             "measurementTimestampLocal": dt.isoformat()[:22] + ".00",
             "measurementTimestampGMT": dtGMT.isoformat()[:22] + ".00",
@@ -1082,6 +1087,36 @@ class Garmin:
         logger.debug(f"Requesting reload of data for {cdate}.")
 
         return self.garth.post("connectapi", url, api=True)
+
+    def get_workouts(self, start=0, end=100):
+        """Return workouts from start till end."""
+
+        url = f"{self.garmin_workouts}/workouts"
+        logger.debug(f"Requesting workouts from {start}-{end}")
+        params = {"start": start, "limit": end}
+        return self.connectapi(url, params=params)
+
+    def get_workout_by_id(self, workout_id):
+        """Return workout by id."""
+
+        url = f"{self.garmin_workouts}/workout/{workout_id}"
+        return self.connectapi(url)
+
+    def download_workout(self, workout_id):
+        """Download workout by id."""
+
+        url = f"{self.garmin_workouts}/workout/FIT/{workout_id}"
+        logger.debug("Downloading workout from %s", url)
+
+        return self.download(url)
+
+    # def upload_workout(self, workout_json: str):
+    #     """Upload workout using json data."""
+
+    #     url = f"{self.garmin_workouts}/workout"
+    #     logger.debug("Uploading workout using %s", url)
+
+    #     return self.garth.post("connectapi", url, json=workout_json, api=True)
 
     def logout(self):
         """Log user out of session."""
