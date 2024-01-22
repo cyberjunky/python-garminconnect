@@ -1,6 +1,6 @@
 # Virtual environments
 .venv/
-
+.pdm-python
 __pypackages__/
 
 # Byte-compiled / optimized / DLL files
