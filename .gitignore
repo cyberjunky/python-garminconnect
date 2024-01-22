@@ -1,10 +1,6 @@
 # Virtual environments
-env/
-env3*/
-venv/
 .venv/
-.envrc
-.env
+
 __pypackages__/
 
 # Byte-compiled / optimized / DLL files

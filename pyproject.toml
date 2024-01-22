@@ -1,6 +1,6 @@
 [project]
 name = "garminconnect"
-dynamic = ["version"]
+version = "0.2.13"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
@@ -43,7 +43,7 @@ line_length = 79
 known_first_party = "garminconnect"
 
 [tool.pdm]
-version = { source = "file", path = "garminconnect/version.py" }
+package-type = "library"
 
 [tool.pdm.dev-dependencies]
 dev = [

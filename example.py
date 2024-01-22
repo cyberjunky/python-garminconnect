@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 email = os.getenv("EMAIL")
 password = os.getenv("PASSWORD")
 tokenstore = os.getenv("GARMINTOKENS") or "~/.garminconnect"
+tokenstore_base64 = os.getenv("GARMINTOKENS_BASE64") or "~/.garminconnect_base64"
 api = None
 
 # Example selections and settings
@@ -45,6 +46,33 @@ activitytype = ""  # Possible values are: cycling, running, swimming, multi_spor
 activityfile = "MY_ACTIVITY.fit"  # Supported file types are: .fit .gpx .tcx
 weight = 89.6
 weightunit = 'kg'
+# workout_example = """
+# {
+#     'workoutId': "random_id",
+#     'ownerId': "random",
+#     'workoutName': 'Any workout name',
+#     'description': 'FTP 200, TSS 1, NP 114, IF 0.57',
+#     'sportType': {'sportTypeId': 2, 'sportTypeKey': 'cycling'},
+#     'workoutSegments': [
+#         {
+#             'segmentOrder': 1,
+#             'sportType': {'sportTypeId': 2, 'sportTypeKey': 'cycling'},
+#             'workoutSteps': [
+#                 {'type': 'ExecutableStepDTO', 'stepOrder': 1,
+#                     'stepType': {'stepTypeId': 3, 'stepTypeKey': 'interval'}, 'childStepId': None,
+#                     'endCondition': {'conditionTypeId': 2, 'conditionTypeKey': 'time'}, 'endConditionValue': 60,
+#                     'targetType': {'workoutTargetTypeId': 2, 'workoutTargetTypeKey': 'power.zone'},
+#                     'targetValueOne': 95, 'targetValueTwo': 105},
+#                 {'type': 'ExecutableStepDTO', 'stepOrder': 2,
+#                     'stepType': {'stepTypeId': 3, 'stepTypeKey': 'interval'}, 'childStepId': None,
+#                     'endCondition': {'conditionTypeId': 2, 'conditionTypeKey': 'time'}, 'endConditionValue': 120,
+#                     'targetType': {'workoutTargetTypeId': 2, 'workoutTargetTypeKey': 'power.zone'},
+#                     'targetValueOne': 114, 'targetValueTwo': 126}
+#             ]
+#         }
+#     ]
+# }
+# """
 
 menu_options = {
     "1": "Get full name",
@@ -102,6 +130,8 @@ menu_options = {
     "M": "Set blood pressure '120,80,80,notes='Testing with example.py'",
     "N": "Get user profile/settings",
     "O": f"Reload epoch data for {today.isoformat()}",
+    "P": "Get workouts 0-100, get and download last one to .FIT file",
+    # "Q": "Upload workout from json data",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -148,11 +178,22 @@ def init_api(email, password):
     """Initialize Garmin API with your credentials."""
 
     try:
+        # Using Oauth1 and OAuth2 token files from directory
         print(
-            f"Trying to login to Garmin Connect using token data from '{tokenstore}'...\n"
+            f"Trying to login to Garmin Connect using token data from directory '{tokenstore}'...\n"
         )
+
+        # Using Oauth1 and Oauth2 tokens from base64 encoded string
+        # print(
+        #     f"Trying to login to Garmin Connect using token data from file '{tokenstore_base64}'...\n"
+        # )
+        # dir_path = os.path.expanduser(tokenstore_base64)
+        # with open(dir_path, "r") as token_file:
+        #     tokenstore = token_file.read()
+
         garmin = Garmin()
         garmin.login(tokenstore)
+
     except (FileNotFoundError, GarthHTTPError, GarminConnectAuthenticationError):
         # Session is expired. You'll need to log in again
         print(
@@ -166,9 +207,19 @@ def init_api(email, password):
 
             garmin = Garmin(email, password)
             garmin.login()
-            # Save tokens for next login
+            # Save Oauth1 and Oauth2 token files to directory for next login
             garmin.garth.dump(tokenstore)
-
+            print(
+                f"Oauth tokens stored in '{tokenstore}' directory for future use. (first method)\n"
+            )
+            # Encode Oauth1 and Oauth2 tokens to base64 string and safe to file for next login (alternative way)
+            token_base64 = garmin.garth.dumps()
+            dir_path = os.path.expanduser(tokenstore_base64)
+            with open(dir_path, "w") as token_file:
+                token_file.write(token_base64)
+            print(
+                f"Oauth tokens encoded as base64 string and saved to '{dir_path}' file for future use. (second method)\n"
+            )
         except (FileNotFoundError, GarthHTTPError, GarminConnectAuthenticationError, requests.exceptions.HTTPError) as err:
             logger.error(err)
             return None
@@ -489,6 +540,7 @@ def switch(api, i):
                     )
                 except FileNotFoundError:
                     print(f"File to upload not found: {activityfile}")
+
             # DEVICES
             elif i == "t":
                 # Get Garmin devices
@@ -552,8 +604,7 @@ def switch(api, i):
                             startdate.isoformat(), today.isoformat(), metric
                         ),
                     )
-
-            # Gear
+            # GEAR
             elif i == "A":
                 last_used_device = api.get_device_last_used()
                 display_json("api.get_device_last_used()", last_used_device)
@@ -570,6 +621,7 @@ def switch(api, i):
                     display_json(
                         f"api.get_gear_stats({uuid}) / {name}", api.get_gear_stats(uuid)
                     )
+
             # WEIGHT-INS
             elif i == "B":
                 # Get weigh-ins data
@@ -597,7 +649,8 @@ def switch(api, i):
                     f"api.add_weigh_in(weight={weight}, unitKey={unit})",
                     api.add_weigh_in(weight=weight, unitKey=unit)
                 )
-            # Challenges/expeditions
+
+            # CHALLENGES/EXPEDITIONS
             elif i == "F":
                 # Get virtual challenges/expeditions
                 display_json(
@@ -684,6 +737,42 @@ def switch(api, i):
                     f"api.request_reload({today.isoformat()})",
                     api.request_reload(today.isoformat())
                 )
+
+            # WORKOUTS
+            elif i == "P":
+                workouts = api.get_workouts()
+                # Get workout 0-100
+                display_json(
+                    "api.get_workouts()",
+                    api.get_workouts()
+                )
+
+                # Get last fetched workout
+                workout_id = workouts[-1]['workoutId']
+                workout_name = workouts[-1]["workoutName"]
+                display_json(
+                    f"api.get_workout_by_id({workout_id})",
+                    api.get_workout_by_id(workout_id))
+
+                # Download last fetched workout
+                print(
+                    f"api.download_workout({workout_id})"
+                )
+                workout_data = api.download_workout(
+                    workout_id
+                )
+                
+                output_file = f"./{str(workout_name)}.fit"
+                with open(output_file, "wb") as fb:
+                    fb.write(workout_data)
+
+                print(f"Workout data downloaded to file {output_file}")
+
+            # elif i == "Q":
+            #     display_json(
+            #         f"api.upload_workout({workout_example})",
+            #         api.upload_workout(workout_example))
+
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
                 tokendir = os.path.expanduser(tokenstore)
