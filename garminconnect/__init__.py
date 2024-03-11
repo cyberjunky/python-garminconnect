@@ -161,7 +161,6 @@ class Garmin:
             "/activity-service/activity"
         )
 
-
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
         )
