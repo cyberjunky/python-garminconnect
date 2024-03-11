@@ -1022,13 +1022,13 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_activity_evaluation(self, activity_id):
-        """Return activity self evaluation details."""
+    def get_activity(self, activity_id):
+        """Return activity summary, including basic splits."""
 
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}"
         logger.debug(
-            "Requesting self evaluation data for activity id %s", activity_id
+            "Requesting activity summary data for activity id %s", activity_id
         )
 
         return self.connectapi(url)
