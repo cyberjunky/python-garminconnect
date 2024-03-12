@@ -28,6 +28,7 @@ class Garmin:
             "/device-service/deviceregistration/devices"
         )
         self.garmin_connect_device_url = "/device-service/deviceservice"
+        self.garmin_connect_solar_url = "/web-gateway/solar"
         self.garmin_connect_weight_url = "/weight-service"
         self.garmin_connect_daily_summary_url = (
             "/usersummary-service/usersummary/daily"
@@ -728,6 +729,20 @@ class Garmin:
         logger.debug("Requesting device settings")
 
         return self.connectapi(url)
+
+    def get_device_solar_data(self, device_id: str, startdate: str, enddate: str = None) -> Dict[str, Any]:
+        """Return solar data for compatible device with 'device_id'"""
+        if enddate is None:
+            enddate = startdate
+            single_day = True
+        else:
+            single_day = False
+
+        params = {'singleDayView': single_day}
+
+        url = f"{self.garmin_connect_solar_url}/{device_id}/{startdate}/{enddate}"
+
+        return self.connectapi(url, params=params)['deviceSolarInput']
 
     def get_device_alarms(self) -> Dict[str, Any]:
         """Get list of active alarms from all devices."""
