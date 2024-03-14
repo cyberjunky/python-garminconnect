@@ -85,7 +85,16 @@ class Garmin:
         self.garmin_connect_endurance_score_url = (
             "/metrics-service/metrics/endurancescore"
         )
+        self.garmin_connect_menstrual_calendar_url = (
+            "/periodichealth-service/menstrualcycle/calendar"
+        )
 
+        self.garmin_connect_menstrual_dayview_url = (
+            "/periodichealth-service/menstrualcycle/dayview"
+        )
+        self.garmin_connect_pregnancy_snapshot_url = (
+            "periodichealth-service/menstrualcycle/pregnancysnapshot"
+        )
         self.garmin_connect_goals_url = "/goal-service/goal/goals"
 
         self.garmin_connect_rhr_url = "/userstats-service/wellness/daily"
@@ -1117,6 +1126,29 @@ class Garmin:
     #     logger.debug("Uploading workout using %s", url)
 
     #     return self.garth.post("connectapi", url, json=workout_json, api=True)
+    def get_menstrual_data_for_date(self, fordate: str):
+        """Return menstrual data for date."""
+
+        url = f"{self.garmin_connect_menstrual_dayview_url}/{fordate}"
+        logger.debug(f"Requesting menstrual data for date {fordate}")
+
+        return self.connectapi(url)
+
+    def get_menstrual_calendar_data(self, startdate: str, enddate: str):
+        """Return summaries of cycles that have days between startdate and enddate."""
+
+        url = f"{self.garmin_connect_menstrual_calendar_url}/{startdate}/{enddate}"
+        logger.debug(f"Requesting menstrual data for dates {startdate} through {enddate}")
+
+        return self.connectapi(url)
+
+    def get_pregnancy_summary(self):
+        """Return snapshot of pregnancy data"""
+
+        url = f"{self.garmin_connect_pregnancy_snapshot_url}"
+        logger.debug(f"Requesting pregnancy snapshot data")
+
+        return self.connectapi(url)
 
     def logout(self):
         """Log user out of session."""
