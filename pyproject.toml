@@ -7,7 +7,7 @@ authors = [
 ]
 dependencies = [
     "garth>=0.4.44",
-    "withings-sync>=4.1.0",
+    "withings-sync>=4.2.4",
 ]
 readme = "README.md"
 license = {text = "MIT"}
