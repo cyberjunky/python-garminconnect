@@ -1178,7 +1178,7 @@ class Garmin:
         """Return snapshot of pregnancy data"""
 
         url = f"{self.garmin_connect_pregnancy_snapshot_url}"
-        logger.debug(f"Requesting pregnancy snapshot data")
+        logger.debug("Requesting pregnancy snapshot data")
 
         return self.connectapi(url)
 
