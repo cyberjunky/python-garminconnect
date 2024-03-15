@@ -518,10 +518,10 @@ def switch(api, i):
                     api.get_activity_gear(first_activity_id),
                 )
 
-                # Activity self evaluation data for activity id
+                # Activity data for activity id
                 display_json(
-                    f"api.get_activity_evaluation({first_activity_id})",
-                    api.get_activity_evaluation(first_activity_id),
+                    f"api.get_activity({first_activity_id})",
+                    api.get_activity(first_activity_id),
                 )
 
                 # Get exercise sets in case the activity is a strength_training
