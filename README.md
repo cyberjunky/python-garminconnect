@@ -70,11 +70,6 @@ Make your selection:
 
 Python 3 API wrapper for Garmin Connect.
 
-## NOTE: For developers using this package
-From `version 0.2.1 onwards`, this package uses `garth` to authenticate and perform API calls.  
-This requires minor changes to your login code, look at the code in `example.py` or the `reference.ipynb` file how to do that.  
-It fixes a lot of stability issues, so it's well worth the effort!  
-
 ## About
 
 This package allows you to request garmin device, activity and health data from your Garmin Connect account.
