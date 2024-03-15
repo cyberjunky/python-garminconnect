@@ -133,6 +133,7 @@ menu_options = {
     "P": "Get workouts 0-100, get and download last one to .FIT file",
     # "Q": "Upload workout from json data",
     "R": "Get solar data from your devices",
+    "S": "Get pregnancy summary data",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -788,6 +789,18 @@ def switch(api, i):
             #     display_json(
             #         f"api.upload_workout({workout_example})",
             #         api.upload_workout(workout_example))
+
+            # WOMEN'S HEALTH
+            elif i == "S":
+                # Get pregnancy summary data
+                display_json(
+                    "api.get_pregnancy_summary()",
+                    api.get_pregnancy_summary()
+                )
+
+            # Additional related calls:
+            # get_menstrual_data_for_date(self, fordate: str): takes a single date and returns the Garmin Menstrual Summary data for that date
+            # get_menstrual_calendar_data(self, startdate: str, enddate: str) takes two dates and returns summaries of cycles that have days between the two days
 
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
