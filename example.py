@@ -573,7 +573,7 @@ def switch(api, i):
                     device_id = device["deviceId"]
                     display_json(
                         f"api.get_device_solar_data({device_id}, {today.isoformat()})",
-                        api.get_device_solar_datas(device_id, today.isoformat()),
+                        api.get_device_solar_data(device_id, today.isoformat()),
                     )
             # GOALS
             elif i == "u":
