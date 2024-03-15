@@ -28,6 +28,7 @@ class Garmin:
             "/device-service/deviceregistration/devices"
         )
         self.garmin_connect_device_url = "/device-service/deviceservice"
+        self.garmin_connect_solar_url = "/web-gateway/solar"
         self.garmin_connect_weight_url = "/weight-service"
         self.garmin_connect_daily_summary_url = (
             "/usersummary-service/usersummary/daily"
@@ -156,6 +157,10 @@ class Garmin:
         )
 
         self.garmin_workouts = "/workout-service"
+
+        self.garmin_connect_delete_activity_url = (
+            "/activity-service/activity"
+        )
 
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
@@ -729,6 +734,20 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def get_device_solar_data(self, device_id: str, startdate: str, enddate: str = None) -> Dict[str, Any]:
+        """Return solar data for compatible device with 'device_id'"""
+        if enddate is None:
+            enddate = startdate
+            single_day = True
+        else:
+            single_day = False
+
+        params = {'singleDayView': single_day}
+
+        url = f"{self.garmin_connect_solar_url}/{device_id}/{startdate}/{enddate}"
+
+        return self.connectapi(url, params=params)['deviceSolarInput']
+
     def get_device_alarms(self) -> Dict[str, Any]:
         """Get list of active alarms from all devices."""
 
@@ -805,6 +824,19 @@ class Garmin:
             raise GarminConnectInvalidFileFormatError(
                 f"Could not upload {activity_path}"
             )
+
+    def delete_activity(self, activity_id):
+        """Delete activity with specified id"""
+
+        url = f"{self.garmin_connect_delete_activity_url}/{activity_id}"
+        logger.debug("Deleting activity with id %s", activity_id)
+
+        return self.garth.request(
+            "DELETE",
+            "connectapi",
+            url,
+            api=True,
+        )
 
     def get_activities_by_date(self, startdate, enddate, activitytype=None):
         """
@@ -1022,13 +1054,13 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_activity_evaluation(self, activity_id):
-        """Return activity self evaluation details."""
+    def get_activity(self, activity_id):
+        """Return activity summary, including basic splits."""
 
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}"
         logger.debug(
-            "Requesting self evaluation data for activity id %s", activity_id
+            "Requesting activity summary data for activity id %s", activity_id
         )
 
         return self.connectapi(url)
