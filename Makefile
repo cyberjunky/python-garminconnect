@@ -26,12 +26,12 @@ rebuild-lockfiles: .pdm
 format: .pdm
 	pdm run isort $(sources)
 	pdm run black -l 79 $(sources)
-	pdm run ruff --fix $(sources)
+	pdm run ruff check $(sources)
 
 .PHONY: lint  ## Lint python source files
 lint: .pdm
 	pdm run isort --check-only $(sources)
-	pdm run ruff $(sources)
+	pdm run ruff check $(sources)
 	pdm run black -l 79 $(sources) --check --diff
 	pdm run mypy $(sources)
 

@@ -167,9 +167,7 @@ class Garmin:
 
         self.garmin_workouts = "/workout-service"
 
-        self.garmin_connect_delete_activity_url = (
-            "/activity-service/activity"
-        )
+        self.garmin_connect_delete_activity_url = "/activity-service/activity"
 
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
@@ -743,7 +741,9 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_device_solar_data(self, device_id: str, startdate: str, enddate: str = None) -> Dict[str, Any]:
+    def get_device_solar_data(
+        self, device_id: str, startdate: str, enddate=None
+    ) -> Dict[str, Any]:
         """Return solar data for compatible device with 'device_id'"""
         if enddate is None:
             enddate = startdate
@@ -751,11 +751,11 @@ class Garmin:
         else:
             single_day = False
 
-        params = {'singleDayView': single_day}
+        params = {"singleDayView": single_day}
 
         url = f"{self.garmin_connect_solar_url}/{device_id}/{startdate}/{enddate}"
 
-        return self.connectapi(url, params=params)['deviceSolarInput']
+        return self.connectapi(url, params=params)["deviceSolarInput"]
 
     def get_device_alarms(self) -> Dict[str, Any]:
         """Get list of active alarms from all devices."""
@@ -1170,7 +1170,9 @@ class Garmin:
         """Return summaries of cycles that have days between startdate and enddate."""
 
         url = f"{self.garmin_connect_menstrual_calendar_url}/{startdate}/{enddate}"
-        logger.debug(f"Requesting menstrual data for dates {startdate} through {enddate}")
+        logger.debug(
+            f"Requesting menstrual data for dates {startdate} through {enddate}"
+        )
 
         return self.connectapi(url)
 
