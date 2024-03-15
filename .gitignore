@@ -38,6 +38,9 @@ MANIFEST
 *.manifest
 *.spec
 
+# PyCharm idea folder
+.idea/
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
@@ -134,3 +137,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Ignore folder for local testing
+ignore/

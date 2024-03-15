@@ -157,6 +157,10 @@ class Garmin:
 
         self.garmin_workouts = "/workout-service"
 
+        self.garmin_connect_delete_activity_url = (
+            "/activity-service/activity"
+        )
+
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
         )
@@ -806,6 +810,19 @@ class Garmin:
                 f"Could not upload {activity_path}"
             )
 
+    def delete_activity(self, activity_id):
+        """Delete activity with specified id"""
+
+        url = f"{self.garmin_connect_delete_activity_url}/{activity_id}"
+        logger.debug("Deleting activity with id %s", activity_id)
+
+        return self.garth.request(
+            "DELETE",
+            "connectapi",
+            url,
+            api=True,
+        )
+
     def get_activities_by_date(self, startdate, enddate, activitytype=None):
         """
         Fetch available activities between specific dates
@@ -1022,13 +1039,13 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_activity_evaluation(self, activity_id):
-        """Return activity self evaluation details."""
+    def get_activity(self, activity_id):
+        """Return activity summary, including basic splits."""
 
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}"
         logger.debug(
-            "Requesting self evaluation data for activity id %s", activity_id
+            "Requesting activity summary data for activity id %s", activity_id
         )
 
         return self.connectapi(url)
