@@ -132,6 +132,7 @@ menu_options = {
     "O": f"Reload epoch data for {today.isoformat()}",
     "P": "Get workouts 0-100, get and download last one to .FIT file",
     # "Q": "Upload workout from json data",
+    "R": "Get solar data from your devices",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -558,7 +559,22 @@ def switch(api, i):
                         f"api.get_device_settings({device_id})",
                         api.get_device_settings(device_id),
                     )
+            elif i == "R":
+                # Get solar data from Garmin devices
+                devices = api.get_devices()
+                display_json("api.get_devices()", devices)
 
+                # Get device last used
+                device_last_used = api.get_device_last_used()
+                display_json("api.get_device_last_used()", device_last_used)
+
+                # Get settings per device
+                for device in devices:
+                    device_id = device["deviceId"]
+                    display_json(
+                        f"api.get_device_solar_data({device_id}, {today.isoformat()})",
+                        api.get_device_solar_datas(device_id, today.isoformat()),
+                    )
             # GOALS
             elif i == "u":
                 # Get active goals
