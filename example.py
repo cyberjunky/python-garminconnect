@@ -207,7 +207,7 @@ def init_api(email, password):
             if not email or not password:
                 email, password = get_credentials()
 
-            garmin = Garmin(email, password, get_mfa())
+            garmin = Garmin(email=email, password=password, is_cn=False, prompt_mfa=get_mfa)
             garmin.login()
             # Save Oauth1 and Oauth2 token files to directory for next login
             garmin.garth.dump(tokenstore)

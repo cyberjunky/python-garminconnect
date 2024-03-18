@@ -1,4 +1,5 @@
-garth@git+http://github.com/matin/garth@custom_mfa
+# garth@git+http://github.com/matin/garth@custom_mfa
+git+https://github.com/matin/garth.git@custom_mfa#egg=garth
 withings-sync>=4.2.4
 readchar
 requests

@@ -6,7 +6,8 @@ authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "garth@git+http://github.com/matin/garth@custom_mfa",
+    # "garth@git+http://github.com/matin/garth@custom_mfa",
+    "git+https://github.com/matin/garth.git@custom_mfa#egg=garth",
     "withings-sync>=4.2.4",
 ]
 readme = "README.md"
