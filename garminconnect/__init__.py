@@ -28,6 +28,9 @@ class Garmin:
             "/device-service/deviceregistration/devices"
         )
         self.garmin_connect_device_url = "/device-service/deviceservice"
+
+        self.garmin_connect_primary_device_url = "/web-gateway/device-info/primary-training-device"
+
         self.garmin_connect_solar_url = "/web-gateway/solar"
         self.garmin_connect_weight_url = "/weight-service"
         self.garmin_connect_daily_summary_url = (
@@ -738,6 +741,16 @@ class Garmin:
 
         url = f"{self.garmin_connect_device_url}/device-info/settings/{device_id}"
         logger.debug("Requesting device settings")
+
+        return self.connectapi(url)
+
+    def get_primary_training_device_info(self) -> Dict[str, Any]:
+        """Return detailed information around primary training devices, included the specified device and the
+        priority of all devices.
+        """
+
+        url = self.garmin_connect_primary_device_url
+        logger.debug("Requesting primary training device information")
 
         return self.connectapi(url)
 
