@@ -347,8 +347,8 @@ class Garmin:
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt.astimezone(timezone.utc)
         payload = {
-            "measurementTimestampLocal": dt.isoformat()[:19] + ".00",
-            "measurementTimestampGMT": dtGMT.isoformat()[:19] + ".00",
+            "dateTimestamp": dt.isoformat()[:19] + ".00",
+            "gmtTimestamp": dtGMT.isoformat()[:19] + ".00",
             "unitKey": unitKey,
             "sourceType": "MANUAL",
             "value": weight,
