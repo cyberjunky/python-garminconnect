@@ -562,8 +562,8 @@ def switch(api, i):
                     )
 
                 # Get primary training device information
-                device_primary_training_info = api.get_primary_training_device_info()
-                display_json("api.get_primary_training_device_info()", device_primary_training_info)
+                primary_training_device = api.get_primary_training_device()
+                display_json("api.get_primary_training_device()", primary_training_device)
 
             elif i == "R":
                 # Get solar data from Garmin devices
