@@ -29,7 +29,9 @@ class Garmin:
         )
         self.garmin_connect_device_url = "/device-service/deviceservice"
 
-        self.garmin_connect_primary_device_url = "/web-gateway/device-info/primary-training-device"
+        self.garmin_connect_primary_device_url = (
+            "/web-gateway/device-info/primary-training-device"
+        )
 
         self.garmin_connect_solar_url = "/web-gateway/solar"
         self.garmin_connect_weight_url = "/weight-service"
@@ -744,7 +746,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_primary_training_device_info(self) -> Dict[str, Any]:
+    def get_primary_training_device(self) -> Dict[str, Any]:
         """Return detailed information around primary training devices, included the specified device and the
         priority of all devices.
         """
