@@ -560,6 +560,11 @@ def switch(api, i):
                         f"api.get_device_settings({device_id})",
                         api.get_device_settings(device_id),
                     )
+
+                # Get primary training device information
+                device_primary_training_info = api.get_primary_training_device_info()
+                display_json("api.get_primary_training_device_info()", device_primary_training_info)
+
             elif i == "R":
                 # Get solar data from Garmin devices
                 devices = api.get_devices()
