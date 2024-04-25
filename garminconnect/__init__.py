@@ -15,11 +15,14 @@ logger = logging.getLogger(__name__)
 class Garmin:
     """Class for fetching data from Garmin Connect."""
 
-    def __init__(self, email=None, password=None, is_cn=False):
+    def __init__(
+        self, email=None, password=None, is_cn=False, prompt_mfa=None
+    ):
         """Create a new class instance."""
         self.username = email
         self.password = password
         self.is_cn = is_cn
+        self.prompt_mfa = prompt_mfa
 
         self.garmin_connect_user_settings_url = (
             "/userprofile-service/userprofile/user-settings"
@@ -198,7 +201,9 @@ class Garmin:
             else:
                 self.garth.load(tokenstore)
         else:
-            self.garth.login(self.username, self.password)
+            self.garth.login(
+                self.username, self.password, prompt_mfa=self.prompt_mfa
+            )
 
         self.display_name = self.garth.profile["displayName"]
         self.full_name = self.garth.profile["fullName"]
