@@ -503,13 +503,23 @@ class Garmin:
 
         url = self.garmin_connect_set_hydration_url
 
-        if cdate is None:
+        if timestamp is None and cdate is None:
+            # If both are null, use today and now
             raw_date = date.today()
             cdate = str(raw_date)
 
-        if timestamp is None:
             raw_ts = datetime.now()
             timestamp = datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+
+        elif cdate is not None and timestamp is None:
+            # If cdate is not null, use timestamp associated with midnight
+            raw_ts = datetime.strptime(cdate, '%Y-%m-%d')
+            timestamp = datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+
+        elif cdate is None and timestamp is not None:
+            # If timestamp is not null, set cdate equal to date part of timestamp
+            raw_ts = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f')
+            cdate = str(raw_ts.date())
 
         payload = {
             "calendarDate": cdate,
