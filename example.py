@@ -824,7 +824,7 @@ def switch(api, i):
                 timestamp = datetime.datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
 
                 display_json(
-                    f"api.add_hydration_data(value_in_ml={value_in_ml},cdate={cdate},timestamp={timestamp})",
+                    f"api.add_hydration_data(value_in_ml={value_in_ml},cdate='{cdate}',timestamp='{timestamp}')",
                     api.add_hydration_data(value_in_ml=value_in_ml,
                                            cdate=cdate,
                                            timestamp=timestamp)
