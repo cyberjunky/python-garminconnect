@@ -1,12 +1,12 @@
 [project]
 name = "garminconnect"
-version = "0.2.17"
+version = "0.2.18"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "garth>=0.4.45",
+    "garth>=0.4.46",
     "withings-sync>=4.2.4",
 ]
 readme = "README.md"
