@@ -2,7 +2,7 @@
 
 import logging
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
@@ -46,6 +46,9 @@ class Garmin:
         )
         self.garmin_connect_daily_hydration_url = (
             "/usersummary-service/usersummary/hydration/daily"
+        )
+        self.garmin_connect_set_hydration_url =  (
+            "usersummary-service/usersummary/hydration/log"
         )
         self.garmin_connect_daily_stats_steps_url = (
             "/usersummary-service/stats/steps/daily"
@@ -490,6 +493,43 @@ class Garmin:
         logger.debug("Requesting max metrics")
 
         return self.connectapi(url)
+
+    def add_hydration_data(self, value_in_ml: float, timestamp=None, cdate: str=None) -> Dict[str, Any]:
+        """Add hydration data in ml.  Defaults to current date and current timestamp if left empty
+        :param float required - value_in_ml: The number of ml of water you wish to add (positive) or subtract (negative)
+        :param timestamp optional - timestamp: The timestamp of the hydration update, format 'YYYY-MM-DDThh:mm:ss.ms' Defaults to current timestamp
+        :param date optional - cdate: The date of the weigh in, format 'YYYY-MM-DD'. Defaults to current date
+        """
+
+        url = self.garmin_connect_set_hydration_url
+
+        if timestamp is None and cdate is None:
+            # If both are null, use today and now
+            raw_date = date.today()
+            cdate = str(raw_date)
+
+            raw_ts = datetime.now()
+            timestamp = datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+
+        elif cdate is not None and timestamp is None:
+            # If cdate is not null, use timestamp associated with midnight
+            raw_ts = datetime.strptime(cdate, '%Y-%m-%d')
+            timestamp = datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+
+        elif cdate is None and timestamp is not None:
+            # If timestamp is not null, set cdate equal to date part of timestamp
+            raw_ts = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f')
+            cdate = str(raw_ts.date())
+
+        payload = {
+            "calendarDate": cdate,
+            "timestampLocal": timestamp,
+            "valueInML": value_in_ml
+            }
+
+        logger.debug("Adding hydration data")
+
+        return self.garth.put('connectapi', url, json=payload)
 
     def get_hydration_data(self, cdate: str) -> Dict[str, Any]:
         """Return available hydration data 'cdate' format 'YYYY-MM-DD'."""
