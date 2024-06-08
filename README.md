@@ -62,6 +62,7 @@ O -- Reload epoch data for 2024-03-15
 P -- Get workouts 0-100, get and download last one to .FIT file
 R -- Get solar data from your devices
 S -- Get pregnancy summary data
+T -- Add hydration data (1 cup) for today
 Z -- Remove stored login tokens (logout)
 q -- Exit
 Make your selection: 

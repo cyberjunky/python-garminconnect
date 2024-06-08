@@ -134,6 +134,7 @@ menu_options = {
     # "Q": "Upload workout from json data",
     "R": "Get solar data from your devices",
     "S": "Get pregnancy summary data",
+    "T": "Add hydration data",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -813,6 +814,21 @@ def switch(api, i):
             # Additional related calls:
             # get_menstrual_data_for_date(self, fordate: str): takes a single date and returns the Garmin Menstrual Summary data for that date
             # get_menstrual_calendar_data(self, startdate: str, enddate: str) takes two dates and returns summaries of cycles that have days between the two days
+
+            elif i == "T":
+                # Add hydration data for today
+                value_in_ml = 240
+                raw_date = datetime.date.today()
+                cdate = str(raw_date)
+                raw_ts = datetime.datetime.now()
+                timestamp = datetime.datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+
+                display_json(
+                    f"api.add_hydration_data(value_in_ml={value_in_ml},cdate='{cdate}',timestamp='{timestamp}')",
+                    api.add_hydration_data(value_in_ml=value_in_ml,
+                                           cdate=cdate,
+                                           timestamp=timestamp)
+                )
 
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
