@@ -152,6 +152,7 @@ class Garmin:
             "/mobile-gateway/heartRate/forDate"
         )
         self.garmin_connect_fitnessstats = "/fitnessstats-service/activity"
+        self.garmin_connect_fitnessage = "/fitnessage-service/fitnessage"
 
         self.garmin_connect_fit_download = "/download-service/files/activity"
         self.garmin_connect_tcx_download = (
@@ -751,6 +752,14 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def get_fitnessage_data(self, cdate: str) -> Dict[str, Any]:
+        """Return Fitness Age data for current user."""
+
+        url = f"{self.garmin_connect_fitnessage}/{cdate}"
+        logger.debug("Requesting Fitness Age data")
+
+        return self.connectapi(url)
+    
     def get_hill_score(self, startdate: str, enddate=None):
         """
         Return hill score by day from 'startdate' format 'YYYY-MM-DD'
