@@ -2,7 +2,7 @@
 
 import logging
 import os
-from datetime import datetime, timezone, date
+from datetime import date, datetime, timezone
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
@@ -47,7 +47,7 @@ class Garmin:
         self.garmin_connect_daily_hydration_url = (
             "/usersummary-service/usersummary/hydration/daily"
         )
-        self.garmin_connect_set_hydration_url =  (
+        self.garmin_connect_set_hydration_url = (
             "usersummary-service/usersummary/hydration/log"
         )
         self.garmin_connect_daily_stats_steps_url = (
@@ -495,7 +495,9 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def add_hydration_data(self, value_in_ml: float, timestamp=None, cdate: str=None) -> Dict[str, Any]:
+    def add_hydration_data(
+        self, value_in_ml: float, timestamp=None, cdate: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Add hydration data in ml.  Defaults to current date and current timestamp if left empty
         :param float required - value_in_ml: The number of ml of water you wish to add (positive) or subtract (negative)
         :param timestamp optional - timestamp: The timestamp of the hydration update, format 'YYYY-MM-DDThh:mm:ss.ms' Defaults to current timestamp
@@ -784,7 +786,7 @@ class Garmin:
 
             return self.connectapi(url, params=params)
 
-    def get_devices(self) -> Dict[str, Any]:
+    def get_devices(self) -> List[Dict[str, Any]]:
         """Return available devices for the current user account."""
 
         url = self.garmin_connect_devices_url
@@ -826,7 +828,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)["deviceSolarInput"]
 
-    def get_device_alarms(self) -> Dict[str, Any]:
+    def get_device_alarms(self) -> List[Any]:
         """Get list of active alarms from all devices."""
 
         logger.debug("Requesting device alarms")
@@ -959,7 +961,7 @@ class Garmin:
         return activities
 
     def get_progress_summary_between_dates(
-        self, startdate, enddate, metric="distance"
+        self, startdate, enddate, metric="distance", groupbyactivities=True
     ):
         """
         Fetch progress summary data between specific dates
@@ -967,6 +969,7 @@ class Garmin:
         :param enddate: String in the format YYYY-MM-DD
         :param metric: metric to be calculated in the summary:
             "elevationGain", "duration", "distance", "movingDuration"
+        :param groupbyactivities: group the summary by activity type
         :return: list of JSON activities with their aggregated progress summary
         """
 
@@ -975,7 +978,7 @@ class Garmin:
             "startDate": str(startdate),
             "endDate": str(enddate),
             "aggregation": "lifetime",
-            "groupByParentActivityType": "true",
+            "groupByParentActivityType": str(groupbyactivities),
             "metric": str(metric),
         }
 
