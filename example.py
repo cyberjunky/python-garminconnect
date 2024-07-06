@@ -135,6 +135,7 @@ menu_options = {
     "R": "Get solar data from your devices",
     "S": "Get pregnancy summary data",
     "T": "Add hydration data",
+    "U": f"Get Fitness Age data for {today.isoformat()}",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -828,6 +829,13 @@ def switch(api, i):
                     api.add_hydration_data(value_in_ml=value_in_ml,
                                            cdate=cdate,
                                            timestamp=timestamp)
+                )
+
+            elif i == "U":
+                # Get fitness age data
+                display_json(
+                    f"api.get_fitnessage_data({today.isoformat()})",
+                    api.get_fitnessage_data(today.isoformat())
                 )
 
             elif i == "Z":
