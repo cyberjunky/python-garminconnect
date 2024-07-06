@@ -512,27 +512,27 @@ class Garmin:
             cdate = str(raw_date)
 
             raw_ts = datetime.now()
-            timestamp = datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+            timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
 
         elif cdate is not None and timestamp is None:
             # If cdate is not null, use timestamp associated with midnight
-            raw_ts = datetime.strptime(cdate, '%Y-%m-%d')
-            timestamp = datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+            raw_ts = datetime.strptime(cdate, "%Y-%m-%d")
+            timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
 
         elif cdate is None and timestamp is not None:
             # If timestamp is not null, set cdate equal to date part of timestamp
-            raw_ts = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f')
+            raw_ts = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
             cdate = str(raw_ts.date())
 
         payload = {
             "calendarDate": cdate,
             "timestampLocal": timestamp,
-            "valueInML": value_in_ml
-            }
+            "valueInML": value_in_ml,
+        }
 
         logger.debug("Adding hydration data")
 
-        return self.garth.put('connectapi', url, json=payload)
+        return self.garth.put("connectapi", url, json=payload)
 
     def get_hydration_data(self, cdate: str) -> Dict[str, Any]:
         """Return available hydration data 'cdate' format 'YYYY-MM-DD'."""
@@ -761,7 +761,7 @@ class Garmin:
         logger.debug("Requesting Fitness Age data")
 
         return self.connectapi(url)
-    
+
     def get_hill_score(self, startdate: str, enddate=None):
         """
         Return hill score by day from 'startdate' format 'YYYY-MM-DD'
