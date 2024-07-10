@@ -808,7 +808,6 @@ def switch(api, i):
                 output_file = f"./{str(workout_name)}.fit"
                 with open(output_file, "wb") as fb:
                     fb.write(workout_data)
-
                 print(f"Workout data downloaded to file {output_file}")
 
             # elif i == "Q":
@@ -861,7 +860,6 @@ def switch(api, i):
                 # Remove stored login tokens for Garmin Connect portal
                 tokendir = os.path.expanduser(tokenstore)
                 print(f"Removing stored login tokens from: {tokendir}")
-
                 try:
                     for root, dirs, files in os.walk(tokendir, topdown=False):
                         for name in files:
