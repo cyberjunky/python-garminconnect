@@ -141,6 +141,9 @@ class Garmin:
         self.garmin_all_day_stress_url = (
             "/wellness-service/wellness/dailyStress"
         )
+        self.garmin_daily_events_url = (
+            "/wellness-service/wellness/dailyEvents"
+        )
         self.garmin_connect_activities = (
             "/activitylist-service/activities/search/activities"
         )
@@ -562,6 +565,17 @@ class Garmin:
         """Return available all day stress data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_all_day_stress_url}/{cdate}"
+        logger.debug("Requesting all day stress data")
+
+        return self.connectapi(url)
+
+    def get_all_day_events(self, cdate: str) -> Dict[str, Any]:
+        """
+        Return available daily events data 'cdate' format 'YYYY-MM-DD'.
+        Includes naps and autodetected activities, even if not recorded on the watch
+        """
+
+        url = f"{self.garmin_daily_events_url}?calendarDate={cdate}"
         logger.debug("Requesting all day stress data")
 
         return self.connectapi(url)
