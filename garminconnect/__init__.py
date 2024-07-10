@@ -16,7 +16,7 @@ class Garmin:
     """Class for fetching data from Garmin Connect."""
 
     def __init__(
-        self, email=None, password=None, is_cn=False, prompt_mfa=None
+            self, email=None, password=None, is_cn=False, prompt_mfa=None
     ):
         """Create a new class instance."""
         self.username = email
@@ -84,6 +84,10 @@ class Garmin:
 
         self.garmin_connect_daily_body_battery_url = (
             "/wellness-service/wellness/bodyBattery/reports/daily"
+        )
+
+        self.garmin_connect_body_battery_events_url = (
+            "/wellness-service/wellness/bodyBattery/events"
         )
 
         self.garmin_connect_blood_pressure_endpoint = (
@@ -295,7 +299,7 @@ class Garmin:
         }
 
     def get_body_composition(
-        self, startdate: str, enddate=None
+            self, startdate: str, enddate=None
     ) -> Dict[str, Any]:
         """
         Return available body composition data for 'startdate' format
@@ -311,20 +315,20 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def add_body_composition(
-        self,
-        timestamp: Optional[str],
-        weight: float,
-        percent_fat: Optional[float] = None,
-        percent_hydration: Optional[float] = None,
-        visceral_fat_mass: Optional[float] = None,
-        bone_mass: Optional[float] = None,
-        muscle_mass: Optional[float] = None,
-        basal_met: Optional[float] = None,
-        active_met: Optional[float] = None,
-        physique_rating: Optional[float] = None,
-        metabolic_age: Optional[float] = None,
-        visceral_fat_rating: Optional[float] = None,
-        bmi: Optional[float] = None,
+            self,
+            timestamp: Optional[str],
+            weight: float,
+            percent_fat: Optional[float] = None,
+            percent_hydration: Optional[float] = None,
+            visceral_fat_mass: Optional[float] = None,
+            bone_mass: Optional[float] = None,
+            muscle_mass: Optional[float] = None,
+            basal_met: Optional[float] = None,
+            active_met: Optional[float] = None,
+            physique_rating: Optional[float] = None,
+            metabolic_age: Optional[float] = None,
+            visceral_fat_rating: Optional[float] = None,
+            bmi: Optional[float] = None,
     ):
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         fitEncoder = fit.FitEncoderWeight()
@@ -355,7 +359,7 @@ class Garmin:
         return self.garth.post("connectapi", url, files=files, api=True)
 
     def add_weigh_in(
-        self, weight: int, unitKey: str = "kg", timestamp: str = ""
+            self, weight: int, unitKey: str = "kg", timestamp: str = ""
     ):
         """Add a weigh-in (default to kg)"""
 
@@ -429,7 +433,7 @@ class Garmin:
         return len(weigh_ins)
 
     def get_body_battery(
-        self, startdate: str, enddate=None
+            self, startdate: str, enddate=None
     ) -> List[Dict[str, Any]]:
         """
         Return body battery values by day for 'startdate' format
@@ -444,13 +448,25 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
+    def get_body_battery_events(self, cdate: str) -> List[Dict[str, Any]]:
+        """
+        Return body battery events for date 'cdate' format 'YYYY-MM-DD'.
+        The return value is a list of dictionaries, where each dictionary contains event data for a specific event.
+        Events can include sleep, recorded activities, auto-detected activities, and naps
+        """
+
+        url = f"{self.garmin_connect_body_battery_events_url}/{cdate}"
+        logger.debug("Requesting body battery event data")
+
+        return self.connectapi(url)
+
     def set_blood_pressure(
-        self,
-        systolic: int,
-        diastolic: int,
-        pulse: int,
-        timestamp: str = "",
-        notes: str = "",
+            self,
+            systolic: int,
+            diastolic: int,
+            pulse: int,
+            timestamp: str = "",
+            notes: str = "",
     ):
         """
         Add blood pressure measurement
@@ -475,7 +491,7 @@ class Garmin:
         return self.garth.post("connectapi", url, json=payload)
 
     def get_blood_pressure(
-        self, startdate: str, enddate=None
+            self, startdate: str, enddate=None
     ) -> Dict[str, Any]:
         """
         Returns blood pressure by day for 'startdate' format
@@ -499,7 +515,7 @@ class Garmin:
         return self.connectapi(url)
 
     def add_hydration_data(
-        self, value_in_ml: float, timestamp=None, cdate: Optional[str] = None
+            self, value_in_ml: float, timestamp=None, cdate: Optional[str] = None
     ) -> Dict[str, Any]:
         """Add hydration data in ml.  Defaults to current date and current timestamp if left empty
         :param float required - value_in_ml: The number of ml of water you wish to add (positive) or subtract (negative)
@@ -572,7 +588,7 @@ class Garmin:
     def get_all_day_events(self, cdate: str) -> Dict[str, Any]:
         """
         Return available daily events data 'cdate' format 'YYYY-MM-DD'.
-        Includes naps and autodetected activities, even if not recorded on the watch
+        Includes autodetected activities, even if not recorded on the watch
         """
 
         url = f"{self.garmin_daily_events_url}?calendarDate={cdate}"
@@ -624,7 +640,7 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_non_completed_badge_challenges(
-        self, start, limit
+            self, start, limit
     ) -> Dict[str, Any]:
         """Return badge non-completed challenges for current user."""
 
@@ -635,7 +651,7 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_inprogress_virtual_challenges(
-        self, start, limit
+            self, start, limit
     ) -> Dict[str, Any]:
         """Return in-progress virtual challenges for current user."""
 
@@ -737,17 +753,17 @@ class Garmin:
 
         if _type is None and startdate is None and enddate is None:
             url = (
-                self.garmin_connect_race_predictor_url
-                + f"/latest/{self.display_name}"
+                    self.garmin_connect_race_predictor_url
+                    + f"/latest/{self.display_name}"
             )
             return self.connectapi(url)
 
         elif (
-            _type is not None and startdate is not None and enddate is not None
+                _type is not None and startdate is not None and enddate is not None
         ):
             url = (
-                self.garmin_connect_race_predictor_url
-                + f"/{_type}/{self.display_name}"
+                    self.garmin_connect_race_predictor_url
+                    + f"/{_type}/{self.display_name}"
             )
             params = {
                 "fromCalendarDate": str(startdate),
@@ -827,7 +843,7 @@ class Garmin:
         return self.connectapi(url)
 
     def get_device_solar_data(
-        self, device_id: str, startdate: str, enddate=None
+            self, device_id: str, startdate: str, enddate=None
     ) -> Dict[str, Any]:
         """Return solar data for compatible device with 'device_id'"""
         if enddate is None:
@@ -905,7 +921,7 @@ class Garmin:
         file_base_name = os.path.basename(activity_path)
         file_extension = file_base_name.split(".")[-1]
         allowed_file_extension = (
-            file_extension.upper() in Garmin.ActivityUploadFormat.__members__
+                file_extension.upper() in Garmin.ActivityUploadFormat.__members__
         )
 
         if allowed_file_extension:
@@ -964,7 +980,7 @@ class Garmin:
         )
         while True:
             params["start"] = str(start)
-            logger.debug(f"Requesting activities {start} to {start+limit}")
+            logger.debug(f"Requesting activities {start} to {start + limit}")
             act = self.connectapi(url, params=params)
             if act:
                 activities.extend(act)
@@ -975,7 +991,7 @@ class Garmin:
         return activities
 
     def get_progress_summary_between_dates(
-        self, startdate, enddate, metric="distance", groupbyactivities=True
+            self, startdate, enddate, metric="distance", groupbyactivities=True
     ):
         """
         Fetch progress summary data between specific dates
@@ -1086,7 +1102,7 @@ class Garmin:
         TCX = auto()
 
     def download_activity(
-        self, activity_id, dl_fmt=ActivityDownloadFormat.TCX
+            self, activity_id, dl_fmt=ActivityDownloadFormat.TCX
     ):
         """
         Downloads activity in requested format and returns the raw bytes. For
