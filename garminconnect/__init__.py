@@ -138,6 +138,9 @@ class Garmin:
         self.garmin_connect_daily_spo2_url = (
             "/wellness-service/wellness/daily/spo2"
         )
+        self.garmin_connect_daily_intensity_minutes = (
+            "/wellness-service/wellness/daily/im"
+        )
         self.garmin_all_day_stress_url = (
             "/wellness-service/wellness/dailyStress"
         )
@@ -555,6 +558,14 @@ class Garmin:
 
         url = f"{self.garmin_connect_daily_spo2_url}/{cdate}"
         logger.debug("Requesting SpO2 data")
+
+        return self.connectapi(url)
+    
+    def get_intensity_minutes_data(self, cdate: str) -> Dict[str, Any]:
+        """Return available Intensity Minutes data 'cdate' format 'YYYY-MM-DD'."""
+
+        url = f"{self.garmin_connect_daily_intensity_minutes}/{cdate}"
+        logger.debug("Requesting Intensity Minutes data")
 
         return self.connectapi(url)
 

@@ -1,9 +1,10 @@
 [project]
-name = "garminconnect"
-version = "0.2.19"
-description = "Python 3 API wrapper for Garmin Connect"
+name = "python-garminconnect"
+version = "0.1.0"
+description = "Default template for PDM package"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
+    {name = "Shoaib Khan", email = "shoaib@evermeet.ca"},
 ]
 dependencies = [
     "garth>=0.4.46",
@@ -19,14 +20,10 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
 keywords=["garmin connect", "api", "garmin"]
-requires-python=">=3.10"
+requires-python="==3.10.*"
 [project.urls]
 "Homepage" = "https://github.com/cyberjunky/python-garminconnect"
 "Bug Tracker" = "https://github.com/cyberjunky/python-garminconnect/issues"
-
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
 
 [tool.pytest.ini_options]
 addopts = "--ignore=__pypackages__ --ignore-glob=*.yaml"
@@ -43,7 +40,7 @@ line_length = 79
 known_first_party = "garminconnect"
 
 [tool.pdm]
-distribution = true
+distribution = false
 [tool.pdm.dev-dependencies]
 dev = [
     "ipython",
