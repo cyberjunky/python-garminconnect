@@ -151,6 +151,9 @@ class Garmin:
         self.garmin_connect_activities = (
             "/activitylist-service/activities/search/activities"
         )
+        self.garmin_connect_activities_baseurl = (
+            "/activitylist-service/activities/"
+        )
         self.garmin_connect_activity = "/activity-service/activity"
         self.garmin_connect_activity_types = (
             "/activity-service/activity/activityTypes"
@@ -1221,6 +1224,16 @@ class Garmin:
         logger.debug("Requesting gear for activity_id %s", activity_id)
 
         return self.connectapi(url, params=params)
+
+    def get_gear_ativities(self, gearUUID):
+        """Return activies where gear uuid was used."""
+
+        gearUUID = str(gearUUID)
+
+        url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit=9999"
+        logger.debug("Requesting activities for gearUUID %s", gearUUID)
+
+        return self.connectapi(url)
 
     def get_user_profile(self):
         """Get all users settings."""
