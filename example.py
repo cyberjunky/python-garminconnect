@@ -499,6 +499,12 @@ def switch(api, i):
                     api.get_activity_splits(first_activity_id),
                 )
 
+                # Get activity typed splits
+
+                display_json(
+                    f"api.get_activity_typed_splits({first_activity_id})",
+                    api.get_activity_typed_splits(first_activity_id),
+                )
                 # Get activity split summaries for activity id
                 display_json(
                     f"api.get_activity_split_summaries({first_activity_id})",

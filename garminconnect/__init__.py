@@ -1104,6 +1104,16 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def get_activity_typed_splits(self, activity_id):
+        """Return typed activity splits. Contains similar info to `get_activity_splits`, but for certain activity types
+        (e.g., Bouldering), this contains more detail."""
+
+        activity_id = str(activity_id)
+        url = f"{self.garmin_connect_activity}/{activity_id}/typedsplits"
+        logger.debug("Requesting typed splits for activity id %s", activity_id)
+
+        return self.connectapi(url)
+
     def get_activity_split_summaries(self, activity_id):
         """Return activity split summaries."""
 
