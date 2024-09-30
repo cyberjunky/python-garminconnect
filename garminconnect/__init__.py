@@ -2,7 +2,7 @@
 
 import logging
 import os
-from datetime import datetime, timezone, date
+from datetime import date, datetime, timezone
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
@@ -47,7 +47,7 @@ class Garmin:
         self.garmin_connect_daily_hydration_url = (
             "/usersummary-service/usersummary/hydration/daily"
         )
-        self.garmin_connect_set_hydration_url =  (
+        self.garmin_connect_set_hydration_url = (
             "usersummary-service/usersummary/hydration/log"
         )
         self.garmin_connect_daily_stats_steps_url = (
@@ -84,6 +84,10 @@ class Garmin:
 
         self.garmin_connect_daily_body_battery_url = (
             "/wellness-service/wellness/bodyBattery/reports/daily"
+        )
+
+        self.garmin_connect_body_battery_events_url = (
+            "/wellness-service/wellness/bodyBattery/events"
         )
 
         self.garmin_connect_blood_pressure_endpoint = (
@@ -141,8 +145,14 @@ class Garmin:
         self.garmin_all_day_stress_url = (
             "/wellness-service/wellness/dailyStress"
         )
+        self.garmin_daily_events_url = (
+            "/wellness-service/wellness/dailyEvents"
+        )
         self.garmin_connect_activities = (
             "/activitylist-service/activities/search/activities"
+        )
+        self.garmin_connect_activities_baseurl = (
+            "/activitylist-service/activities/"
         )
         self.garmin_connect_activity = "/activity-service/activity"
         self.garmin_connect_activity_types = (
@@ -152,6 +162,7 @@ class Garmin:
             "/mobile-gateway/heartRate/forDate"
         )
         self.garmin_connect_fitnessstats = "/fitnessstats-service/activity"
+        self.garmin_connect_fitnessage = "/fitnessage-service/fitnessage"
 
         self.garmin_connect_fit_download = "/download-service/files/activity"
         self.garmin_connect_tcx_download = (
@@ -440,6 +451,18 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
+    def get_body_battery_events(self, cdate: str) -> List[Dict[str, Any]]:
+        """
+        Return body battery events for date 'cdate' format 'YYYY-MM-DD'.
+        The return value is a list of dictionaries, where each dictionary contains event data for a specific event.
+        Events can include sleep, recorded activities, auto-detected activities, and naps
+        """
+
+        url = f"{self.garmin_connect_body_battery_events_url}/{cdate}"
+        logger.debug("Requesting body battery event data")
+
+        return self.connectapi(url)
+
     def set_blood_pressure(
         self,
         systolic: int,
@@ -471,7 +494,7 @@ class Garmin:
         return self.garth.post("connectapi", url, json=payload)
 
     def get_blood_pressure(
-        self, startdate: str, enddate=None
+            self, startdate: str, enddate=None
     ) -> Dict[str, Any]:
         """
         Returns blood pressure by day for 'startdate' format
@@ -494,7 +517,9 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def add_hydration_data(self, value_in_ml: float, timestamp=None, cdate: str=None) -> Dict[str, Any]:
+    def add_hydration_data(
+        self, value_in_ml: float, timestamp=None, cdate: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Add hydration data in ml.  Defaults to current date and current timestamp if left empty
         :param float required - value_in_ml: The number of ml of water you wish to add (positive) or subtract (negative)
         :param timestamp optional - timestamp: The timestamp of the hydration update, format 'YYYY-MM-DDThh:mm:ss.ms' Defaults to current timestamp
@@ -509,27 +534,27 @@ class Garmin:
             cdate = str(raw_date)
 
             raw_ts = datetime.now()
-            timestamp = datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+            timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
 
         elif cdate is not None and timestamp is None:
             # If cdate is not null, use timestamp associated with midnight
-            raw_ts = datetime.strptime(cdate, '%Y-%m-%d')
-            timestamp = datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+            raw_ts = datetime.strptime(cdate, "%Y-%m-%d")
+            timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
 
         elif cdate is None and timestamp is not None:
             # If timestamp is not null, set cdate equal to date part of timestamp
-            raw_ts = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S.%f')
+            raw_ts = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
             cdate = str(raw_ts.date())
 
         payload = {
             "calendarDate": cdate,
             "timestampLocal": timestamp,
-            "valueInML": value_in_ml
-            }
+            "valueInML": value_in_ml,
+        }
 
         logger.debug("Adding hydration data")
 
-        return self.garth.put('connectapi', url, json=payload)
+        return self.garth.put("connectapi", url, json=payload)
 
     def get_hydration_data(self, cdate: str) -> Dict[str, Any]:
         """Return available hydration data 'cdate' format 'YYYY-MM-DD'."""
@@ -559,6 +584,17 @@ class Garmin:
         """Return available all day stress data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_all_day_stress_url}/{cdate}"
+        logger.debug("Requesting all day stress data")
+
+        return self.connectapi(url)
+
+    def get_all_day_events(self, cdate: str) -> Dict[str, Any]:
+        """
+        Return available daily events data 'cdate' format 'YYYY-MM-DD'.
+        Includes autodetected activities, even if not recorded on the watch
+        """
+
+        url = f"{self.garmin_daily_events_url}?calendarDate={cdate}"
         logger.debug("Requesting all day stress data")
 
         return self.connectapi(url)
@@ -751,6 +787,14 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def get_fitnessage_data(self, cdate: str) -> Dict[str, Any]:
+        """Return Fitness Age data for current user."""
+
+        url = f"{self.garmin_connect_fitnessage}/{cdate}"
+        logger.debug("Requesting Fitness Age data")
+
+        return self.connectapi(url)
+
     def get_hill_score(self, startdate: str, enddate=None):
         """
         Return hill score by day from 'startdate' format 'YYYY-MM-DD'
@@ -775,7 +819,7 @@ class Garmin:
 
             return self.connectapi(url, params=params)
 
-    def get_devices(self) -> Dict[str, Any]:
+    def get_devices(self) -> List[Dict[str, Any]]:
         """Return available devices for the current user account."""
 
         url = self.garmin_connect_devices_url
@@ -817,7 +861,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)["deviceSolarInput"]
 
-    def get_device_alarms(self) -> Dict[str, Any]:
+    def get_device_alarms(self) -> List[Any]:
         """Get list of active alarms from all devices."""
 
         logger.debug("Requesting device alarms")
@@ -1002,7 +1046,7 @@ class Garmin:
         return activities
 
     def get_progress_summary_between_dates(
-        self, startdate, enddate, metric="distance"
+        self, startdate, enddate, metric="distance", groupbyactivities=True
     ):
         """
         Fetch progress summary data between specific dates
@@ -1010,6 +1054,7 @@ class Garmin:
         :param enddate: String in the format YYYY-MM-DD
         :param metric: metric to be calculated in the summary:
             "elevationGain", "duration", "distance", "movingDuration"
+        :param groupbyactivities: group the summary by activity type
         :return: list of JSON activities with their aggregated progress summary
         """
 
@@ -1018,7 +1063,7 @@ class Garmin:
             "startDate": str(startdate),
             "endDate": str(enddate),
             "aggregation": "lifetime",
-            "groupByParentActivityType": "true",
+            "groupByParentActivityType": str(groupbyactivities),
             "metric": str(metric),
         }
 
@@ -1144,6 +1189,16 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def get_activity_typed_splits(self, activity_id):
+        """Return typed activity splits. Contains similar info to `get_activity_splits`, but for certain activity types
+        (e.g., Bouldering), this contains more detail."""
+
+        activity_id = str(activity_id)
+        url = f"{self.garmin_connect_activity}/{activity_id}/typedsplits"
+        logger.debug("Requesting typed splits for activity id %s", activity_id)
+
+        return self.connectapi(url)
+
     def get_activity_split_summaries(self, activity_id):
         """Return activity split summaries."""
 
@@ -1221,6 +1276,16 @@ class Garmin:
         logger.debug("Requesting gear for activity_id %s", activity_id)
 
         return self.connectapi(url, params=params)
+
+    def get_gear_ativities(self, gearUUID):
+        """Return activies where gear uuid was used."""
+
+        gearUUID = str(gearUUID)
+
+        url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit=9999"
+        logger.debug("Requesting activities for gearUUID %s", gearUUID)
+
+        return self.connectapi(url)
 
     def get_user_profile(self):
         """Get all users settings."""
