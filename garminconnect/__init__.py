@@ -86,6 +86,10 @@ class Garmin:
             "/wellness-service/wellness/bodyBattery/reports/daily"
         )
 
+        self.garmin_connect_body_battery_events_url = (
+            "/wellness-service/wellness/bodyBattery/events"
+        )
+
         self.garmin_connect_blood_pressure_endpoint = (
             "/bloodpressure-service/bloodpressure/range"
         )
@@ -144,8 +148,14 @@ class Garmin:
         self.garmin_all_day_stress_url = (
             "/wellness-service/wellness/dailyStress"
         )
+        self.garmin_daily_events_url = (
+            "/wellness-service/wellness/dailyEvents"
+        )
         self.garmin_connect_activities = (
             "/activitylist-service/activities/search/activities"
+        )
+        self.garmin_connect_activities_baseurl = (
+            "/activitylist-service/activities/"
         )
         self.garmin_connect_activity = "/activity-service/activity"
         self.garmin_connect_activity_types = (
@@ -444,6 +454,18 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
+    def get_body_battery_events(self, cdate: str) -> List[Dict[str, Any]]:
+        """
+        Return body battery events for date 'cdate' format 'YYYY-MM-DD'.
+        The return value is a list of dictionaries, where each dictionary contains event data for a specific event.
+        Events can include sleep, recorded activities, auto-detected activities, and naps
+        """
+
+        url = f"{self.garmin_connect_body_battery_events_url}/{cdate}"
+        logger.debug("Requesting body battery event data")
+
+        return self.connectapi(url)
+
     def set_blood_pressure(
         self,
         systolic: int,
@@ -475,7 +497,7 @@ class Garmin:
         return self.garth.post("connectapi", url, json=payload)
 
     def get_blood_pressure(
-        self, startdate: str, enddate=None
+            self, startdate: str, enddate=None
     ) -> Dict[str, Any]:
         """
         Returns blood pressure by day for 'startdate' format
@@ -573,6 +595,17 @@ class Garmin:
         """Return available all day stress data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_all_day_stress_url}/{cdate}"
+        logger.debug("Requesting all day stress data")
+
+        return self.connectapi(url)
+
+    def get_all_day_events(self, cdate: str) -> Dict[str, Any]:
+        """
+        Return available daily events data 'cdate' format 'YYYY-MM-DD'.
+        Includes autodetected activities, even if not recorded on the watch
+        """
+
+        url = f"{self.garmin_daily_events_url}?calendarDate={cdate}"
         logger.debug("Requesting all day stress data")
 
         return self.connectapi(url)
@@ -1115,6 +1148,16 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def get_activity_typed_splits(self, activity_id):
+        """Return typed activity splits. Contains similar info to `get_activity_splits`, but for certain activity types
+        (e.g., Bouldering), this contains more detail."""
+
+        activity_id = str(activity_id)
+        url = f"{self.garmin_connect_activity}/{activity_id}/typedsplits"
+        logger.debug("Requesting typed splits for activity id %s", activity_id)
+
+        return self.connectapi(url)
+
     def get_activity_split_summaries(self, activity_id):
         """Return activity split summaries."""
 
@@ -1192,6 +1235,16 @@ class Garmin:
         logger.debug("Requesting gear for activity_id %s", activity_id)
 
         return self.connectapi(url, params=params)
+
+    def get_gear_ativities(self, gearUUID):
+        """Return activies where gear uuid was used."""
+
+        gearUUID = str(gearUUID)
+
+        url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit=9999"
+        logger.debug("Requesting activities for gearUUID %s", gearUUID)
+
+        return self.connectapi(url)
 
     def get_user_profile(self):
         """Get all users settings."""
