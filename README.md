@@ -64,6 +64,7 @@ R -- Get solar data from your devices
 S -- Get pregnancy summary data
 T -- Add hydration data
 U -- Get Fitness Age data for 2024-07-06
+V -- Get daily wellness events for 2024-07-06
 Z -- Remove stored login tokens (logout)
 q -- Exit
 Make your selection:

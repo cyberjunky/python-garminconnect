@@ -136,6 +136,7 @@ menu_options = {
     "S": "Get pregnancy summary data",
     "T": "Add hydration data",
     "U": f"Get Fitness Age data for {today.isoformat()}",
+    "V": f"Get daily wellness events data for {startdate.isoformat()}",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -323,6 +324,11 @@ def switch(api, i):
                     f"api.get_body_battery('{startdate.isoformat()}, {today.isoformat()}')",
                     api.get_body_battery(startdate.isoformat(), today.isoformat()),
                 )
+                # Get daily body battery event data for 'YYYY-MM-DD'
+                display_json(
+                    f"api.get_body_battery_events('{startdate.isoformat()}, {today.isoformat()}')",
+                    api.get_body_battery_events(startdate.isoformat()),
+                )
             elif i == "?":
                 # Get daily blood pressure data for 'YYYY-MM-DD' to 'YYYY-MM-DD'
                 display_json(
@@ -499,6 +505,12 @@ def switch(api, i):
                     api.get_activity_splits(first_activity_id),
                 )
 
+                # Get activity typed splits
+
+                display_json(
+                    f"api.get_activity_typed_splits({first_activity_id})",
+                    api.get_activity_typed_splits(first_activity_id),
+                )
                 # Get activity split summaries for activity id
                 display_json(
                     f"api.get_activity_split_summaries({first_activity_id})",
@@ -792,11 +804,10 @@ def switch(api, i):
                 workout_data = api.download_workout(
                     workout_id
                 )
-                
+
                 output_file = f"./{str(workout_name)}.fit"
                 with open(output_file, "wb") as fb:
                     fb.write(workout_data)
-
                 print(f"Workout data downloaded to file {output_file}")
 
             # elif i == "Q":
@@ -804,6 +815,13 @@ def switch(api, i):
             #         f"api.upload_workout({workout_example})",
             #         api.upload_workout(workout_example))
 
+            # DAILY EVENTS
+            elif i == "V":
+                # Get all day wellness events for 7 days ago
+                display_json(
+                     f"api.get_all_day_events({startdate.isoformat()})",
+                     api.get_all_day_events(startdate.isoformat())
+                             )
             # WOMEN'S HEALTH
             elif i == "S":
                 # Get pregnancy summary data
@@ -842,7 +860,6 @@ def switch(api, i):
                 # Remove stored login tokens for Garmin Connect portal
                 tokendir = os.path.expanduser(tokenstore)
                 print(f"Removing stored login tokens from: {tokendir}")
-                
                 try:
                     for root, dirs, files in os.walk(tokendir, topdown=False):
                         for name in files:
