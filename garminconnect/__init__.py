@@ -381,6 +381,33 @@ class Garmin:
 
         return self.garth.post("connectapi", url, json=payload)
 
+    def add_weigh_in_with_timestamps(
+        self, weight: int, unitKey: str = "kg", dateTimestamp: str = "", gmtTimestamp: str = ""
+    ):
+        """Add a weigh-in with explicit timestamps (default to kg)"""
+
+        url = f"{self.garmin_connect_weight_url}/user-weight"
+
+        # Validate and format the timestamps
+        dt = datetime.fromisoformat(dateTimestamp) if dateTimestamp else datetime.now()
+        dtGMT = datetime.fromisoformat(gmtTimestamp) if gmtTimestamp else dt.astimezone(timezone.utc)
+
+        # Build the payload
+        payload = {
+            "dateTimestamp": dt.isoformat()[:19] + ".00",  # Local time
+            "gmtTimestamp": dtGMT.isoformat()[:19] + ".00",  # GMT/UTC time
+            "unitKey": unitKey,
+            "sourceType": "MANUAL",
+            "value": weight,
+        }
+
+        # Debug log for payload
+        logger.debug(f"Adding weigh-in with explicit timestamps: {payload}")
+
+        # Make the POST request
+        return self.garth.post("connectapi", url, json=payload)
+
+    
     def get_weigh_ins(self, startdate: str, enddate: str):
         """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
 
