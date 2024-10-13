@@ -37,6 +37,8 @@ tokenstore_base64 = os.getenv("GARMINTOKENS_BASE64") or "~/.garminconnect_base64
 api = None
 
 # Example selections and settings
+
+# Let's say we want to scrape all activities using switch menu_option "p". We change the values of the below variables, IE startdate days, limit,...
 today = datetime.date.today()
 startdate = today - datetime.timedelta(days=7)  # Select past week
 start = 0
@@ -445,6 +447,11 @@ def switch(api, i):
 
                 # Download activities
                 for activity in activities:
+                    activity_start_time = datetime.datetime.strptime(
+                        activity["startTimeLocal"], "%Y-%m-%d %H:%M:%S"
+                    ).strftime(
+                        "%d-%m-%Y"
+                    )  # Format as DD-MM-YYYY, for creating unique activity names for scraping
                     activity_id = activity["activityId"]
                     activity_name = activity["activityName"]
                     display_text(activity)
@@ -455,7 +462,7 @@ def switch(api, i):
                     gpx_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.GPX
                     )
-                    output_file = f"./{str(activity_name)}.gpx"
+                    output_file = f"./{str(activity_name)}_{str(activity_start_time)}_{str(activity_id)}.gpx"
                     with open(output_file, "wb") as fb:
                         fb.write(gpx_data)
                     print(f"Activity data downloaded to file {output_file}")
@@ -466,7 +473,7 @@ def switch(api, i):
                     tcx_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.TCX
                     )
-                    output_file = f"./{str(activity_name)}.tcx"
+                    output_file = f"./{str(activity_name)}_{str(activity_start_time)}_{str(activity_id)}.tcx"
                     with open(output_file, "wb") as fb:
                         fb.write(tcx_data)
                     print(f"Activity data downloaded to file {output_file}")
@@ -477,7 +484,7 @@ def switch(api, i):
                     zip_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.ORIGINAL
                     )
-                    output_file = f"./{str(activity_name)}.zip"
+                    output_file = f"./{str(activity_name)}_{str(activity_start_time)}_{str(activity_id)}.zip"
                     with open(output_file, "wb") as fb:
                         fb.write(zip_data)
                     print(f"Activity data downloaded to file {output_file}")
@@ -488,7 +495,7 @@ def switch(api, i):
                     csv_data = api.download_activity(
                         activity_id, dl_fmt=api.ActivityDownloadFormat.CSV
                     )
-                    output_file = f"./{str(activity_name)}.csv"
+                    output_file = f"./{str(activity_name)}_{str(activity_start_time)}_{str(activity_id)}.csv"
                     with open(output_file, "wb") as fb:
                         fb.write(csv_data)
                     print(f"Activity data downloaded to file {output_file}")
