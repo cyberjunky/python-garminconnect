@@ -509,6 +509,18 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
+    def delete_blood_pressure(self, version: str, cdate: str):
+        """Delete specific blood pressure measurement."""
+        url = f"{self.garmin_connect_set_blood_pressure_endpoint}/{cdate}/{version}"
+        logger.debug("Deleting blood pressure measurement")
+
+        return self.garth.request(
+            "DELETE",
+            "connectapi",
+            url,
+            api=True,
+        )
+
     def get_max_metrics(self, cdate: str) -> Dict[str, Any]:
         """Return available max metric data for 'cdate' format 'YYYY-MM-DD'."""
 
