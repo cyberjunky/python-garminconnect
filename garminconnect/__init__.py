@@ -27,6 +27,9 @@ class Garmin:
         self.garmin_connect_user_settings_url = (
             "/userprofile-service/userprofile/user-settings"
         )
+        self.garmin_connect_userprofile_settings_url = (
+            "/userprofile-service/userprofile/settings"
+        )
         self.garmin_connect_devices_url = (
             "/device-service/deviceregistration/devices"
         )
@@ -1242,6 +1245,15 @@ class Garmin:
         logger.debug("Requesting user profile.")
 
         return self.connectapi(url)
+
+    def get_userprofile_settings(self):
+        """Get user settings."""
+
+        url = self.garmin_connect_userprofile_settings_url
+        L.debug("Getting userprofile settings")
+
+        return self.connectapi(url)
+
 
     def request_reload(self, cdate: str):
         """
