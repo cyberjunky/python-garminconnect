@@ -1250,7 +1250,7 @@ class Garmin:
         """Get user settings."""
 
         url = self.garmin_connect_userprofile_settings_url
-        L.debug("Getting userprofile settings")
+        logger.debug("Getting userprofile settings")
 
         return self.connectapi(url)
 
