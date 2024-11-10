@@ -7,6 +7,7 @@ export PASSWORD=<your garmin password>
 
 """
 import datetime
+from datetime import timezone
 import json
 import logging
 import os
@@ -47,7 +48,7 @@ start_badge = 1  # Badge related calls calls start counting at 1
 activitytype = ""  # Possible values are: cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other
 activityfile = "MY_ACTIVITY.fit"  # Supported file types are: .fit .gpx .tcx
 weight = 89.6
-weightunit = 'kg'
+weightunit = "kg"
 # workout_example = """
 # {
 #     'workoutId': "random_id",
@@ -139,6 +140,7 @@ menu_options = {
     "T": "Add hydration data",
     "U": f"Get Fitness Age data for {today.isoformat()}",
     "V": f"Get daily wellness events data for {startdate.isoformat()}",
+    "W": "Get userprofile settings",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -213,7 +215,9 @@ def init_api(email, password):
             if not email or not password:
                 email, password = get_credentials()
 
-            garmin = Garmin(email=email, password=password, is_cn=False, prompt_mfa=get_mfa)
+            garmin = Garmin(
+                email=email, password=password, is_cn=False, prompt_mfa=get_mfa
+            )
             garmin.login()
             # Save Oauth1 and Oauth2 token files to directory for next login
             garmin.garth.dump(tokenstore)
@@ -228,7 +232,12 @@ def init_api(email, password):
             print(
                 f"Oauth tokens encoded as base64 string and saved to '{dir_path}' file for future use. (second method)\n"
             )
-        except (FileNotFoundError, GarthHTTPError, GarminConnectAuthenticationError, requests.exceptions.HTTPError) as err:
+        except (
+            FileNotFoundError,
+            GarthHTTPError,
+            GarminConnectAuthenticationError,
+            requests.exceptions.HTTPError,
+        ) as err:
             logger.error(err)
             return None
 
@@ -591,7 +600,9 @@ def switch(api, i):
 
                 # Get primary training device information
                 primary_training_device = api.get_primary_training_device()
-                display_json("api.get_primary_training_device()", primary_training_device)
+                display_json(
+                    "api.get_primary_training_device()", primary_training_device
+                )
 
             elif i == "R":
                 # Get solar data from Garmin devices
@@ -677,27 +688,43 @@ def switch(api, i):
                 # Get weigh-ins data
                 display_json(
                     f"api.get_weigh_ins({startdate.isoformat()}, {today.isoformat()})",
-                    api.get_weigh_ins(startdate.isoformat(), today.isoformat())
+                    api.get_weigh_ins(startdate.isoformat(), today.isoformat()),
                 )
             elif i == "C":
                 # Get daily weigh-ins data
                 display_json(
                     f"api.get_daily_weigh_ins({today.isoformat()})",
-                    api.get_daily_weigh_ins(today.isoformat())
+                    api.get_daily_weigh_ins(today.isoformat()),
                 )
             elif i == "D":
                 # Delete weigh-ins data for today
                 display_json(
                     f"api.delete_weigh_ins({today.isoformat()}, delete_all=True)",
-                    api.delete_weigh_ins(today.isoformat(), delete_all=True)
+                    api.delete_weigh_ins(today.isoformat(), delete_all=True),
                 )
             elif i == "E":
                 # Add a weigh-in
-                weight = 89.6
-                unit = 'kg'
+                weight = 83.6
+                unit = "kg"
                 display_json(
                     f"api.add_weigh_in(weight={weight}, unitKey={unit})",
-                    api.add_weigh_in(weight=weight, unitKey=unit)
+                    api.add_weigh_in(weight=weight, unitKey=unit),
+                )
+
+                # Add a weigh-in with timestamps
+                yesterday = today - datetime.timedelta(days=1) # Get yesterday's date
+                weigh_in_date = datetime.datetime.strptime(yesterday.isoformat(), "%Y-%m-%d")
+                local_timestamp = weigh_in_date.strftime('%Y-%m-%dT%H:%M:%S')
+                gmt_timestamp = weigh_in_date.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S')
+
+                display_json(
+                    f"api.add_weigh_in_with_timestamps(weight={weight}, unitKey={unit}, dateTimestamp={local_timestamp}, gmtTimestamp={gmt_timestamp})",
+                    api.add_weigh_in_with_timestamps(
+                        weight=weight,
+                        unitKey=unit,
+                        dateTimestamp=local_timestamp,
+                        gmtTimestamp=gmt_timestamp
+                    )
                 )
 
             # CHALLENGES/EXPEDITIONS
@@ -705,37 +732,36 @@ def switch(api, i):
                 # Get virtual challenges/expeditions
                 display_json(
                     f"api.get_inprogress_virtual_challenges({startdate.isoformat()}, {today.isoformat()})",
-                    api.get_inprogress_virtual_challenges(startdate.isoformat(), today.isoformat())
+                    api.get_inprogress_virtual_challenges(
+                        startdate.isoformat(), today.isoformat()
+                    ),
                 )
             elif i == "G":
                 # Get hill score data
                 display_json(
                     f"api.get_hill_score({startdate.isoformat()}, {today.isoformat()})",
-                    api.get_hill_score(startdate.isoformat(), today.isoformat())
+                    api.get_hill_score(startdate.isoformat(), today.isoformat()),
                 )
             elif i == "H":
                 # Get endurance score data
                 display_json(
                     f"api.get_endurance_score({startdate.isoformat()}, {today.isoformat()})",
-                    api.get_endurance_score(startdate.isoformat(), today.isoformat())
+                    api.get_endurance_score(startdate.isoformat(), today.isoformat()),
                 )
             elif i == "I":
                 # Get activities for date
                 display_json(
                     f"api.get_activities_fordate({today.isoformat()})",
-                    api.get_activities_fordate(today.isoformat())
+                    api.get_activities_fordate(today.isoformat()),
                 )
             elif i == "J":
                 # Get race predictions
-                display_json(
-                    f"api.get_race_predictions()",
-                    api.get_race_predictions()
-                )
+                display_json("api.get_race_predictions()", api.get_race_predictions())
             elif i == "K":
                 # Get all day stress data for date
                 display_json(
                     f"api.get_all_day_stress({today.isoformat()})",
-                    api.get_all_day_stress(today.isoformat())
+                    api.get_all_day_stress(today.isoformat()),
                 )
             elif i == "L":
                 # Add body composition
@@ -767,50 +793,43 @@ def switch(api, i):
                         metabolic_age=metabolic_age,
                         visceral_fat_rating=visceral_fat_rating,
                         bmi=bmi,
-                    )
+                    ),
                 )
             elif i == "M":
                 # Set blood pressure values
                 display_json(
-                    f"api.set_blood_pressure(120,80,80,notes=`Testing with example.py`)",
-                    api.set_blood_pressure(120,80,80,notes="Testing with example.py")
+                    "api.set_blood_pressure(120, 80, 80, notes=`Testing with example.py`)",
+                    api.set_blood_pressure(
+                        120, 80, 80, notes="Testing with example.py"
+                    ),
                 )
             elif i == "N":
                 # Get user profile
-                display_json(
-                    "api.get_user_profile()",
-                    api.get_user_profile()
-                )
+                display_json("api.get_user_profile()", api.get_user_profile())
             elif i == "O":
                 # Reload epoch data for date
                 display_json(
                     f"api.request_reload({today.isoformat()})",
-                    api.request_reload(today.isoformat())
+                    api.request_reload(today.isoformat()),
                 )
 
             # WORKOUTS
             elif i == "P":
                 workouts = api.get_workouts()
                 # Get workout 0-100
-                display_json(
-                    "api.get_workouts()",
-                    api.get_workouts()
-                )
+                display_json("api.get_workouts()", api.get_workouts())
 
                 # Get last fetched workout
-                workout_id = workouts[-1]['workoutId']
+                workout_id = workouts[-1]["workoutId"]
                 workout_name = workouts[-1]["workoutName"]
                 display_json(
                     f"api.get_workout_by_id({workout_id})",
-                    api.get_workout_by_id(workout_id))
+                    api.get_workout_by_id(workout_id),
+                )
 
                 # Download last fetched workout
-                print(
-                    f"api.download_workout({workout_id})"
-                )
-                workout_data = api.download_workout(
-                    workout_id
-                )
+                print(f"api.download_workout({workout_id})")
+                workout_data = api.download_workout(workout_id)
 
                 output_file = f"./{str(workout_name)}.fit"
                 with open(output_file, "wb") as fb:
@@ -826,16 +845,13 @@ def switch(api, i):
             elif i == "V":
                 # Get all day wellness events for 7 days ago
                 display_json(
-                     f"api.get_all_day_events({startdate.isoformat()})",
-                     api.get_all_day_events(startdate.isoformat())
-                             )
+                    f"api.get_all_day_events({today.isoformat()})",
+                    api.get_all_day_events(startdate.isoformat()),
+                )
             # WOMEN'S HEALTH
             elif i == "S":
                 # Get pregnancy summary data
-                display_json(
-                    "api.get_pregnancy_summary()",
-                    api.get_pregnancy_summary()
-                )
+                display_json("api.get_pregnancy_summary()", api.get_pregnancy_summary())
 
             # Additional related calls:
             # get_menstrual_data_for_date(self, fordate: str): takes a single date and returns the Garmin Menstrual Summary data for that date
@@ -847,20 +863,26 @@ def switch(api, i):
                 raw_date = datetime.date.today()
                 cdate = str(raw_date)
                 raw_ts = datetime.datetime.now()
-                timestamp = datetime.datetime.strftime(raw_ts, '%Y-%m-%dT%H:%M:%S.%f')
+                timestamp = datetime.datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
 
                 display_json(
                     f"api.add_hydration_data(value_in_ml={value_in_ml},cdate='{cdate}',timestamp='{timestamp}')",
-                    api.add_hydration_data(value_in_ml=value_in_ml,
-                                           cdate=cdate,
-                                           timestamp=timestamp)
+                    api.add_hydration_data(
+                        value_in_ml=value_in_ml, cdate=cdate, timestamp=timestamp
+                    ),
                 )
 
             elif i == "U":
                 # Get fitness age data
                 display_json(
                     f"api.get_fitnessage_data({today.isoformat()})",
-                    api.get_fitnessage_data(today.isoformat())
+                    api.get_fitnessage_data(today.isoformat()),
+                )
+
+            elif i == "W":
+                # Get userprofile settings
+                display_json(
+                    "api.get_userprofile_settings()", api.get_userprofile_settings()
                 )
 
             elif i == "Z":
@@ -883,7 +905,7 @@ def switch(api, i):
             GarminConnectAuthenticationError,
             GarminConnectTooManyRequestsError,
             requests.exceptions.HTTPError,
-            GarthHTTPError
+            GarthHTTPError,
         ) as err:
             logger.error(err)
         except KeyError:

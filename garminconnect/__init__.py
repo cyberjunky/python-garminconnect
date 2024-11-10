@@ -151,9 +151,7 @@ class Garmin:
         self.garmin_all_day_stress_url = (
             "/wellness-service/wellness/dailyStress"
         )
-        self.garmin_daily_events_url = (
-            "/wellness-service/wellness/dailyEvents"
-        )
+        self.garmin_daily_events_url = "/wellness-service/wellness/dailyEvents"
         self.garmin_connect_activities = (
             "/activitylist-service/activities/search/activities"
         )
@@ -197,7 +195,7 @@ class Garmin:
 
         self.garmin_connect_delete_activity_url = "/activity-service/activity"
 
-        self.garmin_graphql_endpoint = 'graphql-gateway/graphql'
+        self.garmin_graphql_endpoint = "graphql-gateway/graphql"
 
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
@@ -390,15 +388,27 @@ class Garmin:
         return self.garth.post("connectapi", url, json=payload)
 
     def add_weigh_in_with_timestamps(
-        self, weight: int, unitKey: str = "kg", dateTimestamp: str = "", gmtTimestamp: str = ""
+        self,
+        weight: int,
+        unitKey: str = "kg",
+        dateTimestamp: str = "",
+        gmtTimestamp: str = "",
     ):
         """Add a weigh-in with explicit timestamps (default to kg)"""
 
         url = f"{self.garmin_connect_weight_url}/user-weight"
 
         # Validate and format the timestamps
-        dt = datetime.fromisoformat(dateTimestamp) if dateTimestamp else datetime.now()
-        dtGMT = datetime.fromisoformat(gmtTimestamp) if gmtTimestamp else dt.astimezone(timezone.utc)
+        dt = (
+            datetime.fromisoformat(dateTimestamp)
+            if dateTimestamp
+            else datetime.now()
+        )
+        dtGMT = (
+            datetime.fromisoformat(gmtTimestamp)
+            if gmtTimestamp
+            else dt.astimezone(timezone.utc)
+        )
 
         # Build the payload
         payload = {
@@ -415,7 +425,6 @@ class Garmin:
         # Make the POST request
         return self.garth.post("connectapi", url, json=payload)
 
-    
     def get_weigh_ins(self, startdate: str, enddate: str):
         """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
 
@@ -529,7 +538,7 @@ class Garmin:
         return self.garth.post("connectapi", url, json=payload)
 
     def get_blood_pressure(
-            self, startdate: str, enddate=None
+        self, startdate: str, enddate=None
     ) -> Dict[str, Any]:
         """
         Returns blood pressure by day for 'startdate' format
@@ -626,7 +635,7 @@ class Garmin:
         logger.debug("Requesting SpO2 data")
 
         return self.connectapi(url)
-    
+
     def get_intensity_minutes_data(self, cdate: str) -> Dict[str, Any]:
         """Return available Intensity Minutes data 'cdate' format 'YYYY-MM-DD'."""
 
@@ -968,11 +977,18 @@ class Garmin:
 
         return self.garth.put("connectapi", url, json=payload, api=True)
 
-    def set_activity_type(self, activity_id, type_id, type_key, parent_type_id):
+    def set_activity_type(
+        self, activity_id, type_id, type_key, parent_type_id
+    ):
         url = f"{self.garmin_connect_activity}/{activity_id}"
-        payload = {'activityId': activity_id,
-                   'activityTypeDTO': {'typeId': type_id, 'typeKey': type_key,
-                                       'parentTypeId': parent_type_id}}
+        payload = {
+            "activityId": activity_id,
+            "activityTypeDTO": {
+                "typeId": type_id,
+                "typeKey": type_key,
+                "parentTypeId": parent_type_id,
+            },
+        }
         logger.debug(f"Changing activity type: {str(payload)}")
         return self.garth.put("connectapi", url, json=payload, api=True)
 
@@ -981,28 +997,29 @@ class Garmin:
         logger.debug(f"Uploading manual activity: {str(payload)}")
         return self.garth.post("connectapi", url, json=payload, api=True)
 
-    def create_manual_activity(self, start_datetime, timezone, type_key, distance_km, duration_min, activity_name):
+    def create_manual_activity(
+        self,
+        start_datetime,
+        timezone,
+        type_key,
+        distance_km,
+        duration_min,
+        activity_name,
+    ):
         """
-            Create a private activity manually with a few basic parameters.
-            type_key - Garmin field representing type of activity. See https://connect.garmin.com/modern/main/js/properties/activity_types/activity_types.properties
-                        Value to use is the key without 'activity_type_' prefix, e.g. 'resort_skiing'
-            start_datetime - timestamp in this pattern "2023-12-02T10:00:00.00"
-            timezone - local timezone of the activity, e.g. 'Europe/Paris'
-            distance_km - distance of the activity in kilometers
-            duration_min - duration of the activity in minutes
-            activity_name - the title
+        Create a private activity manually with a few basic parameters.
+        type_key - Garmin field representing type of activity. See https://connect.garmin.com/modern/main/js/properties/activity_types/activity_types.properties
+                    Value to use is the key without 'activity_type_' prefix, e.g. 'resort_skiing'
+        start_datetime - timestamp in this pattern "2023-12-02T10:00:00.00"
+        timezone - local timezone of the activity, e.g. 'Europe/Paris'
+        distance_km - distance of the activity in kilometers
+        duration_min - duration of the activity in minutes
+        activity_name - the title
         """
         payload = {
-            "activityTypeDTO": {
-                "typeKey": type_key
-            },
-            "accessControlRuleDTO": {
-                "typeId": 2,
-                "typeKey": "private"
-            },
-            "timeZoneUnitDTO": {
-                "unitKey": timezone
-            },
+            "activityTypeDTO": {"typeKey": type_key},
+            "accessControlRuleDTO": {"typeId": 2, "typeKey": "private"},
+            "timeZoneUnitDTO": {"unitKey": timezone},
             "activityName": activity_name,
             "metadataDTO": {
                 "autoCalcCalories": True,
@@ -1011,7 +1028,7 @@ class Garmin:
                 "startTimeLocal": start_datetime,
                 "distance": distance_km * 1000,
                 "duration": duration_min * 60,
-            }
+            },
         }
         return self.create_manual_activity_from_json(payload)
 
@@ -1058,7 +1075,9 @@ class Garmin:
             api=True,
         )
 
-    def get_activities_by_date(self, startdate, enddate=None, activitytype=None, sortorder=None):
+    def get_activities_by_date(
+        self, startdate, enddate=None, activitytype=None, sortorder=None
+    ):
         """
         Fetch available activities between specific dates
         :param startdate: String in the format YYYY-MM-DD
@@ -1338,7 +1357,7 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_gear_ativities(self, gearUUID):
-        """Return activies where gear uuid was used."""
+        """Return activities where gear uuid was used."""
 
         gearUUID = str(gearUUID)
 
@@ -1362,7 +1381,6 @@ class Garmin:
         logger.debug("Getting userprofile settings")
 
         return self.connectapi(url)
-
 
     def request_reload(self, cdate: str):
         """
@@ -1437,7 +1455,9 @@ class Garmin:
 
         logger.debug(f"Querying Garmin GraphQL Endpoint with query: {query}")
 
-        return self.garth.post("connectapi", self.garmin_graphql_endpoint, json=query).json()
+        return self.garth.post(
+            "connectapi", self.garmin_graphql_endpoint, json=query
+        ).json()
 
     def logout(self):
         """Log user out of session."""
