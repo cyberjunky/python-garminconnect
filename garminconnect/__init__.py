@@ -908,6 +908,53 @@ class Garmin:
 
         return self.garth.put("connectapi", url, json=payload, api=True)
 
+    def set_activity_type(self, activity_id, type_id, type_key, parent_type_id):
+        url = f"{self.garmin_connect_activity}/{activity_id}"
+        payload = {'activityId': activity_id,
+                   'activityTypeDTO': {'typeId': type_id, 'typeKey': type_key,
+                                       'parentTypeId': parent_type_id}}
+        logger.debug(f"Changing activity type: {str(payload)}")
+        return self.garth.put("connectapi", url, json=payload, api=True)
+
+    def create_manual_activity_from_json(self, payload):
+        url = f"{self.garmin_connect_activity}"
+        logger.debug(f"Uploading manual activity: {str(payload)}")
+        return self.garth.post("connectapi", url, json=payload, api=True)
+
+    def create_manual_activity(self, start_datetime, timezone, type_key, distance_km, duration_min, activity_name):
+        """
+            Create a private activity manually with a few basic parameters.
+            type_key - Garmin field representing type of activity. See https://connect.garmin.com/modern/main/js/properties/activity_types/activity_types.properties
+                        Value to use is the key without 'activity_type_' prefix, e.g. 'resort_skiing'
+            start_datetime - timestamp in this pattern "2023-12-02T10:00:00.00"
+            timezone - local timezone of the activity, e.g. 'Europe/Paris'
+            distance_km - distance of the activity in kilometers
+            duration_min - duration of the activity in minutes
+            activity_name - the title
+        """
+        payload = {
+            "activityTypeDTO": {
+                "typeKey": type_key
+            },
+            "accessControlRuleDTO": {
+                "typeId": 2,
+                "typeKey": "private"
+            },
+            "timeZoneUnitDTO": {
+                "unitKey": timezone
+            },
+            "activityName": activity_name,
+            "metadataDTO": {
+                "autoCalcCalories": True,
+            },
+            "summaryDTO": {
+                "startTimeLocal": start_datetime,
+                "distance": distance_km * 1000,
+                "duration": duration_min * 60,
+            }
+        }
+        return self.create_manual_activity_from_json(payload)
+
     def get_last_activity(self):
         """Return last activity."""
 
@@ -951,14 +998,16 @@ class Garmin:
             api=True,
         )
 
-    def get_activities_by_date(self, startdate, enddate, activitytype=None):
+    def get_activities_by_date(self, startdate, enddate=None, activitytype=None, sortorder=None):
         """
         Fetch available activities between specific dates
         :param startdate: String in the format YYYY-MM-DD
-        :param enddate: String in the format YYYY-MM-DD
+        :param enddate: (Optional) String in the format YYYY-MM-DD
         :param activitytype: (Optional) Type of activity you are searching
                              Possible values are [cycling, running, swimming,
                              multi_sport, fitness_equipment, hiking, walking, other]
+        :param sortorder: (Optional) sorting direction. By default, Garmin uses descending order by startLocal field.
+                          Use "asc" to get activities from oldest to newest.
         :return: list of JSON activities
         """
 
@@ -971,12 +1020,15 @@ class Garmin:
         url = self.garmin_connect_activities
         params = {
             "startDate": str(startdate),
-            "endDate": str(enddate),
             "start": str(start),
             "limit": str(limit),
         }
+        if enddate:
+            params["endDate"] = str(enddate)
         if activitytype:
             params["activityType"] = str(activitytype)
+        if sortorder:
+            params["sortOrder"] = str(sortorder)
 
         logger.debug(
             f"Requesting activities by date from {startdate} to {enddate}"
