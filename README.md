@@ -1,6 +1,6 @@
 # Python: Garmin Connect
 
-```
+```bash
 $ ./example.py
 *** Garmin Connect API Demo by cyberjunky ***
 
@@ -111,7 +111,7 @@ make test
 
 To create a development environment to commit code.
 
-```
+```bash
 make .venv
 source .venv/bin/activate
 
@@ -122,8 +122,10 @@ pdm init
 sudo apt install pre-commit isort black mypy
 pip3 install pre-commit
 ```
+
 Run checks before PR/Commit:
-```
+
+```bash
 make format
 make lint
 make codespell
@@ -133,7 +135,7 @@ make codespell
 
 To publish new package (author only)
 
-```
+```bash
 sudo apt install twine
 vi ~/.pypirc
 [pypi]
@@ -144,10 +146,12 @@ make publish
 ```
 
 ## Example
+
 The tests provide examples of how to use the library.  
 There is a Jupyter notebook called `reference.ipynb` provided [here](https://github.com/cyberjunky/python-garminconnect/blob/master/reference.ipynb).  
 And you can check out the `example.py` code you can find [here](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py), you can run it like so:  
-```
+
+```bash
 pip3 install -r requirements-dev.txt
 ./example.py
 ```
