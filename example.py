@@ -704,11 +704,9 @@ def switch(api, i):
                 )
             elif i == "E":
                 # Add a weigh-in
-                weight = 83.6
-                unit = "kg"
                 display_json(
-                    f"api.add_weigh_in(weight={weight}, unitKey={unit})",
-                    api.add_weigh_in(weight=weight, unitKey=unit),
+                    f"api.add_weigh_in(weight={weight}, unitKey={weightunit})",
+                    api.add_weigh_in(weight=weight, unitKey=weightunit),
                 )
 
                 # Add a weigh-in with timestamps
@@ -718,10 +716,10 @@ def switch(api, i):
                 gmt_timestamp = weigh_in_date.astimezone(timezone.utc).strftime('%Y-%m-%dT%H:%M:%S')
 
                 display_json(
-                    f"api.add_weigh_in_with_timestamps(weight={weight}, unitKey={unit}, dateTimestamp={local_timestamp}, gmtTimestamp={gmt_timestamp})",
+                    f"api.add_weigh_in_with_timestamps(weight={weight}, unitKey={weightunit}, dateTimestamp={local_timestamp}, gmtTimestamp={gmt_timestamp})",
                     api.add_weigh_in_with_timestamps(
                         weight=weight,
-                        unitKey=unit,
+                        unitKey=weightunit,
                         dateTimestamp=local_timestamp,
                         gmtTimestamp=gmt_timestamp
                     )
