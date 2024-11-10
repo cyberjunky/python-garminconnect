@@ -191,6 +191,8 @@ class Garmin:
 
         self.garmin_connect_delete_activity_url = "/activity-service/activity"
 
+        self.garmin_graphql_endpoint = 'graphql-gateway/graphql'
+
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com"
         )
@@ -1360,6 +1362,15 @@ class Garmin:
         logger.debug("Requesting pregnancy snapshot data")
 
         return self.connectapi(url)
+
+    def query_garmin_graphql(self, query: dict):
+        """Returns the results of a POST request to the Garmin GraphQL Endpoints.
+        Requires a GraphQL structured query.  See {TBD} for examples.
+        """
+
+        logger.debug(f"Querying Garmin GraphQL Endpoint with query: {query}")
+
+        return self.garth.post("connectapi", self.garmin_graphql_endpoint, json=query).json()
 
     def logout(self):
         """Log user out of session."""
