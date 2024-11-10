@@ -1,6 +1,6 @@
 [project]
 name = "garminconnect"
-version = "0.2.19"
+version = "0.2.20"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
