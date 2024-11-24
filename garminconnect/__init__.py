@@ -198,7 +198,9 @@ class Garmin:
         self.garmin_graphql_endpoint = "graphql-gateway/graphql"
 
         self.garth = garth.Client(
-            domain="garmin.cn" if is_cn else "garmin.com"
+            domain="garmin.cn" if is_cn else "garmin.com",
+            pool_connections=20,
+            pool_maxsize=20
         )
 
         self.display_name = None
