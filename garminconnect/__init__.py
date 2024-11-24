@@ -200,7 +200,7 @@ class Garmin:
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com",
             pool_connections=20,
-            pool_maxsize=20
+            pool_maxsize=20,
         )
 
         self.display_name = None
