@@ -11,6 +11,9 @@ from withings_sync import fit
 
 logger = logging.getLogger(__name__)
 
+# Temp fix for API change!
+garth.http.USER_AGENT = {"User-Agent": "GCM-iOS-5.7.2.1"}
+
 
 class Garmin:
     """Class for fetching data from Garmin Connect."""
@@ -62,6 +65,12 @@ class Garmin:
         self.garmin_connect_earned_badges_url = "/badge-service/badge/earned"
         self.garmin_connect_adhoc_challenges_url = (
             "/adhocchallenge-service/adHocChallenge/historical"
+        )
+        self.garmin_connect_adhoc_challenges_url = (
+            "/adhocchallenge-service/adHocChallenge/historical"
+        )
+        self.garmin_connect_adhoc_challenge_url = (
+            "/adhocchallenge-service/adHocChallenge/"
         )
         self.garmin_connect_badge_challenges_url = (
             "/badgechallenge-service/badgeChallenge/completed"
