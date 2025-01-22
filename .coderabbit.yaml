@@ -1,0 +1,22 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json # Schema for CodeRabbit configurations
+language: "en-US"
+early_access: true
+reviews:
+  profile: "assertive"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!tests/**/cassettes/**"
+  path_instructions:
+    - path: "tests/**"
+      instructions: |
+        - test functions shouldn't have a return type hint
+        - it's ok to use `assert` instead of `pytest.assume()`
+chat:
+  auto_reply: true
