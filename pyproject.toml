@@ -57,7 +57,7 @@ linting = [
     "isort",
     "types-requests",
 ]
-"testing" = [
+testing = [
     "coverage",
     "pytest",
     "pytest-vcr",
