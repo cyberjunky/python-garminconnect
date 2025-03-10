@@ -42,6 +42,30 @@ use_parentheses = true
 line_length = 79
 known_first_party = "garminconnect"
 
+[project.optional-dependencies]
+dev = [
+    "ipython",
+    "ipdb",
+    "ipykernel",
+    "pandas",
+    "matplotlib",
+]
+linting = [
+    "black",
+    "ruff",
+    "mypy",
+    "isort",
+    "types-requests",
+]
+testing = [
+    "coverage",
+    "pytest",
+    "pytest-vcr",
+]
+example = [
+    "readchar",
+]
+
 [tool.pdm]
 distribution = true
 [tool.pdm.dev-dependencies]
@@ -63,4 +87,7 @@ testing = [
     "coverage",
     "pytest",
     "pytest-vcr",
+]
+example = [
+    "readchar",
 ]
