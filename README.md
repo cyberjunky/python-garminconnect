@@ -21,7 +21,7 @@ Trying to login to Garmin Connect using token data from directory '~/.garminconn
 ! -- Get floors data for '2024-11-03'
 ? -- Get blood pressure data for '2024-11-03' to '2024-11-10'
 . -- Get training status data for '2024-11-10'
-a -- Get resting heart rate data for 2024-11-10'
+a -- Get resting heart rate data for '2024-11-10'
 b -- Get hydration data for '2024-11-10'
 c -- Get sleep data for '2024-11-10'
 d -- Get stress data for '2024-11-10'
@@ -58,15 +58,15 @@ I -- Get activities for date '2024-11-10'
 J -- Get race predictions
 K -- Get all day stress data for '2024-11-10'
 L -- Add body composition for '2024-11-10'
-M -- Set blood pressure '120,80,80,notes='Testing with example.py'
+M -- Set blood pressure "120,80,80,notes='Testing with example.py'"
 N -- Get user profile/settings
-O -- Reload epoch data for 2024-11-10
+O -- Reload epoch data for '2024-11-10'
 P -- Get workouts 0-100, get and download last one to .FIT file
 R -- Get solar data from your devices
 S -- Get pregnancy summary data
 T -- Add hydration data
-U -- Get Fitness Age data for 2024-11-10
-V -- Get daily wellness events data for 2024-11-03
+U -- Get Fitness Age data for '2024-11-10'
+V -- Get daily wellness events data for '2024-11-03'
 W -- Get userprofile settings
 Z -- Remove stored login tokens (logout)
 q -- Exit
