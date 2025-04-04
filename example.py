@@ -216,14 +216,19 @@ def init_api(email, password):
                 email, password = get_credentials()
 
             garmin = Garmin(
-                email=email, password=password, is_cn=False, prompt_mfa=get_mfa
+                email=email, password=password, is_cn=False, return_on_mfa=True
             )
-            garmin.login()
+            result1, result2 = garmin.login()
+            if result1 == "needs_mfa":  # MFA is required
+                mfa_code = get_mfa()
+                garmin.resume_login(result2, mfa_code)
+
             # Save Oauth1 and Oauth2 token files to directory for next login
             garmin.garth.dump(tokenstore)
             print(
                 f"Oauth tokens stored in '{tokenstore}' directory for future use. (first method)\n"
             )
+
             # Encode Oauth1 and Oauth2 tokens to base64 string and safe to file for next login (alternative way)
             token_base64 = garmin.garth.dumps()
             dir_path = os.path.expanduser(tokenstore_base64)
@@ -232,6 +237,9 @@ def init_api(email, password):
             print(
                 f"Oauth tokens encoded as base64 string and saved to '{dir_path}' file for future use. (second method)\n"
             )
+
+            # Re-login Garmin API with tokens
+            garmin.login(tokenstore)
         except (
             FileNotFoundError,
             GarthHTTPError,
