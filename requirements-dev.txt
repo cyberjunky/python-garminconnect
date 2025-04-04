@@ -2,3 +2,4 @@ garth>=0.5.3
 readchar
 requests
 mypy
+pdm
