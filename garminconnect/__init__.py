@@ -7,25 +7,23 @@ from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
 import garth
-from withings_sync import fit
+from .fit import FitEncoderWeight
 
 logger = logging.getLogger(__name__)
-
-# Temp fix for API change!
-garth.http.USER_AGENT = {"User-Agent": "GCM-iOS-5.7.2.1"}
 
 
 class Garmin:
     """Class for fetching data from Garmin Connect."""
 
     def __init__(
-        self, email=None, password=None, is_cn=False, prompt_mfa=None
+        self, email=None, password=None, is_cn=False, prompt_mfa=None, return_on_mfa=False
     ):
         """Create a new class instance."""
         self.username = email
         self.password = password
         self.is_cn = is_cn
         self.prompt_mfa = prompt_mfa
+        self.return_on_mfa = return_on_mfa
 
         self.garmin_connect_user_settings_url = (
             "/userprofile-service/userprofile/user-settings"
@@ -222,7 +220,7 @@ class Garmin:
     def download(self, path, **kwargs):
         return self.garth.download(path, **kwargs)
 
-    def login(self, /, tokenstore: Optional[str] = None):
+    def login(self, /, tokenstore: Optional[str] = None) -> bool | dict:
         """Log in using Garth."""
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
 
@@ -231,10 +229,34 @@ class Garmin:
                 self.garth.loads(tokenstore)
             else:
                 self.garth.load(tokenstore)
+
+            self.display_name = self.garth.profile["displayName"]
+            self.full_name = self.garth.profile["fullName"]
+
+            settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
+            self.unit_system = settings["userData"]["measurementSystem"]
+
+            return None, None
         else:
-            self.garth.login(
-                self.username, self.password, prompt_mfa=self.prompt_mfa
-            )
+            if self.return_on_mfa:
+                token1, token2 = self.garth.login(
+                    self.username, self.password, return_on_mfa=self.return_on_mfa
+                )
+            else:
+                token1, token2 = self.garth.login(
+                    self.username, self.password, prompt_mfa=self.prompt_mfa
+                )
+                self.display_name = self.garth.profile["displayName"]
+                self.full_name = self.garth.profile["fullName"]
+
+                settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
+                self.unit_system = settings["userData"]["measurementSystem"]
+
+        return token1, token2
+
+    def resume_login(self,client_state: dict, mfa_code: str):
+        """Resume login using Garth."""
+        result1, result2 = self.garth.resume_login(client_state, mfa_code)
 
         self.display_name = self.garth.profile["displayName"]
         self.full_name = self.garth.profile["fullName"]
@@ -242,7 +264,7 @@ class Garmin:
         settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
         self.unit_system = settings["userData"]["measurementSystem"]
 
-        return True
+        return result1, result2
 
     def get_full_name(self):
         """Return full name."""

@@ -1,5 +1,4 @@
-garth>=0.4.45
-withings-sync>=4.2.4
+garth>=0.5.3
 readchar
 requests
 mypy
