@@ -3,3 +3,4 @@ readchar
 requests
 mypy
 pdm
+twine
