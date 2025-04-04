@@ -42,7 +42,6 @@ codespell: .pre-commit
 .PHONY: .venv  ## Install virtual environment
 .venv:
 	python3 -m venv .venv
-	python3 -m pip install -qU pip
 
 .PHONY: install  ## Install package
 install: .venv
