@@ -1370,12 +1370,12 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_gear_ativities(self, gearUUID):
+    def get_gear_ativities(self, gearUUID, limit = 9999):
         """Return activities where gear uuid was used."""
 
         gearUUID = str(gearUUID)
 
-        url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit=9999"
+        url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit={limit}"
         logger.debug("Requesting activities for gearUUID %s", gearUUID)
 
         return self.connectapi(url)
