@@ -980,7 +980,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_activities(self, start: int = 0, limit: int = 20):
+    def get_activities(self, start: int = 0, limit: int = 20, activitytype: Optional[str] = None):
         """
         Return available activities.
         :param start: Starting activity offset, where 0 means the most recent activity
@@ -990,6 +990,9 @@ class Garmin:
 
         url = self.garmin_connect_activities
         params = {"start": str(start), "limit": str(limit)}
+        if activitytype:
+            params["activityType"] = str(activitytype)
+
         logger.debug("Requesting activities")
 
         return self.connectapi(url, params=params)
@@ -1389,12 +1392,12 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_gear_ativities(self, gearUUID):
+    def get_gear_ativities(self, gearUUID, limit = 9999):
         """Return activities where gear uuid was used."""
 
         gearUUID = str(gearUUID)
 
-        url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit=9999"
+        url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit={limit}"
         logger.debug("Requesting activities for gearUUID %s", gearUUID)
 
         return self.connectapi(url)
