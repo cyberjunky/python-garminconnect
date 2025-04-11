@@ -958,7 +958,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_activities(self, start: int = 0, limit: int = 20, activitytype = None):
+    def get_activities(self, start: int = 0, limit: int = 20, activitytype: Optional[str] = None):
         """
         Return available activities.
         :param start: Starting activity offset, where 0 means the most recent activity
