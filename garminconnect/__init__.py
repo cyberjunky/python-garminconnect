@@ -963,6 +963,7 @@ class Garmin:
         Return available activities.
         :param start: Starting activity offset, where 0 means the most recent activity
         :param limit: Number of activities to return
+        :param activitytype: (Optional) Filter activities by type
         :return: List of activities from Garmin
         """
 
@@ -1371,8 +1372,11 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_gear_ativities(self, gearUUID, limit = 9999):
-        """Return activities where gear uuid was used."""
-
+        """Return activities where gear uuid was used.
+        :param gearUUID: UUID of the gear to get activities for
+        :param limit: Maximum number of activities to return (default: 9999)
+        :return: List of activities where the specified gear was used
+        """
         gearUUID = str(gearUUID)
 
         url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit={limit}"
