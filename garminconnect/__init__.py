@@ -46,7 +46,7 @@ class Garmin:
             "/usersummary-service/usersummary/daily"
         )
         self.garmin_connect_metrics_url = (
-            "/metrics-service/metrics/maxmet/daily"
+            "/metrics-service/metrics/maxmet/latest"
         )
         self.garmin_connect_daily_hydration_url = (
             "/usersummary-service/usersummary/hydration/daily"
@@ -601,7 +601,7 @@ class Garmin:
     def get_max_metrics(self, cdate: str) -> Dict[str, Any]:
         """Return available max metric data for 'cdate' format 'YYYY-MM-DD'."""
 
-        url = f"{self.garmin_connect_metrics_url}/{cdate}/{cdate}"
+        url = f"{self.garmin_connect_metrics_url}/{cdate}"
         logger.debug("Requesting max metrics")
 
         return self.connectapi(url)
