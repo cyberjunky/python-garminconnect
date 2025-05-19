@@ -220,7 +220,7 @@ class Garmin:
     def download(self, path, **kwargs):
         return self.garth.download(path, **kwargs)
 
-    def login(self, /, tokenstore: Optional[str] = None) -> bool | dict:
+    def login(self, /, tokenstore: Optional[str] = None) -> tuple[Any, Any]:
         """Log in using Garth."""
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
 
@@ -373,7 +373,7 @@ class Garmin:
         bmi: Optional[float] = None,
     ):
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
-        fitEncoder = fit.FitEncoderWeight()
+        fitEncoder = FitEncoderWeight()
         fitEncoder.write_file_info()
         fitEncoder.write_file_creator()
         fitEncoder.write_device_info(dt)
