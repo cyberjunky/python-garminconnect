@@ -1,6 +1,7 @@
-garth>=0.5.3
+garth==0.5.13
 readchar
 requests
 mypy
 pdm
 twine
+pre-commit
