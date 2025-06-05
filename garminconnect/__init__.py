@@ -692,7 +692,7 @@ class Garmin:
         """
 
         url = f"{self.garmin_daily_events_url}?calendarDate={cdate}"
-        logger.debug("Requesting all day stress data")
+        logger.debug("Requesting all day events data")
 
         return self.connectapi(url)
 
