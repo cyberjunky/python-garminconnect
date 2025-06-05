@@ -1,3 +1,6 @@
+# Custom
+response.json
+
 # Virtual environments
 .venv/
 .pdm-python
