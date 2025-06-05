@@ -6,7 +6,7 @@ authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "garth==0.5.3",
+    "garth==0.5.13",
 ]
 readme = "README.md"
 license = {text = "MIT"}
