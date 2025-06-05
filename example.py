@@ -153,15 +153,32 @@ def display_json(api_call, output):
     header = f"{dashed} {api_call} {dashed}"
     footer = "-" * len(header)
 
-    print(header)
+    # print(header)
 
+    # if isinstance(output, (int, str, dict, list)):
+    #     print(json.dumps(output, indent=4))
+    # else:
+    #     print(output)
+
+    # print(footer)
+    # Format the output
     if isinstance(output, (int, str, dict, list)):
-        print(json.dumps(output, indent=4))
+        formatted_output = json.dumps(output, indent=4)
     else:
-        print(output)
+        formatted_output = str(output)
 
-    print(footer)
+    # Combine the header, output, and footer
+    full_output = f"{header}\n{formatted_output}\n{footer}"
 
+    # Print to console
+    print(full_output)
+
+    # Save to a file
+    output_filename = "reponse.json"
+    with open(output_filename, "w") as file:
+        file.write(full_output)
+
+    print(f"Output saved to {output_filename}")
 
 def display_text(output):
     """Format API output for better readability."""
