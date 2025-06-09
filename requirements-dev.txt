@@ -5,3 +5,6 @@ mypy
 pdm
 twine
 pre-commit
+isort
+ruff
+black
