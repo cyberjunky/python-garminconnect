@@ -437,8 +437,6 @@ def switch(api, i):
             elif i == "i":
                 # Get earned badges for user
                 display_json("api.get_earned_badges()", api.get_earned_badges())
-                # display_json("api.get_available_badges()", api.get_available_badges())
-                # display_json("api.get_in_progress_badges()", api.get_in_progress_badges())
             elif i == "j":
                 # Get adhoc challenges data from start and limit
                 display_json(

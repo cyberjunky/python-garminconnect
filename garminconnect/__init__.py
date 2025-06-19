@@ -68,7 +68,7 @@ class Garmin:
         )
         self.garmin_connect_earned_badges_url = "/badge-service/badge/earned"
         self.garmin_connect_available_badges_url = (
-            "/badge-service/badge/available?showExclusiveBadge=true"
+            "/badge-service/badge/available"
         )
         self.garmin_connect_adhoc_challenges_url = (
             "/adhocchallenge-service/adHocChallenge/historical"
@@ -724,15 +724,15 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_available_badges(self) -> List[Dict[str, Any]]:
+    def get_available_badges(self) -> list[dict]:
         """Return available badges for current user."""
 
         url = self.garmin_connect_available_badges_url
         logger.debug("Requesting available badges for user")
 
-        return self.connectapi(url)
+        return self.connectapi(url, params={"showExclusiveBadge": "true"})
 
-    def get_in_progress_badges(self) -> List[Dict[str, Any]]:
+    def get_in_progress_badges(self) -> list[dict]:
         """Return in progress badges for current user."""
 
         logger.debug("Requesting in progress badges for user")
@@ -741,30 +741,35 @@ class Garmin:
         available_badges = self.get_available_badges()
 
         # Filter out badges that are not in progress
-        def badge_in_progress(badge):
+        def is_badge_in_progress(badge: dict) -> bool:
             """Return True if the badge is in progress."""
-            if "badgeProgressValue" not in badge:
+            progress = badge.get("badgeProgressValue")
+            if not progress:
                 return False
-            if badge["badgeProgressValue"] is None:
+            if progress == 0:
                 return False
-            if badge["badgeProgressValue"] == 0:
-                return False
-            if badge["badgeProgressValue"] == badge["badgeTargetValue"]:
-                if (
-                    "badgeLimitCount" not in badge
-                    or badge["badgeLimitCount"] is None
-                ):
+            target = badge.get("badgeTargetValue")
+            if progress == target:
+                if badge.get("badgeLimitCount") is None:
                     return False
-                return badge["badgeEarnedNumber"] < badge["badgeLimitCount"]
+                return (
+                    badge.get("badgeEarnedNumber", 0)
+                    < badge["badgeLimitCount"]
+                )
             return True
 
         earned_in_progress_badges = list(
-            filter(badge_in_progress, earned_badges)
+            filter(is_badge_in_progress, earned_badges)
         )
         available_in_progress_badges = list(
-            filter(badge_in_progress, available_badges)
+            filter(is_badge_in_progress, available_badges)
         )
-        return earned_in_progress_badges + available_in_progress_badges
+
+        combined = {b["badgeId"]: b for b in earned_in_progress_badges}
+        combined.update(
+            {b["badgeId"]: b for b in available_in_progress_badges}
+        )
+        return list(combined.values())
 
     def get_adhoc_challenges(self, start, limit) -> Dict[str, Any]:
         """Return adhoc challenges for current user."""
