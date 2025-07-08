@@ -656,7 +656,7 @@ class Garmin:
                 "calendarDate": None,
                 "sequence": None,
                 "speed": None,
-                "hearRate": None,
+                "heartRate": None,
                 "heartRateCycling": None
             }
 
