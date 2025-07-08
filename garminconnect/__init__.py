@@ -7,6 +7,7 @@ from enum import Enum, auto
 from typing import Any, Dict, List, Optional
 
 import garth
+
 from .fit import FitEncoderWeight
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,12 @@ class Garmin:
     """Class for fetching data from Garmin Connect."""
 
     def __init__(
-        self, email=None, password=None, is_cn=False, prompt_mfa=None, return_on_mfa=False
+        self,
+        email=None,
+        password=None,
+        is_cn=False,
+        prompt_mfa=None,
+        return_on_mfa=False,
     ):
         """Create a new class instance."""
         self.username = email
@@ -240,14 +246,18 @@ class Garmin:
             self.display_name = self.garth.profile["displayName"]
             self.full_name = self.garth.profile["fullName"]
 
-            settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
+            settings = self.garth.connectapi(
+                self.garmin_connect_user_settings_url
+            )
             self.unit_system = settings["userData"]["measurementSystem"]
 
             return None, None
         else:
             if self.return_on_mfa:
                 token1, token2 = self.garth.login(
-                    self.username, self.password, return_on_mfa=self.return_on_mfa
+                    self.username,
+                    self.password,
+                    return_on_mfa=self.return_on_mfa,
                 )
             else:
                 token1, token2 = self.garth.login(
@@ -256,12 +266,14 @@ class Garmin:
                 self.display_name = self.garth.profile["displayName"]
                 self.full_name = self.garth.profile["fullName"]
 
-                settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
+                settings = self.garth.connectapi(
+                    self.garmin_connect_user_settings_url
+                )
                 self.unit_system = settings["userData"]["measurementSystem"]
 
         return token1, token2
 
-    def resume_login(self,client_state: dict, mfa_code: str):
+    def resume_login(self, client_state: dict, mfa_code: str):
         """Resume login using Garth."""
         result1, result2 = self.garth.resume_login(client_state, mfa_code)
 
@@ -1071,7 +1083,12 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_activities(self, start: int = 0, limit: int = 20, activitytype: Optional[str] = None):
+    def get_activities(
+        self,
+        start: int = 0,
+        limit: int = 20,
+        activitytype: Optional[str] = None,
+    ):
         """
         Return available activities.
         :param start: Starting activity offset, where 0 means the most recent activity
@@ -1484,7 +1501,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_gear_ativities(self, gearUUID, limit = 9999):
+    def get_gear_ativities(self, gearUUID, limit=9999):
         """Return activities where gear uuid was used.
         :param gearUUID: UUID of the gear to get activities for
         :param limit: Maximum number of activities to return (default: 9999)
