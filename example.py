@@ -915,7 +915,7 @@ def switch(api, i):
                 display_json(
                     "api.get_lactate_threshold(latest=True)", api.get_lactate_threshold(latest=True)
                 )
-                # Get latest lactate threshold
+                # Get historical lactate threshold for past four weeks
                 display_json(f"api.get_lactate_threshold(latest=False, start_date='{startdate_four_weeks.isoformat()}', end_date='{today.isoformat()}', aggregation='daily')", api.get_lactate_threshold(latest=False, start_date=startdate_four_weeks.isoformat(),
                                               end_date=today.isoformat(), aggregation="daily"),                )
             elif i == "Z":
