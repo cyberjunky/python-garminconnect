@@ -916,9 +916,8 @@ def switch(api, i):
                     "api.get_lactate_threshold(latest=True)", api.get_lactate_threshold(latest=True)
                 )
                 # Get latest lactate threshold
-                display_json(
-                    f"api.get_lactate_threshold(latest=False, start_date='{startdate_four_weeks.isoformat()}, end_date={today}', aggregation='daily')", api.get_lactate_threshold(latest=False, start_date=startdate_four_weeks, end_date=today, aggregation="daily")
-                )
+                display_json(f"api.get_lactate_threshold(latest=False, start_date='{startdate_four_weeks.isoformat()}', end_date='{today.isoformat()}', aggregation='daily')", api.get_lactate_threshold(latest=False, start_date=startdate_four_weeks.isoformat(),
+                                              end_date=today.isoformat(), aggregation="daily"),                )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
                 tokendir = os.path.expanduser(tokenstore)
