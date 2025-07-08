@@ -1,7 +1,10 @@
-garth==0.5.13
+garth==0.5.15
 readchar
 requests
 mypy
 pdm
 twine
 pre-commit
+isort
+ruff
+black

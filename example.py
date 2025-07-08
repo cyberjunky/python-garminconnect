@@ -176,7 +176,7 @@ def display_json(api_call, output):
     print(full_output)
 
     # Save to a file
-    output_filename = "reponse.json"
+    output_filename = "response.json"
     with open(output_filename, "w") as file:
         file.write(full_output)
 
