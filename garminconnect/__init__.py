@@ -625,7 +625,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_lactate_threshold(self, latest=True, start_date=None, end_date=None, aggregation="daily") -> Dict:
+    def get_lactate_threshold(self, *,latest: bool=True, start_date: Optional[str|date]=None, end_date: Optional[str|date]=None, aggregation: str ="daily") -> Dict:
         """
         Returns Running Lactate Threshold information, including heart rate, power, and speed
 
@@ -665,7 +665,7 @@ class Garmin:
             # We're combining them here
             for entry in speed_and_heart_rate:
                 if entry['speed'] is not None:
-                    speed_and_heart_rate_dict["userProfilePK"] =entry["userProfilePK"]
+                    speed_and_heart_rate_dict["userProfilePK"] = entry["userProfilePK"]
                     speed_and_heart_rate_dict["version"] = entry["version"]
                     speed_and_heart_rate_dict["calendarDate"] = entry["calendarDate"]
                     speed_and_heart_rate_dict["sequence"] = entry["sequence"]
@@ -677,37 +677,35 @@ class Garmin:
 
                 # Doesn't exist for me but adding it just in case.  We'll check for each entry
                 if entry['heartRateCycling'] is not None:
-                    speed_and_heart_rate_dict["heartRate"] = entry["heartRateCycling"]
+                    speed_and_heart_rate_dict["heartRateCycling"] = entry["heartRateCycling"]
 
-            latest_dict = {
+            return {
                 "speed_and_heart_rate": speed_and_heart_rate_dict,
                 "power": power_dict
             }
-            return latest_dict
 
 
-        else:
-            if start_date is None:
-                raise ValueError("You must either specify 'latest=True' or a start_date")
+        if start_date is None:
+            raise ValueError("You must either specify 'latest=True' or a start_date")
 
-            if end_date is None:
-                end_date = date.today()
+        if end_date is None:
+            end_date = date.today().isoformat()
 
-            _valid_aggregations = {"daily", "weekly", "monthly", "yearly"}
-            if aggregation not in _valid_aggregations:
-                raise ValueError(f"aggregation must be in {_valid_aggregations}")
+        _valid_aggregations = {"daily", "weekly", "monthly", "yearly"}
+        if aggregation not in _valid_aggregations:
+            raise ValueError(f"aggregation must be one of {_valid_aggregations}")
 
-            speed_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdSpeed/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+        speed_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdSpeed/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
 
-            heart_rate_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdHeartRate/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+        heart_rate_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdHeartRate/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
 
-            power_url = f"{self.garmin_connect_biometric_stats_url}/functionalThresholdPower/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+        power_url = f"{self.garmin_connect_biometric_stats_url}/functionalThresholdPower/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
 
-            speed = self.connectapi(speed_url)
-            heart_rate = self.connectapi(heart_rate_url)
-            power = self.connectapi(power_url)
+        speed = self.connectapi(speed_url)
+        heart_rate = self.connectapi(heart_rate_url)
+        power = self.connectapi(power_url)
 
-            return {"speed": speed, "heart_rate": heart_rate, "power": power}
+        return {"speed": speed, "heart_rate": heart_rate, "power": power}
 
     def add_hydration_data(
         self, value_in_ml: float, timestamp=None, cdate: Optional[str] = None
