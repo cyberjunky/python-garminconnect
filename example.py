@@ -42,6 +42,7 @@ api = None
 # Let's say we want to scrape all activities using switch menu_option "p". We change the values of the below variables, IE startdate days, limit,...
 today = datetime.date.today()
 startdate = today - datetime.timedelta(days=7)  # Select past week
+startdate_four_weeks = today - datetime.timedelta(days=28)
 start = 0
 limit = 100
 start_badge = 1  # Badge related calls calls start counting at 1
@@ -141,6 +142,7 @@ menu_options = {
     "U": f"Get Fitness Age data for {today.isoformat()}",
     "V": f"Get daily wellness events data for {startdate.isoformat()}",
     "W": "Get userprofile settings",
+    "X": "Get lactate threshold data, both Latest and for the past four weeks",
     "Z": "Remove stored login tokens (logout)",
     "q": "Exit",
 }
@@ -908,6 +910,14 @@ def switch(api, i):
                     "api.get_userprofile_settings()", api.get_userprofile_settings()
                 )
 
+            elif i == "X":
+                # Get latest lactate threshold
+                display_json(
+                    "api.get_lactate_threshold(latest=True)", api.get_lactate_threshold(latest=True)
+                )
+                # Get historical lactate threshold for past four weeks
+                display_json(f"api.get_lactate_threshold(latest=False, start_date='{startdate_four_weeks.isoformat()}', end_date='{today.isoformat()}', aggregation='daily')", api.get_lactate_threshold(latest=False, start_date=startdate_four_weeks.isoformat(),
+                                              end_date=today.isoformat(), aggregation="daily"),                )
             elif i == "Z":
                 # Remove stored login tokens for Garmin Connect portal
                 tokendir = os.path.expanduser(tokenstore)
