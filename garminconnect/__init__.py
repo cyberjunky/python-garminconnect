@@ -1,13 +1,13 @@
 """Python 3 API wrapper for Garmin Connect."""
 
 import logging
+import numbers
 import os
 import re
 from datetime import date, datetime, timezone
 from enum import Enum, auto
-import numbers
-from typing import Any
 from pathlib import Path
+from typing import Any
 
 import garth
 
