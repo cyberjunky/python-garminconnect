@@ -140,9 +140,10 @@ pre-commit install --install-hooks
 ```bash
 pdm run format     # Auto-format code (isort, black, ruff --fix)
 pdm run lint       # Check code quality (isort, ruff, black, mypy)
+pdm run codespell  # Check spelling errors in code and comments
 pdm run test       # Run test suite
 pdm run testcov    # Run tests with coverage report
-pdm run all        # Run full quality checks (lint + test)
+pdm run all        # Run full quality checks (lint + codespell + test)
 pdm run clean      # Clean build artifacts and cache files
 pdm run build      # Build package for distribution
 pdm run publish    # Build and publish to PyPI
@@ -161,6 +162,7 @@ pdm run lint       # Check current code quality
 # After making changes  
 pdm run format     # Auto-format your code
 pdm run lint       # Verify code quality
+pdm run codespell  # Check spelling
 pdm run test       # Run tests to ensure nothing broke
 ```
 

@@ -1,5 +1,6 @@
 # Custom
 your_data/
+pdm.lock
 
 # Virtual environments
 .venv/
