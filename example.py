@@ -119,7 +119,7 @@ menu_options = {
     "x": f"Get Heart Rate Variability data (HRV) for '{today.isoformat()}'",
     "z": f"Get progress summary from '{startdate.isoformat()}' to '{today.isoformat()}' for all metrics",
     "A": "Get gear, the defaults, activity types and statistics",
-    "B": f"Get weight-ins from '{startdate.isoformat()}' to '{today.isoformat()}'",
+    "B": f"Get weigh-ins from '{startdate.isoformat()}' to '{today.isoformat()}'",
     "C": f"Get daily weigh-ins for '{today.isoformat()}'",
     "D": f"Delete all weigh-ins for '{today.isoformat()}'",
     "E": f"Add a weigh-in of {weight}{weightunit} on '{today.isoformat()}'",
@@ -708,7 +708,7 @@ def switch(api, i):
                         f"api.get_gear_stats({uuid}) / {name}", api.get_gear_stats(uuid)
                     )
 
-            # WEIGHT-INS
+            # WEIGH-INS
             elif i == "B":
                 # Get weigh-ins data
                 display_json(
