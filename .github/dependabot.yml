@@ -4,9 +4,13 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: daily
+      time: "20:00"
+      timezone: "Europe/Amsterdam"
 
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: daily
+      time: "20:00"
+      timezone: "Europe/Amsterdam"
