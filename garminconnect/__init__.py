@@ -818,14 +818,14 @@ class Garmin:
 
         return self.connectapi(url)
 
-     def get_lactate_threshold(
-            self,
-            *,
-            latest: bool = True,
-            start_date: str | date | None = None,
-            end_date: str | date | None = None,
-            aggregation: str = "daily",
-        ) -> dict[str, Any]:
+    def get_lactate_threshold(
+        self,
+        *,
+        latest: bool = True,
+        start_date: str | date | None = None,
+        end_date: str | date | None = None,
+        aggregation: str = "daily",
+    ) -> dict[str, Any]:
         """
         Returns Running Lactate Threshold information, including heart rate, power, and speed
 
