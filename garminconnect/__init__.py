@@ -2,15 +2,64 @@
 
 import logging
 import os
+import re
 from datetime import date, datetime, timezone
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import garth
 
 from .fit import FitEncoderWeight
 
 logger = logging.getLogger(__name__)
+
+# Constants for validation
+MAX_ACTIVITY_LIMIT = 1000
+MAX_HYDRATION_ML = 10000  # 10 liters
+DATE_FORMAT_REGEX = r'^\d{4}-\d{2}-\d{2}$'
+DATE_FORMAT_STR = '%Y-%m-%d'
+TIMESTAMP_FORMAT_STR = '%Y-%m-%dT%H:%M:%S.%f'
+VALID_WEIGHT_UNITS = {"kg", "lbs"}
+
+# Add validation utilities
+def _validate_date_format(date_str: str, param_name: str = "date") -> str:
+    """Validate date string format YYYY-MM-DD."""
+    if not isinstance(date_str, str):
+        raise ValueError(f"{param_name} must be a string")
+
+    # Remove any extra whitespace
+    date_str = date_str.strip()
+
+    if not re.match(DATE_FORMAT_REGEX, date_str):
+        raise ValueError(f"{param_name} must be in format 'YYYY-MM-DD', got: {date_str}")
+
+    try:
+        # Validate that it's a real date
+        datetime.strptime(date_str, DATE_FORMAT_STR)
+    except ValueError as e:
+        raise ValueError(f"Invalid {param_name}: {e}") from e
+
+    return date_str
+
+def _validate_positive_number(value: int | float, param_name: str = "value") -> int | float:
+    """Validate that a number is positive."""
+    if not isinstance(value, int | float):
+        raise ValueError(f"{param_name} must be a number")
+
+    if value <= 0:
+        raise ValueError(f"{param_name} must be positive, got: {value}")
+
+    return value
+
+def _validate_non_negative_integer(value: int, param_name: str = "value") -> int:
+    """Validate that a value is a non-negative integer."""
+    if not isinstance(value, int):
+        raise ValueError(f"{param_name} must be an integer")
+
+    if value < 0:
+        raise ValueError(f"{param_name} must be non-negative, got: {value}")
+
+    return value
 
 
 class Garmin:
@@ -25,6 +74,17 @@ class Garmin:
         return_on_mfa=False,
     ):
         """Create a new class instance."""
+
+        # Validate input types
+        if email is not None and not isinstance(email, str):
+            raise ValueError("email must be a string or None")
+        if password is not None and not isinstance(password, str):
+            raise ValueError("password must be a string or None")
+        if not isinstance(is_cn, bool):
+            raise ValueError("is_cn must be a boolean")
+        if not isinstance(return_on_mfa, bool):
+            raise ValueError("return_on_mfa must be a boolean")
+
         self.username = email
         self.password = password
         self.is_cn = is_cn
@@ -221,50 +281,105 @@ class Garmin:
         self.unit_system = None
 
     def connectapi(self, path, **kwargs):
-        return self.garth.connectapi(path, **kwargs)
+        """Wrapper for garth connectapi with error handling."""
+        try:
+            return self.garth.connectapi(path, **kwargs)
+        except Exception as e:
+            logger.error(f"API call failed for path '{path}': {e}")
+            # Re-raise with more context but preserve original exception type
+            if "auth" in str(e).lower() or "401" in str(e):
+                raise GarminConnectAuthenticationError(f"Authentication failed: {e}") from e
+            elif "429" in str(e) or "rate" in str(e).lower():
+                raise GarminConnectTooManyRequestsError(f"Rate limit exceeded: {e}") from e
+            else:
+                raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
     def download(self, path, **kwargs):
-        return self.garth.download(path, **kwargs)
+        """Wrapper for garth download with error handling."""
+        try:
+            return self.garth.download(path, **kwargs)
+        except Exception as e:
+            logger.error(f"Download failed for path '{path}': {e}")
+            raise GarminConnectConnectionError(f"Download error: {e}") from e
 
-    def login(self, /, tokenstore: Optional[str] = None) -> tuple[Any, Any]:
+    def login(self, /, tokenstore: str | None = None) -> tuple[Any, Any]:
         """Log in using Garth."""
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
 
-        if tokenstore:
-            if len(tokenstore) > 512:
-                self.garth.loads(tokenstore)
-            else:
-                self.garth.load(tokenstore)
+        try:
+            if tokenstore:
+                if len(tokenstore) > 512:
+                    self.garth.loads(tokenstore)
+                else:
+                    self.garth.load(tokenstore)
 
-            self.display_name = self.garth.profile["displayName"]
-            self.full_name = self.garth.profile["fullName"]
+                # Validate profile data exists
+                if not hasattr(self.garth, 'profile') or not self.garth.profile:
+                    raise GarminConnectAuthenticationError("No profile data found in token")
 
-            settings = self.garth.connectapi(
-                self.garmin_connect_user_settings_url
-            )
-            self.unit_system = settings["userData"]["measurementSystem"]
+                self.display_name = self.garth.profile.get("displayName")
+                self.full_name = self.garth.profile.get("fullName")
 
-            return None, None
-        else:
-            if self.return_on_mfa:
-                token1, token2 = self.garth.login(
-                    self.username,
-                    self.password,
-                    return_on_mfa=self.return_on_mfa,
-                )
-            else:
-                token1, token2 = self.garth.login(
-                    self.username, self.password, prompt_mfa=self.prompt_mfa
-                )
-                self.display_name = self.garth.profile["displayName"]
-                self.full_name = self.garth.profile["fullName"]
+                if not self.display_name:
+                    raise GarminConnectAuthenticationError("Invalid profile data: missing displayName")
 
                 settings = self.garth.connectapi(
                     self.garmin_connect_user_settings_url
                 )
-                self.unit_system = settings["userData"]["measurementSystem"]
 
-        return token1, token2
+                if not settings or "userData" not in settings:
+                    raise GarminConnectAuthenticationError("Failed to retrieve user settings")
+
+                self.unit_system = settings["userData"].get("measurementSystem")
+
+                return None, None
+            else:
+                # Validate credentials before attempting login
+                if not self.username or not self.password:
+                    raise GarminConnectAuthenticationError("Username and password are required")
+
+                # Validate email format when actually used for login
+                if self.username and '@' not in self.username:
+                    raise GarminConnectAuthenticationError("Email must contain '@' symbol")
+
+                if self.return_on_mfa:
+                    token1, token2 = self.garth.login(
+                        self.username,
+                        self.password,
+                        return_on_mfa=self.return_on_mfa,
+                    )
+                else:
+                    token1, token2 = self.garth.login(
+                        self.username, self.password, prompt_mfa=self.prompt_mfa
+                    )
+
+                    # Validate profile data after login
+                    if not hasattr(self.garth, 'profile') or not self.garth.profile:
+                        raise GarminConnectAuthenticationError("Login succeeded but no profile data received")
+
+                    self.display_name = self.garth.profile.get("displayName")
+                    self.full_name = self.garth.profile.get("fullName")
+
+                    if not self.display_name:
+                        raise GarminConnectAuthenticationError("Invalid profile data: missing displayName")
+
+                    settings = self.garth.connectapi(
+                        self.garmin_connect_user_settings_url
+                    )
+
+                    if not settings or "userData" not in settings:
+                        raise GarminConnectAuthenticationError("Failed to retrieve user settings")
+
+                    self.unit_system = settings["userData"].get("measurementSystem")
+
+            return token1, token2
+
+        except Exception as e:
+            if isinstance(e, GarminConnectAuthenticationError):
+                raise
+            else:
+                logger.error(f"Login failed: {e}")
+                raise GarminConnectAuthenticationError(f"Login failed: {e}") from e
 
     def resume_login(self, client_state: dict, mfa_code: str):
         """Resume login using Garth."""
@@ -288,7 +403,7 @@ class Garmin:
 
         return self.unit_system
 
-    def get_stats(self, cdate: str) -> Dict[str, Any]:
+    def get_stats(self, cdate: str) -> dict[str, Any]:
         """
         Return user activity summary for 'cdate' format 'YYYY-MM-DD'
         (compat for garminconnect).
@@ -296,53 +411,107 @@ class Garmin:
 
         return self.get_user_summary(cdate)
 
-    def get_user_summary(self, cdate: str) -> Dict[str, Any]:
+    def get_user_summary(self, cdate: str) -> dict[str, Any]:
         """Return user activity summary for 'cdate' format 'YYYY-MM-DD'."""
 
+        # Validate input
+        cdate = _validate_date_format(cdate, "cdate")
+
         url = f"{self.garmin_connect_daily_summary_url}/{self.display_name}"
-        params = {"calendarDate": str(cdate)}
+        params = {"calendarDate": cdate}
         logger.debug("Requesting user summary")
 
         response = self.connectapi(url, params=params)
 
-        if response["privacyProtected"] is True:
+        if not response:
+            raise GarminConnectConnectionError("No data received from server")
+
+        if response.get("privacyProtected") is True:
             raise GarminConnectAuthenticationError("Authentication error")
 
         return response
 
-    def get_steps_data(self, cdate):
+    def get_steps_data(self, cdate: str) -> list[dict[str, Any]]:
         """Fetch available steps data 'cDate' format 'YYYY-MM-DD'."""
 
+        # Validate input
+        cdate = _validate_date_format(cdate, "cdate")
+
         url = f"{self.garmin_connect_user_summary_chart}/{self.display_name}"
-        params = {"date": str(cdate)}
+        params = {"date": cdate}
         logger.debug("Requesting steps data")
 
-        return self.connectapi(url, params=params)
+        response = self.connectapi(url, params=params)
 
-    def get_floors(self, cdate):
+        if response is None:
+            logger.warning("No steps data received")
+            return []
+
+        return response
+
+    def get_floors(self, cdate: str) -> dict[str, Any]:
         """Fetch available floors data 'cDate' format 'YYYY-MM-DD'."""
+
+        # Validate input
+        cdate = _validate_date_format(cdate, "cdate")
 
         url = f"{self.garmin_connect_floors_chart_daily_url}/{cdate}"
         logger.debug("Requesting floors data")
 
-        return self.connectapi(url)
+        response = self.connectapi(url)
 
-    def get_daily_steps(self, start, end):
+        if response is None:
+            raise GarminConnectConnectionError("No floors data received")
+
+        return response
+
+    def get_daily_steps(self, start: str, end: str):
         """Fetch available steps data 'start' and 'end' format 'YYYY-MM-DD'."""
+
+        # Validate inputs
+        start = _validate_date_format(start, "start")
+        end = _validate_date_format(end, "end")
+
+        # Validate date range
+        start_date = datetime.strptime(start, '%Y-%m-%d').date()
+        end_date = datetime.strptime(end, '%Y-%m-%d').date()
+
+        if start_date > end_date:
+            raise ValueError("start date cannot be after end date")
 
         url = f"{self.garmin_connect_daily_stats_steps_url}/{start}/{end}"
         logger.debug("Requesting daily steps data")
 
         return self.connectapi(url)
 
-    def get_heart_rates(self, cdate):
-        """Fetch available heart rates data 'cDate' format 'YYYY-MM-DD'."""
+    def get_heart_rates(self, cdate: str) -> dict[str, Any]:
+        """Fetch available heart rates data 'cDate' format 'YYYY-MM-DD'.
+
+        Args:
+            cdate: Date string in format 'YYYY-MM-DD'
+
+        Returns:
+            Dictionary containing heart rate data for the specified date
+
+        Raises:
+            ValueError: If cdate format is invalid
+            GarminConnectConnectionError: If no data received
+            GarminConnectAuthenticationError: If authentication fails
+        """
+
+        # Validate input
+        cdate = _validate_date_format(cdate, "cdate")
 
         url = f"{self.garmin_connect_heartrates_daily_url}/{self.display_name}"
-        params = {"date": str(cdate)}
+        params = {"date": cdate}
         logger.debug("Requesting heart rates")
 
-        return self.connectapi(url, params=params)
+        response = self.connectapi(url, params=params)
+
+        if response is None:
+            raise GarminConnectConnectionError("No heart rate data received")
+
+        return response
 
     def get_stats_and_body(self, cdate):
         """Return activity data and body composition (compat for garminconnect)."""
@@ -354,7 +523,7 @@ class Garmin:
 
     def get_body_composition(
         self, startdate: str, enddate=None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Return available body composition data for 'startdate' format
         'YYYY-MM-DD' through enddate 'YYYY-MM-DD'.
@@ -370,19 +539,19 @@ class Garmin:
 
     def add_body_composition(
         self,
-        timestamp: Optional[str],
+        timestamp: str | None,
         weight: float,
-        percent_fat: Optional[float] = None,
-        percent_hydration: Optional[float] = None,
-        visceral_fat_mass: Optional[float] = None,
-        bone_mass: Optional[float] = None,
-        muscle_mass: Optional[float] = None,
-        basal_met: Optional[float] = None,
-        active_met: Optional[float] = None,
-        physique_rating: Optional[float] = None,
-        metabolic_age: Optional[float] = None,
-        visceral_fat_rating: Optional[float] = None,
-        bmi: Optional[float] = None,
+        percent_fat: float | None = None,
+        percent_hydration: float | None = None,
+        visceral_fat_mass: float | None = None,
+        bone_mass: float | None = None,
+        muscle_mass: float | None = None,
+        basal_met: float | None = None,
+        active_met: float | None = None,
+        physique_rating: float | None = None,
+        metabolic_age: float | None = None,
+        visceral_fat_rating: float | None = None,
+        bmi: float | None = None,
     ):
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         fitEncoder = FitEncoderWeight()
@@ -413,12 +582,23 @@ class Garmin:
         return self.garth.post("connectapi", url, files=files, api=True)
 
     def add_weigh_in(
-        self, weight: int, unitKey: str = "kg", timestamp: str = ""
+        self, weight: int | float, unitKey: str = "kg", timestamp: str = ""
     ):
         """Add a weigh-in (default to kg)"""
 
+        # Validate inputs
+        weight = _validate_positive_number(weight, "weight")
+
+        if unitKey not in VALID_WEIGHT_UNITS:
+            raise ValueError(f"unitKey must be one of {VALID_WEIGHT_UNITS}")
+
         url = f"{self.garmin_connect_weight_url}/user-weight"
-        dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
+
+        try:
+            dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
+        except ValueError as e:
+            raise ValueError(f"Invalid timestamp format: {e}") from e
+
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt.astimezone(timezone.utc)
         payload = {
@@ -526,7 +706,7 @@ class Garmin:
 
     def get_body_battery(
         self, startdate: str, enddate=None
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Return body battery values by day for 'startdate' format
         'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
@@ -540,7 +720,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_body_battery_events(self, cdate: str) -> List[Dict[str, Any]]:
+    def get_body_battery_events(self, cdate: str) -> list[dict[str, Any]]:
         """
         Return body battery events for date 'cdate' format 'YYYY-MM-DD'.
         The return value is a list of dictionaries, where each dictionary contains event data for a specific event.
@@ -584,7 +764,7 @@ class Garmin:
 
     def get_blood_pressure(
         self, startdate: str, enddate=None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Returns blood pressure by day for 'startdate' format
         'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
@@ -610,7 +790,7 @@ class Garmin:
             api=True,
         )
 
-    def get_max_metrics(self, cdate: str) -> Dict[str, Any]:
+    def get_max_metrics(self, cdate: str) -> dict[str, Any]:
         """Return available max metric data for 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_metrics_url}/{cdate}/{cdate}"
@@ -619,13 +799,21 @@ class Garmin:
         return self.connectapi(url)
 
     def add_hydration_data(
-        self, value_in_ml: float, timestamp=None, cdate: Optional[str] = None
-    ) -> Dict[str, Any]:
+        self, value_in_ml: float, timestamp=None, cdate: str | None = None
+    ) -> dict[str, Any]:
         """Add hydration data in ml.  Defaults to current date and current timestamp if left empty
         :param float required - value_in_ml: The number of ml of water you wish to add (positive) or subtract (negative)
         :param timestamp optional - timestamp: The timestamp of the hydration update, format 'YYYY-MM-DDThh:mm:ss.ms' Defaults to current timestamp
         :param date optional - cdate: The date of the weigh in, format 'YYYY-MM-DD'. Defaults to current date
         """
+
+        # Validate inputs
+        if not isinstance(value_in_ml, int | float):
+            raise ValueError("value_in_ml must be a number")
+
+        # Allow negative values for subtraction but validate reasonable range
+        if abs(value_in_ml) > MAX_HYDRATION_ML:
+            raise ValueError(f"value_in_ml seems unreasonably high (>{MAX_HYDRATION_ML}ml)")
 
         url = self.garmin_connect_set_hydration_url
 
@@ -638,14 +826,37 @@ class Garmin:
             timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
 
         elif cdate is not None and timestamp is None:
-            # If cdate is not null, use timestamp associated with midnight
-            raw_ts = datetime.strptime(cdate, "%Y-%m-%d")
-            timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
+            # If cdate is not null, validate and use timestamp associated with midnight
+            cdate = _validate_date_format(cdate, "cdate")
+            try:
+                raw_ts = datetime.strptime(cdate, "%Y-%m-%d")
+                timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
+            except ValueError as e:
+                raise ValueError(f"Invalid cdate: {e}") from e
 
         elif cdate is None and timestamp is not None:
-            # If timestamp is not null, set cdate equal to date part of timestamp
-            raw_ts = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
-            cdate = str(raw_ts.date())
+            # If timestamp is not null, validate and set cdate equal to date part of timestamp
+            if not isinstance(timestamp, str):
+                raise ValueError("timestamp must be a string")
+            try:
+                raw_ts = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
+                cdate = str(raw_ts.date())
+            except ValueError as e:
+                raise ValueError(f"Invalid timestamp format (expected YYYY-MM-DDTHH:MM:SS.ffffff): {e}") from e
+        else:
+            # Both provided - validate consistency
+            cdate = _validate_date_format(cdate, "cdate")
+            if not isinstance(timestamp, str):
+                raise ValueError("timestamp must be a string")
+            try:
+                raw_ts = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
+                ts_date = str(raw_ts.date())
+                if ts_date != cdate:
+                    raise ValueError(f"timestamp date ({ts_date}) doesn't match cdate ({cdate})")
+            except ValueError as e:
+                if "doesn't match" in str(e):
+                    raise
+                raise ValueError(f"Invalid timestamp format: {e}") from e
 
         payload = {
             "calendarDate": cdate,
@@ -657,7 +868,7 @@ class Garmin:
 
         return self.garth.put("connectapi", url, json=payload)
 
-    def get_hydration_data(self, cdate: str) -> Dict[str, Any]:
+    def get_hydration_data(self, cdate: str) -> dict[str, Any]:
         """Return available hydration data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_daily_hydration_url}/{cdate}"
@@ -665,7 +876,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_respiration_data(self, cdate: str) -> Dict[str, Any]:
+    def get_respiration_data(self, cdate: str) -> dict[str, Any]:
         """Return available respiration data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_daily_respiration_url}/{cdate}"
@@ -673,7 +884,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_spo2_data(self, cdate: str) -> Dict[str, Any]:
+    def get_spo2_data(self, cdate: str) -> dict[str, Any]:
         """Return available SpO2 data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_daily_spo2_url}/{cdate}"
@@ -681,7 +892,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_intensity_minutes_data(self, cdate: str) -> Dict[str, Any]:
+    def get_intensity_minutes_data(self, cdate: str) -> dict[str, Any]:
         """Return available Intensity Minutes data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_connect_daily_intensity_minutes}/{cdate}"
@@ -689,7 +900,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_all_day_stress(self, cdate: str) -> Dict[str, Any]:
+    def get_all_day_stress(self, cdate: str) -> dict[str, Any]:
         """Return available all day stress data 'cdate' format 'YYYY-MM-DD'."""
 
         url = f"{self.garmin_all_day_stress_url}/{cdate}"
@@ -697,7 +908,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_all_day_events(self, cdate: str) -> Dict[str, Any]:
+    def get_all_day_events(self, cdate: str) -> dict[str, Any]:
         """
         Return available daily events data 'cdate' format 'YYYY-MM-DD'.
         Includes autodetected activities, even if not recorded on the watch
@@ -708,7 +919,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_personal_record(self) -> Dict[str, Any]:
+    def get_personal_record(self) -> dict[str, Any]:
         """Return personal records for current user."""
 
         url = f"{self.garmin_connect_personal_record_url}/{self.display_name}"
@@ -716,7 +927,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_earned_badges(self) -> Dict[str, Any]:
+    def get_earned_badges(self) -> dict[str, Any]:
         """Return earned badges for current user."""
 
         url = self.garmin_connect_earned_badges_url
@@ -724,7 +935,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_adhoc_challenges(self, start, limit) -> Dict[str, Any]:
+    def get_adhoc_challenges(self, start, limit) -> dict[str, Any]:
         """Return adhoc challenges for current user."""
 
         url = self.garmin_connect_adhoc_challenges_url
@@ -733,7 +944,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_badge_challenges(self, start, limit) -> Dict[str, Any]:
+    def get_badge_challenges(self, start, limit) -> dict[str, Any]:
         """Return badge challenges for current user."""
 
         url = self.garmin_connect_badge_challenges_url
@@ -742,7 +953,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_available_badge_challenges(self, start, limit) -> Dict[str, Any]:
+    def get_available_badge_challenges(self, start, limit) -> dict[str, Any]:
         """Return available badge challenges."""
 
         url = self.garmin_connect_available_badge_challenges_url
@@ -753,7 +964,7 @@ class Garmin:
 
     def get_non_completed_badge_challenges(
         self, start, limit
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Return badge non-completed challenges for current user."""
 
         url = self.garmin_connect_non_completed_badge_challenges_url
@@ -764,7 +975,7 @@ class Garmin:
 
     def get_inprogress_virtual_challenges(
         self, start, limit
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Return in-progress virtual challenges for current user."""
 
         url = self.garmin_connect_inprogress_virtual_challenges_url
@@ -773,7 +984,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_sleep_data(self, cdate: str) -> Dict[str, Any]:
+    def get_sleep_data(self, cdate: str) -> dict[str, Any]:
         """Return sleep data for current user."""
 
         url = f"{self.garmin_connect_daily_sleep_url}/{self.display_name}"
@@ -782,7 +993,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_stress_data(self, cdate: str) -> Dict[str, Any]:
+    def get_stress_data(self, cdate: str) -> dict[str, Any]:
         """Return stress data for current user."""
 
         url = f"{self.garmin_connect_daily_stress_url}/{cdate}"
@@ -790,7 +1001,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_rhr_day(self, cdate: str) -> Dict[str, Any]:
+    def get_rhr_day(self, cdate: str) -> dict[str, Any]:
         """Return resting heartrate data for current user."""
 
         url = f"{self.garmin_connect_rhr_url}/{self.display_name}"
@@ -803,7 +1014,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_hrv_data(self, cdate: str) -> Dict[str, Any]:
+    def get_hrv_data(self, cdate: str) -> dict[str, Any]:
         """Return Heart Rate Variability (hrv) data for current user."""
 
         url = f"{self.garmin_connect_hrv_url}/{cdate}"
@@ -811,7 +1022,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_training_readiness(self, cdate: str) -> Dict[str, Any]:
+    def get_training_readiness(self, cdate: str) -> dict[str, Any]:
         """Return training readiness data for current user."""
 
         url = f"{self.garmin_connect_training_readiness_url}/{cdate}"
@@ -861,7 +1072,7 @@ class Garmin:
 
         valid = {"daily", "monthly", None}
         if _type not in valid:
-            raise ValueError("results: _type must be one of %r." % valid)
+            raise ValueError(f"results: _type must be one of {valid!r}.")
 
         if _type is None and startdate is None and enddate is None:
             url = (
@@ -888,7 +1099,7 @@ class Garmin:
                 "You must either provide all parameters or no parameters"
             )
 
-    def get_training_status(self, cdate: str) -> Dict[str, Any]:
+    def get_training_status(self, cdate: str) -> dict[str, Any]:
         """Return training status data for current user."""
 
         url = f"{self.garmin_connect_training_status_url}/{cdate}"
@@ -896,7 +1107,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_fitnessage_data(self, cdate: str) -> Dict[str, Any]:
+    def get_fitnessage(self, cdate: str) -> dict[str, Any]:
         """Return Fitness Age data for current user."""
 
         url = f"{self.garmin_connect_fitnessage}/{cdate}"
@@ -928,7 +1139,7 @@ class Garmin:
 
             return self.connectapi(url, params=params)
 
-    def get_devices(self) -> List[Dict[str, Any]]:
+    def get_devices(self) -> list[dict[str, Any]]:
         """Return available devices for the current user account."""
 
         url = self.garmin_connect_devices_url
@@ -936,7 +1147,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_device_settings(self, device_id: str) -> Dict[str, Any]:
+    def get_device_settings(self, device_id: str) -> dict[str, Any]:
         """Return device settings for device with 'device_id'."""
 
         url = f"{self.garmin_connect_device_url}/device-info/settings/{device_id}"
@@ -944,7 +1155,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_primary_training_device(self) -> Dict[str, Any]:
+    def get_primary_training_device(self) -> dict[str, Any]:
         """Return detailed information around primary training devices, included the specified device and the
         priority of all devices.
         """
@@ -956,7 +1167,7 @@ class Garmin:
 
     def get_device_solar_data(
         self, device_id: str, startdate: str, enddate=None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Return solar data for compatible device with 'device_id'"""
         if enddate is None:
             enddate = startdate
@@ -970,7 +1181,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)["deviceSolarInput"]
 
-    def get_device_alarms(self) -> List[Any]:
+    def get_device_alarms(self) -> list[Any]:
         """Get list of active alarms from all devices."""
 
         logger.debug("Requesting device alarms")
@@ -996,7 +1207,7 @@ class Garmin:
         self,
         start: int = 0,
         limit: int = 20,
-        activitytype: Optional[str] = None,
+        activitytype: str | None = None,
     ):
         """
         Return available activities.
@@ -1006,14 +1217,27 @@ class Garmin:
         :return: List of activities from Garmin
         """
 
+        # Validate inputs
+        start = _validate_non_negative_integer(start, "start")
+        limit = _validate_positive_number(limit, "limit")
+
+        if limit > MAX_ACTIVITY_LIMIT:
+            raise ValueError(f"limit cannot exceed {MAX_ACTIVITY_LIMIT}")
+
         url = self.garmin_connect_activities
         params = {"start": str(start), "limit": str(limit)}
         if activitytype:
             params["activityType"] = str(activitytype)
 
-        logger.debug("Requesting activities")
+        logger.debug(f"Requesting activities from {start} with limit {limit}")
 
-        return self.connectapi(url, params=params)
+        activities = self.connectapi(url, params=params)
+
+        if activities is None:
+            logger.warning("No activities data received")
+            return []
+
+        return activities
 
     def get_activities_fordate(self, fordate: str):
         """Return available activities for date."""
@@ -1099,21 +1323,53 @@ class Garmin:
         """Upload activity in fit format from file."""
         # This code is borrowed from python-garminconnect-enhanced ;-)
 
+        # Validate input
+        if not activity_path:
+            raise ValueError("activity_path cannot be empty")
+
+        if not isinstance(activity_path, str):
+            raise ValueError("activity_path must be a string")
+
+        # Check if file exists
+        if not os.path.exists(activity_path):
+            raise FileNotFoundError(f"File not found: {activity_path}")
+
+        # Check if it's actually a file
+        if not os.path.isfile(activity_path):
+            raise ValueError(f"Path is not a file: {activity_path}")
+
         file_base_name = os.path.basename(activity_path)
-        file_extension = file_base_name.split(".")[-1]
+
+        if not file_base_name:
+            raise ValueError("Invalid file path - no filename found")
+
+        # More robust extension checking
+        file_parts = file_base_name.split(".")
+        if len(file_parts) < 2:
+            raise GarminConnectInvalidFileFormatError(
+                f"File has no extension: {activity_path}"
+            )
+
+        file_extension = file_parts[-1]
         allowed_file_extension = (
             file_extension.upper() in Garmin.ActivityUploadFormat.__members__
         )
 
         if allowed_file_extension:
-            files = {
-                "file": (file_base_name, open(activity_path, "rb" or "r")),
-            }
-            url = self.garmin_connect_upload
-            return self.garth.post("connectapi", url, files=files, api=True)
+            try:
+                # Use context manager for file handling
+                with open(activity_path, "rb") as file_handle:
+                    files = {
+                        "file": (file_base_name, file_handle.read()),
+                    }
+                    url = self.garmin_connect_upload
+                    return self.garth.post("connectapi", url, files=files, api=True)
+            except OSError as e:
+                raise GarminConnectConnectionError(f"Failed to read file {activity_path}: {e}") from e
         else:
+            allowed_formats = ", ".join(Garmin.ActivityUploadFormat.__members__.keys())
             raise GarminConnectInvalidFileFormatError(
-                f"Could not upload {activity_path}"
+                f"Invalid file format '{file_extension}'. Allowed formats: {allowed_formats}"
             )
 
     def delete_activity(self, activity_id):
@@ -1472,13 +1728,14 @@ class Garmin:
 
         return self.download(url)
 
-    # def upload_workout(self, workout_json: str):
-    #     """Upload workout using json data."""
+    def upload_workout(self, workout_json: str):
+        """Upload workout using json data."""
 
-    #     url = f"{self.garmin_workouts}/workout"
-    #     logger.debug("Uploading workout using %s", url)
+        url = f"{self.garmin_workouts}/workout"
+        logger.debug("Uploading workout using %s", url)
 
-    #     return self.garth.post("connectapi", url, json=workout_json, api=True)
+        return self.garth.post("connectapi", url, json=workout_json, api=True)
+
     def get_menstrual_data_for_date(self, fordate: str):
         """Return menstrual data for date."""
 
@@ -1520,7 +1777,7 @@ class Garmin:
         """Log user out of session."""
 
         logger.error(
-            "Deprecated: Alternative is to delete login tokens to logout."
+            "Deprecated: Alternative is to delete the login tokens to logout."
         )
 
 
