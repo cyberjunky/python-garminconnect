@@ -1107,7 +1107,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_fitnessage(self, cdate: str) -> dict[str, Any]:
+    def get_fitnessage_data(self, cdate: str) -> dict[str, Any]:
         """Return Fitness Age data for current user."""
 
         url = f"{self.garmin_connect_fitnessage}/{cdate}"
