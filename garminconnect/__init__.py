@@ -114,6 +114,13 @@ class Garmin:
         self.garmin_connect_metrics_url = (
             "/metrics-service/metrics/maxmet/daily"
         )
+        self.garmin_connect_biometric_url = (
+            "/biometric-service/biometric"
+        )
+
+        self.garmin_connect_biometric_stats_url = (
+            "/biometric-service/stats"
+        )
         self.garmin_connect_daily_hydration_url = (
             "/usersummary-service/usersummary/hydration/daily"
         )
@@ -127,14 +134,11 @@ class Garmin:
             "/personalrecord-service/personalrecord/prs"
         )
         self.garmin_connect_earned_badges_url = "/badge-service/badge/earned"
-        self.garmin_connect_adhoc_challenges_url = (
-            "/adhocchallenge-service/adHocChallenge/historical"
+        self.garmin_connect_available_badges_url = (
+            "/badge-service/badge/available"
         )
         self.garmin_connect_adhoc_challenges_url = (
             "/adhocchallenge-service/adHocChallenge/historical"
-        )
-        self.garmin_connect_adhoc_challenge_url = (
-            "/adhocchallenge-service/adHocChallenge/"
         )
         self.garmin_connect_badge_challenges_url = (
             "/badgechallenge-service/badgeChallenge/completed"
@@ -798,6 +802,88 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def get_lactate_threshold(self, *,latest: bool=True, start_date: Optional[str|date]=None, end_date: Optional[str|date]=None, aggregation: str ="daily") -> Dict:
+        """
+        Returns Running Lactate Threshold information, including heart rate, power, and speed
+
+        :param bool required - latest: Whether to query for the latest Lactate Threshold info or a range.  False if querying a range
+        :param date optional - start_date: The first date in the range to query, format 'YYYY-MM-DD'.  Required if `latest` is False.  Ignored if `latest` is True
+        :param date optional - end_date: The last date in the range to query, format 'YYYY-MM-DD'. Defaults to current data. Ignored if `latest` is True
+        :param str optional - aggregation: How to aggregate the data. Must be one of `daily`, `weekly`, `monthly`, `yearly`.
+
+        """
+
+        if latest:
+
+            speed_and_heart_rate_url = f"{self.garmin_connect_biometric_url}/latestLactateThreshold"
+            power_url = f"{self.garmin_connect_biometric_url}/powerToWeight/latest/{date.today()}?sport=Running"
+
+            power = self.connectapi(power_url)
+            try:
+                power_dict = power[0]
+            except IndexError:
+                # If no power available
+                power_dict = {}
+
+            speed_and_heart_rate = self.connectapi(speed_and_heart_rate_url)
+
+            speed_and_heart_rate_dict = {
+                "userProfilePK": None,
+                "version": None,
+                "calendarDate": None,
+                "sequence": None,
+                "speed": None,
+                "heartRate": None,
+                "heartRateCycling": None
+            }
+
+            # Garmin /latestLactateThreshold endpoint returns a list of two
+            # (or more, if cyclingHeartRate ever gets values) nearly identical dicts.
+            # We're combining them here
+            for entry in speed_and_heart_rate:
+                if entry['speed'] is not None:
+                    speed_and_heart_rate_dict["userProfilePK"] = entry["userProfilePK"]
+                    speed_and_heart_rate_dict["version"] = entry["version"]
+                    speed_and_heart_rate_dict["calendarDate"] = entry["calendarDate"]
+                    speed_and_heart_rate_dict["sequence"] = entry["sequence"]
+                    speed_and_heart_rate_dict["speed"] = entry["speed"]
+
+                # This is not a typo. The Garmin dictionary has a typo as of 2025-07-08, refering to it as "hearRate"
+                elif entry['hearRate'] is not None:
+                    speed_and_heart_rate_dict["heartRate"] = entry["hearRate"] # Fix Garmin's typo
+
+                # Doesn't exist for me but adding it just in case.  We'll check for each entry
+                if entry['heartRateCycling'] is not None:
+                    speed_and_heart_rate_dict["heartRateCycling"] = entry["heartRateCycling"]
+
+            return {
+                "speed_and_heart_rate": speed_and_heart_rate_dict,
+                "power": power_dict
+            }
+
+
+        if start_date is None:
+            raise ValueError("You must either specify 'latest=True' or a start_date")
+
+        if end_date is None:
+            end_date = date.today().isoformat()
+
+        _valid_aggregations = {"daily", "weekly", "monthly", "yearly"}
+        if aggregation not in _valid_aggregations:
+            raise ValueError(f"aggregation must be one of {_valid_aggregations}")
+
+        speed_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdSpeed/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+
+        heart_rate_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdHeartRate/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+
+        power_url = f"{self.garmin_connect_biometric_stats_url}/functionalThresholdPower/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+
+        speed = self.connectapi(speed_url)
+        heart_rate = self.connectapi(heart_rate_url)
+        power = self.connectapi(power_url)
+
+        return {"speed": speed, "heart_rate": heart_rate, "power": power}
+
     def add_hydration_data(
         self, value_in_ml: float, timestamp=None, cdate: str | None = None
     ) -> dict[str, Any]:
@@ -927,13 +1013,60 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_earned_badges(self) -> dict[str, Any]:
+    def get_earned_badges(self) -> list[Dict[str, Any]]:
         """Return earned badges for current user."""
 
         url = self.garmin_connect_earned_badges_url
         logger.debug("Requesting earned badges for user")
 
         return self.connectapi(url)
+
+    def get_available_badges(self) -> list[dict]:
+        """Return available badges for current user."""
+
+        url = self.garmin_connect_available_badges_url
+        logger.debug("Requesting available badges for user")
+
+        return self.connectapi(url, params={"showExclusiveBadge": "true"})
+
+    def get_in_progress_badges(self) -> list[dict]:
+        """Return in progress badges for current user."""
+
+        logger.debug("Requesting in progress badges for user")
+
+        earned_badges = self.get_earned_badges()
+        available_badges = self.get_available_badges()
+
+        # Filter out badges that are not in progress
+        def is_badge_in_progress(badge: dict) -> bool:
+            """Return True if the badge is in progress."""
+            progress = badge.get("badgeProgressValue")
+            if not progress:
+                return False
+            if progress == 0:
+                return False
+            target = badge.get("badgeTargetValue")
+            if progress == target:
+                if badge.get("badgeLimitCount") is None:
+                    return False
+                return (
+                    badge.get("badgeEarnedNumber", 0)
+                    < badge["badgeLimitCount"]
+                )
+            return True
+
+        earned_in_progress_badges = list(
+            filter(is_badge_in_progress, earned_badges)
+        )
+        available_in_progress_badges = list(
+            filter(is_badge_in_progress, available_badges)
+        )
+
+        combined = {b["badgeId"]: b for b in earned_in_progress_badges}
+        combined.update(
+            {b["badgeId"]: b for b in available_in_progress_badges}
+        )
+        return list(combined.values())
 
     def get_adhoc_challenges(self, start, limit) -> dict[str, Any]:
         """Return adhoc challenges for current user."""
