@@ -1,4 +1,0 @@
-pytest
-pytest-vcr
-pytest-cov
-coverage

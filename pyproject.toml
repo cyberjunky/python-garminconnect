@@ -18,7 +18,7 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
 ]
 keywords=["garmin connect", "api", "garmin"]
-requires-python=">=3.10"
+requires-python=">=3.11"
 [project.urls]
 "Homepage" = "https://github.com/cyberjunky/python-garminconnect"
 "Bug Tracker" = "https://github.com/cyberjunky/python-garminconnect/issues"
@@ -32,7 +32,7 @@ addopts = "--ignore=__pypackages__ --ignore-glob=*.yaml"
 
 [tool.mypy]
 ignore_missing_imports = true
-python_version = "3.10"
+python_version = "3.11"
 disallow_untyped_defs = true
 # warn_unused_ignores = true
 
@@ -70,7 +70,7 @@ distribution = true
 
 [tool.ruff]
 line-length = 88
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
