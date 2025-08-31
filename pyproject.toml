@@ -112,6 +112,22 @@ exclude_lines = [
     "if __name__ == \"__main__\":",
     "@(abc\\.)?abstractmethod",
 ]
+[tool.pdm.scripts]
+# Development workflow
+install = "pdm install --group :all"
+format = {composite = ["pdm run isort garminconnect tests", "pdm run black -l 88 garminconnect tests", "pdm run ruff check garminconnect tests --fix"]}
+lint = {composite = ["pdm run isort --check-only garminconnect tests", "pdm run ruff check garminconnect tests", "pdm run black -l 88 garminconnect tests --check --diff", "pdm run mypy garminconnect tests"]}
+test = "pdm run coverage run -m pytest -v --durations=10"
+testcov = {composite = ["test", "pdm run coverage html", "pdm run coverage xml -o coverage/coverage.xml"]}
+clean = "python -c \"import shutil, pathlib; [shutil.rmtree(p, ignore_errors=True) for p in pathlib.Path('.').rglob('__pycache__')]; [p.unlink(missing_ok=True) for p in pathlib.Path('.').rglob('*.py[co]')]\""
+
+# Publishing
+build = "pdm build"
+publish = {composite = ["build", "pdm publish"]}
+
+# Quality checks
+all = {composite = ["lint", "test"]}
+
 [tool.pdm.dev-dependencies]
 dev = [
     "ipython",
