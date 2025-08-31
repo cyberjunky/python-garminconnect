@@ -101,7 +101,7 @@ python3 -m venv .venv --copies
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # 2. Install PDM (Python Dependency Manager)
-pip install pdm "black[jupyter]"
+pip install pdm "black[jupyter]" codespell
 
 # 3. Install all development dependencies
 pdm install --group :all
@@ -122,12 +122,12 @@ pdm install --group :all
 
 **Available Development Commands:**
 ```bash
-pdm run format     # Auto-format code (isort, black, ruff --fix)
-pdm run lint       # Check code quality (isort, ruff, black, mypy)
-pdm run codespell  # Check spelling errors in code and comments
-pdm run test       # Run test suite
-pdm run testcov    # Run tests with coverage report
-pdm run all        # Run full quality checks (lint + codespell + test)
+pdm run format      # Auto-format code (isort, black, ruff --fix)
+pdm run lint        # Check code quality (isort, ruff, black, mypy)
+pdm run codespell   # Check spelling errors (install codespell if needed)
+pdm run test        # Run test suite
+pdm run testcov     # Run tests with coverage report
+pdm run all         # Run all checks
 pdm run clean      # Clean build artifacts and cache files
 pdm run build      # Build package for distribution
 pdm run publish    # Build and publish to PyPI

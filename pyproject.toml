@@ -146,7 +146,7 @@ clean = "python -c \"import shutil, pathlib; [shutil.rmtree(p, ignore_errors=Tru
 build = "pdm build"
 publish = {composite = ["build", "pdm publish"]}
 
-# Quality checks
+# Quality checks  
 all = {composite = ["lint", "codespell", "test"]}
 
 [tool.pdm.dev-dependencies]
@@ -164,6 +164,7 @@ linting = [
     "isort",
     "types-requests",
     "pre-commit",
+    "codespell",
 ]
 testing = [
     "coverage",
