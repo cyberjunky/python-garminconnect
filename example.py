@@ -540,13 +540,11 @@ class DataExporter:
         # Save JSON version
         timestamp = config.today.strftime("%Y%m%d")
         json_filename = f"garmin_health_{timestamp}"
-        json_filepath = DataExporter.save_json(report_data, json_filename)
 
         # Create HTML version
         html_filepath = DataExporter.create_readable_health_report(report_data)
 
         print("📊 Reports created:")
-        print(f"   JSON: {json_filepath}")
         print(f"   HTML: {html_filepath}")
 
         return html_filepath
