@@ -868,7 +868,7 @@ class Garmin:
                     speed_and_heart_rate_dict["sequence"] = entry["sequence"]
                     speed_and_heart_rate_dict["speed"] = entry["speed"]
 
-                # This is not a typo. The Garmin dictionary has a typo as of 2025-07-08, refering to it as "hearRate"
+                # This is not a typo. The Garmin dictionary has a typo as of 2025-07-08, referring to it as "hearRate"
                 elif entry["hearRate"] is not None:
                     speed_and_heart_rate_dict["heartRate"] = entry[
                         "hearRate"
