@@ -222,8 +222,27 @@ Special thanks to all contributors who have helped improve this project:
 
 This project thrives thanks to community involvement and feedback.
 
-## Support
+## 💖 Support This Project
 
-If you find this project useful, consider supporting its development:
+If you find this library useful for your projects, please consider supporting its continued development and maintenance:
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
+### 🌟 Ways to Support
+
+- **⭐ Star this repository** - Help others discover the project
+- **💰 Financial Support** - Contribute to development and hosting costs
+- **🐛 Report Issues** - Help improve stability and compatibility  
+- **📖 Spread the Word** - Share with other developers
+
+### 💳 Financial Support Options
+
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.me/cyberjunkynl/)
+
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-red.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/cyberjunky)
+
+**Why Support?**
+- Keeps the project actively maintained
+- Enables faster bug fixes and new features
+- Supports infrastructure costs (testing, AI, CI/CD)
+- Shows appreciation for hundreds of hours of development
+
+Every contribution, no matter the size, makes a difference and is greatly appreciated! 🙏
