@@ -1602,8 +1602,8 @@ def get_gear_activities_data(api: Garmin) -> None:
                 gear_uuid = gear[0].get("uuid")
                 gear_name = gear[0].get("displayName", "Unknown")
                 if gear_uuid:
-                    activities = api.get_gear_ativities(gear_uuid)
-                    display_json(f"api.get_gear_ativities({gear_uuid}) - {gear_name}", activities)
+                    activities = api.get_gear_activities(gear_uuid)
+                    display_json(f"api.get_gear_activities({gear_uuid}) - {gear_name}", activities)
                 else:
                     print("❌ No gear UUID found")
             else:
@@ -2037,7 +2037,7 @@ def track_gear_usage_data(api: Garmin) -> None:
                 gear_uuid = first_gear.get("uuid")
                 gear_name = first_gear.get("displayName", "Unknown")
                 print(f"Tracking usage for gear: {gear_name} (UUID: {gear_uuid})")
-                activityList = api.get_gear_ativities(gear_uuid)
+                activityList = api.get_gear_activities(gear_uuid)
                 if len(activityList) == 0:
                     print("No activities found for the given gear uuid.")
                 else:

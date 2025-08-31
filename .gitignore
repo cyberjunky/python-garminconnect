@@ -4,7 +4,6 @@ your_data/
 # Virtual environments
 .venv/
 .pdm-python
-__pypackages__/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -43,6 +42,9 @@ MANIFEST
 
 # PyCharm idea folder
 .idea/
+
+# VS Code
+.vscode/
 
 # Installer logs
 pip-log.txt
