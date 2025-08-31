@@ -97,19 +97,23 @@ Tokens are automatically saved to `~/.garminconnect` directory for persistent au
 
 Run the test suite to verify functionality:
 
+## 🧪 Testing
+
+Run the test suite to verify functionality:
+
 **Prerequisites:**
 ```bash
 # Set token directory (uses example.py credentials)
 export GARMINTOKENS=~/.garminconnect
 
-# Install pytest (if needed)
-sudo apt install python3-pytest
+# Install development dependencies
+pdm install --group :all
 ```
 
 **Run Tests:**
 ```bash
-make install-test
-make test
+pdm run test        # Run all tests
+pdm run testcov     # Run tests with coverage report
 ```
 
 **Note:** Test files use credential tokens created by `example.py`, so run the example script first to generate authentication tokens.
@@ -118,27 +122,46 @@ make test
 
 Set up a development environment for contributing:
 
+> **Note**: This project uses [PDM](https://pdm.fming.dev/) for modern Python dependency management and task automation. All development tasks are configured as PDM scripts in `pyproject.toml`.
+
 **Environment Setup:**
 ```bash
-make .venv
-source .venv/bin/activate
+# Install PDM (Python Dependency Manager)
+pip install pdm
 
-pip3 install pdm ruff
-pdm init
+# Install all development dependencies
+pdm install --group :all
+
+# Install pre-commit hooks (optional)
+pre-commit install --install-hooks
 ```
 
-**Development Tools:**
+**Available Development Commands:**
 ```bash
-# Install code quality tools
-sudo apt install pre-commit isort black mypy
-pip3 install pre-commit
+pdm run format     # Auto-format code (isort, black, ruff --fix)
+pdm run lint       # Check code quality (isort, ruff, black, mypy)
+pdm run test       # Run test suite
+pdm run testcov    # Run tests with coverage report
+pdm run all        # Run full quality checks (lint + test)
+pdm run clean      # Clean build artifacts and cache files
+pdm run build      # Build package for distribution
+pdm run publish    # Build and publish to PyPI
 ```
 
-**Code Quality Checks:**
+**View all available commands:**
 ```bash
-make format    # Format code
-make lint      # Lint code  
-make codespell # Check spelling
+pdm run --list     # Display all available PDM scripts
+```
+
+**Code Quality Workflow:**
+```bash
+# Before making changes
+pdm run lint       # Check current code quality
+
+# After making changes  
+pdm run format     # Auto-format your code
+pdm run lint       # Verify code quality
+pdm run test       # Run tests to ensure nothing broke
 ```
 
 Run these commands before submitting PRs to ensure code quality standards.
@@ -147,9 +170,13 @@ Run these commands before submitting PRs to ensure code quality standards.
 
 For package maintainers:
 
+## 📦 Publishing
+
+For package maintainers:
+
 **Setup PyPI credentials:**
 ```bash
-sudo apt install twine
+pip install twine
 vi ~/.pypirc
 ```
 ```ini
@@ -160,7 +187,13 @@ password = <PyPI_API_TOKEN>
 
 **Publish new version:**
 ```bash
-make publish
+pdm run publish    # Build and publish to PyPI
+```
+
+**Alternative publishing steps:**
+```bash
+pdm run build      # Build package only
+pdm publish        # Publish pre-built package
 ```
 
 ## 🤝 Contributing
@@ -173,17 +206,35 @@ We welcome contributions! Here's how you can help:
 - **Documentation**: Improve examples, add use cases, fix typos
 
 **Before Contributing:**
-1. Run development setup (`make .venv`)
-2. Execute code quality checks (`make format lint codespell`) 
-3. Test your changes (`make test`)
+1. Set up development environment (`pdm install --group :all`)
+2. Execute code quality checks (`pdm run format && pdm run lint`) 
+3. Test your changes (`pdm run test`)
 4. Follow existing code style and patterns
+
+**Development Workflow:**
+```bash
+# 1. Setup environment
+pdm install --group :all
+
+# 2. Make your changes
+# ... edit code ...
+
+# 3. Quality checks
+pdm run format     # Auto-format code
+pdm run lint       # Check code quality  
+pdm run test       # Run tests
+
+# 4. Submit PR
+git commit -m "Your changes"
+git push origin your-branch
+```
 
 ## 💻 Usage Examples
 
 ### Interactive Demo
 Run the comprehensive API demonstration:
 ```bash
-pip3 install -r requirements-dev.txt
+pdm install --group example  # Install example dependencies
 ./example.py
 ```
 
