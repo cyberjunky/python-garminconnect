@@ -74,66 +74,50 @@ Install from PyPI:
 pip3 install garminconnect
 ```
 
-## 🔐 Authentication
+## Run demo software (recommended)
 
-The library uses the same OAuth authentication as the official Garmin Connect app via [Garth](https://github.com/matin/garth).
-
-**Key Features:**
-- Login credentials valid for one year (no repeated logins)
-- Secure OAuth token storage 
-- Same authentication flow as official app
-
-**Advanced Configuration:**
-```python
-# Optional: Custom OAuth consumer (before login)
-import garth
-garth.sso.OAUTH_CONSUMER = {'key': 'your_key', 'secret': 'your_secret'}
+```
+python3 -m venv .venv --copies
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install pdm
+pdm install --group :example
+./example.py
 ```
 
-**Token Storage:**
-Tokens are automatically saved to `~/.garminconnect` directory for persistent authentication.
-
-## 🧪 Testing
-
-Run the test suite to verify functionality:
-
-## 🧪 Testing
-
-Run the test suite to verify functionality:
-
-**Prerequisites:**
-```bash
-# Set token directory (uses example.py credentials)
-export GARMINTOKENS=~/.garminconnect
-
-# Install development dependencies
-pdm install --group :all
-```
-
-**Run Tests:**
-```bash
-pdm run test        # Run all tests
-pdm run testcov     # Run tests with coverage report
-```
-
-**Note:** Tests automatically use `~/.garminconnect` as the default token file location. You can override this by setting the `GARMINTOKENS` environment variable. Run `example.py` first to generate authentication tokens for testing.
 
 ## 🛠️ Development
 
 Set up a development environment for contributing:
 
-> **Note**: This project uses [PDM](https://pdm.fming.dev/) for modern Python dependency management and task automation. All development tasks are configured as PDM scripts in `pyproject.toml`.
+> **Note**: This project uses [PDM](https://pdm.fming.dev/) for modern Python dependency management and task automation. All development tasks are configured as PDM scripts in `pyproject.toml`. The Python interpreter is automatically configured to use `.venv/bin/python` when you create the virtual environment.
 
 **Environment Setup:**
-```bash
-# Install PDM (Python Dependency Manager)
-pip install pdm
 
-# Install all development dependencies
+> **⚠️ Important**: On externally-managed Python environments (like Debian/Ubuntu), you must create a virtual environment before installing PDM to avoid system package conflicts.
+
+```bash
+# 1. Create and activate a virtual environment
+python3 -m venv .venv --copies
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# 2. Install PDM (Python Dependency Manager)
+pip install pdm "black[jupyter]"
+
+# 3. Install all development dependencies
 pdm install --group :all
 
-# Install pre-commit hooks (optional)
+# 4. Install pre-commit hooks (optional)
 pre-commit install --install-hooks
+```
+
+**Alternative for System-wide PDM Installation:**
+```bash
+# Install PDM via pipx (recommended for system-wide tools)
+python3 -m pip install --user pipx
+pipx install pdm
+
+# Then proceed with project setup
+pdm install --group :all
 ```
 
 **Available Development Commands:**
@@ -167,6 +151,46 @@ pdm run test       # Run tests to ensure nothing broke
 ```
 
 Run these commands before submitting PRs to ensure code quality standards.
+
+## 🔐 Authentication
+
+The library uses the same OAuth authentication as the official Garmin Connect app via [Garth](https://github.com/matin/garth).
+
+**Key Features:**
+- Login credentials valid for one year (no repeated logins)
+- Secure OAuth token storage 
+- Same authentication flow as official app
+
+**Advanced Configuration:**
+```python
+# Optional: Custom OAuth consumer (before login)
+import garth
+garth.sso.OAUTH_CONSUMER = {'key': 'your_key', 'secret': 'your_secret'}
+```
+
+**Token Storage:**
+Tokens are automatically saved to `~/.garminconnect` directory for persistent authentication.
+
+## 🧪 Testing
+
+Run the test suite to verify functionality:
+
+**Prerequisites:**
+
+Create tokens in ~/.garminconnect by running the example program.
+
+```bash
+# Install development dependencies
+pdm install --group :all
+```
+
+**Run Tests:**
+```bash
+pdm run test        # Run all tests
+pdm run testcov     # Run tests with coverage report
+```
+
+**Note:** Tests automatically use `~/.garminconnect` as the default token file location. You can override this by setting the `GARMINTOKENS` environment variable. Run `example.py` first to generate authentication tokens for testing.
 
 ## 📦 Publishing
 
@@ -215,7 +239,10 @@ We welcome contributions! Here's how you can help:
 
 **Development Workflow:**
 ```bash
-# 1. Setup environment
+# 1. Setup environment (with virtual environment)
+python3 -m venv .venv --copies
+source .venv/bin/activate
+pip install pdm
 pdm install --group :all
 
 # 2. Make your changes
@@ -229,15 +256,6 @@ pdm run test       # Run tests
 # 4. Submit PR
 git commit -m "Your changes"
 git push origin your-branch
-```
-
-## 💻 Usage Examples
-
-### Interactive Demo
-Run the comprehensive API demonstration:
-```bash
-pdm install --group example  # Install example dependencies
-./example.py
 ```
 
 ### Jupyter Notebook
