@@ -53,7 +53,7 @@ Make your selection:
 
 A comprehensive Python 3 API wrapper for Garmin Connect, providing access to health, fitness, and device data.
 
-## About
+## 📖 About
 
 This library enables developers to programmatically access Garmin Connect data including:
 
@@ -65,7 +65,7 @@ This library enables developers to programmatically access Garmin Connect data i
 
 Compatible with all Garmin Connect accounts. See <https://connect.garmin.com/>
 
-## Installation
+## 📦 Installation
 
 Install from PyPI:
 
@@ -73,7 +73,7 @@ Install from PyPI:
 pip3 install garminconnect
 ```
 
-## Authentication
+## 🔐 Authentication
 
 The library uses the same OAuth authentication as the official Garmin Connect app via [Garth](https://github.com/matin/garth).
 
@@ -92,7 +92,7 @@ garth.sso.OAUTH_CONSUMER = {'key': 'your_key', 'secret': 'your_secret'}
 **Token Storage:**
 Tokens are automatically saved to `~/.garminconnect` directory for persistent authentication.
 
-## Testing
+## 🧪 Testing
 
 Run the test suite to verify functionality:
 
@@ -113,7 +113,7 @@ make test
 
 **Note:** Test files use credential tokens created by `example.py`, so run the example script first to generate authentication tokens.
 
-## Development
+## 🛠️ Development
 
 Set up a development environment for contributing:
 
@@ -142,7 +142,7 @@ make codespell # Check spelling
 
 Run these commands before submitting PRs to ensure code quality standards.
 
-## Publishing
+## 📦 Publishing
 
 For package maintainers:
 
@@ -162,7 +162,7 @@ password = <PyPI_API_TOKEN>
 make publish
 ```
 
-## Contributing
+## 🤝 Contributing
 
 We welcome contributions! Here's how you can help:
 
@@ -177,7 +177,7 @@ We welcome contributions! Here's how you can help:
 3. Test your changes (`make test`)
 4. Follow existing code style and patterns
 
-## Usage Examples
+## 💻 Usage Examples
 
 ### Interactive Demo
 Run the comprehensive API demonstration:
@@ -211,7 +211,7 @@ print(f"Resting HR: {hr_data['restingHeartRate']}")
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 Special thanks to all contributors who have helped improve this project:
 
