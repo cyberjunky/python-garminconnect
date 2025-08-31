@@ -1729,13 +1729,13 @@ def create_manual_activity_data(api: Garmin) -> None:
             
             result = api.create_manual_activity(
                 start_datetime=start_datetime,
-                timezone=timezone,
+                time_zone=timezone,
                 type_key=type_key,
                 distance_km=distance_km,
                 duration_min=duration_min,
                 activity_name=activity_name
             )
-            display_json(f"api.create_manual_activity(start_datetime='{start_datetime}', timezone='{timezone}', type_key='{type_key}', distance_km={distance_km}, duration_min={duration_min}, activity_name='{activity_name}')", result)
+            display_json(f"api.create_manual_activity(start_datetime='{start_datetime}', time_zone='{timezone}', type_key='{type_key}', distance_km={distance_km}, duration_min={duration_min}, activity_name='{activity_name}')", result)
             print("✅ Manual activity created!")
         except ValueError:
             print("❌ Invalid numeric input")

@@ -596,7 +596,7 @@ class Garmin:
         files = {
             "file": ("body_composition.fit", fitEncoder.getvalue()),
         }
-        return self.garth.post("connectapi", url, files=files, api=True)
+        return self.garth.post("connectapi", url, files=files, api=True).json()
 
     def add_weigh_in(
         self, weight: int | float, unitKey: str = "kg", timestamp: str = ""
@@ -627,7 +627,7 @@ class Garmin:
         }
         logger.debug("Adding weigh-in")
 
-        return self.garth.post("connectapi", url, json=payload)
+        return self.garth.post("connectapi", url, json=payload).json()
 
     def add_weigh_in_with_timestamps(
         self,
@@ -661,7 +661,7 @@ class Garmin:
         logger.debug(f"Adding weigh-in with explicit timestamps: {payload}")
 
         # Make the POST request
-        return self.garth.post("connectapi", url, json=payload)
+        return self.garth.post("connectapi", url, json=payload).json()
 
     def get_weigh_ins(self, startdate: str, enddate: str) -> dict[str, Any]:
         """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
@@ -774,7 +774,7 @@ class Garmin:
 
         logger.debug("Adding blood pressure")
 
-        return self.garth.post("connectapi", url, json=payload)
+        return self.garth.post("connectapi", url, json=payload).json()
 
     def get_blood_pressure(
         self, startdate: str, enddate: str | None = None
@@ -802,7 +802,7 @@ class Garmin:
             "connectapi",
             url,
             api=True,
-        )
+        ).json()
 
     def get_max_metrics(self, cdate: str) -> dict[str, Any]:
         """Return available max metric data for 'cdate' format 'YYYY-MM-DD'."""
@@ -1457,7 +1457,7 @@ class Garmin:
     def create_manual_activity(
         self,
         start_datetime: str,
-        timezone: str,
+        time_zone: str,
         type_key: str,
         distance_km: float,
         duration_min: int,
@@ -1468,7 +1468,7 @@ class Garmin:
         type_key - Garmin field representing type of activity. See https://connect.garmin.com/modern/main/js/properties/activity_types/activity_types.properties
                     Value to use is the key without 'activity_type_' prefix, e.g. 'resort_skiing'
         start_datetime - timestamp in this pattern "2023-12-02T10:00:00.00"
-        timezone - local timezone of the activity, e.g. 'Europe/Paris'
+        time_zone - local timezone of the activity, e.g. 'Europe/Paris'
         distance_km - distance of the activity in kilometers
         duration_min - duration of the activity in minutes
         activity_name - the title
@@ -1476,7 +1476,7 @@ class Garmin:
         payload = {
             "activityTypeDTO": {"typeKey": type_key},
             "accessControlRuleDTO": {"typeId": 2, "typeKey": "private"},
-            "timeZoneUnitDTO": {"unitKey": timezone},
+            "timeZoneUnitDTO": {"unitKey": time_zone},
             "activityName": activity_name,
             "metadataDTO": {
                 "autoCalcCalories": True,
@@ -1892,7 +1892,7 @@ class Garmin:
         url = f"{self.garmin_request_reload_url}/{cdate}"
         logger.debug(f"Requesting reload of data for {cdate}.")
 
-        return self.garth.post("connectapi", url, api=True)
+        return self.garth.post("connectapi", url, api=True).json()
 
     def get_workouts(self, start: int = 0, end: int = 100) -> dict[str, Any]:
         """Return workouts from start till end."""
@@ -1933,7 +1933,7 @@ class Garmin:
                 raise ValueError(f"Invalid workout_json string: {e}") from e
         else:
             payload = workout_json
-        return self.garth.post("connectapi", url, json=payload, api=True)
+        return self.garth.post("connectapi", url, json=payload, api=True).json()
 
     def get_menstrual_data_for_date(self, fordate: str) -> dict[str, Any]:
         """Return menstrual data for date."""

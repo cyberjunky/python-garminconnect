@@ -116,7 +116,7 @@ pdm run test        # Run all tests
 pdm run testcov     # Run tests with coverage report
 ```
 
-**Note:** Test files use credential tokens created by `example.py`, so run the example script first to generate authentication tokens.
+**Note:** Tests automatically use `~/.garminconnect` as the default token file location. You can override this by setting the `GARMINTOKENS` environment variable. Run `example.py` first to generate authentication tokens for testing.
 
 ## 🛠️ Development
 
