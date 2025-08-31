@@ -106,7 +106,10 @@ pip install pdm "black[jupyter]" codespell
 # 3. Install all development dependencies
 pdm install --group :all
 
-# 4. Install pre-commit hooks (optional)
+# 4. Install optional tools for enhanced development experience
+pip install "black[jupyter]" codespell pre-commit
+
+# 5. Setup pre-commit hooks (optional)
 pre-commit install --install-hooks
 ```
 
