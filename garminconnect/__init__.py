@@ -7,6 +7,7 @@ from datetime import date, datetime, timezone
 from enum import Enum, auto
 import numbers
 from typing import Any
+from pathlib import Path
 
 import garth
 
@@ -1346,7 +1347,10 @@ class Garmin:
 
         url = f"{self.garmin_connect_solar_url}/{device_id}/{startdate}/{enddate}"
 
-        return self.connectapi(url, params=params)["deviceSolarInput"]
+        resp = self.connectapi(url, params=params)
+        if not resp or "deviceSolarInput" not in resp:
+            raise GarminConnectConnectionError("No device solar input data received")
+        return resp["deviceSolarInput"]
 
     def get_device_alarms(self) -> list[Any]:
         """Get list of active alarms from all devices."""
@@ -1357,7 +1361,7 @@ class Garmin:
         devices = self.get_devices()
         for device in devices:
             device_settings = self.get_device_settings(device["deviceId"])
-            device_alarms = device_settings["alarms"]
+            device_alarms = device_settings.get("alarms")
             if device_alarms is not None:
                 alarms += device_alarms
         return alarms
@@ -1498,14 +1502,15 @@ class Garmin:
             raise ValueError("activity_path must be a string")
 
         # Check if file exists
-        if not os.path.exists(activity_path):
+        p = Path(activity_path)
+        if not p.exists():
             raise FileNotFoundError(f"File not found: {activity_path}")
 
         # Check if it's actually a file
-        if not os.path.isfile(activity_path):
+        if not p.is_file():
             raise ValueError(f"Path is not a file: {activity_path}")
 
-        file_base_name = os.path.basename(activity_path)
+        file_base_name = p.name
 
         if not file_base_name:
             raise ValueError("Invalid file path - no filename found")
@@ -1525,10 +1530,9 @@ class Garmin:
         if allowed_file_extension:
             try:
                 # Use context manager for file handling
+                with p.open("rb") as file_handle:
                 with open(activity_path, "rb") as file_handle:
-                    files = {
-                        "file": (file_base_name, file_handle.read()),
-                    }
+                    files = {"file": (file_base_name, file_handle)}
                     url = self.garmin_connect_upload
                     return self.garth.post("connectapi", url, files=files, api=True)
             except OSError as e:
@@ -1833,7 +1837,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_gear_ativities(self, gearUUID, limit=9999):
+    def get_gear_activities(self, gearUUID, limit=9999):
         """Return activities where gear uuid was used.
         :param gearUUID: UUID of the gear to get activities for
         :param limit: Maximum number of activities to return (default: 9999)
