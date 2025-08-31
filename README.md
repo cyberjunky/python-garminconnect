@@ -49,7 +49,8 @@ Make your selection:
 - **Error Handling**: Robust error handling and user-friendly prompts
 - **Data Export**: JSON export functionality for all data types
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.me/cyberjunkynl/)
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-red.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/cyberjunky)
 
 A comprehensive Python 3 API wrapper for Garmin Connect, providing access to health, fitness, and device data.
 
@@ -236,7 +237,6 @@ If you find this library useful for your projects, please consider supporting it
 ### 💳 Financial Support Options
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.me/cyberjunkynl/)
-
 [![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-red.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/cyberjunky)
 
 **Why Support?**
