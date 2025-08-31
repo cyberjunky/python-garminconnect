@@ -22,7 +22,7 @@ repos:
   hooks:
   - id: lint
     name: lint
-    entry: make lint
+    entry: pdm run lint
     types: [python]
     language: system
     pass_filenames: false
