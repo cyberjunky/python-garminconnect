@@ -11,17 +11,23 @@ dependencies = [
 readme = "README.md"
 license = {text = "MIT"}
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
+    "Operating System :: OS Independent",
 ]
 keywords=["garmin connect", "api", "garmin"]
-requires-python=">=3.11"
+requires-python=">=3.10"
 [project.urls]
 "Homepage" = "https://github.com/cyberjunky/python-garminconnect"
-"Bug Tracker" = "https://github.com/cyberjunky/python-garminconnect/issues"
+"Issues" = "https://github.com/cyberjunky/python-garminconnect/issues"
+"Changelog" = "https://github.com/cyberjunky/python-garminconnect/releases"
 
 [build-system]
 requires = ["pdm-backend"]
@@ -32,9 +38,9 @@ addopts = "--ignore=__pypackages__ --ignore-glob=*.yaml"
 
 [tool.mypy]
 ignore_missing_imports = true
-python_version = "3.11"
+python_version = "3.10"
 disallow_untyped_defs = true
-# warn_unused_ignores = true
+warn_unused_ignores = true
 
 [tool.isort]
 profile = "black"
@@ -62,6 +68,8 @@ testing = [
     "pytest-vcr",
 ]
 example = [
+    "garth>=0.5.13,<0.6.0",
+    "requests",
     "readchar",
 ]
 
@@ -70,7 +78,7 @@ distribution = true
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [
@@ -117,7 +125,7 @@ exclude_lines = [
 install = "pdm install --group :all"
 format = {composite = ["pdm run isort garminconnect tests", "pdm run black -l 88 garminconnect tests", "pdm run ruff check garminconnect tests --fix"]}
 lint = {composite = ["pdm run isort --check-only garminconnect tests", "pdm run ruff check garminconnect tests", "pdm run black -l 88 garminconnect tests --check --diff", "pdm run mypy garminconnect tests"]}
-test = "pdm run coverage run -m pytest -v --durations=10"
+test = {env = {GARMINTOKENS = "~/.garminconnect"}, cmd = "pdm run coverage run -m pytest -v --durations=10"}
 testcov = {composite = ["test", "pdm run coverage html", "pdm run coverage xml -o coverage/coverage.xml"]}
 codespell = "pre-commit run codespell --all-files"
 clean = "python -c \"import shutil, pathlib; [shutil.rmtree(p, ignore_errors=True) for p in pathlib.Path('.').rglob('__pycache__')]; [p.unlink(missing_ok=True) for p in pathlib.Path('.').rglob('*.py[co]')]\""

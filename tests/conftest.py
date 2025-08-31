@@ -8,7 +8,9 @@ import pytest
 
 @pytest.fixture
 def vcr(vcr: Any) -> Any:
-    assert "GARMINTOKENS" in os.environ
+    # Set default GARMINTOKENS path if not already set
+    if "GARMINTOKENS" not in os.environ:
+        os.environ["GARMINTOKENS"] = "~/.garminconnect"
     return vcr
 
 
