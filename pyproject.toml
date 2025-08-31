@@ -32,13 +32,13 @@ addopts = "--ignore=__pypackages__ --ignore-glob=*.yaml"
 
 [tool.mypy]
 ignore_missing_imports = true
+python_version = "3.10"
+disallow_untyped_defs = true
+# warn_unused_ignores = true
 
 [tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-line_length = 79
+profile = "black"
+line_length = 88
 known_first_party = "garminconnect"
 
 [project.optional-dependencies]
@@ -55,7 +55,6 @@ linting = [
     "mypy",
     "isort",
     "types-requests",
-    "pre-commit",
 ]
 testing = [
     "coverage",
@@ -110,8 +109,7 @@ exclude_lines = [
     "raise AssertionError",
     "raise NotImplementedError",
     "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
+    "if __name__ == \"__main__\":",
     "@(abc\\.)?abstractmethod",
 ]
 [tool.pdm.dev-dependencies]
@@ -128,6 +126,7 @@ linting = [
     "mypy",
     "isort",
     "types-requests",
+    "pre-commit",
 ]
 testing = [
     "coverage",
