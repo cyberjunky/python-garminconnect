@@ -2279,7 +2279,6 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
             print(f"Login failed: {err}")
             return None
 
-
 def main():
     """Main program loop with funny health status in menu prompt."""
     # Display export directory information on startup
