@@ -537,15 +537,10 @@ class DataExporter:
         except Exception as e:
             print(f"Error creating health report: {e}")
 
-        # Save JSON version
-        timestamp = config.today.strftime("%Y%m%d")
-        json_filename = f"garmin_health_{timestamp}"
-
         # Create HTML version
         html_filepath = DataExporter.create_readable_health_report(report_data)
 
-        print("📊 Reports created:")
-        print(f"   HTML: {html_filepath}")
+        print(f"📊 Report created: {html_filepath}")
 
         return html_filepath
 
