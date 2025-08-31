@@ -1,21 +1,22 @@
 import json
 import os
 import re
+from typing import Any
 
 import pytest
 
 
 @pytest.fixture
-def vcr(vcr):
+def vcr(vcr: Any) -> Any:
     assert "GARMINTOKENS" in os.environ
     return vcr
 
 
-def sanitize_cookie(cookie_value) -> str:
+def sanitize_cookie(cookie_value: str) -> str:
     return re.sub(r"=[^;]*", "=SANITIZED", cookie_value)
 
 
-def sanitize_request(request):
+def sanitize_request(request: Any) -> Any:
     if request.body:
         try:
             body = request.body.decode("utf8")
@@ -33,7 +34,7 @@ def sanitize_request(request):
     return request
 
 
-def sanitize_response(response):
+def sanitize_response(response: Any) -> Any:
     for key in ["set-cookie", "Set-Cookie"]:
         if key in response["headers"]:
             cookies = response["headers"][key]
@@ -70,7 +71,7 @@ def sanitize_response(response):
 
 
 @pytest.fixture(scope="session")
-def vcr_config():
+def vcr_config() -> dict[str, Any]:
     return {
         "filter_headers": [("Authorization", "Bearer SANITIZED")],
         "before_record_request": sanitize_request,
