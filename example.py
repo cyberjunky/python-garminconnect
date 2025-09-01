@@ -7,7 +7,7 @@ Dependencies:
 pip3 install garth requests readchar
 
 Environment Variables (optional):
-export EMAIL=<your garmin email>
+export EMAIL=<your garmin email address>
 export PASSWORD=<your garmin password>
 export GARMINTOKENS=<path to token storage>
 """

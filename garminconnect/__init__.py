@@ -313,7 +313,7 @@ class Garmin:
                 # Validate profile data exists
                 if not hasattr(self.garth, "profile") or not self.garth.profile:
                     raise GarminConnectAuthenticationError(
-                        "No profile data found in token"
+                        "Cannot login to get user profile"
                     )
 
                 self.display_name = self.garth.profile.get("displayName")
