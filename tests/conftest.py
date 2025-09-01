@@ -10,7 +10,7 @@ import pytest
 def vcr(vcr: Any) -> Any:
     # Set default GARMINTOKENS path if not already set
     if "GARMINTOKENS" not in os.environ:
-        os.environ["GARMINTOKENS"] = "~/.garminconnect"
+        os.environ["GARMINTOKENS"] = os.path.expanduser("~/.garminconnect")
     return vcr
 
 
@@ -20,13 +20,14 @@ def sanitize_cookie(cookie_value: str) -> str:
 
 def scrub_dates(response: Any) -> Any:
     """Scrub ISO datetime strings to make cassettes more stable."""
-    body = response.get("body", {}).get("string")
+    body_container = response.get("body") or {}
+    body = body_container.get("string")
     if isinstance(body, str):
         # Replace ISO datetime strings with a fixed timestamp
         body = re.sub(
             r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+", "1970-01-01T00:00:00.000", body
         )
-        response["body"]["string"] = body
+        body_container["string"] = body
     elif isinstance(body, bytes):
         # Handle bytes body
         body_str = body.decode("utf-8", errors="ignore")
@@ -35,7 +36,8 @@ def scrub_dates(response: Any) -> Any:
             "1970-01-01T00:00:00.000",
             body_str,
         )
-        response["body"]["string"] = body_str.encode("utf-8")
+        body_container["string"] = body_str.encode("utf-8")
+    response["body"] = body_container
     return response
 
 
@@ -44,7 +46,7 @@ def sanitize_request(request: Any) -> Any:
         try:
             body = request.body.decode("utf8")
         except UnicodeDecodeError:
-            ...
+            return request  # leave as-is; binary bodies not sanitized
         else:
             for key in ["username", "password", "refresh_token"]:
                 body = re.sub(key + r"=[^&]*", f"{key}=SANITIZED", body)
@@ -114,12 +116,12 @@ def sanitize_response(response: Any) -> Any:
 
         body = json.dumps(body_json)
 
-    if isinstance(response["body"]["string"], bytes):
-        response["body"]["string"] = body.encode("utf8")
-    else:
-        response["body"]["string"] = body
-
-    return response
+        if "body" in response and "string" in response["body"]:
+            if isinstance(response["body"]["string"], bytes):
+                response["body"]["string"] = body.encode("utf8")
+            else:
+                response["body"]["string"] = body
+        return response
 
 
 @pytest.fixture(scope="session")
