@@ -35,10 +35,6 @@ build-backend = "pdm.backend"
 
 [tool.pytest.ini_options]
 addopts = "--ignore=__pypackages__ --ignore-glob=*.yaml"
-vcr_record = "once"
-vcr_filter_headers = ["authorization", "cookie", "user-agent"]
-# If you deliberately don’t want to record SSO, uncomment:
-# vcr_ignore_hosts = ["sso.garmin.com"]
 
 [tool.mypy]
 ignore_missing_imports = true
