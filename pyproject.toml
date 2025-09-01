@@ -65,7 +65,8 @@ linting = [
 testing = [
     "coverage",
     "pytest",
-    "pytest-vcr",
+    "pytest-vcr>=1.0.2",
+    "vcrpy>=7.0.0",
 ]
 example = [
     "garth>=0.5.13,<0.6.0",
@@ -174,7 +175,8 @@ linting = [
 testing = [
     "coverage",
     "pytest",
-    "pytest-vcr",
+    "pytest-vcr>=1.0.2",
+    "vcrpy>=7.0.0",
 ]
 example = [
     "readchar",
