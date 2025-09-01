@@ -10,6 +10,88 @@ interactions:
       - Bearer SANITIZED
       Connection:
       - keep-alive
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/socialProfile
+  response:
+    body:
+      string: '{"id": 376735957, "profileId": 82413233, "garminGUID": "3c814e7a-0db1-41a4-bdb8-4944db6fb8b3",
+        "displayName": "5da0f071-075e-438c-ae63-c3f3eef73b1e", "fullName": "Ron",
+        "userName": "ron@cyberjunky.nl", "profileImageType": "UPLOADED_PHOTO", "profileImageUrlLarge":
+        "https://s3.amazonaws.com/garmin-connect-prod/profile_images/72374c73-8173-4d9c-b64a-ad26b0e8e664-prof.png",
+        "profileImageUrlMedium": "https://s3.amazonaws.com/garmin-connect-prod/profile_images/72374c73-8173-4d9c-b64a-ad26b0e8e664-prfr.png",
+        "profileImageUrlSmall": "https://s3.amazonaws.com/garmin-connect-prod/profile_images/72374c73-8173-4d9c-b64a-ad26b0e8e664-prth.png",
+        "hasPremiumSocialIcon": false, "location": "Dordrecht", "facebookUrl": "",
+        "twitterUrl": "", "personalWebsite": "", "motivation": 3, "bio": null, "primaryActivity":
+        "running", "favoriteActivityTypes": ["running", "walking", "hiking", "weight_training"],
+        "runningTrainingSpeed": 2.857143, "cyclingTrainingSpeed": 0.0, "favoriteCyclingActivityTypes":
+        [], "cyclingClassification": null, "cyclingMaxAvgPower": 0.0, "swimmingTrainingSpeed":
+        0.0, "profileVisibility": "private", "activityStartVisibility": "public",
+        "activityMapVisibility": "public", "courseVisibility": "public", "activityHeartRateVisibility":
+        "public", "activityPowerVisibility": "public", "badgeVisibility": "following",
+        "showAge": true, "showWeight": true, "showHeight": true, "showWeightClass":
+        false, "showAgeRange": false, "showGender": true, "showActivityClass": true,
+        "showVO2Max": true, "showPersonalRecords": true, "showLast12Months": true,
+        "showLifetimeTotals": true, "showUpcomingEvents": true, "showRecentFavorites":
+        true, "showRecentDevice": true, "showRecentGear": false, "showBadges": true,
+        "otherActivity": "", "otherPrimaryActivity": null, "otherMotivation": null,
+        "userRoles": ["SCOPE_ATP_READ", "SCOPE_ATP_WRITE", "SCOPE_COMMUNITY_COURSE_READ",
+        "SCOPE_COMMUNITY_COURSE_WRITE", "SCOPE_CONNECT_MCT_DAILY_LOG_READ", "SCOPE_CONNECT_READ",
+        "SCOPE_CONNECT_WRITE", "SCOPE_DIVE_API_READ", "SCOPE_DI_OAUTH_2_AUTHORIZATION_CODE_CREATE",
+        "SCOPE_DT_CLIENT_ANALYTICS_WRITE", "SCOPE_GARMINPAY_READ", "SCOPE_GARMINPAY_WRITE",
+        "SCOPE_GCOFFER_READ", "SCOPE_GCOFFER_WRITE", "SCOPE_GHS_SAMD", "SCOPE_GHS_UPLOAD",
+        "SCOPE_GOLF_API_READ", "SCOPE_GOLF_API_WRITE", "SCOPE_INSIGHTS_READ", "SCOPE_INSIGHTS_WRITE",
+        "SCOPE_OMT_CAMPAIGN_READ", "SCOPE_OMT_SUBSCRIPTION_READ", "SCOPE_PRODUCT_SEARCH_READ",
+        "ROLE_CONNECTUSER", "ROLE_FITNESS_USER", "ROLE_WELLNESS_USER", "ROLE_OUTDOOR_USER"],
+        "nameApproved": true, "userProfileFullName": "Ron", "makeGolfScorecardsPrivate":
+        true, "allowGolfLiveScoring": false, "allowGolfScoringByConnections": true,
+        "userLevel": 3, "userPoint": 137, "levelUpdateDate": "2022-02-22T13:15:51.0",
+        "levelIsViewed": false, "levelPointThreshold": 140, "userPointOffset": 0,
+        "userPro": false}'
+    headers:
+      CF-RAY:
+      - 97832db1ba2f6d07-AMS
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json;charset=UTF-8
+      Date:
+      - Mon, 01 Sep 2025 07:50:44 GMT
+      NEL:
+      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
+      Report-To:
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=2P7Vu1HHUlCD33Nz2nUzCoMy9PPoQNgN2%2Bejkf5Ke20ANPe6IYqKb8s90v9lSStu%2FDBCLBrgX0w9iAngDMbmtXN8Th2Z4n1SUHTvw8lm8R5Sw6cp8sxa09rlEidjEFbYRYF01eJdBUx8SfUbkcbulVS48g%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+      Transfer-Encoding:
+      - chunked
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      pragma:
+      - no-cache
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
       Cookie:
       - _cfuvid=SANITIZED
       User-Agent:
@@ -55,7 +137,7 @@ interactions:
         23400}]}'
     headers:
       CF-RAY:
-      - 9782f2513e138c7a-AMS
+      - 97832db2dbed1ca5-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
@@ -65,11 +147,11 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Mon, 01 Sep 2025 07:10:12 GMT
+      - Mon, 01 Sep 2025 07:50:45 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=t75rjZnrJXuGksMxHVq1BU7Lb%2BoqyZhqGE7HazurQMMuwnL9MBX6oBmZMoS6Ceq66rgXlP3ckJNN%2FlPlJwzwFleWg%2BKNp%2BR1Yr%2BivCct3HNclWHa%2FfKXPgg%2BRXEMH29k9XY4JKngaYiRYAJmTZpFpuB%2F3g%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=q%2BCc4xM%2BDVGjM0jDxiVjEYgyf5cSm%2Bdfpl0uOm3jRP7mWhmheTRxJt2CGMmkTEKk0n%2BODte8tEw6ft71DHrBh%2BFoNOuK4Rg3urlLPZiblJ48lcmSYGd%2BoNEvVCxzyC3h9kwTYIHqL308D6oxk9LL0ETQEw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -103,157 +185,157 @@ interactions:
   response:
     body:
       string: '[{"startGMT": "2020-12-31T23:00:00.0", "endGMT": "2020-12-31T23:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 74, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2020-12-31T23:15:00.0", "endGMT": "2020-12-31T23:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2020-12-31T23:30:00.0", "endGMT": "2020-12-31T23:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2020-12-31T23:45:00.0", "endGMT": "2021-01-01T00:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 19, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T00:00:00.0", "endGMT": "2021-01-01T00:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T00:15:00.0", "endGMT": "2021-01-01T00:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T00:30:00.0", "endGMT": "2021-01-01T00:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T00:45:00.0", "endGMT": "2021-01-01T01:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 23, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T01:00:00.0", "endGMT": "2021-01-01T01:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T01:15:00.0", "endGMT": "2021-01-01T01:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T01:30:00.0", "endGMT": "2021-01-01T01:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T01:45:00.0", "endGMT": "2021-01-01T02:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T02:00:00.0", "endGMT": "2021-01-01T02:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T02:15:00.0", "endGMT": "2021-01-01T02:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T02:30:00.0", "endGMT": "2021-01-01T02:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T02:45:00.0", "endGMT": "2021-01-01T03:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T03:00:00.0", "endGMT": "2021-01-01T03:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T03:15:00.0", "endGMT": "2021-01-01T03:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T03:30:00.0", "endGMT": "2021-01-01T03:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T03:45:00.0", "endGMT": "2021-01-01T04:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T04:00:00.0", "endGMT": "2021-01-01T04:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T04:15:00.0", "endGMT": "2021-01-01T04:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T04:30:00.0", "endGMT": "2021-01-01T04:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T04:45:00.0", "endGMT": "2021-01-01T05:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T05:00:00.0", "endGMT": "2021-01-01T05:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T05:15:00.0", "endGMT": "2021-01-01T05:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T05:30:00.0", "endGMT": "2021-01-01T05:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T05:45:00.0", "endGMT": "2021-01-01T06:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T06:00:00.0", "endGMT": "2021-01-01T06:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T06:15:00.0", "endGMT": "2021-01-01T06:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T06:30:00.0", "endGMT": "2021-01-01T06:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T06:45:00.0", "endGMT": "2021-01-01T07:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T07:00:00.0", "endGMT": "2021-01-01T07:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T07:15:00.0", "endGMT": "2021-01-01T07:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T07:30:00.0", "endGMT": "2021-01-01T07:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T07:45:00.0", "endGMT": "2021-01-01T08:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T08:00:00.0", "endGMT": "2021-01-01T08:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T08:15:00.0", "endGMT": "2021-01-01T08:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T08:30:00.0", "endGMT": "2021-01-01T08:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 66, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T08:45:00.0", "endGMT": "2021-01-01T09:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T09:00:00.0", "endGMT": "2021-01-01T09:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T09:15:00.0", "endGMT": "2021-01-01T09:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T09:30:00.0", "endGMT": "2021-01-01T09:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T09:45:00.0", "endGMT": "2021-01-01T10:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 169, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T09:45:00.0", "endGMT": "2021-01-01T10:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T10:00:00.0", "endGMT": "2021-01-01T10:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 14, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T10:15:00.0", "endGMT": "2021-01-01T10:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T10:30:00.0", "endGMT": "2021-01-01T10:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T10:45:00.0", "endGMT": "2021-01-01T11:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T11:00:00.0", "endGMT": "2021-01-01T11:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T11:15:00.0", "endGMT": "2021-01-01T11:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T11:30:00.0", "endGMT": "2021-01-01T11:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 57, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T11:30:00.0", "endGMT": "2021-01-01T11:45:00.0",
+        "steps": 11, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T11:45:00.0", "endGMT": "2021-01-01T12:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 54, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T12:00:00.0", "endGMT": "2021-01-01T12:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T12:15:00.0", "endGMT": "2021-01-01T12:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T12:30:00.0", "endGMT": "2021-01-01T12:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T12:45:00.0", "endGMT": "2021-01-01T13:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T13:00:00.0", "endGMT": "2021-01-01T13:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 124, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T12:45:00.0", "endGMT": "2021-01-01T13:00:00.0",
+        "steps": 908, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T13:00:00.0", "endGMT": "2021-01-01T13:15:00.0",
+        "steps": 1522, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T13:15:00.0", "endGMT": "2021-01-01T13:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 1697, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T13:30:00.0", "endGMT": "2021-01-01T13:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T13:45:00.0", "endGMT": "2021-01-01T14:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T14:00:00.0", "endGMT": "2021-01-01T14:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 239, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T13:45:00.0", "endGMT": "2021-01-01T14:00:00.0",
+        "steps": 182, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T14:00:00.0", "endGMT": "2021-01-01T14:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T14:15:00.0", "endGMT": "2021-01-01T14:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T14:30:00.0", "endGMT": "2021-01-01T14:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T14:45:00.0", "endGMT": "2021-01-01T15:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T15:00:00.0", "endGMT": "2021-01-01T15:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T15:15:00.0", "endGMT": "2021-01-01T15:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T15:30:00.0", "endGMT": "2021-01-01T15:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T15:45:00.0", "endGMT": "2021-01-01T16:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T16:00:00.0", "endGMT": "2021-01-01T16:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T16:15:00.0", "endGMT": "2021-01-01T16:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T16:30:00.0", "endGMT": "2021-01-01T16:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T16:45:00.0", "endGMT": "2021-01-01T17:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T17:00:00.0", "endGMT": "2021-01-01T17:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T17:15:00.0", "endGMT": "2021-01-01T17:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T17:30:00.0", "endGMT": "2021-01-01T17:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T17:45:00.0", "endGMT": "2021-01-01T18:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T18:00:00.0", "endGMT": "2021-01-01T18:15:00.0",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T18:15:00.0", "endGMT": "2021-01-01T18:30:00.0",
@@ -275,27 +357,29 @@ interactions:
         true}, {"startGMT": "2021-01-01T20:15:00.0", "endGMT": "2021-01-01T20:30:00.0",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T20:30:00.0", "endGMT": "2021-01-01T20:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T20:45:00.0", "endGMT": "2021-01-01T21:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T21:00:00.0", "endGMT": "2021-01-01T21:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T21:15:00.0", "endGMT": "2021-01-01T21:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T21:30:00.0", "endGMT": "2021-01-01T21:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T21:45:00.0", "endGMT": "2021-01-01T22:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T22:00:00.0", "endGMT": "2021-01-01T22:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T22:15:00.0", "endGMT": "2021-01-01T22:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T22:30:00.0", "endGMT": "2021-01-01T22:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        true}, {"startGMT": "2021-01-01T22:45:00.0", "endGMT": "2021-01-01T23:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}]'
     headers:
       CF-RAY:
-      - 9782f2528f40b91e-AMS
+      - 97832db43da93c6d-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
@@ -305,11 +389,11 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 01 Sep 2025 07:10:13 GMT
+      - Mon, 01 Sep 2025 07:50:45 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=R9Ta5EbddmA0BbsdaYVu3XhICYIRsVDmIu%2Fd6yThLGHl2K3n5mHN9hZUIDPCylT6WgGr06cWXN9PLgj6JLszrtmrd%2FXiCZ%2BjCg039pr98n74hmJceUyjULa0qgMkR0uB5p81QNz713yAnOIrh74ttnYEFQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=%2FJ7h9xQlwv4w85rCC6MjsLSrum1QlcxImbILGD4bA2Q7AJ2eArKqy7625anJighCrvYCrXp1B8Eci%2FfE5DZj6IQbAAeP11cMV1iBQFOKNzMqL1P8jOHkdLLYUjw6hbvsyJu7VpHgzCYQs1RovTMtYg7XLA%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -345,12 +429,11 @@ interactions:
   response:
     body:
       string: '{"userProfilePk": 82413233, "calendarDate": "2021-01-01", "status":
-        "SUBMITTED", "source": "USER", "ghReloadMetaData": "", "createDate": "2025-09-01T07:10:13.549",
-        "deviceList": [{"deviceId": 3312832184, "deviceName": "v\u00edvoactive 4",
-        "preferredActivityTracker": true}]}'
+        "COMPLETE", "source": "USER", "ghReloadMetaData": "", "createDate": "2025-09-01T07:10:13.549",
+        "deviceList": null}'
     headers:
       CF-RAY:
-      - 9782f253bfd64f25-AMS
+      - 97832db5a9469fbe-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
@@ -360,11 +443,11 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 01 Sep 2025 07:10:13 GMT
+      - Mon, 01 Sep 2025 07:50:45 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=w7zqUrFRNJDuQS1ZAIW4ybO5Vrd4Li1Xwi44pLBtlvF2ETddHcBgZ95%2B6K7zF4HlGyAHEZrfAmR7ZXy%2FWA65g5RJyuAiAbj1%2BQg6VFrBpJ7FUW5WFgVE7kjOPJImXjl2GaI3whdhVII7GS99R2kXoVO%2BoQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=7IcwWwenjA03TMn5%2FupTYpI5B6%2FEUlQLJKjkABSWQ3qOMJA9rhO8ODn1rsaAYu6EFHiojZrFkuw3SgUObj16JMXyBnTWhuu9pF%2F1FuCWCd%2BSgtudJL7UibQtWu8R8i%2Fos%2BH%2FI9ljVhatJzlIPi80KW1B1Q%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -398,157 +481,157 @@ interactions:
   response:
     body:
       string: '[{"startGMT": "2020-12-31T23:00:00.0", "endGMT": "2020-12-31T23:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 74, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2020-12-31T23:15:00.0", "endGMT": "2020-12-31T23:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2020-12-31T23:30:00.0", "endGMT": "2020-12-31T23:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2020-12-31T23:45:00.0", "endGMT": "2021-01-01T00:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 19, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T00:00:00.0", "endGMT": "2021-01-01T00:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T00:15:00.0", "endGMT": "2021-01-01T00:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T00:30:00.0", "endGMT": "2021-01-01T00:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T00:45:00.0", "endGMT": "2021-01-01T01:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 23, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T01:00:00.0", "endGMT": "2021-01-01T01:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T01:15:00.0", "endGMT": "2021-01-01T01:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T01:30:00.0", "endGMT": "2021-01-01T01:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T01:45:00.0", "endGMT": "2021-01-01T02:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T02:00:00.0", "endGMT": "2021-01-01T02:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T02:15:00.0", "endGMT": "2021-01-01T02:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T02:30:00.0", "endGMT": "2021-01-01T02:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T02:45:00.0", "endGMT": "2021-01-01T03:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T03:00:00.0", "endGMT": "2021-01-01T03:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T03:15:00.0", "endGMT": "2021-01-01T03:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T03:30:00.0", "endGMT": "2021-01-01T03:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T03:45:00.0", "endGMT": "2021-01-01T04:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T04:00:00.0", "endGMT": "2021-01-01T04:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T04:15:00.0", "endGMT": "2021-01-01T04:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T04:30:00.0", "endGMT": "2021-01-01T04:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T04:45:00.0", "endGMT": "2021-01-01T05:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T05:00:00.0", "endGMT": "2021-01-01T05:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T05:15:00.0", "endGMT": "2021-01-01T05:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T05:30:00.0", "endGMT": "2021-01-01T05:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T05:45:00.0", "endGMT": "2021-01-01T06:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T06:00:00.0", "endGMT": "2021-01-01T06:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T06:15:00.0", "endGMT": "2021-01-01T06:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T06:30:00.0", "endGMT": "2021-01-01T06:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T06:45:00.0", "endGMT": "2021-01-01T07:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T07:00:00.0", "endGMT": "2021-01-01T07:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T07:15:00.0", "endGMT": "2021-01-01T07:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T07:30:00.0", "endGMT": "2021-01-01T07:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T07:45:00.0", "endGMT": "2021-01-01T08:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T08:00:00.0", "endGMT": "2021-01-01T08:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T08:15:00.0", "endGMT": "2021-01-01T08:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T08:30:00.0", "endGMT": "2021-01-01T08:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 66, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T08:45:00.0", "endGMT": "2021-01-01T09:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T09:00:00.0", "endGMT": "2021-01-01T09:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T09:15:00.0", "endGMT": "2021-01-01T09:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T09:30:00.0", "endGMT": "2021-01-01T09:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T09:45:00.0", "endGMT": "2021-01-01T10:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 169, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T09:45:00.0", "endGMT": "2021-01-01T10:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T10:00:00.0", "endGMT": "2021-01-01T10:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 14, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T10:15:00.0", "endGMT": "2021-01-01T10:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T10:30:00.0", "endGMT": "2021-01-01T10:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T10:45:00.0", "endGMT": "2021-01-01T11:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T11:00:00.0", "endGMT": "2021-01-01T11:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T11:15:00.0", "endGMT": "2021-01-01T11:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T11:30:00.0", "endGMT": "2021-01-01T11:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 57, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T11:30:00.0", "endGMT": "2021-01-01T11:45:00.0",
+        "steps": 11, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T11:45:00.0", "endGMT": "2021-01-01T12:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 54, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T12:00:00.0", "endGMT": "2021-01-01T12:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T12:15:00.0", "endGMT": "2021-01-01T12:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T12:30:00.0", "endGMT": "2021-01-01T12:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T12:45:00.0", "endGMT": "2021-01-01T13:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T13:00:00.0", "endGMT": "2021-01-01T13:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 124, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T12:45:00.0", "endGMT": "2021-01-01T13:00:00.0",
+        "steps": 908, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T13:00:00.0", "endGMT": "2021-01-01T13:15:00.0",
+        "steps": 1522, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T13:15:00.0", "endGMT": "2021-01-01T13:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 1697, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T13:30:00.0", "endGMT": "2021-01-01T13:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T13:45:00.0", "endGMT": "2021-01-01T14:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2021-01-01T14:00:00.0", "endGMT": "2021-01-01T14:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 239, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T13:45:00.0", "endGMT": "2021-01-01T14:00:00.0",
+        "steps": 182, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        false}, {"startGMT": "2021-01-01T14:00:00.0", "endGMT": "2021-01-01T14:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T14:15:00.0", "endGMT": "2021-01-01T14:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T14:30:00.0", "endGMT": "2021-01-01T14:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T14:45:00.0", "endGMT": "2021-01-01T15:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T15:00:00.0", "endGMT": "2021-01-01T15:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T15:15:00.0", "endGMT": "2021-01-01T15:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T15:30:00.0", "endGMT": "2021-01-01T15:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T15:45:00.0", "endGMT": "2021-01-01T16:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T16:00:00.0", "endGMT": "2021-01-01T16:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T16:15:00.0", "endGMT": "2021-01-01T16:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T16:30:00.0", "endGMT": "2021-01-01T16:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T16:45:00.0", "endGMT": "2021-01-01T17:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T17:00:00.0", "endGMT": "2021-01-01T17:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T17:15:00.0", "endGMT": "2021-01-01T17:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T17:30:00.0", "endGMT": "2021-01-01T17:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T17:45:00.0", "endGMT": "2021-01-01T18:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T18:00:00.0", "endGMT": "2021-01-01T18:15:00.0",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T18:15:00.0", "endGMT": "2021-01-01T18:30:00.0",
@@ -570,27 +653,29 @@ interactions:
         true}, {"startGMT": "2021-01-01T20:15:00.0", "endGMT": "2021-01-01T20:30:00.0",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T20:30:00.0", "endGMT": "2021-01-01T20:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T20:45:00.0", "endGMT": "2021-01-01T21:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T21:00:00.0", "endGMT": "2021-01-01T21:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T21:15:00.0", "endGMT": "2021-01-01T21:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T21:30:00.0", "endGMT": "2021-01-01T21:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T21:45:00.0", "endGMT": "2021-01-01T22:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T22:00:00.0", "endGMT": "2021-01-01T22:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T22:15:00.0", "endGMT": "2021-01-01T22:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}, {"startGMT": "2021-01-01T22:30:00.0", "endGMT": "2021-01-01T22:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        true}, {"startGMT": "2021-01-01T22:45:00.0", "endGMT": "2021-01-01T23:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
         true}]'
     headers:
       CF-RAY:
-      - 9782f2574bce8f37-AMS
+      - 97832db6bd2db8a0-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
@@ -600,11 +685,11 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 01 Sep 2025 07:10:13 GMT
+      - Mon, 01 Sep 2025 07:50:45 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=u7RD7nRKhulNWirAKUW%2FyhPACkHWW2aN%2FrLcs5cKZ2nvVjsAVs7nyqzoAwZyWm1G4A1xp7%2BNbNB6Jawl0aYJsR%2BTQ2Nya2jg3tVNVtG9frZiTuJALi8GCZzZCNE9hfza3JSsl%2FtrEmiER81BZFFWpyorVw%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=407kzTc%2BbnGXEpCS7xSmm39HXZcI1QFfCLykKyPKD4wNil8agaJRB7dXMabdnFZH%2BA24G1GbPM0eO9bTYk9KUFWZc7GYTuYKk7GPCOybYA1D2b30lXQvqQmFB7mEIDe0Q%2FgLQUEITpP4SXO07A1mA7D6Vw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
