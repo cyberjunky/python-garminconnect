@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import garth
+from garth.exc import HTTPError
 
 from .fit import FitEncoderWeight  # type: ignore
 
@@ -271,19 +272,18 @@ class Garmin:
         """Wrapper for garth connectapi with error handling."""
         try:
             return self.garth.connectapi(path, **kwargs)
-        except Exception as e:
+        except HTTPError as e:
             logger.error(f"API call failed for path '{path}': {e}")
-            # Re-raise with more context but preserve original exception type
-            if "auth" in str(e).lower() or "401" in str(e):
+            if e.response.status_code == 401:
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
                 ) from e
-            elif "429" in str(e) or "rate" in str(e).lower():
+            elif e.response.status_code == 429:
                 raise GarminConnectTooManyRequestsError(
                     f"Rate limit exceeded: {e}"
                 ) from e
-            else:
-                raise GarminConnectConnectionError(f"Connection error: {e}") from e
+        except Exception as e:
+            raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
     def download(self, path: str, **kwargs: Any) -> Any:
         """Wrapper for garth download with error handling."""
@@ -366,8 +366,8 @@ class Garmin:
             if isinstance(e, GarminConnectAuthenticationError):
                 raise
             else:
-                logger.error(f"Login failed: {e}")
-                raise GarminConnectAuthenticationError(f"Login failed: {e}") from e
+                logger.error("Login failed")
+                raise GarminConnectConnectionError(f"Login failed: {e}") from e
 
     def resume_login(
         self, client_state: dict[str, Any], mfa_code: str
@@ -1392,6 +1392,7 @@ class Garmin:
     def get_activities_fordate(self, fordate: str) -> dict[str, Any]:
         """Return available activities for date."""
 
+        fordate = _validate_date_format(fordate, "fordate")
         url = f"{self.garmin_connect_activity_fordate}/{fordate}"
         logger.debug(f"Requesting activities for date {fordate}")
 
@@ -1780,7 +1781,7 @@ class Garmin:
 
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}/hrTimeInZones"
-        logger.debug("Requesting split summaries for activity id %s", activity_id)
+        logger.debug("Requesting HR time-in-zones for activity id %s", activity_id)
 
         return self.connectapi(url)
 
@@ -1869,12 +1870,12 @@ class Garmin:
 
         return self.garth.post("connectapi", url, api=True).json()
 
-    def get_workouts(self, start: int = 0, end: int = 100) -> dict[str, Any]:
+    def get_workouts(self, start: int = 0, limit: int = 100) -> dict[str, Any]:
         """Return workouts from start till end."""
 
         url = f"{self.garmin_workouts}/workouts"
-        logger.debug(f"Requesting workouts from {start}-{end}")
-        params = {"start": start, "limit": end}
+        logger.debug(f"Requesting workouts from {start} with limit {limit}")
+        params = {"start": start, "limit": limit}
         return self.connectapi(url, params=params)
 
     def get_workout_by_id(self, workout_id: str) -> dict[str, Any]:
@@ -1913,6 +1914,7 @@ class Garmin:
     def get_menstrual_data_for_date(self, fordate: str) -> dict[str, Any]:
         """Return menstrual data for date."""
 
+        fordate = _validate_date_format(fordate, "fordate")
         url = f"{self.garmin_connect_menstrual_dayview_url}/{fordate}"
         logger.debug(f"Requesting menstrual data for date {fordate}")
 

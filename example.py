@@ -502,8 +502,10 @@ class DataExporter:
                     if daily_data:
                         daily_data["date"] = date.isoformat()
                         report_data["weekly_data"].append(daily_data)
-                except Exception:
-                    pass  # Skip if data not available
+                except Exception as e:
+                    print(
+                        f"Skipping data for {date.isoformat()}: {e}"
+                    )  # Skip if data not available
 
             # Health metrics for today
             health_metrics = {}
@@ -2872,9 +2874,10 @@ def main():
                             print("🏃‍♂️ You're crushing it today!")
                         else:
                             print("👍 Nice progress! Keep it up!")
-                except Exception:
-                    # Silently skip if stats can't be fetched
-                    pass
+                except Exception as e:
+                    print(
+                        f"Unable to fetch stats for display: {e}"
+                    )  # Silently skip if stats can't be fetched
 
             # Display appropriate menu
             if current_category is None:

@@ -35,6 +35,10 @@ build-backend = "pdm.backend"
 
 [tool.pytest.ini_options]
 addopts = "--ignore=__pypackages__ --ignore-glob=*.yaml"
+vcr_record = "once"
+vcr_filter_headers = ["authorization", "cookie", "user-agent"]
+# If you deliberately don’t want to record SSO, uncomment:
+# vcr_ignore_hosts = ["sso.garmin.com"]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -144,7 +148,7 @@ exclude_lines = [
 [tool.pdm.scripts]
 # Development workflow
 install = "pdm install --group :all"
-format = {composite = ["pdm run isort . --skip-gitignore", "pdm run black -l 88 .", "pdm run ruff check . --fix --unsafe-fixes"]}
+format = {composite = ["pdm run ruff check . --fix --unsafe-fixes", "pdm run isort . --skip-gitignore", "pdm run black -l 88 ."]}
 lint = {composite = ["pdm run isort --check-only . --skip-gitignore", "pdm run ruff check .", "pdm run black -l 88 . --check --diff", "pdm run mypy garminconnect tests"]}
 test = {env = {GARMINTOKENS = "~/.garminconnect"}, cmd = "pdm run coverage run -m pytest -v --durations=10"}
 testcov = {composite = ["test", "pdm run coverage html", "pdm run coverage xml -o coverage/coverage.xml"]}
