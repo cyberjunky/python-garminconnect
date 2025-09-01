@@ -55,7 +55,7 @@ interactions:
         23400}]}'
     headers:
       CF-RAY:
-      - 9782f24e3ab4b90c-AMS
+      - 978331fdccf80df4-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
@@ -65,11 +65,11 @@ interactions:
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Mon, 01 Sep 2025 07:10:12 GMT
+      - Mon, 01 Sep 2025 07:53:40 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=F2XBcZQGSyIjOWwRx4QPJQJyYR2r9xerlPam3258KAkwGIJYxrZiA%2FQYxsDcJHCYGkGZeUjZSUdLo0kSstJOBLgVK44t7AUhuhfIl2LWYxYFwLicyyCjla6QwvjzxIBchN%2BNsC5IWQH3QMVCqHPTpG2zWA%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=YzRywljzoU2Eze%2BlN2kNg5j1DyR%2BuaFpC3xpdVt1328IlZLyaf3L5u86zXb3hOHjoZ9LEyVHnTilxxuZV0vJaFsugzuG0uw1NK%2FajOnrpt%2FhFvseWuYHhinI2PqGQ4k4Wax4GreeeL%2BB42QkZ3kOW%2FmWHw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -85,7 +85,7 @@ interactions:
       message: OK
 - request:
     body: !!binary |
-      LS02Yzc5NzlhY2FlYzAzMjA1NGEyMGVjNTIxNDM3NzZjZQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
+      LS1jMjc2YzVlYzE0Mjk5YzIwM2RjMzAxNjk0NTU4YTkzYQ0KQ29udGVudC1EaXNwb3NpdGlvbjog
       Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9IjEyMTI5MTE1NzI2X0FDVElWSVRZLmZp
       dCINCg0KDhB5UpkUAAAuRklUyeVAAAAAAAcDBIwEBIYHBIYBAoQCAoQFAoQAAQAAOXF7xhLKeD//
       ////AQDbDP//BEEAADEABQIUBwAChAEBAgMBAAQBAAEAAAAAAAAAAAAAAAAAAAAAAAAAACgK////
@@ -179,8 +179,8 @@ interactions:
       AwD/////////////AQD/////nBhwFwAACQEKK1dZ//8A/wD//yIiAP///////////39//////wAS
       ACIAAP///z7//z//AyHKeD8pJQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////////////
       ////////////////////////////////////////////////EgAAAP//fImWo7G+Ab4AqP9IAAAi
-      AAn9BIYABIYFBIYBAoQCAQADAQAEAQAGAQIHAQIIIcp4P8wlAADBdXg/AQAAGgH//z81DQotLTZj
-      Nzk3OWFjYWVjMDMyMDU0YTIwZWM1MjE0Mzc3NmNlLS0NCg==
+      AAn9BIYABIYFBIYBAoQCAQADAQAEAQAGAQIHAQIIIcp4P8wlAADBdXg/AQAAGgH//z81DQotLWMy
+      NzZjNWVjMTQyOTljMjAzZGMzMDE2OTQ1NThhOTNhLS0NCg==
     headers:
       Accept:
       - '*/*'
@@ -193,7 +193,7 @@ interactions:
       Content-Length:
       - '5449'
       Content-Type:
-      - multipart/form-data; boundary=6c7979acaec032054a20ec52143776ce
+      - multipart/form-data; boundary=c276c5ec14299c203dc301694558a93a
       Cookie:
       - _cfuvid=SANITIZED
       User-Agent:
@@ -202,41 +202,38 @@ interactions:
     uri: https://connectapi.garmin.com/upload-service/upload
   response:
     body:
-      string: '{"detailedImportResult": {"uploadId": 362253003896, "uploadUuid": {"uuid":
-        "a5c4fe7b-1106-4240-a7fd-2ca0bf4c64b3"}, "owner": 82413233, "fileSize": 5289,
-        "processingTime": 40, "creationDate": "2025-09-01 07:10:12.516 GMT", "ipAddress":
-        null, "fileName": "12129115726_ACTIVITY.fit", "report": null, "successes":
-        [], "failures": []}}'
+      string: '{"detailedImportResult": {"uploadId": "", "uploadUuid": null, "owner":
+        82413233, "fileSize": 5289, "processingTime": 15, "creationDate": "2025-09-01
+        07:53:41.97 GMT", "ipAddress": null, "fileName": "12129115726_ACTIVITY.fit",
+        "report": null, "successes": [], "failures": [{"internalId": 20242598711,
+        "externalId": "1064880658", "messages": [{"code": 202, "content": "Duplicate
+        Activity."}]}]}}'
     headers:
       CF-RAY:
-      - 9782f24fbe3dfff5-AMS
+      - 978331ff3c6366a9-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
       - keep-alive
       Content-Length:
-      - '307'
+      - '363'
       Content-Type:
       - application/json
       Date:
-      - Mon, 01 Sep 2025 07:10:12 GMT
+      - Mon, 01 Sep 2025 07:53:41 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=GcwK%2Fo9tzZpFl%2FH2mVc9ZksJr5RgSkndB%2Bn8mbu8vMo1vjtUGqo1ZD8%2B9s1F2Zx9JokICM77frcjUZHi0PSWqFQkHInS6GV3XGKqRCjk5i%2Bnn6TZlIqyiN5jYtA0qno9nQsGjCCbipaztpMyY3DEa8pTIw%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=KaXGVPa%2FaaI5%2BMOHJonXeaNxKAb%2BNrjHpANcvmGTq2yWzy4QFxMwO%2BkBRFKIhSkxD6Mw%2FRP3XSYO9ZpPUIeriFY3%2BkPu5nmScYSxnvFLhqtRgqVVEbTaZucFDXGdXOnLDE8GBjAQ2wIYv85caAujKNhoeA%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       alt-svc:
       - h3=":443"; ma=86400
       cf-cache-status:
       - DYNAMIC
-      location:
-      - https://connectapi.garmin.com/activity-service/activity/status/1756710612516/a5c4fe7b11064240a7fd2ca0bf4c64b3
-      location-in-milliseconds:
-      - '1000'
       pragma:
       - no-cache
     status:
-      code: 202
-      message: Accepted
+      code: 409
+      message: Conflict
 version: 1

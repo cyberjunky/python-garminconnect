@@ -146,6 +146,11 @@ clean = "python -c \"import shutil, pathlib; [shutil.rmtree(p, ignore_errors=Tru
 build = "pdm build"
 publish = {composite = ["build", "pdm publish"]}
 
+# VCR cassette management
+record-vcr = {env = {GARMINTOKENS = "~/.garminconnect"}, cmd = "pdm run pytest tests/test_garmin.py -v --vcr-record=new_episodes"}
+clean-vcr = "rm -f tests/cassettes/*.yaml"
+reset-vcr = {composite = ["clean-vcr", "record-vcr"]}
+
 # Quality checks  
 all = {composite = ["lint", "codespell", "test"]}
 
