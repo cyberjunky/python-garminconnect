@@ -11,7 +11,7 @@ def garmin() -> garminconnect.Garmin:
 
 
 @pytest.mark.vcr
-def test_stats(garmin: garminconnect.Garmin) -> None:
+def test_stats(garmin: garminconnect.Garmin):
     garmin.login()
     stats = garmin.get_stats(DATE)
     assert "totalKilocalories" in stats
@@ -19,7 +19,7 @@ def test_stats(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_user_summary(garmin: garminconnect.Garmin) -> None:
+def test_user_summary(garmin: garminconnect.Garmin):
     garmin.login()
     user_summary = garmin.get_user_summary(DATE)
     assert "totalKilocalories" in user_summary
@@ -27,21 +27,21 @@ def test_user_summary(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_steps_data(garmin: garminconnect.Garmin) -> None:
+def test_steps_data(garmin: garminconnect.Garmin):
     garmin.login()
     steps_data = garmin.get_steps_data(DATE)[0]
     assert "steps" in steps_data
 
 
 @pytest.mark.vcr
-def test_floors(garmin: garminconnect.Garmin) -> None:
+def test_floors(garmin: garminconnect.Garmin):
     garmin.login()
     floors_data = garmin.get_floors(DATE)
     assert "floorValuesArray" in floors_data
 
 
 @pytest.mark.vcr
-def test_daily_steps(garmin: garminconnect.Garmin) -> None:
+def test_daily_steps(garmin: garminconnect.Garmin):
     garmin.login()
     daily_steps_data = garmin.get_daily_steps(DATE, DATE)
     # The API returns a list of daily step dictionaries
@@ -55,7 +55,7 @@ def test_daily_steps(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_heart_rates(garmin: garminconnect.Garmin) -> None:
+def test_heart_rates(garmin: garminconnect.Garmin):
     garmin.login()
     heart_rates = garmin.get_heart_rates(DATE)
     assert "calendarDate" in heart_rates
@@ -63,7 +63,7 @@ def test_heart_rates(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_stats_and_body(garmin: garminconnect.Garmin) -> None:
+def test_stats_and_body(garmin: garminconnect.Garmin):
     garmin.login()
     stats_and_body = garmin.get_stats_and_body(DATE)
     assert "calendarDate" in stats_and_body
@@ -71,7 +71,7 @@ def test_stats_and_body(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_body_composition(garmin: garminconnect.Garmin) -> None:
+def test_body_composition(garmin: garminconnect.Garmin):
     garmin.login()
     body_composition = garmin.get_body_composition(DATE)
     assert "totalAverage" in body_composition
@@ -79,7 +79,7 @@ def test_body_composition(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_body_battery(garmin: garminconnect.Garmin) -> None:
+def test_body_battery(garmin: garminconnect.Garmin):
     garmin.login()
     body_battery = garmin.get_body_battery(DATE)[0]
     assert "date" in body_battery
@@ -87,7 +87,7 @@ def test_body_battery(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_hydration_data(garmin: garminconnect.Garmin) -> None:
+def test_hydration_data(garmin: garminconnect.Garmin):
     garmin.login()
     hydration_data = garmin.get_hydration_data(DATE)
     assert hydration_data
@@ -95,7 +95,7 @@ def test_hydration_data(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_respiration_data(garmin: garminconnect.Garmin) -> None:
+def test_respiration_data(garmin: garminconnect.Garmin):
     garmin.login()
     respiration_data = garmin.get_respiration_data(DATE)
     assert "calendarDate" in respiration_data
@@ -103,7 +103,7 @@ def test_respiration_data(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_spo2_data(garmin: garminconnect.Garmin) -> None:
+def test_spo2_data(garmin: garminconnect.Garmin):
     garmin.login()
     spo2_data = garmin.get_spo2_data(DATE)
     assert "calendarDate" in spo2_data
@@ -111,7 +111,7 @@ def test_spo2_data(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_hrv_data(garmin: garminconnect.Garmin) -> None:
+def test_hrv_data(garmin: garminconnect.Garmin):
     garmin.login()
     hrv_data = garmin.get_hrv_data(DATE)
     # HRV data might not be available for all dates (API returns 204 No Content)
@@ -125,7 +125,7 @@ def test_hrv_data(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_download_activity(garmin: garminconnect.Garmin) -> None:
+def test_download_activity(garmin: garminconnect.Garmin):
     garmin.login()
     activity_id = "11998957007"
     # This test may fail with 403 Forbidden if the activity is private or not accessible
@@ -142,7 +142,7 @@ def test_download_activity(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_all_day_stress(garmin: garminconnect.Garmin) -> None:
+def test_all_day_stress(garmin: garminconnect.Garmin):
     garmin.login()
     all_day_stress = garmin.get_all_day_stress(DATE)
     # Validate stress data structure
@@ -153,7 +153,7 @@ def test_all_day_stress(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_upload(garmin: garminconnect.Garmin) -> None:
+def test_upload(garmin: garminconnect.Garmin):
     garmin.login()
     fpath = "tests/12129115726_ACTIVITY.fit"
     # This test may fail with 409 Conflict if the activity already exists
@@ -173,7 +173,7 @@ def test_upload(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
-def test_request_reload(garmin: garminconnect.Garmin) -> None:
+def test_request_reload(garmin: garminconnect.Garmin):
     garmin.login()
     cdate = "2021-01-01"
     # Get initial steps data

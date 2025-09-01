@@ -77,6 +77,13 @@ example = [
 [tool.pdm]
 distribution = true
 
+[tool.pdm.build]
+excludes = [
+  "tests/**",
+  "test_data/**",
+  ".github/**",
+]
+
 [tool.pdm.python]
 path = ".venv/bin/python"
 
@@ -103,6 +110,7 @@ select = [
     "UP",  # pyupgrade
     "ARG", # flake8-unused-arguments
     "SIM", # flake8-simplify
+    "S",   # flake8-bandit (security)
 ]
 ignore = [
     "E501",  # line too long, handled by black
