@@ -22,7 +22,6 @@ MAX_ACTIVITY_LIMIT = 1000
 MAX_HYDRATION_ML = 10000  # 10 liters
 DATE_FORMAT_REGEX = r"^\d{4}-\d{2}-\d{2}$"
 DATE_FORMAT_STR = "%Y-%m-%d"
-TIMESTAMP_FORMAT_STR = "%Y-%m-%dT%H:%M:%S.%f"
 VALID_WEIGHT_UNITS = {"kg", "lbs"}
 
 
@@ -273,15 +272,18 @@ class Garmin:
         try:
             return self.garth.connectapi(path, **kwargs)
         except HTTPError as e:
-            logger.error(f"API call failed for path '{path}': {e}")
-            if e.response.status_code == 401:
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            logger.error("API call failed for path '%s': %s (status=%s)", path, e, status)
+            if status == 401:
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
                 ) from e
-            elif e.response.status_code == 429:
+            elif status == 429:
                 raise GarminConnectTooManyRequestsError(
                     f"Rate limit exceeded: {e}"
                 ) from e
+            else:
+                raise GarminConnectConnectionError(f"HTTP error: {e}") from e
         except Exception as e:
             raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
@@ -290,7 +292,12 @@ class Garmin:
         try:
             return self.garth.download(path, **kwargs)
         except Exception as e:
-            logger.error(f"Download failed for path '{path}': {e}")
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            logger.error("Download failed for path '%s': %s (status=%s)", path, e, status)
+            if status == 401:
+                raise GarminConnectAuthenticationError(f"Download error: {e}") from e
+            if status == 429:
+                raise GarminConnectTooManyRequestsError(f"Download error: {e}") from e
             raise GarminConnectConnectionError(f"Download error: {e}") from e
 
     def login(self, /, tokenstore: str | None = None) -> tuple[str | None, str | None]:
@@ -366,7 +373,7 @@ class Garmin:
             if isinstance(e, GarminConnectAuthenticationError):
                 raise
             else:
-                logger.error("Login failed")
+                logger.exception("Login failed")
                 raise GarminConnectConnectionError(f"Login failed: {e}") from e
 
     def resume_login(
@@ -623,6 +630,8 @@ class Garmin:
             else dt.astimezone(timezone.utc)
         )
 
+        # Validate weight for consistency with add_weigh_in
+        weight = _validate_positive_number(weight, "weight")
         # Build the payload
         payload = {
             "dateTimestamp": dt.isoformat()[:19] + ".00",  # Local time
@@ -641,6 +650,8 @@ class Garmin:
     def get_weigh_ins(self, startdate: str, enddate: str) -> dict[str, Any]:
         """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
 
+        startdate = _validate_date_format(startdate, "startdate")
+        enddate = _validate_date_format(enddate, "enddate")
         url = f"{self.garmin_connect_weight_url}/weight/range/{startdate}/{enddate}"
         params = {"includeAll": True}
         logger.debug("Requesting weigh-ins")
@@ -650,6 +661,7 @@ class Garmin:
     def get_daily_weigh_ins(self, cdate: str) -> dict[str, Any]:
         """Get weigh-ins for 'cdate' format 'YYYY-MM-DD'."""
 
+        cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_weight_url}/weight/dayview/{cdate}"
         params = {"includeAll": True}
         logger.debug("Requesting weigh-ins")
@@ -700,8 +712,11 @@ class Garmin:
         'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
         """
 
+        startdate = _validate_date_format(startdate, "startdate")
         if enddate is None:
             enddate = startdate
+        else:
+            enddate = _validate_date_format(enddate, "enddate")
         url = self.garmin_connect_daily_body_battery_url
         params = {"startDate": str(startdate), "endDate": str(enddate)}
         logger.debug("Requesting body battery data")
@@ -759,8 +774,11 @@ class Garmin:
         'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
         """
 
+        startdate = _validate_date_format(startdate, "startdate")
         if enddate is None:
             enddate = startdate
+        else:
+            enddate = _validate_date_format(enddate, "enddate")
         url = f"{self.garmin_connect_blood_pressure_endpoint}/{startdate}/{enddate}"
         params = {"includeAll": True}
         logger.debug("Requesting blood pressure data")
@@ -958,8 +976,7 @@ class Garmin:
         }
 
         logger.debug("Adding hydration data")
-
-        return self.garth.put("connectapi", url, json=payload)
+        return self.garth.put("connectapi", url, json=payload).json()
 
     def get_hydration_data(self, cdate: str) -> dict[str, Any]:
         """Return available hydration data 'cdate' format 'YYYY-MM-DD'."""
@@ -1232,13 +1249,12 @@ class Garmin:
             return self.connectapi(url)
 
         elif _type is not None and startdate is not None and enddate is not None:
-            url = (
-                self.garmin_connect_race_predictor_url + f"/{_type}/{self.display_name}"
-            )
-            params = {
-                "fromCalendarDate": str(startdate),
-                "toCalendarDate": str(enddate),
-            }
+            startdate = _validate_date_format(startdate, "startdate")
+            enddate = _validate_date_format(enddate, "enddate")
+            if (datetime.strptime(enddate, DATE_FORMAT_STR).date() - datetime.strptime(startdate, DATE_FORMAT_STR).date()).days > 366:
+                raise ValueError("Startdate cannot be more than one year before enddate")
+            url = self.garmin_connect_race_predictor_url + f"/{_type}/{self.display_name}"
+            params = {"fromCalendarDate": startdate, "toCalendarDate": enddate}
             return self.connectapi(url, params=params)
 
         else:
@@ -1247,6 +1263,7 @@ class Garmin:
     def get_training_status(self, cdate: str) -> dict[str, Any]:
         """Return training status data for current user."""
 
+        cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_training_status_url}/{cdate}"
         logger.debug("Requesting training status data")
 
@@ -1255,6 +1272,7 @@ class Garmin:
     def get_fitnessage_data(self, cdate: str) -> dict[str, Any]:
         """Return Fitness Age data for current user."""
 
+        cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_fitnessage}/{cdate}"
         logger.debug("Requesting Fitness Age data")
 
@@ -1573,13 +1591,16 @@ class Garmin:
         # 20 activities at a time
         # and automatically loads more on scroll
         url = self.garmin_connect_activities
+        startdate = _validate_date_format(startdate, "startdate")
+        if enddate is not None:
+            enddate = _validate_date_format(enddate, "enddate")
         params = {
-            "startDate": str(startdate),
+            "startDate": startdate,
             "start": str(start),
             "limit": str(limit),
         }
         if enddate:
-            params["endDate"] = str(enddate)
+            params["endDate"] = enddate
         if activitytype:
             params["activityType"] = str(activitytype)
         if sortorder:
@@ -1865,6 +1886,7 @@ class Garmin:
         Garmin offloads older data.
         """
 
+        cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_request_reload_url}/{cdate}"
         logger.debug(f"Requesting reload of data for {cdate}.")
 
