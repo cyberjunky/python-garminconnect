@@ -47,7 +47,7 @@ def test_daily_steps(garmin: garminconnect.Garmin) -> None:
     # The API returns a list of daily step dictionaries
     assert isinstance(daily_steps_data, list)
     assert len(daily_steps_data) > 0
-    
+
     # Check the first day's data
     daily_steps = daily_steps_data[0]
     assert "calendarDate" in daily_steps
@@ -136,7 +136,9 @@ def test_download_activity(garmin: garminconnect.Garmin) -> None:
     except garminconnect.GarminConnectConnectionError as e:
         # Expected error for inaccessible activities
         assert "403" in str(e) or "Forbidden" in str(e)
-        pytest.skip("Activity not accessible (403 Forbidden) - expected in test environment")
+        pytest.skip(
+            "Activity not accessible (403 Forbidden) - expected in test environment"
+        )
 
 
 @pytest.mark.vcr
@@ -162,7 +164,9 @@ def test_upload(garmin: garminconnect.Garmin) -> None:
     except Exception as e:
         # Expected error for duplicate uploads
         if "409" in str(e) or "Conflict" in str(e):
-            pytest.skip("Activity already exists (409 Conflict) - expected in test environment")
+            pytest.skip(
+                "Activity already exists (409 Conflict) - expected in test environment"
+            )
         else:
             # Re-raise unexpected errors
             raise
@@ -173,7 +177,7 @@ def test_request_reload(garmin: garminconnect.Garmin) -> None:
     garmin.login()
     cdate = "2021-01-01"
     # Get initial steps data
-    initial_steps = sum(steps["steps"] for steps in garmin.get_steps_data(cdate))
+    sum(steps["steps"] for steps in garmin.get_steps_data(cdate))
     # Test that request_reload returns a valid response
     reload_response = garmin.request_reload(cdate)
     assert reload_response is not None

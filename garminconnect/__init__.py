@@ -340,17 +340,13 @@ class Garmin:
 
             # Validate profile data exists
             if not hasattr(self.garth, "profile") or not self.garth.profile:
-                raise GarminConnectAuthenticationError(
-                    "Failed to retrieve profile"
-                )
+                raise GarminConnectAuthenticationError("Failed to retrieve profile")
 
             self.display_name = self.garth.profile.get("displayName")
             self.full_name = self.garth.profile.get("fullName")
 
             if not self.display_name:
-                raise GarminConnectAuthenticationError(
-                    "Invalid profile data found"
-                )
+                raise GarminConnectAuthenticationError("Invalid profile data found")
 
             settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
 
@@ -360,9 +356,7 @@ class Garmin:
                 )
 
             if "userData" not in settings:
-                raise GarminConnectAuthenticationError(
-                    "Invalid user settings found"
-                )
+                raise GarminConnectAuthenticationError("Invalid user settings found")
 
             self.unit_system = settings["userData"].get("measurementSystem")
 
