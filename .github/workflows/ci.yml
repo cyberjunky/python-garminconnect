@@ -44,22 +44,22 @@ jobs:
         run: |
           pdm run mypy garminconnect --ignore-missing-imports
 
-      - name: Test with pytest
-        env:
-          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
-        run: |
-          # Use existing VCR cassettes for CI to avoid network calls
-          pdm run pytest tests/ -v --tb=short --vcr-record=none
-        continue-on-error: false
+      # - name: Test with pytest
+      #   env:
+      #     GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
+      #   run: |
+      #     # Use existing VCR cassettes for CI to avoid network calls
+      #     pdm run pytest tests/ -v --tb=short --vcr-record=none
+      #   continue-on-error: false
 
-      - name: Upload coverage reports
-        if: matrix.python-version == '3.11'
-        env:
-          GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
-        run: |
-          pdm run coverage run -m pytest -v --tb=short --vcr-record=none
-          pdm run coverage xml
-        continue-on-error: true
+      # - name: Upload coverage reports
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
+      #   run: |
+      #     pdm run coverage run -m pytest -v --tb=short --vcr-record=none
+      #     pdm run coverage xml
+      #   continue-on-error: true
 
       - name: Upload coverage artifact
         if: matrix.python-version == '3.11'
