@@ -463,7 +463,7 @@ class Garmin:
 
         return response
 
-    def get_daily_steps(self, start: str, end: str) -> dict[str, Any]:
+    def get_daily_steps(self, start: str, end: str) -> list[dict[str, Any]]:
         """Fetch available steps data 'start' and 'end' format 'YYYY-MM-DD'."""
 
         # Validate inputs
@@ -1162,7 +1162,7 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_hrv_data(self, cdate: str) -> dict[str, Any]:
+    def get_hrv_data(self, cdate: str) -> dict[str, Any] | None:
         """Return Heart Rate Variability (hrv) data for current user."""
 
         cdate = _validate_date_format(cdate, "cdate")
