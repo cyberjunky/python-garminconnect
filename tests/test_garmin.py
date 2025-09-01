@@ -7,7 +7,7 @@ DATE = "2023-07-01"
 
 @pytest.fixture(scope="session")
 def garmin() -> garminconnect.Garmin:
-    return garminconnect.Garmin("email", "password")
+    return garminconnect.Garmin("email@example.org", "password")
 
 
 @pytest.mark.vcr
