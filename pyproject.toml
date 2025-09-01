@@ -146,7 +146,7 @@ exclude_lines = [
 install = "pdm install --group :all"
 format = {composite = ["pdm run ruff check . --fix --unsafe-fixes", "pdm run isort . --skip-gitignore", "pdm run black -l 88 ."]}
 lint = {composite = ["pdm run isort --check-only . --skip-gitignore", "pdm run ruff check .", "pdm run black -l 88 . --check --diff", "pdm run mypy garminconnect tests"]}
-test = {env = {GARMINTOKENS = "~/.garminconnect"}, cmd = "pdm run coverage run -m pytest -v --durations=10"}
+test = {cmd = "pdm run coverage run -m pytest -v --durations=10"}
 testcov = {composite = ["test", "pdm run coverage html", "pdm run coverage xml -o coverage/coverage.xml"]}
 codespell = "pre-commit run codespell --all-files"
 clean = "python -c \"import shutil, pathlib; [shutil.rmtree(p, ignore_errors=True) for p in pathlib.Path('.').rglob('__pycache__')]; [p.unlink(missing_ok=True) for p in pathlib.Path('.').rglob('*.py[co]')]\""
