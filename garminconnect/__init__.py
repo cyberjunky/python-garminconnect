@@ -273,7 +273,9 @@ class Garmin:
             return self.garth.connectapi(path, **kwargs)
         except HTTPError as e:
             status = getattr(getattr(e, "response", None), "status_code", None)
-            logger.error("API call failed for path '%s': %s (status=%s)", path, e, status)
+            logger.error(
+                "API call failed for path '%s': %s (status=%s)", path, e, status
+            )
             if status == 401:
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
@@ -293,7 +295,9 @@ class Garmin:
             return self.garth.download(path, **kwargs)
         except Exception as e:
             status = getattr(getattr(e, "response", None), "status_code", None)
-            logger.error("Download failed for path '%s': %s (status=%s)", path, e, status)
+            logger.error(
+                "Download failed for path '%s': %s (status=%s)", path, e, status
+            )
             if status == 401:
                 raise GarminConnectAuthenticationError(f"Download error: {e}") from e
             if status == 429:
@@ -613,7 +617,7 @@ class Garmin:
 
     def add_weigh_in_with_timestamps(
         self,
-        weight: int,
+        weight: int | float,
         unitKey: str = "kg",
         dateTimestamp: str = "",
         gmtTimestamp: str = "",
@@ -1251,9 +1255,16 @@ class Garmin:
         elif _type is not None and startdate is not None and enddate is not None:
             startdate = _validate_date_format(startdate, "startdate")
             enddate = _validate_date_format(enddate, "enddate")
-            if (datetime.strptime(enddate, DATE_FORMAT_STR).date() - datetime.strptime(startdate, DATE_FORMAT_STR).date()).days > 366:
-                raise ValueError("Startdate cannot be more than one year before enddate")
-            url = self.garmin_connect_race_predictor_url + f"/{_type}/{self.display_name}"
+            if (
+                datetime.strptime(enddate, DATE_FORMAT_STR).date()
+                - datetime.strptime(startdate, DATE_FORMAT_STR).date()
+            ).days > 366:
+                raise ValueError(
+                    "Startdate cannot be more than one year before enddate"
+                )
+            url = (
+                self.garmin_connect_race_predictor_url + f"/{_type}/{self.display_name}"
+            )
             params = {"fromCalendarDate": startdate, "toCalendarDate": enddate}
             return self.connectapi(url, params=params)
 

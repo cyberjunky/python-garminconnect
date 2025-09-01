@@ -56,7 +56,7 @@ dev = [
     "matplotlib",
 ]
 linting = [
-    "black",
+    "black[jupyter]",
     "ruff",
     "mypy",
     "isort",
@@ -172,7 +172,7 @@ dev = [
     "matplotlib",
 ]
 linting = [
-    "black",
+    "black[jupyter]",
     "ruff",
     "mypy",
     "isort",
