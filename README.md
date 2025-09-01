@@ -195,6 +195,8 @@ pdm run testcov     # Run tests with coverage report
 
 **Note:** Tests automatically use `~/.garminconnect` as the default token file location. You can override this by setting the `GARMINTOKENS` environment variable. Run `example.py` first to generate authentication tokens for testing.
 
+**For Developers:** Tests use VCR cassettes to record/replay HTTP interactions. If tests fail with authentication errors, ensure valid tokens exist in `~/.garminconnect` 
+
 ## 📦 Publishing
 
 For package maintainers:
