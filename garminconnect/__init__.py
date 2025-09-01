@@ -304,36 +304,14 @@ class Garmin:
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
 
         try:
+            token1 = None
+            token2 = None
+
             if tokenstore:
                 if len(tokenstore) > 512:
                     self.garth.loads(tokenstore)
                 else:
                     self.garth.load(tokenstore)
-
-                # Validate profile data exists
-                if not hasattr(self.garth, "profile") or not self.garth.profile:
-                    raise GarminConnectAuthenticationError(
-                        "Failed to login to get user profile"
-                    )
-
-                self.display_name = self.garth.profile.get("displayName")
-                self.full_name = self.garth.profile.get("fullName")
-
-                if not self.display_name:
-                    raise GarminConnectAuthenticationError(
-                        "Invalid profile data"
-                    )
-
-                settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
-
-                if not settings or "userData" not in settings:
-                    raise GarminConnectAuthenticationError(
-                        "Failed to retrieve user settings"
-                    )
-
-                self.unit_system = settings["userData"].get("measurementSystem")
-
-                return None, None
             else:
                 # Validate credentials before attempting login
                 if not self.username or not self.password:
@@ -342,7 +320,7 @@ class Garmin:
                     )
 
                 # Validate email format when actually used for login
-                if (not self.is_cn) and self.username and "@" not in self.username:
+                if self.username and "@" not in self.username:
                     raise GarminConnectAuthenticationError(
                         "Email must contain '@' symbol"
                     )
@@ -360,30 +338,33 @@ class Garmin:
                         prompt_mfa=self.prompt_mfa,
                     )
 
-                    # Validate profile data after login
-                    if not hasattr(self.garth, "profile") or not self.garth.profile:
-                        raise GarminConnectAuthenticationError(
-                            "Login succeeded but no profile data received"
-                        )
+            # Validate profile data exists
+            if not hasattr(self.garth, "profile") or not self.garth.profile:
+                raise GarminConnectAuthenticationError(
+                    "Failed to retrieve profile"
+                )
 
-                    self.display_name = self.garth.profile.get("displayName")
-                    self.full_name = self.garth.profile.get("fullName")
+            self.display_name = self.garth.profile.get("displayName")
+            self.full_name = self.garth.profile.get("fullName")
 
-                    if not self.display_name:
-                        raise GarminConnectAuthenticationError(
-                            "Invalid profile data: missing displayName"
-                        )
+            if not self.display_name:
+                raise GarminConnectAuthenticationError(
+                    "Invalid profile data found"
+                )
 
-                    settings = self.garth.connectapi(
-                        self.garmin_connect_user_settings_url
-                    )
+            settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
 
-                    if not settings or "userData" not in settings:
-                        raise GarminConnectAuthenticationError(
-                            "Failed to retrieve user settings"
-                        )
+            if not settings:
+                raise GarminConnectAuthenticationError(
+                    "Failed to retrieve user settings"
+                )
 
-                    self.unit_system = settings["userData"].get("measurementSystem")
+            if "userData" not in settings:
+                raise GarminConnectAuthenticationError(
+                    "Invalid user settings found"
+                )
+
+            self.unit_system = settings["userData"].get("measurementSystem")
 
             return token1, token2
 

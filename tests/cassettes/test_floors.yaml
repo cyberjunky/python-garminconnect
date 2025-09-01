@@ -10,70 +10,76 @@ interactions:
       - Bearer SANITIZED
       Connection:
       - keep-alive
+      Cookie:
+      - _cfuvid=SANITIZED
       User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
+      - GCM-iOS-5.7.2.1
     method: GET
     uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
   response:
     body:
-      string: '{"id": 2591602, "userData": {"gender": "MALE", "weight": 79800.0, "height":
-        182.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1984-10-17", "measurementSystem":
-        "metric", "activityLevel": null, "handedness": "RIGHT", "powerFormat": {"formatId":
-        30, "formatKey": "watt", "minFraction": 0, "maxFraction": 0, "groupingUsed":
-        true, "displayFormat": null}, "heartRateFormat": {"formatId": 21, "formatKey":
-        "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed": false, "displayFormat":
-        null}, "firstDayOfWeek": {"dayId": 2, "dayName": "sunday", "sortOrder": 2,
-        "isPossibleFirstDay": true}, "vo2MaxRunning": 46.0, "vo2MaxCycling": null,
-        "lactateThresholdSpeed": 0.34722125000000004, "lactateThresholdHeartRate":
-        null, "diveNumber": null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 85100.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 39.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
         3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
         "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
         null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
-        1044719868, "thresholdHeartRateAutoDetected": true, "ftpAutoDetected": null,
-        "trainingStatusPausedDate": null, "weatherLocation": {"useFixedLocation":
-        false, "latitude": null, "longitude": null, "locationName": null, "isoCountryCode":
-        null, "postalCode": null}, "golfDistanceUnit": "statute_us", "golfElevationUnit":
-        null, "golfSpeedUnit": null, "externalBottomTime": null}, "userSleep": {"sleepTime":
-        80400, "defaultSleepTime": false, "wakeTime": 24000, "defaultWakeTime": false},
-        "connectDate": null, "sourceType": null}'
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
     headers:
-      CF-Cache-Status:
-      - DYNAMIC
       CF-RAY:
-      - 7f8740a48af1155e-QRO
+      - 9782f22b8ee006c8-AMS
+      Cache-Control:
+      - no-cache, no-store, private
       Connection:
       - keep-alive
+      Content-Encoding:
+      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 18 Aug 2023 04:00:54 GMT
+      - Mon, 01 Sep 2025 07:10:06 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=iYV7gIdYcQH86D%2B1SrhLDbvBU1beua9HcesS6kbu9jiIorHzXEtQVjoq49jR5udXvF3rCsKxWcURNblr%2FWyqhsirWC%2FiOfbWaxzB7ZAoozVD0QfB1DK5E1iU8bVsUO%2FQd%2F4sWjEDvQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=jRpa9ZMwI4S4mHCL1E4sOOxNYDzjpyzmhDu8GBnI79Hs%2BIRd4DwSb4jSnWJ7wNzU5TMMvr94B7rNWsj1KuR1ovYNKRrsNgDUt5mBeedSURmRiwu%2Fgkn6hWv4c3oY58O0yorJ%2F1Xu5L4JAMILiscL3Gi81w%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
       - chunked
       alt-svc:
       - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
+      cf-cache-status:
+      - DYNAMIC
       pragma:
       - no-cache
-      set-cookie:
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
     status:
       code: 200
       message: OK
@@ -89,119 +95,43 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED; ADRUM_BT1=SANITIZED; ADRUM_BTa=SANITIZED; SameSite=SANITIZED
+      - _cfuvid=SANITIZED
       User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
+      - GCM-iOS-5.7.2.1
     method: GET
     uri: https://connectapi.garmin.com/wellness-service/wellness/floorsChartData/daily/2023-07-01
   response:
     body:
-      string: '{"startTimestampGMT": "2023-07-01T06:00:00.0", "endTimestampGMT": "2023-07-02T06:00:00.0",
+      string: '{"startTimestampGMT": "2023-06-30T22:00:00.0", "endTimestampGMT": "2023-07-01T22:00:00.0",
         "startTimestampLocal": "2023-07-01T00:00:00.0", "endTimestampLocal": "2023-07-02T00:00:00.0",
-        "floorsValueDescriptorDTOList": [{"key": "startTimeGMT", "index": 0}, {"key":
-        "endTimeGMT", "index": 1}, {"key": "floorsAscended", "index": 2}, {"key":
-        "floorsDescended", "index": 3}], "floorValuesArray": [["2023-07-01T06:00:00.0",
-        "2023-07-01T06:15:00.0", 0, 0], ["2023-07-01T06:15:00.0", "2023-07-01T06:30:00.0",
-        0, 0], ["2023-07-01T06:30:00.0", "2023-07-01T06:45:00.0", 0, 0], ["2023-07-01T06:45:00.0",
-        "2023-07-01T07:00:00.0", 0, 0], ["2023-07-01T07:00:00.0", "2023-07-01T07:15:00.0",
-        0, 0], ["2023-07-01T07:15:00.0", "2023-07-01T07:30:00.0", 0, 0], ["2023-07-01T07:30:00.0",
-        "2023-07-01T07:45:00.0", 0, 0], ["2023-07-01T07:45:00.0", "2023-07-01T08:00:00.0",
-        0, 0], ["2023-07-01T08:00:00.0", "2023-07-01T08:15:00.0", 0, 0], ["2023-07-01T08:15:00.0",
-        "2023-07-01T08:30:00.0", 0, 0], ["2023-07-01T08:30:00.0", "2023-07-01T08:45:00.0",
-        0, 0], ["2023-07-01T08:45:00.0", "2023-07-01T09:00:00.0", 0, 0], ["2023-07-01T09:00:00.0",
-        "2023-07-01T09:15:00.0", 0, 0], ["2023-07-01T09:15:00.0", "2023-07-01T09:30:00.0",
-        0, 0], ["2023-07-01T09:30:00.0", "2023-07-01T09:45:00.0", 0, 0], ["2023-07-01T09:45:00.0",
-        "2023-07-01T10:00:00.0", 0, 0], ["2023-07-01T10:00:00.0", "2023-07-01T10:15:00.0",
-        0, 0], ["2023-07-01T10:15:00.0", "2023-07-01T10:30:00.0", 0, 0], ["2023-07-01T10:30:00.0",
-        "2023-07-01T10:45:00.0", 0, 0], ["2023-07-01T10:45:00.0", "2023-07-01T11:00:00.0",
-        0, 0], ["2023-07-01T11:00:00.0", "2023-07-01T11:15:00.0", 0, 0], ["2023-07-01T11:15:00.0",
-        "2023-07-01T11:30:00.0", 0, 1], ["2023-07-01T11:30:00.0", "2023-07-01T11:45:00.0",
-        0, 0], ["2023-07-01T11:45:00.0", "2023-07-01T12:00:00.0", 1, 0], ["2023-07-01T12:00:00.0",
-        "2023-07-01T12:15:00.0", 0, 0], ["2023-07-01T12:15:00.0", "2023-07-01T12:30:00.0",
-        0, 0], ["2023-07-01T12:30:00.0", "2023-07-01T12:45:00.0", 0, 0], ["2023-07-01T12:45:00.0",
-        "2023-07-01T13:00:00.0", 1, 1], ["2023-07-01T13:00:00.0", "2023-07-01T13:15:00.0",
-        0, 0], ["2023-07-01T13:15:00.0", "2023-07-01T13:30:00.0", 0, 0], ["2023-07-01T13:30:00.0",
-        "2023-07-01T13:45:00.0", 0, 1], ["2023-07-01T13:45:00.0", "2023-07-01T14:00:00.0",
-        0, 0], ["2023-07-01T14:00:00.0", "2023-07-01T14:15:00.0", 1, 2], ["2023-07-01T14:15:00.0",
-        "2023-07-01T14:30:00.0", 0, 0], ["2023-07-01T14:30:00.0", "2023-07-01T14:45:00.0",
-        0, 0], ["2023-07-01T14:45:00.0", "2023-07-01T15:00:00.0", 0, 0], ["2023-07-01T15:00:00.0",
-        "2023-07-01T15:15:00.0", 0, 0], ["2023-07-01T15:15:00.0", "2023-07-01T15:30:00.0",
-        0, 0], ["2023-07-01T15:30:00.0", "2023-07-01T15:45:00.0", 1, 0], ["2023-07-01T15:45:00.0",
-        "2023-07-01T16:00:00.0", 0, 0], ["2023-07-01T16:00:00.0", "2023-07-01T16:15:00.0",
-        0, 0], ["2023-07-01T16:15:00.0", "2023-07-01T16:30:00.0", 0, 0], ["2023-07-01T16:30:00.0",
-        "2023-07-01T16:45:00.0", 0, 0], ["2023-07-01T16:45:00.0", "2023-07-01T17:00:00.0",
-        0, 0], ["2023-07-01T17:00:00.0", "2023-07-01T17:15:00.0", 3, 1], ["2023-07-01T17:15:00.0",
-        "2023-07-01T17:30:00.0", 0, 0], ["2023-07-01T17:30:00.0", "2023-07-01T17:45:00.0",
-        0, 0], ["2023-07-01T17:45:00.0", "2023-07-01T18:00:00.0", 0, 0], ["2023-07-01T18:00:00.0",
-        "2023-07-01T18:15:00.0", 0, 0], ["2023-07-01T18:15:00.0", "2023-07-01T18:30:00.0",
-        0, 0], ["2023-07-01T18:30:00.0", "2023-07-01T18:45:00.0", 0, 0], ["2023-07-01T18:45:00.0",
-        "2023-07-01T19:00:00.0", 1, 0], ["2023-07-01T19:00:00.0", "2023-07-01T19:15:00.0",
-        0, 0], ["2023-07-01T19:15:00.0", "2023-07-01T19:30:00.0", 0, 1], ["2023-07-01T19:30:00.0",
-        "2023-07-01T19:45:00.0", 0, 4], ["2023-07-01T19:45:00.0", "2023-07-01T20:00:00.0",
-        0, 0], ["2023-07-01T20:00:00.0", "2023-07-01T20:15:00.0", 0, 0], ["2023-07-01T20:15:00.0",
-        "2023-07-01T20:30:00.0", 0, 0], ["2023-07-01T20:30:00.0", "2023-07-01T20:45:00.0",
-        0, 0], ["2023-07-01T20:45:00.0", "2023-07-01T21:00:00.0", 0, 0], ["2023-07-01T21:00:00.0",
-        "2023-07-01T21:15:00.0", 1, 2], ["2023-07-01T21:15:00.0", "2023-07-01T21:30:00.0",
-        0, 0], ["2023-07-01T21:30:00.0", "2023-07-01T21:45:00.0", 0, 0], ["2023-07-01T21:45:00.0",
-        "2023-07-01T22:00:00.0", 0, 0], ["2023-07-01T22:00:00.0", "2023-07-01T22:15:00.0",
-        0, 0], ["2023-07-01T22:15:00.0", "2023-07-01T22:30:00.0", 0, 0], ["2023-07-01T22:30:00.0",
-        "2023-07-01T22:45:00.0", 0, 0], ["2023-07-01T22:45:00.0", "2023-07-01T23:00:00.0",
-        0, 0], ["2023-07-01T23:00:00.0", "2023-07-01T23:15:00.0", 0, 0], ["2023-07-01T23:15:00.0",
-        "2023-07-01T23:30:00.0", 0, 0], ["2023-07-01T23:30:00.0", "2023-07-01T23:45:00.0",
-        0, 0], ["2023-07-01T23:45:00.0", "2023-07-02T00:00:00.0", 2, 0], ["2023-07-02T00:00:00.0",
-        "2023-07-02T00:15:00.0", 0, 0], ["2023-07-02T00:15:00.0", "2023-07-02T00:30:00.0",
-        2, 0], ["2023-07-02T00:30:00.0", "2023-07-02T00:45:00.0", 0, 0], ["2023-07-02T00:45:00.0",
-        "2023-07-02T01:00:00.0", 2, 2], ["2023-07-02T01:00:00.0", "2023-07-02T01:15:00.0",
-        1, 1], ["2023-07-02T01:15:00.0", "2023-07-02T01:30:00.0", 0, 0], ["2023-07-02T01:30:00.0",
-        "2023-07-02T01:45:00.0", 0, 2], ["2023-07-02T01:45:00.0", "2023-07-02T02:00:00.0",
-        4, 2], ["2023-07-02T02:00:00.0", "2023-07-02T02:15:00.0", 0, 0], ["2023-07-02T02:15:00.0",
-        "2023-07-02T02:30:00.0", 0, 0], ["2023-07-02T02:30:00.0", "2023-07-02T02:45:00.0",
-        0, 0], ["2023-07-02T02:45:00.0", "2023-07-02T03:00:00.0", 0, 0], ["2023-07-02T03:00:00.0",
-        "2023-07-02T03:15:00.0", 0, 0], ["2023-07-02T03:15:00.0", "2023-07-02T03:30:00.0",
-        0, 0], ["2023-07-02T03:30:00.0", "2023-07-02T03:45:00.0", 0, 1], ["2023-07-02T03:45:00.0",
-        "2023-07-02T04:00:00.0", 4, 1], ["2023-07-02T04:00:00.0", "2023-07-02T04:15:00.0",
-        0, 0], ["2023-07-02T04:15:00.0", "2023-07-02T04:30:00.0", 0, 0], ["2023-07-02T04:30:00.0",
-        "2023-07-02T04:45:00.0", 0, 0], ["2023-07-02T04:45:00.0", "2023-07-02T05:00:00.0",
-        0, 0], ["2023-07-02T05:00:00.0", "2023-07-02T05:15:00.0", 0, 2], ["2023-07-02T05:15:00.0",
-        "2023-07-02T05:30:00.0", 0, 0], ["2023-07-02T05:30:00.0", "2023-07-02T05:45:00.0",
-        5, 5], ["2023-07-02T05:45:00.0", "2023-07-02T06:00:00.0", 0, 0]]}'
+        "floorsValueDescriptorDTOList": [], "floorValuesArray": []}'
     headers:
-      CF-Cache-Status:
-      - DYNAMIC
       CF-RAY:
-      - 7f8740a6ef41463e-DFW
+      - 9782f22cdfce7a4b-AMS
+      Cache-Control:
+      - no-cache, no-store, private
       Connection:
       - keep-alive
+      Content-Encoding:
+      - gzip
       Content-Type:
-      - application/json;charset=UTF-8
+      - application/json
       Date:
-      - Fri, 18 Aug 2023 04:00:54 GMT
+      - Mon, 01 Sep 2025 07:10:06 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=lxY7Q%2BGKPaXN2DpJu8%2BCjHI6CMPtwvhQDlFrjA09aAG4aIAy2bUBICGsi4T688SrIsoayL3lZGWnqNIjzdm0ybZ9Tlry3M30rNTNppkI1wNRZIkQj3NfukAtdH0SDXkaTpB%2F5hpM7g%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=6uc%2Fvs%2BK4Vy66%2FUWD8dGUu%2BK5PFiy926qUDGv1xQEkngjKLZZyW9wGAU%2FXfxZW6IIv9g0m1YujPvyUX4OcejtrHAlcBXm6eBtCU%2Fbzzm7S0PSkG1fxP7QNvuuw67JY%2FoWAQWt1P7LE0y3c0Tsu3ujMy1Nw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
       - chunked
       alt-svc:
       - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
+      cf-cache-status:
+      - DYNAMIC
       pragma:
       - no-cache
-      set-cookie:
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
     status:
       code: 200
       message: OK

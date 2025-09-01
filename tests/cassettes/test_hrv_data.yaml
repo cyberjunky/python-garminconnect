@@ -10,164 +10,76 @@ interactions:
       - Bearer SANITIZED
       Connection:
       - keep-alive
-      User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
-    method: GET
-    uri: https://connectapi.garmin.com/userprofile-service/socialProfile
-  response:
-    body:
-      string: '{"id": 3154645, "profileId": 2591602, "garminGUID": "0690cc1d-d23d-4412-b027-80fd4ed1c0f6",
-        "displayName": "mtamizi", "fullName": "Matin Tamizi", "userName": "mtamizi",
-        "profileImageUuid": "73240e81-6e4d-43fc-8af8-c8f6c51b3b8f", "profileImageUrlLarge":
-        "https://s3.amazonaws.com/garmin-connect-prod/profile_images/73240e81-6e4d-43fc-8af8-c8f6c51b3b8f-2591602.png",
-        "profileImageUrlMedium": "https://s3.amazonaws.com/garmin-connect-prod/profile_images/685a19e9-a7be-4a11-9bf9-faca0c5d1f1a-2591602.png",
-        "profileImageUrlSmall": "https://s3.amazonaws.com/garmin-connect-prod/profile_images/6302f021-0ec7-4dc9-b0c3-d5a19bc5a08c-2591602.png",
-        "location": "Ciudad de M\u00e9xico, CDMX", "facebookUrl": null, "twitterUrl":
-        null, "personalWebsite": null, "motivation": null, "bio": null, "primaryActivity":
-        null, "favoriteActivityTypes": [], "runningTrainingSpeed": 0.0, "cyclingTrainingSpeed":
-        0.0, "favoriteCyclingActivityTypes": [], "cyclingClassification": null, "cyclingMaxAvgPower":
-        0.0, "swimmingTrainingSpeed": 0.0, "profileVisibility": "private", "activityStartVisibility":
-        "private", "activityMapVisibility": "public", "courseVisibility": "public",
-        "activityHeartRateVisibility": "public", "activityPowerVisibility": "public",
-        "badgeVisibility": "private", "showAge": false, "showWeight": false, "showHeight":
-        false, "showWeightClass": false, "showAgeRange": false, "showGender": false,
-        "showActivityClass": false, "showVO2Max": false, "showPersonalRecords": false,
-        "showLast12Months": false, "showLifetimeTotals": false, "showUpcomingEvents":
-        false, "showRecentFavorites": false, "showRecentDevice": false, "showRecentGear":
-        false, "showBadges": true, "otherActivity": null, "otherPrimaryActivity":
-        null, "otherMotivation": null, "userRoles": ["SCOPE_ATP_READ", "SCOPE_ATP_WRITE",
-        "SCOPE_COMMUNITY_COURSE_READ", "SCOPE_COMMUNITY_COURSE_WRITE", "SCOPE_CONNECT_READ",
-        "SCOPE_CONNECT_WRITE", "SCOPE_DT_CLIENT_ANALYTICS_WRITE", "SCOPE_GARMINPAY_READ",
-        "SCOPE_GARMINPAY_WRITE", "SCOPE_GCOFFER_READ", "SCOPE_GCOFFER_WRITE", "SCOPE_GHS_SAMD",
-        "SCOPE_GHS_UPLOAD", "SCOPE_GOLF_API_READ", "SCOPE_GOLF_API_WRITE", "SCOPE_INSIGHTS_READ",
-        "SCOPE_INSIGHTS_WRITE", "SCOPE_PRODUCT_SEARCH_READ", "ROLE_CONNECTUSER", "ROLE_FITNESS_USER",
-        "ROLE_WELLNESS_USER", "ROLE_OUTDOOR_USER", "ROLE_CONNECT_2_USER", "ROLE_TACX_APP_USER"],
-        "nameApproved": true, "userProfileFullName": "Matin Tamizi", "makeGolfScorecardsPrivate":
-        true, "allowGolfLiveScoring": false, "allowGolfScoringByConnections": true,
-        "userLevel": 3, "userPoint": 117, "levelUpdateDate": "2020-12-12T15:20:38.0",
-        "levelIsViewed": false, "levelPointThreshold": 140, "userPointOffset": 0,
-        "userPro": false}'
-    headers:
-      CF-Cache-Status:
-      - DYNAMIC
-      CF-RAY:
-      - 7f8c22b8fd5db6ed-QRO
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 18 Aug 2023 18:14:17 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=0E77t2nW5dGJbcmzeOjPJoIjH2646y1L2BeBzRVSPirgt6bd2fNJbl8cpsSu%2Bvb0XSQ0E4kbICTNiK%2FJnEhNsgwkeHWFbjC7APT867Vf%2FdAInYViBoc7S1CMJyZtmBB2Fybh1dz32g%3D%3D"}],"group":"cf-nel","max_age":604800}'
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      alt-svc:
-      - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
-      pragma:
-      - no-cache
-      set-cookie:
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Authorization:
-      - Bearer SANITIZED
-      Connection:
-      - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED; ADRUM_BT1=SANITIZED; ADRUM_BTa=SANITIZED; SameSite=SANITIZED
+      - _cfuvid=SANITIZED
       User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
+      - GCM-iOS-5.7.2.1
     method: GET
     uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
   response:
     body:
-      string: '{"id": 2591602, "userData": {"gender": "MALE", "weight": 79800.0, "height":
-        182.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1984-10-17", "measurementSystem":
-        "metric", "activityLevel": null, "handedness": "RIGHT", "powerFormat": {"formatId":
-        30, "formatKey": "watt", "minFraction": 0, "maxFraction": 0, "groupingUsed":
-        true, "displayFormat": null}, "heartRateFormat": {"formatId": 21, "formatKey":
-        "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed": false, "displayFormat":
-        null}, "firstDayOfWeek": {"dayId": 2, "dayName": "sunday", "sortOrder": 2,
-        "isPossibleFirstDay": true}, "vo2MaxRunning": 46.0, "vo2MaxCycling": null,
-        "lactateThresholdSpeed": 0.34722125000000004, "lactateThresholdHeartRate":
-        null, "diveNumber": null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 85100.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 39.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
         3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
         "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
         null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
-        1044719868, "thresholdHeartRateAutoDetected": true, "ftpAutoDetected": null,
-        "trainingStatusPausedDate": null, "weatherLocation": {"useFixedLocation":
-        false, "latitude": null, "longitude": null, "locationName": null, "isoCountryCode":
-        null, "postalCode": null}, "golfDistanceUnit": "statute_us", "golfElevationUnit":
-        null, "golfSpeedUnit": null, "externalBottomTime": null}, "userSleep": {"sleepTime":
-        80400, "defaultSleepTime": false, "wakeTime": 24000, "defaultWakeTime": false},
-        "connectDate": null, "sourceType": null}'
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
     headers:
-      CF-Cache-Status:
-      - DYNAMIC
       CF-RAY:
-      - 7f8c22baef2146e9-DFW
+      - 9782f244aee896fc-AMS
+      Cache-Control:
+      - no-cache, no-store, private
       Connection:
       - keep-alive
+      Content-Encoding:
+      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 18 Aug 2023 18:14:18 GMT
+      - Mon, 01 Sep 2025 07:10:10 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=%2BZjeDtpfTSyeEJtm6VjqgfKiqPie8kaSR1fdapEWVOUg1%2BjoTebr%2FmIk7mri7ypjXTL2A8ZX%2Bi3OLErVyTv6HDuUNpJw9i7LLALaMQoidzMGEwUDfKsQQG5MCrY06CT0SYZxun%2BdSw%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=EaAG6E9vpZziNaxYQz%2Bk2Z%2F8kDbyizh3uJuRCSuZLijQJZ3zUpX%2FCp0COWbdWr0%2FDWtWyNibKV0wDiXxDyvZP16uruNx4ynxRy%2FTrHj18czfIKEdv50iZFpviurEtjxuFdHg2F9N%2BTEw9pzphNsseMbQWw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
       - chunked
       alt-svc:
       - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
+      cf-cache-status:
+      - DYNAMIC
       pragma:
       - no-cache
-      set-cookie:
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
     status:
       code: 200
       message: OK
@@ -183,130 +95,36 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED; ADRUM_BT1=SANITIZED; ADRUM_BTa=SANITIZED; SameSite=SANITIZED
+      - _cfuvid=SANITIZED
       User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
+      - GCM-iOS-5.7.2.1
     method: GET
     uri: https://connectapi.garmin.com/hrv-service/hrv/2023-07-01
   response:
     body:
-      string: '{"userProfilePk": 2591602, "hrvSummary": {"calendarDate": "2023-07-01",
-        "weeklyAvg": 43, "lastNightAvg": 43, "lastNight5MinHigh": 60, "baseline":
-        {"lowUpper": 35, "balancedLow": 38, "balancedUpper": 52, "markerValue": 0.42855835},
-        "status": "BALANCED", "feedbackPhrase": "HRV_BALANCED_8", "createTimeStamp":
-        "2023-07-01T12:27:14.85"}, "hrvReadings": [{"hrvValue": 44, "readingTimeGMT":
-        "2023-07-01T06:44:41.0", "readingTimeLocal": "2023-07-01T00:44:41.0"}, {"hrvValue":
-        39, "readingTimeGMT": "2023-07-01T06:49:41.0", "readingTimeLocal": "2023-07-01T00:49:41.0"},
-        {"hrvValue": 49, "readingTimeGMT": "2023-07-01T06:54:41.0", "readingTimeLocal":
-        "2023-07-01T00:54:41.0"}, {"hrvValue": 55, "readingTimeGMT": "2023-07-01T06:59:41.0",
-        "readingTimeLocal": "2023-07-01T00:59:41.0"}, {"hrvValue": 46, "readingTimeGMT":
-        "2023-07-01T07:04:41.0", "readingTimeLocal": "2023-07-01T01:04:41.0"}, {"hrvValue":
-        42, "readingTimeGMT": "2023-07-01T07:09:41.0", "readingTimeLocal": "2023-07-01T01:09:41.0"},
-        {"hrvValue": 56, "readingTimeGMT": "2023-07-01T07:14:41.0", "readingTimeLocal":
-        "2023-07-01T01:14:41.0"}, {"hrvValue": 51, "readingTimeGMT": "2023-07-01T07:19:41.0",
-        "readingTimeLocal": "2023-07-01T01:19:41.0"}, {"hrvValue": 42, "readingTimeGMT":
-        "2023-07-01T07:24:41.0", "readingTimeLocal": "2023-07-01T01:24:41.0"}, {"hrvValue":
-        49, "readingTimeGMT": "2023-07-01T07:29:41.0", "readingTimeLocal": "2023-07-01T01:29:41.0"},
-        {"hrvValue": 43, "readingTimeGMT": "2023-07-01T07:34:41.0", "readingTimeLocal":
-        "2023-07-01T01:34:41.0"}, {"hrvValue": 40, "readingTimeGMT": "2023-07-01T07:39:41.0",
-        "readingTimeLocal": "2023-07-01T01:39:41.0"}, {"hrvValue": 45, "readingTimeGMT":
-        "2023-07-01T07:44:41.0", "readingTimeLocal": "2023-07-01T01:44:41.0"}, {"hrvValue":
-        42, "readingTimeGMT": "2023-07-01T07:49:41.0", "readingTimeLocal": "2023-07-01T01:49:41.0"},
-        {"hrvValue": 45, "readingTimeGMT": "2023-07-01T07:54:41.0", "readingTimeLocal":
-        "2023-07-01T01:54:41.0"}, {"hrvValue": 42, "readingTimeGMT": "2023-07-01T07:59:41.0",
-        "readingTimeLocal": "2023-07-01T01:59:41.0"}, {"hrvValue": 38, "readingTimeGMT":
-        "2023-07-01T08:04:41.0", "readingTimeLocal": "2023-07-01T02:04:41.0"}, {"hrvValue":
-        39, "readingTimeGMT": "2023-07-01T08:09:41.0", "readingTimeLocal": "2023-07-01T02:09:41.0"},
-        {"hrvValue": 45, "readingTimeGMT": "2023-07-01T08:14:41.0", "readingTimeLocal":
-        "2023-07-01T02:14:41.0"}, {"hrvValue": 40, "readingTimeGMT": "2023-07-01T08:19:41.0",
-        "readingTimeLocal": "2023-07-01T02:19:41.0"}, {"hrvValue": 30, "readingTimeGMT":
-        "2023-07-01T08:24:41.0", "readingTimeLocal": "2023-07-01T02:24:41.0"}, {"hrvValue":
-        36, "readingTimeGMT": "2023-07-01T08:29:41.0", "readingTimeLocal": "2023-07-01T02:29:41.0"},
-        {"hrvValue": 27, "readingTimeGMT": "2023-07-01T08:34:41.0", "readingTimeLocal":
-        "2023-07-01T02:34:41.0"}, {"hrvValue": 33, "readingTimeGMT": "2023-07-01T08:39:41.0",
-        "readingTimeLocal": "2023-07-01T02:39:41.0"}, {"hrvValue": 29, "readingTimeGMT":
-        "2023-07-01T08:44:41.0", "readingTimeLocal": "2023-07-01T02:44:41.0"}, {"hrvValue":
-        30, "readingTimeGMT": "2023-07-01T08:49:41.0", "readingTimeLocal": "2023-07-01T02:49:41.0"},
-        {"hrvValue": 29, "readingTimeGMT": "2023-07-01T08:54:41.0", "readingTimeLocal":
-        "2023-07-01T02:54:41.0"}, {"hrvValue": 37, "readingTimeGMT": "2023-07-01T08:59:41.0",
-        "readingTimeLocal": "2023-07-01T02:59:41.0"}, {"hrvValue": 47, "readingTimeGMT":
-        "2023-07-01T09:04:41.0", "readingTimeLocal": "2023-07-01T03:04:41.0"}, {"hrvValue":
-        39, "readingTimeGMT": "2023-07-01T09:09:41.0", "readingTimeLocal": "2023-07-01T03:09:41.0"},
-        {"hrvValue": 38, "readingTimeGMT": "2023-07-01T09:14:41.0", "readingTimeLocal":
-        "2023-07-01T03:14:41.0"}, {"hrvValue": 42, "readingTimeGMT": "2023-07-01T09:19:41.0",
-        "readingTimeLocal": "2023-07-01T03:19:41.0"}, {"hrvValue": 35, "readingTimeGMT":
-        "2023-07-01T09:24:41.0", "readingTimeLocal": "2023-07-01T03:24:41.0"}, {"hrvValue":
-        55, "readingTimeGMT": "2023-07-01T09:29:41.0", "readingTimeLocal": "2023-07-01T03:29:41.0"},
-        {"hrvValue": 50, "readingTimeGMT": "2023-07-01T09:34:41.0", "readingTimeLocal":
-        "2023-07-01T03:34:41.0"}, {"hrvValue": 41, "readingTimeGMT": "2023-07-01T09:39:41.0",
-        "readingTimeLocal": "2023-07-01T03:39:41.0"}, {"hrvValue": 57, "readingTimeGMT":
-        "2023-07-01T09:44:41.0", "readingTimeLocal": "2023-07-01T03:44:41.0"}, {"hrvValue":
-        44, "readingTimeGMT": "2023-07-01T09:49:41.0", "readingTimeLocal": "2023-07-01T03:49:41.0"},
-        {"hrvValue": 36, "readingTimeGMT": "2023-07-01T09:54:41.0", "readingTimeLocal":
-        "2023-07-01T03:54:41.0"}, {"hrvValue": 41, "readingTimeGMT": "2023-07-01T09:59:41.0",
-        "readingTimeLocal": "2023-07-01T03:59:41.0"}, {"hrvValue": 47, "readingTimeGMT":
-        "2023-07-01T10:04:41.0", "readingTimeLocal": "2023-07-01T04:04:41.0"}, {"hrvValue":
-        47, "readingTimeGMT": "2023-07-01T10:09:41.0", "readingTimeLocal": "2023-07-01T04:09:41.0"},
-        {"hrvValue": 40, "readingTimeGMT": "2023-07-01T10:14:41.0", "readingTimeLocal":
-        "2023-07-01T04:14:41.0"}, {"hrvValue": 28, "readingTimeGMT": "2023-07-01T10:19:41.0",
-        "readingTimeLocal": "2023-07-01T04:19:41.0"}, {"hrvValue": 33, "readingTimeGMT":
-        "2023-07-01T10:24:41.0", "readingTimeLocal": "2023-07-01T04:24:41.0"}, {"hrvValue":
-        37, "readingTimeGMT": "2023-07-01T10:29:41.0", "readingTimeLocal": "2023-07-01T04:29:41.0"},
-        {"hrvValue": 50, "readingTimeGMT": "2023-07-01T10:34:41.0", "readingTimeLocal":
-        "2023-07-01T04:34:41.0"}, {"hrvValue": 37, "readingTimeGMT": "2023-07-01T10:39:41.0",
-        "readingTimeLocal": "2023-07-01T04:39:41.0"}, {"hrvValue": 41, "readingTimeGMT":
-        "2023-07-01T10:44:41.0", "readingTimeLocal": "2023-07-01T04:44:41.0"}, {"hrvValue":
-        36, "readingTimeGMT": "2023-07-01T10:49:41.0", "readingTimeLocal": "2023-07-01T04:49:41.0"},
-        {"hrvValue": 60, "readingTimeGMT": "2023-07-01T10:54:41.0", "readingTimeLocal":
-        "2023-07-01T04:54:41.0"}, {"hrvValue": 51, "readingTimeGMT": "2023-07-01T10:59:41.0",
-        "readingTimeLocal": "2023-07-01T04:59:41.0"}, {"hrvValue": 46, "readingTimeGMT":
-        "2023-07-01T11:04:41.0", "readingTimeLocal": "2023-07-01T05:04:41.0"}, {"hrvValue":
-        37, "readingTimeGMT": "2023-07-01T11:09:41.0", "readingTimeLocal": "2023-07-01T05:09:41.0"},
-        {"hrvValue": 36, "readingTimeGMT": "2023-07-01T11:14:41.0", "readingTimeLocal":
-        "2023-07-01T05:14:41.0"}, {"hrvValue": 33, "readingTimeGMT": "2023-07-01T11:19:41.0",
-        "readingTimeLocal": "2023-07-01T05:19:41.0"}, {"hrvValue": 50, "readingTimeGMT":
-        "2023-07-01T11:24:41.0", "readingTimeLocal": "2023-07-01T05:24:41.0"}], "startTimestampGMT":
-        "2023-07-01T06:40:00.0", "endTimestampGMT": "2023-07-01T11:24:41.0", "startTimestampLocal":
-        "2023-07-01T00:40:00.0", "endTimestampLocal": "2023-07-01T05:24:41.0", "sleepStartTimestampGMT":
-        "2023-07-01T06:40:00.0", "sleepEndTimestampGMT": "2023-07-01T11:26:00.0",
-        "sleepStartTimestampLocal": "2023-07-01T00:40:00.0", "sleepEndTimestampLocal":
-        "2023-07-01T05:26:00.0"}'
+      string: ''
     headers:
-      CF-Cache-Status:
-      - DYNAMIC
       CF-RAY:
-      - 7f8c22bc4fbeb6df-QRO
+      - 9782f245fbac5329-AMS
+      Cache-Control:
+      - no-cache, no-store, private
       Connection:
       - keep-alive
-      Content-Type:
-      - application/json
       Date:
-      - Fri, 18 Aug 2023 18:14:18 GMT
+      - Mon, 01 Sep 2025 07:10:11 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=K26isoQlhIUy1i4ANfOL1efqqIjmSH6tUk0Hf7JP59UL6VBoYZUZHyEHOzZ8pQcjWsDoUlbaFPGxcqQv5DsngZN6Ji8WsQY%2BhHNjn5t2KGN0gY%2FnV2O0gHI95EvJoadReFAtn4Zbuw%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=LBS%2FQC3USLz8qTDzmdvo%2FD8jztN4is8VaUgmw0PcsVdEsRpRSOtaHt0Xau3EhxSzssC3Sbm%2BLG%2FLh3r2Dybp6JNeD5xFRkCIcHbmaDRjxav5SFVOIM5AmMofLmrGshQ058C7cCcaW1soqCOt6VRuvA9Zdg%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
-      Transfer-Encoding:
-      - chunked
       alt-svc:
       - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
+      cf-cache-status:
+      - DYNAMIC
       pragma:
       - no-cache
-      set-cookie:
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED
     status:
-      code: 200
-      message: OK
+      code: 204
+      message: No Content
 version: 1
