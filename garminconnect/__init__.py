@@ -331,7 +331,7 @@ class Garmin:
                     )
 
                 # Validate email format when actually used for login
-                if self.username and "@" not in self.username:
+                if not self.is_cn and self.username and "@" not in self.username:
                     raise GarminConnectAuthenticationError(
                         "Email must contain '@' symbol"
                     )
@@ -342,12 +342,16 @@ class Garmin:
                         self.password,
                         return_on_mfa=self.return_on_mfa,
                     )
+                    # In MFA early-return mode, profile/settings are not loaded yet
+                    return token1, token2
                 else:
                     token1, token2 = self.garth.login(
                         self.username,
                         self.password,
                         prompt_mfa=self.prompt_mfa,
                     )
+                    # In MFA early-return mode, profile/settings are not loaded yet
+                    return token1, token2
 
             # Validate profile data exists
             if not hasattr(self.garth, "profile") or not self.garth.profile:
@@ -532,8 +536,10 @@ class Garmin:
         'YYYY-MM-DD' through enddate 'YYYY-MM-DD'.
         """
 
-        if enddate is None:
-            enddate = startdate
+        startdate = _validate_date_format(startdate, "startdate")
+        enddate = startdate if enddate is None else _validate_date_format(enddate, "enddate")
+        if datetime.strptime(startdate, DATE_FORMAT_STR).date() > datetime.strptime(enddate, DATE_FORMAT_STR).date():
+            raise ValueError("Startdate cannot be after enddate")
         url = f"{self.garmin_connect_weight_url}/weight/dateRange"
         params = {"startDate": str(startdate), "endDate": str(enddate)}
         logger.debug("Requesting body composition")
@@ -556,6 +562,7 @@ class Garmin:
         visceral_fat_rating: float | None = None,
         bmi: float | None = None,
     ) -> dict[str, Any]:
+        weight = _validate_positive_number(weight, "weight")
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         fitEncoder = FitEncoderWeight()
         fitEncoder.write_file_info()
@@ -626,6 +633,8 @@ class Garmin:
 
         url = f"{self.garmin_connect_weight_url}/user-weight"
 
+        if unitKey not in VALID_WEIGHT_UNITS:
+            raise ValueError(f"UnitKey must be one of {VALID_WEIGHT_UNITS}")
         # Validate and format the timestamps
         dt = datetime.fromisoformat(dateTimestamp) if dateTimestamp else datetime.now()
         dtGMT = (
@@ -858,25 +867,24 @@ class Garmin:
             # (or more, if cyclingHeartRate ever gets values) nearly identical dicts.
             # We're combining them here
             for entry in speed_and_heart_rate:
-                if entry["speed"] is not None:
+                speed = entry.get("speed")
+                if speed is not None:
                     speed_and_heart_rate_dict["userProfilePK"] = entry["userProfilePK"]
                     speed_and_heart_rate_dict["version"] = entry["version"]
                     speed_and_heart_rate_dict["calendarDate"] = entry["calendarDate"]
                     speed_and_heart_rate_dict["sequence"] = entry["sequence"]
-                    speed_and_heart_rate_dict["speed"] = entry["speed"]
+                    speed_and_heart_rate_dict["speed"] = speed
 
                 # This is not a typo. The Garmin dictionary has a typo as of 2025-07-08, referring to it as "hearRate"
-                elif entry["hearRate"] is not None:
-                    speed_and_heart_rate_dict["heartRate"] = entry[
-                        "hearRate"
-                    ]  # Fix Garmin's typo
+                hr = entry.get("hearRate")
+                if hr is not None:
+                    speed_and_heart_rate_dict["heartRate"] = hr
+                    # Fix Garmin's typo
 
                 # Doesn't exist for me but adding it just in case.  We'll check for each entry
-                if entry["heartRateCycling"] is not None:
-                    speed_and_heart_rate_dict["heartRateCycling"] = entry[
-                        "heartRateCycling"
-                    ]
-
+                hrc = entry.get("heartRateCycling")
+                if hrc is not None:
+                    speed_and_heart_rate_dict["heartRateCycling"] = hrc
             return {
                 "speed_and_heart_rate": speed_and_heart_rate_dict,
                 "power": power_dict,
@@ -1205,6 +1213,7 @@ class Garmin:
         Using a range returns the aggregated weekly values for that week.
         """
 
+        startdate = _validate_date_format(startdate, "startdate")
         if enddate is None:
             url = self.garmin_connect_endurance_score_url
             params = {"calendarDate": str(startdate)}
@@ -1213,6 +1222,7 @@ class Garmin:
             return self.connectapi(url, params=params)
         else:
             url = f"{self.garmin_connect_endurance_score_url}/stats"
+            enddate = _validate_date_format(enddate, "enddate")
             params = {
                 "startDate": str(startdate),
                 "endDate": str(enddate),
@@ -1299,6 +1309,7 @@ class Garmin:
 
         if enddate is None:
             url = self.garmin_connect_hill_score_url
+            startdate = _validate_date_format(startdate, "startdate")
             params = {"calendarDate": str(startdate)}
             logger.debug("Requesting hill score data for a single day")
 
@@ -1306,6 +1317,8 @@ class Garmin:
 
         else:
             url = f"{self.garmin_connect_hill_score_url}/stats"
+            startdate = _validate_date_format(startdate, "startdate")
+            enddate = _validate_date_format(enddate, "enddate")
             params = {
                 "startDate": str(startdate),
                 "endDate": str(enddate),
@@ -1351,6 +1364,8 @@ class Garmin:
         else:
             single_day = False
 
+        startdate = _validate_date_format(startdate, "startdate")
+        enddate = _validate_date_format(enddate, "enddate")
         params = {"singleDayView": single_day}
 
         url = f"{self.garmin_connect_solar_url}/{device_id}/{startdate}/{enddate}"
@@ -1648,6 +1663,8 @@ class Garmin:
         """
 
         url = self.garmin_connect_fitnessstats
+        startdate = _validate_date_format(startdate, "startdate")
+        enddate = _validate_date_format(enddate, "enddate")
         params = {
             "startDate": str(startdate),
             "endDate": str(enddate),
@@ -1680,6 +1697,8 @@ class Garmin:
 
         goals = []
         url = self.garmin_connect_goals_url
+        start = _validate_positive_integer(start, "start")
+        limit = _validate_positive_integer(limit, "limit")
         params = {
             "status": status,
             "start": str(start),
@@ -1832,10 +1851,9 @@ class Garmin:
         """Return activity details."""
 
         activity_id = str(activity_id)
-        params = {
-            "maxChartSize": str(maxchart),
-            "maxPolylineSize": str(maxpoly),
-        }
+        maxchart = _validate_positive_integer(maxchart, "maxchart")
+        maxpoly = _validate_positive_integer(maxpoly, "maxpoly")
+        params = {"maxChartSize": str(maxchart), "maxPolylineSize": str(maxpoly)}
         url = f"{self.garmin_connect_activity}/{activity_id}/details"
         logger.debug("Requesting details for activity id %s", activity_id)
 
@@ -1844,7 +1862,7 @@ class Garmin:
     def get_activity_exercise_sets(self, activity_id: str) -> dict[str, Any]:
         """Return activity exercise sets."""
 
-        activity_id = str(activity_id)
+        activity_id = _validate_positive_integer(activity_id, "activity_id")
         url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
         logger.debug("Requesting exercise sets for activity id %s", activity_id)
 
@@ -1853,7 +1871,7 @@ class Garmin:
     def get_activity_gear(self, activity_id: str) -> dict[str, Any]:
         """Return gears used for activity id."""
 
-        activity_id = str(activity_id)
+        activity_id = _validate_positive_integer(activity_id, "activity_id")
         params = {
             "activityId": str(activity_id),
         }
@@ -1907,6 +1925,8 @@ class Garmin:
         """Return workouts from start till end."""
 
         url = f"{self.garmin_workouts}/workouts"
+        start = _validate_non_negative_integer(start, "start")
+        limit = _validate_positive_integer(limit, "limit")
         logger.debug(f"Requesting workouts from {start} with limit {limit}")
         params = {"start": start, "limit": limit}
         return self.connectapi(url, params=params)
@@ -1914,12 +1934,14 @@ class Garmin:
     def get_workout_by_id(self, workout_id: str) -> dict[str, Any]:
         """Return workout by id."""
 
+        workout_id = _validate_positive_integer(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/{workout_id}"
         return self.connectapi(url)
 
     def download_workout(self, workout_id: str) -> bytes:
         """Download workout by id."""
 
+        workout_id = _validate_positive_integer(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/FIT/{workout_id}"
         logger.debug("Downloading workout from %s", url)
 
@@ -1958,6 +1980,8 @@ class Garmin:
     ) -> dict[str, Any]:
         """Return summaries of cycles that have days between startdate and enddate."""
 
+        startdate = _validate_date_format(startdate, "startdate")
+        enddate = _validate_date_format(enddate, "enddate")
         url = f"{self.garmin_connect_menstrual_calendar_url}/{startdate}/{enddate}"
         logger.debug(
             f"Requesting menstrual data for dates {startdate} through {enddate}"
