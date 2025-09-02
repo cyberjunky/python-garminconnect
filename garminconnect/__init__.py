@@ -43,7 +43,7 @@ def _validate_date_format(date_str: str, param_name: str = "date") -> str:
         # Validate that it's a real date
         datetime.strptime(date_str, DATE_FORMAT_STR)
     except ValueError as e:
-        raise ValueError(f"Invalid {param_name}: {e}") from e
+        raise ValueError(f"invalid {param_name}: {e}") from e
 
     return date_str
 
@@ -134,7 +134,7 @@ class Garmin:
             "/usersummary-service/usersummary/hydration/daily"
         )
         self.garmin_connect_set_hydration_url = (
-            "usersummary-service/usersummary/hydration/log"
+            "/usersummary-service/usersummary/hydration/log"
         )
         self.garmin_connect_daily_stats_steps_url = (
             "/usersummary-service/stats/steps/daily"
@@ -192,7 +192,7 @@ class Garmin:
             "/periodichealth-service/menstrualcycle/dayview"
         )
         self.garmin_connect_pregnancy_snapshot_url = (
-            "periodichealth-service/menstrualcycle/pregnancysnapshot"
+            "/periodichealth-service/menstrualcycle/pregnancysnapshot"
         )
         self.garmin_connect_goals_url = "/goal-service/goal/goals"
 
@@ -226,7 +226,6 @@ class Garmin:
         self.garmin_connect_daily_intensity_minutes = (
             "/wellness-service/wellness/daily/im"
         )
-        self.garmin_all_day_stress_url = "/wellness-service/wellness/dailyStress"
         self.garmin_daily_events_url = "/wellness-service/wellness/dailyEvents"
         self.garmin_connect_activities = (
             "/activitylist-service/activities/search/activities"
@@ -350,8 +349,7 @@ class Garmin:
                         self.password,
                         prompt_mfa=self.prompt_mfa,
                     )
-                    # In MFA early-return mode, profile/settings are not loaded yet
-                    return token1, token2
+                    # Continue to load profile/settings below
 
             # Validate profile data exists
             if not hasattr(self.garth, "profile") or not self.garth.profile:
@@ -544,7 +542,7 @@ class Garmin:
             datetime.strptime(startdate, DATE_FORMAT_STR).date()
             > datetime.strptime(enddate, DATE_FORMAT_STR).date()
         ):
-            raise ValueError("Startdate cannot be after enddate")
+            raise ValueError("startdate cannot be after enddate")
         url = f"{self.garmin_connect_weight_url}/weight/dateRange"
         params = {"startDate": str(startdate), "endDate": str(enddate)}
         logger.debug("Requesting body composition")
@@ -612,7 +610,7 @@ class Garmin:
         try:
             dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         except ValueError as e:
-            raise ValueError(f"Invalid timestamp format: {e}") from e
+            raise ValueError(f"invalid timestamp format: {e}") from e
 
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt.astimezone(timezone.utc)
@@ -639,7 +637,7 @@ class Garmin:
         url = f"{self.garmin_connect_weight_url}/user-weight"
 
         if unitKey not in VALID_WEIGHT_UNITS:
-            raise ValueError(f"UnitKey must be one of {VALID_WEIGHT_UNITS}")
+            raise ValueError(f"unitKey must be one of {VALID_WEIGHT_UNITS}")
         # Validate and format the timestamps
         dt = datetime.fromisoformat(dateTimestamp) if dateTimestamp else datetime.now()
         dtGMT = (
@@ -895,7 +893,7 @@ class Garmin:
             }
 
         if start_date is None:
-            raise ValueError("You must either specify 'latest=True' or a start_date")
+            raise ValueError("you must either specify 'latest=True' or a start_date")
 
         if end_date is None:
             end_date = date.today().isoformat()
@@ -955,7 +953,7 @@ class Garmin:
                 raw_ts = datetime.strptime(cdate, "%Y-%m-%d")
                 timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
             except ValueError as e:
-                raise ValueError(f"Invalid cdate: {e}") from e
+                raise ValueError(f"invalid cdate: {e}") from e
 
         elif cdate is None and timestamp is not None:
             # If timestamp is not null, validate and set cdate equal to date part of timestamp
@@ -983,7 +981,7 @@ class Garmin:
             except ValueError as e:
                 if "doesn't match" in str(e):
                     raise
-                raise ValueError(f"Invalid timestamp format: {e}") from e
+                raise ValueError(f"invalid timestamp format: {e}") from e
 
         payload = {
             "calendarDate": cdate,
@@ -1034,7 +1032,7 @@ class Garmin:
         """Return available all day stress data 'cdate' format 'YYYY-MM-DD'."""
 
         cdate = _validate_date_format(cdate, "cdate")
-        url = f"{self.garmin_all_day_stress_url}/{cdate}"
+        url = f"{self.garmin_connect_daily_stress_url}/{cdate}"
         logger.debug("Requesting all day stress data")
 
         return self.connectapi(url)
@@ -1067,7 +1065,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_available_badges(self) -> list[dict]:
+    def get_available_badges(self) -> list[dict[str, Any]]:
         """Return available badges for current user."""
 
         url = self.garmin_connect_available_badges_url
@@ -1075,7 +1073,7 @@ class Garmin:
 
         return self.connectapi(url, params={"showExclusiveBadge": "true"})
 
-    def get_in_progress_badges(self) -> list[dict]:
+    def get_in_progress_badges(self) -> list[dict[str, Any]]:
         """Return in progress badges for current user."""
 
         logger.debug("Requesting in progress badges for user")
@@ -1283,7 +1281,7 @@ class Garmin:
             return self.connectapi(url, params=params)
 
         else:
-            raise ValueError("You must either provide all parameters or no parameters")
+            raise ValueError("you must either provide all parameters or no parameters")
 
     def get_training_status(self, cdate: str) -> dict[str, Any]:
         """Return training status data for current user."""
@@ -1546,12 +1544,12 @@ class Garmin:
 
         # Check if it's actually a file
         if not p.is_file():
-            raise ValueError(f"Path is not a file: {activity_path}")
+            raise ValueError(f"path is not a file: {activity_path}")
 
         file_base_name = p.name
 
         if not file_base_name:
-            raise ValueError("Invalid file path - no filename found")
+            raise ValueError("invalid file path - no filename found")
 
         # More robust extension checking
         file_parts = file_base_name.split(".")
@@ -1787,7 +1785,7 @@ class Garmin:
             Garmin.ActivityDownloadFormat.CSV: f"{self.garmin_connect_csv_download}/{activity_id}",  # noqa
         }
         if dl_fmt not in urls:
-            raise ValueError(f"Unexpected value {dl_fmt} for dl_fmt")
+            raise ValueError(f"unexpected value {dl_fmt} for dl_fmt")
         url = urls[dl_fmt]
 
         logger.debug("Downloading activities from %s", url)
@@ -1863,17 +1861,19 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_activity_exercise_sets(self, activity_id: str) -> dict[str, Any]:
+    def get_activity_exercise_sets(self, activity_id: int | str) -> dict[str, Any]:
         """Return activity exercise sets."""
 
+        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
         url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
         logger.debug("Requesting exercise sets for activity id %s", activity_id)
 
         return self.connectapi(url)
 
-    def get_activity_gear(self, activity_id: str) -> dict[str, Any]:
+    def get_activity_gear(self, activity_id: int | str) -> dict[str, Any]:
         """Return gears used for activity id."""
 
+        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
         params = {
             "activityId": str(activity_id),
         }
@@ -1882,7 +1882,9 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
-    def get_gear_activities(self, gearUUID: str, limit: int = 9999) -> dict[str, Any]:
+    def get_gear_activities(
+        self, gearUUID: str, limit: int = 9999
+    ) -> list[dict[str, Any]]:
         """Return activities where gear uuid was used.
         :param gearUUID: UUID of the gear to get activities for
         :param limit: Maximum number of activities to return (default: 9999)
@@ -1933,15 +1935,17 @@ class Garmin:
         params = {"start": start, "limit": limit}
         return self.connectapi(url, params=params)
 
-    def get_workout_by_id(self, workout_id: str) -> dict[str, Any]:
+    def get_workout_by_id(self, workout_id: int | str) -> dict[str, Any]:
         """Return workout by id."""
 
+        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
         url = f"{self.garmin_workouts}/workout/{workout_id}"
         return self.connectapi(url)
 
-    def download_workout(self, workout_id: str) -> bytes:
+    def download_workout(self, workout_id: int | str) -> bytes:
         """Download workout by id."""
 
+        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
         url = f"{self.garmin_workouts}/workout/FIT/{workout_id}"
         logger.debug("Downloading workout from %s", url)
 
@@ -1961,9 +1965,11 @@ class Garmin:
             try:
                 payload = _json.loads(workout_json)
             except Exception as e:
-                raise ValueError(f"Invalid workout_json string: {e}") from e
+                raise ValueError(f"invalid workout_json string: {e}") from e
         else:
             payload = workout_json
+        if not isinstance(payload, dict | list):
+            raise ValueError("workout_json must be a JSON object or array")
         return self.garth.post("connectapi", url, json=payload, api=True).json()
 
     def get_menstrual_data_for_date(self, fordate: str) -> dict[str, Any]:
@@ -1998,8 +2004,13 @@ class Garmin:
         return self.connectapi(url)
 
     def query_garmin_graphql(self, query: dict[str, Any]) -> dict[str, Any]:
-        """Returns the results of a POST request to the Garmin GraphQL Endpoints.
-        Requires a GraphQL structured query.  See {TBD} for examples.
+        """Execute a POST to Garmin's GraphQL endpoint.
+
+        Args:
+            query: A GraphQL request body, e.g. {"query": "...", "variables": {...}}
+            See example.py for example queries.
+        Returns:
+            Parsed JSON response as a dict.
         """
 
         logger.debug(f"Querying Garmin GraphQL Endpoint with query: {query}")
