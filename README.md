@@ -9,7 +9,7 @@ $ ./example.py
 Select a category:
 
   [1] 👤 User & Profile
-  [2] 📊 Daily Health & Activity  
+  [2] 📊 Daily Health & Activity
   [3] 🔬 Advanced Health Metrics
   [4] 📈 Historical Data & Trends
   [5] 🏃 Activities & Workouts
@@ -22,7 +22,7 @@ Select a category:
 
   [q] Exit program
 
-Make your selection: 
+Make your selection:
 ```
 
 ### API Coverage Statistics
@@ -59,7 +59,7 @@ A comprehensive Python 3 API wrapper for Garmin Connect, providing access to hea
 This library enables developers to programmatically access Garmin Connect data including:
 
 - **Health Metrics**: Heart rate, sleep, stress, body composition, SpO2, HRV
-- **Activity Data**: Workouts, exercises, training status, performance metrics  
+- **Activity Data**: Workouts, exercises, training status, performance metrics
 - **Device Information**: Connected devices, settings, alarms, solar data
 - **Goals & Achievements**: Personal records, badges, challenges, race predictions
 - **Historical Data**: Trends, progress tracking, date range queries
@@ -146,7 +146,7 @@ pdm run --list     # Display all available PDM scripts
 # Before making changes
 pdm run lint       # Check current code quality
 
-# After making changes  
+# After making changes
 pdm run format     # Auto-format your code
 pdm run lint       # Verify code quality
 pdm run codespell  # Check spelling
@@ -161,7 +161,7 @@ The library uses the same OAuth authentication as the official Garmin Connect ap
 
 **Key Features:**
 - Login credentials valid for one year (no repeated logins)
-- Secure OAuth token storage 
+- Secure OAuth token storage
 - Same authentication flow as official app
 
 **Advanced Configuration:**
@@ -195,7 +195,7 @@ pdm run testcov     # Run tests with coverage report
 
 **Note:** Tests automatically use `~/.garminconnect` as the default token file location. You can override this by setting the `GARMINTOKENS` environment variable. Run `example.py` first to generate authentication tokens for testing.
 
-**For Developers:** Tests use VCR cassettes to record/replay HTTP interactions. If tests fail with authentication errors, ensure valid tokens exist in `~/.garminconnect` 
+**For Developers:** Tests use VCR cassettes to record/replay HTTP interactions. If tests fail with authentication errors, ensure valid tokens exist in `~/.garminconnect`
 
 ## 📦 Publishing
 
@@ -232,13 +232,13 @@ pdm publish        # Publish pre-built package
 We welcome contributions! Here's how you can help:
 
 - **Report Issues**: Bug reports and feature requests via GitHub issues
-- **Submit PRs**: Code improvements, new features, documentation updates  
+- **Submit PRs**: Code improvements, new features, documentation updates
 - **Testing**: Help test new features and report compatibility issues
 - **Documentation**: Improve examples, add use cases, fix typos
 
 **Before Contributing:**
 1. Set up development environment (`pdm install --group :all`)
-2. Execute code quality checks (`pdm run format && pdm run lint`) 
+2. Execute code quality checks (`pdm run format && pdm run lint`)
 3. Test your changes (`pdm run test`)
 4. Follow existing code style and patterns
 
@@ -255,7 +255,7 @@ pdm install --group :all
 
 # 3. Quality checks
 pdm run format     # Auto-format code
-pdm run lint       # Check code quality  
+pdm run lint       # Check code quality
 pdm run test       # Run tests
 
 # 4. Submit PR
@@ -293,7 +293,7 @@ print(f"Resting HR: {hr_data['restingHeartRate']}")
 Special thanks to all contributors who have helped improve this project:
 
 - **Community Contributors**: Bug reports, feature requests, and code improvements
-- **Issue Reporters**: Helping identify and resolve compatibility issues  
+- **Issue Reporters**: Helping identify and resolve compatibility issues
 - **Feature Developers**: Adding new API endpoints and functionality
 - **Documentation Authors**: Improving examples and user guides
 
@@ -307,7 +307,7 @@ If you find this library useful for your projects, please consider supporting it
 
 - **⭐ Star this repository** - Help others discover the project
 - **💰 Financial Support** - Contribute to development and hosting costs
-- **🐛 Report Issues** - Help improve stability and compatibility  
+- **🐛 Report Issues** - Help improve stability and compatibility
 - **📖 Spread the Word** - Share with other developers
 
 ### 💳 Financial Support Options

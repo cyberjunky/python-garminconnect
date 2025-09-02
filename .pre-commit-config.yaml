@@ -18,11 +18,31 @@ repos:
       - tomli
     exclude: 'cassettes/'
 
+- repo: https://github.com/psf/black
+  rev: 24.8.0
+  hooks:
+  - id: black
+    additional_dependencies: ['.[jupyter]']
+    language_version: python3
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.6.4
+  hooks:
+  - id: ruff
+    args: [--fix]
+  - id: ruff-format
+
 - repo: local
   hooks:
+  - id: format
+    name: format
+    entry: .venv/bin/pdm run format
+    types: [python]
+    language: system
+    pass_filenames: false
   - id: lint
     name: lint
-    entry: pdm run lint
+    entry: .venv/bin/pdm run lint
     types: [python]
     language: system
     pass_filenames: false
