@@ -537,8 +537,13 @@ class Garmin:
         """
 
         startdate = _validate_date_format(startdate, "startdate")
-        enddate = startdate if enddate is None else _validate_date_format(enddate, "enddate")
-        if datetime.strptime(startdate, DATE_FORMAT_STR).date() > datetime.strptime(enddate, DATE_FORMAT_STR).date():
+        enddate = (
+            startdate if enddate is None else _validate_date_format(enddate, "enddate")
+        )
+        if (
+            datetime.strptime(startdate, DATE_FORMAT_STR).date()
+            > datetime.strptime(enddate, DATE_FORMAT_STR).date()
+        ):
             raise ValueError("Startdate cannot be after enddate")
         url = f"{self.garmin_connect_weight_url}/weight/dateRange"
         params = {"startDate": str(startdate), "endDate": str(enddate)}
@@ -838,7 +843,6 @@ class Garmin:
         """
 
         if latest:
-
             speed_and_heart_rate_url = (
                 f"{self.garmin_connect_biometric_url}/latestLactateThreshold"
             )
@@ -1862,7 +1866,6 @@ class Garmin:
     def get_activity_exercise_sets(self, activity_id: str) -> dict[str, Any]:
         """Return activity exercise sets."""
 
-        activity_id = _validate_positive_integer(activity_id, "activity_id")
         url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
         logger.debug("Requesting exercise sets for activity id %s", activity_id)
 
@@ -1871,7 +1874,6 @@ class Garmin:
     def get_activity_gear(self, activity_id: str) -> dict[str, Any]:
         """Return gears used for activity id."""
 
-        activity_id = _validate_positive_integer(activity_id, "activity_id")
         params = {
             "activityId": str(activity_id),
         }
@@ -1934,14 +1936,12 @@ class Garmin:
     def get_workout_by_id(self, workout_id: str) -> dict[str, Any]:
         """Return workout by id."""
 
-        workout_id = _validate_positive_integer(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/{workout_id}"
         return self.connectapi(url)
 
     def download_workout(self, workout_id: str) -> bytes:
         """Download workout by id."""
 
-        workout_id = _validate_positive_integer(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/FIT/{workout_id}"
         logger.debug("Downloading workout from %s", url)
 

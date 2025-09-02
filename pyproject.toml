@@ -92,7 +92,7 @@ line-length = 88
 target-version = "py310"
 exclude = [
     ".git",
-    ".venv", 
+    ".venv",
     "__pycache__",
     ".pytest_cache",
     "build",
@@ -151,6 +151,12 @@ testcov = {composite = ["test", "pdm run coverage html", "pdm run coverage xml -
 codespell = "pre-commit run codespell --all-files"
 clean = "python -c \"import shutil, pathlib; [shutil.rmtree(p, ignore_errors=True) for p in pathlib.Path('.').rglob('__pycache__')]; [p.unlink(missing_ok=True) for p in pathlib.Path('.').rglob('*.py[co]')]\""
 
+# Pre-commit hooks
+pre-commit-install = "pre-commit install"
+pre-commit-run = "pre-commit run --all-files"
+pre-commit-run-staged = "pre-commit run"
+pre-commit-update = "pre-commit autoupdate"
+
 # Publishing
 build = "pdm build"
 publish = {composite = ["build", "pdm publish"]}
@@ -160,8 +166,8 @@ record-vcr = {env = {GARMINTOKENS = "~/.garminconnect"}, cmd = "pdm run pytest t
 clean-vcr = "rm -f tests/cassettes/*.yaml"
 reset-vcr = {composite = ["clean-vcr", "record-vcr"]}
 
-# Quality checks  
-all = {composite = ["lint", "codespell", "test"]}
+# Quality checks
+all = {composite = ["lint", "codespell", "pre-commit-run", "test"]}
 
 [tool.pdm.dev-dependencies]
 dev = [
