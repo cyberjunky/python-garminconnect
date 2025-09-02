@@ -22,7 +22,6 @@ repos:
   rev: 24.8.0
   hooks:
   - id: black
-    additional_dependencies: ['.[jupyter]']
     language_version: python3
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -34,15 +33,9 @@ repos:
 
 - repo: local
   hooks:
-  - id: format
-    name: format
-    entry: .venv/bin/pdm run format
-    types: [python]
-    language: system
-    pass_filenames: false
-  - id: lint
-    name: lint
-    entry: .venv/bin/pdm run lint
+  - id: mypy
+    name: mypy type checking
+    entry: .venv/bin/pdm run mypy garminconnect tests
     types: [python]
     language: system
     pass_filenames: false

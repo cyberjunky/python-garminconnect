@@ -25,7 +25,7 @@ Select a category:
 Make your selection:
 ```
 
-### API Coverage Statistics
+## API Coverage Statistics
 
 - **Total API Methods**: 101 unique endpoints
 - **Categories**: 11 organized sections
@@ -76,7 +76,7 @@ pip3 install garminconnect
 
 ## Run demo software (recommended)
 
-```
+```bash
 python3 -m venv .venv --copies
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install pdm
@@ -167,8 +167,13 @@ The library uses the same OAuth authentication as the official Garmin Connect ap
 **Advanced Configuration:**
 ```python
 # Optional: Custom OAuth consumer (before login)
+import os
 import garth
-garth.sso.OAUTH_CONSUMER = {'key': 'your_key', 'secret': 'your_secret'}
+garth.sso.OAUTH_CONSUMER = {
+    'key': os.getenv('GARTH_OAUTH_KEY', '<YOUR_KEY>'),
+    'secret': os.getenv('GARTH_OAUTH_SECRET', '<YOUR_SECRET>'),
+}
+# Note: Set these env vars securely; placeholders are non-sensitive.
 ```
 
 **Token Storage:**
@@ -196,10 +201,6 @@ pdm run testcov     # Run tests with coverage report
 **Note:** Tests automatically use `~/.garminconnect` as the default token file location. You can override this by setting the `GARMINTOKENS` environment variable. Run `example.py` first to generate authentication tokens for testing.
 
 **For Developers:** Tests use VCR cassettes to record/replay HTTP interactions. If tests fail with authentication errors, ensure valid tokens exist in `~/.garminconnect`
-
-## 📦 Publishing
-
-For package maintainers:
 
 ## 📦 Publishing
 
@@ -264,9 +265,11 @@ git push origin your-branch
 ```
 
 ### Jupyter Notebook
+
 Explore the API interactively with our [reference notebook](https://github.com/cyberjunky/python-garminconnect/blob/master/reference.ipynb).
 
 ### Python Code Examples
+
 ```python
 from garminconnect import Garmin
 
@@ -275,11 +278,12 @@ client = Garmin('your_email', 'your_password')
 client.login()
 
 # Get today's stats
-stats = client.get_stats('2023-08-31')
-print(f"Steps: {stats['totalSteps']}")
+from datetime import date
+_today = date.today().strftime('%Y-%m-%d')
+stats = client.get_stats(_today)
 
 # Get heart rate data
-hr_data = client.get_heart_rates('2023-08-31')
+hr_data = client.get_heart_rates(_today)
 print(f"Resting HR: {hr_data['restingHeartRate']}")
 ```
 
