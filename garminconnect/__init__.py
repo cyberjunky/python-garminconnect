@@ -1358,7 +1358,7 @@ class Garmin:
 
     def get_device_solar_data(
         self, device_id: str, startdate: str, enddate: str | None = None
-    ) -> dict[str, Any]:
+    ) -> list[dict[str, Any]]:
         """Return solar data for compatible device with 'device_id'"""
         if enddate is None:
             enddate = startdate
@@ -2013,8 +2013,17 @@ class Garmin:
             Parsed JSON response as a dict.
         """
 
-        logger.debug(f"Querying Garmin GraphQL Endpoint with query: {query}")
-
+        op = (
+            (query.get("operationName") or "unnamed")
+            if isinstance(query, dict)
+            else "unnamed"
+        )
+        vars_keys = (
+            sorted((query.get("variables") or {}).keys())
+            if isinstance(query, dict)
+            else []
+        )
+        logger.debug("Querying Garmin GraphQL op=%s vars=%s", op, vars_keys)
         return self.garth.post(
             "connectapi", self.garmin_graphql_endpoint, json=query
         ).json()
