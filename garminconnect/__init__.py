@@ -291,6 +291,7 @@ class Garmin:
             else:
                 raise GarminConnectConnectionError(f"HTTP error: {e}") from e
         except Exception as e:
+            logger.exception("Connection error during connectapi path=%s", path)
             raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
     def download(self, path: str, **kwargs: Any) -> Any:
@@ -298,6 +299,7 @@ class Garmin:
         try:
             return self.garth.download(path, **kwargs)
         except Exception as e:
+            logger.exception("Download error path=%s", path)
             status = getattr(getattr(e, "response", None), "status_code", None)
             logger.error(
                 "Download failed for path '%s': %s (status=%s)", path, e, status
@@ -483,8 +485,8 @@ class Garmin:
         end = _validate_date_format(end, "end")
 
         # Validate date range
-        start_date = datetime.strptime(start, "%Y-%m-%d").date()
-        end_date = datetime.strptime(end, "%Y-%m-%d").date()
+        start_date = datetime.strptime(start, DATE_FORMAT_STR).date()
+        end_date = datetime.strptime(end, DATE_FORMAT_STR).date()
 
         if start_date > end_date:
             raise ValueError("start date cannot be after end date")
@@ -783,7 +785,13 @@ class Garmin:
             "sourceType": "MANUAL",
             "notes": notes,
         }
-
+        for name, val, lo, hi in (
+            ("systolic", systolic, 70, 260),
+            ("diastolic", diastolic, 40, 150),
+            ("pulse", pulse, 20, 250),
+        ):
+            if not isinstance(val, int) or not (lo <= val <= hi):
+                raise ValueError(f"{name} must be an int in [{lo}, {hi}]")
         logger.debug("Adding blood pressure")
 
         return self.garth.post("connectapi", url, json=payload).json()
@@ -852,10 +860,11 @@ class Garmin:
             power_url = f"{self.garmin_connect_biometric_url}/powerToWeight/latest/{date.today()}?sport=Running"
 
             power = self.connectapi(power_url)
-            try:
+            if isinstance(power, list) and power:
                 power_dict = power[0]
-            except IndexError:
-                # If no power available
+            elif isinstance(power, dict):
+                power_dict = power
+            else:
                 power_dict = {}
 
             speed_and_heart_rate = self.connectapi(speed_and_heart_rate_url)
@@ -965,10 +974,13 @@ class Garmin:
             # If cdate is not null, validate and use timestamp associated with midnight
             cdate = _validate_date_format(cdate, "cdate")
             try:
-                raw_ts = datetime.strptime(cdate, "%Y-%m-%d")
-                timestamp = _fmt_ts(raw_ts)
-            except ValueError as e:
-                raise ValueError(f"invalid cdate: {e}") from e
+                raw_ts = datetime.fromisoformat(cdate)
+            except ValueError:
+                # if cdate is just a date, parse with format and set time to 00:00:00
+                raw_ts = datetime.strptime(cdate, DATE_FORMAT_STR)
+            timestamp = raw_ts.replace(
+                hour=0, minute=0, second=0, microsecond=0
+            ).isoformat(timespec="microseconds")
 
         elif cdate is None and timestamp is not None:
             # If timestamp is not null, validate and set cdate equal to date part of timestamp
@@ -1123,6 +1135,8 @@ class Garmin:
     def get_adhoc_challenges(self, start: int, limit: int) -> dict[str, Any]:
         """Return adhoc challenges for current user."""
 
+        start = _validate_non_negative_integer(start, "start")
+        limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_adhoc_challenges_url
         params = {"start": str(start), "limit": str(limit)}
         logger.debug("Requesting adhoc challenges for user")
@@ -1132,6 +1146,8 @@ class Garmin:
     def get_badge_challenges(self, start: int, limit: int) -> dict[str, Any]:
         """Return badge challenges for current user."""
 
+        start = _validate_non_negative_integer(start, "start")
+        limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_badge_challenges_url
         params = {"start": str(start), "limit": str(limit)}
         logger.debug("Requesting badge challenges for user")
@@ -1141,6 +1157,8 @@ class Garmin:
     def get_available_badge_challenges(self, start: int, limit: int) -> dict[str, Any]:
         """Return available badge challenges."""
 
+        start = _validate_non_negative_integer(start, "start")
+        limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_available_badge_challenges_url
         params = {"start": str(start), "limit": str(limit)}
         logger.debug("Requesting available badge challenges")
@@ -1152,6 +1170,8 @@ class Garmin:
     ) -> dict[str, Any]:
         """Return badge non-completed challenges for current user."""
 
+        start = _validate_non_negative_integer(start, "start")
+        limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_non_completed_badge_challenges_url
         params = {"start": str(start), "limit": str(limit)}
         logger.debug("Requesting badge challenges for user")
@@ -1163,6 +1183,8 @@ class Garmin:
     ) -> dict[str, Any]:
         """Return in-progress virtual challenges for current user."""
 
+        start = _validate_non_negative_integer(start, "start")
+        limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_inprogress_virtual_challenges_url
         params = {"start": str(start), "limit": str(limit)}
         logger.debug("Requesting in-progress virtual challenges for user")
@@ -1488,7 +1510,7 @@ class Garmin:
 
     def create_manual_activity_from_json(self, payload: dict[str, Any]) -> Any:
         url = f"{self.garmin_connect_activity}"
-        logger.debug(f"Uploading manual activity: {str(payload)}")
+        logger.debug("Uploading manual activity: %s", str(payload))
         return self.garth.post("connectapi", url, json=payload, api=True)
 
     def create_manual_activity(

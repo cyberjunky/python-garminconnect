@@ -101,7 +101,7 @@ python3 -m venv .venv --copies
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # 2. Install PDM (Python Dependency Manager)
-pip install pdm "black[jupyter]" codespell
+pip install pdm
 
 # 3. Install all development dependencies
 pdm install --group :all
@@ -272,9 +272,13 @@ Explore the API interactively with our [reference notebook](https://github.com/c
 
 ```python
 from garminconnect import Garmin
+import os
 
 # Initialize and login
-client = Garmin('your_email', 'your_password')
+client = Garmin(
+    os.getenv("GARMIN_EMAIL", "<YOUR_EMAIL>"),
+    os.getenv("GARMIN_PASSWORD", "<YOUR_PASSWORD>")
+)
 client.login()
 
 # Get today's stats
