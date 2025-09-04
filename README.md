@@ -226,7 +226,12 @@ For package maintainers:
 **Setup PyPI credentials:**
 ```bash
 pip install twine
-vi ~/.pypirc
+# Edit with your preferred editor, or create via here-doc:
+# cat > ~/.pypirc <<'EOF'
+# [pypi]
+# username = __token__
+# password = <PyPI_API_TOKEN>
+# EOF
 ```
 ```ini
 [pypi]
