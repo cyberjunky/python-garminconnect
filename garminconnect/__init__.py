@@ -81,6 +81,11 @@ def _validate_positive_integer(value: int, param_name: str = "value") -> int:
     return value
 
 
+def _fmt_ts(dt: datetime) -> str:
+    # Use ms precision to match server expectations
+    return dt.replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
+
+
 class Garmin:
     """Class for fetching data from Garmin Connect."""
 
@@ -615,8 +620,8 @@ class Garmin:
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt.astimezone(timezone.utc)
         payload = {
-            "dateTimestamp": dt.isoformat()[:19] + ".00",
-            "gmtTimestamp": dtGMT.isoformat()[:19] + ".00",
+            "dateTimestamp": f"{_fmt_ts(dt)}.000",
+            "gmtTimestamp": f"{_fmt_ts(dtGMT)}.000",
             "unitKey": unitKey,
             "sourceType": "MANUAL",
             "value": weight,
@@ -650,15 +655,15 @@ class Garmin:
         weight = _validate_positive_number(weight, "weight")
         # Build the payload
         payload = {
-            "dateTimestamp": dt.isoformat()[:19] + ".00",  # Local time
-            "gmtTimestamp": dtGMT.isoformat()[:19] + ".00",  # GMT/UTC time
+            "dateTimestamp": f"{_fmt_ts(dt)}.000",  # Local time
+            "gmtTimestamp": f"{_fmt_ts(dtGMT)}.000",  # GMT/UTC time
             "unitKey": unitKey,
             "sourceType": "MANUAL",
             "value": weight,
         }
 
         # Debug log for payload
-        logger.debug(f"Adding weigh-in with explicit timestamps: {payload}")
+        logger.debug("Adding weigh-in with explicit timestamps: %s", payload)
 
         # Make the POST request
         return self.garth.post("connectapi", url, json=payload).json()
@@ -686,6 +691,7 @@ class Garmin:
 
     def delete_weigh_in(self, weight_pk: str, cdate: str) -> Any:
         """Delete specific weigh-in."""
+        cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_weight_url}/weight/{cdate}/byversion/{weight_pk}"
         logger.debug("Deleting weigh-in")
 
@@ -769,8 +775,8 @@ class Garmin:
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt.astimezone(timezone.utc)
         payload = {
-            "measurementTimestampLocal": dt.isoformat()[:19] + ".00",
-            "measurementTimestampGMT": dtGMT.isoformat()[:19] + ".00",
+            "measurementTimestampLocal": f"{_fmt_ts(dt)}.000",
+            "measurementTimestampGMT": f"{_fmt_ts(dtGMT)}.000",
             "systolic": systolic,
             "diastolic": diastolic,
             "pulse": pulse,
@@ -837,7 +843,6 @@ class Garmin:
         :param date (Optional) - start_date: The first date in the range to query, format 'YYYY-MM-DD'.  Required if `latest` is False.  Ignored if `latest` is True
         :param date (Optional) - end_date: The last date in the range to query, format 'YYYY-MM-DD'. Defaults to current data. Ignored if `latest` is True
         :param str (Optional) - aggregation: How to aggregate the data. Must be one of `daily`, `weekly`, `monthly`, `yearly`.
-
         """
 
         if latest:
@@ -898,6 +903,16 @@ class Garmin:
         if end_date is None:
             end_date = date.today().isoformat()
 
+        # Normalize and validate
+        if isinstance(start_date, date):
+            start_date = start_date.isoformat()
+        else:
+            start_date = _validate_date_format(start_date, "start_date")
+        if isinstance(end_date, date):
+            end_date = end_date.isoformat()
+        else:
+            end_date = _validate_date_format(end_date, "end_date")
+
         _valid_aggregations = {"daily", "weekly", "monthly", "yearly"}
         if aggregation not in _valid_aggregations:
             raise ValueError(f"aggregation must be one of {_valid_aggregations}")
@@ -944,14 +959,14 @@ class Garmin:
             cdate = str(raw_date)
 
             raw_ts = datetime.now()
-            timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
+            timestamp = _fmt_ts(raw_ts)
 
         elif cdate is not None and timestamp is None:
             # If cdate is not null, validate and use timestamp associated with midnight
             cdate = _validate_date_format(cdate, "cdate")
             try:
                 raw_ts = datetime.strptime(cdate, "%Y-%m-%d")
-                timestamp = datetime.strftime(raw_ts, "%Y-%m-%dT%H:%M:%S.%f")
+                timestamp = _fmt_ts(raw_ts)
             except ValueError as e:
                 raise ValueError(f"invalid cdate: {e}") from e
 
@@ -964,7 +979,7 @@ class Garmin:
                 cdate = str(raw_ts.date())
             except ValueError as e:
                 raise ValueError(
-                    f"Invalid timestamp format (expected YYYY-MM-DDTHH:MM:SS.ffffff): {e}"
+                    f"Invalid timestamp format (expected YYYY-MM-DDTHH:MM:SS.mmm): {e}"
                 ) from e
         else:
             # Both provided - validate consistency
@@ -1425,7 +1440,7 @@ class Garmin:
         if activitytype:
             params["activityType"] = str(activitytype)
 
-        logger.debug(f"Requesting activities from {start} with limit {limit}")
+        logger.debug("Requesting activities from %d with limit %d", start, limit)
 
         activities = self.connectapi(url, params=params)
 
@@ -1440,7 +1455,7 @@ class Garmin:
 
         fordate = _validate_date_format(fordate, "fordate")
         url = f"{self.garmin_connect_activity_fordate}/{fordate}"
-        logger.debug(f"Requesting activities for date {fordate}")
+        logger.debug("Requesting activities for date %s", fordate)
 
         return self.connectapi(url)
 
@@ -1468,7 +1483,7 @@ class Garmin:
                 "parentTypeId": parent_type_id,
             },
         }
-        logger.debug(f"Changing activity type: {str(payload)}")
+        logger.debug("Changing activity type: %s", payload)
         return self.garth.put("connectapi", url, json=payload, api=True)
 
     def create_manual_activity_from_json(self, payload: dict[str, Any]) -> Any:
@@ -1634,10 +1649,10 @@ class Garmin:
         if sortorder:
             params["sortOrder"] = str(sortorder)
 
-        logger.debug(f"Requesting activities by date from {startdate} to {enddate}")
+        logger.debug("Requesting activities by date from %s to %s", startdate, enddate)
         while True:
             params["start"] = str(start)
-            logger.debug(f"Requesting activities {start} to {start+limit}")
+            logger.debug("Requesting activities %d to %d", start, start + limit)
             act = self.connectapi(url, params=params)
             if act:
                 activities.extend(act)
@@ -1675,7 +1690,9 @@ class Garmin:
             "metric": str(metric),
         }
 
-        logger.debug(f"Requesting fitnessstats by date from {startdate} to {enddate}")
+        logger.debug(
+            "Requesting fitnessstats by date from %s to %s", startdate, enddate
+        )
         return self.connectapi(url, params=params)
 
     def get_activity_types(self) -> dict[str, Any]:
@@ -1708,10 +1725,12 @@ class Garmin:
             "sortOrder": "asc",
         }
 
-        logger.debug(f"Requesting {status} goals")
+        logger.debug("Requesting %s goals", status)
         while True:
             params["start"] = str(start)
-            logger.debug(f"Requesting {status} goals {start} to {start + limit - 1}")
+            logger.debug(
+                "Requesting %s goals %d to %d", status, start, start + limit - 1
+            )
             goals_json = self.connectapi(url, params=params)
             if goals_json:
                 goals.extend(goals_json)
@@ -1891,7 +1910,7 @@ class Garmin:
         :return: List of activities where the specified gear was used
         """
         gearUUID = str(gearUUID)
-
+        limit = _validate_positive_integer(limit, "limit")
         url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit={limit}"
         logger.debug("Requesting activities for gearUUID %s", gearUUID)
 
@@ -1921,7 +1940,7 @@ class Garmin:
 
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_request_reload_url}/{cdate}"
-        logger.debug(f"Requesting reload of data for {cdate}.")
+        logger.debug("Requesting reload of data for %s.", cdate)
 
         return self.garth.post("connectapi", url, api=True).json()
 
@@ -1931,7 +1950,7 @@ class Garmin:
         url = f"{self.garmin_workouts}/workouts"
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
-        logger.debug(f"Requesting workouts from {start} with limit {limit}")
+        logger.debug("Requesting workouts from %d with limit %d", start, limit)
         params = {"start": start, "limit": limit}
         return self.connectapi(url, params=params)
 
@@ -1977,7 +1996,7 @@ class Garmin:
 
         fordate = _validate_date_format(fordate, "fordate")
         url = f"{self.garmin_connect_menstrual_dayview_url}/{fordate}"
-        logger.debug(f"Requesting menstrual data for date {fordate}")
+        logger.debug("Requesting menstrual data for date %s", fordate)
 
         return self.connectapi(url)
 
@@ -1990,7 +2009,7 @@ class Garmin:
         enddate = _validate_date_format(enddate, "enddate")
         url = f"{self.garmin_connect_menstrual_calendar_url}/{startdate}/{enddate}"
         logger.debug(
-            f"Requesting menstrual data for dates {startdate} through {enddate}"
+            "Requesting menstrual data for dates %s through %s", startdate, enddate
         )
 
         return self.connectapi(url)
