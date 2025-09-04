@@ -358,15 +358,24 @@ class Garmin:
                     )
                     # Continue to load profile/settings below
 
-            # Validate profile data exists
-            if not hasattr(self.garth, "profile") or not self.garth.profile:
-                raise GarminConnectAuthenticationError("Failed to retrieve profile")
-
-            self.display_name = self.garth.profile.get("displayName")
-            self.full_name = self.garth.profile.get("fullName")
-
-            if not self.display_name:
-                raise GarminConnectAuthenticationError("Invalid profile data found")
+            # Ensure profile is loaded (tokenstore path may not populate it)
+            if not getattr(self.garth, "profile", None):
+                try:
+                    prof = self.garth.connectapi(
+                        "/userprofile-service/userprofile/profile"
+                    )
+                except Exception as e:
+                    raise GarminConnectAuthenticationError(
+                        "Failed to retrieve profile"
+                    ) from e
+                if not prof or "displayName" not in prof:
+                    raise GarminConnectAuthenticationError("Invalid profile data found")
+                # Use profile data directly since garth.profile is read-only
+                self.display_name = prof.get("displayName")
+                self.full_name = prof.get("fullName")
+            else:
+                self.display_name = self.garth.profile.get("displayName")
+                self.full_name = self.garth.profile.get("fullName")
 
             settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
 
@@ -891,11 +900,10 @@ class Garmin:
                     speed_and_heart_rate_dict["sequence"] = entry["sequence"]
                     speed_and_heart_rate_dict["speed"] = speed
 
-                # This is not a typo. The Garmin dictionary has a typo as of 2025-07-08, referring to it as "hearRate"
-                hr = entry.get("hearRate")
+                # Prefer correct key; fall back to Garmin's historical typo ("hearRate")
+                hr = entry.get("heartRate") or entry.get("hearRate")
                 if hr is not None:
                     speed_and_heart_rate_dict["heartRate"] = hr
-                    # Fix Garmin's typo
 
                 # Doesn't exist for me but adding it just in case.  We'll check for each entry
                 hrc = entry.get("heartRateCycling")
@@ -1780,7 +1788,7 @@ class Garmin:
             f"{self.garmin_connect_gear_baseurl}user/"
             f"{userProfileNumber}/activityTypes"
         )
-        logger.debug("Requesting gear for user %s", userProfileNumber)
+        logger.debug("Requesting gear defaults for user %s", userProfileNumber)
         return self.connectapi(url)
 
     def set_gear_default(
@@ -1830,7 +1838,7 @@ class Garmin:
             raise ValueError(f"unexpected value {dl_fmt} for dl_fmt")
         url = urls[dl_fmt]
 
-        logger.debug("Downloading activities from %s", url)
+        logger.debug("Downloading activity from %s", url)
 
         return self.download(url)
 
@@ -1970,7 +1978,7 @@ class Garmin:
         return self.garth.post("connectapi", url, api=True).json()
 
     def get_workouts(self, start: int = 0, limit: int = 100) -> dict[str, Any]:
-        """Return workouts from start till end."""
+        """Return workouts starting at offset `start` with at most `limit` results."""
 
         url = f"{self.garmin_workouts}/workouts"
         start = _validate_non_negative_integer(start, "start")
@@ -2012,7 +2020,7 @@ class Garmin:
                 raise ValueError(f"invalid workout_json string: {e}") from e
         else:
             payload = workout_json
-        if not isinstance(payload, dict | list):
+        if not isinstance(payload, (dict | list)):
             raise ValueError("workout_json must be a JSON object or array")
         return self.garth.post("connectapi", url, json=payload, api=True).json()
 
