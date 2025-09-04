@@ -27,7 +27,7 @@ Select a category:
 Make your selection:
 ```
 
-## API Coverage Statistics (as of 2025-08-31)
+## API Coverage Statistics
 
 - **Total API Methods**: 101 unique endpoints (snapshot)
 - **Categories**: 11 organized sections
