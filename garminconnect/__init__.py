@@ -34,7 +34,7 @@ def _validate_date_format(date_str: str, param_name: str = "date") -> str:
     # Remove any extra whitespace
     date_str = date_str.strip()
 
-    if not re.match(DATE_FORMAT_REGEX, date_str):
+    if not re.fullmatch(DATE_FORMAT_REGEX, date_str):
         raise ValueError(
             f"{param_name} must be in format 'YYYY-MM-DD', got: {date_str}"
         )
@@ -299,11 +299,8 @@ class Garmin:
         try:
             return self.garth.download(path, **kwargs)
         except Exception as e:
-            logger.exception("Download error path=%s", path)
             status = getattr(getattr(e, "response", None), "status_code", None)
-            logger.error(
-                "Download failed for path '%s': %s (status=%s)", path, e, status
-            )
+            logger.exception("Download failed for path '%s' (status=%s)", path, status)
             if status == 401:
                 raise GarminConnectAuthenticationError(f"Download error: {e}") from e
             if status == 429:
@@ -622,8 +619,8 @@ class Garmin:
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt.astimezone(timezone.utc)
         payload = {
-            "dateTimestamp": f"{_fmt_ts(dt)}.000",
-            "gmtTimestamp": f"{_fmt_ts(dtGMT)}.000",
+            "dateTimestamp": _fmt_ts(dt),
+            "gmtTimestamp": _fmt_ts(dtGMT),
             "unitKey": unitKey,
             "sourceType": "MANUAL",
             "value": weight,
@@ -657,8 +654,8 @@ class Garmin:
         weight = _validate_positive_number(weight, "weight")
         # Build the payload
         payload = {
-            "dateTimestamp": f"{_fmt_ts(dt)}.000",  # Local time
-            "gmtTimestamp": f"{_fmt_ts(dtGMT)}.000",  # GMT/UTC time
+            "dateTimestamp": _fmt_ts(dt),  # Local time (ms)
+            "gmtTimestamp": _fmt_ts(dtGMT),  # GMT/UTC time (ms)
             "unitKey": unitKey,
             "sourceType": "MANUAL",
             "value": weight,
@@ -777,8 +774,8 @@ class Garmin:
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt.astimezone(timezone.utc)
         payload = {
-            "measurementTimestampLocal": f"{_fmt_ts(dt)}.000",
-            "measurementTimestampGMT": f"{_fmt_ts(dtGMT)}.000",
+            "measurementTimestampLocal": _fmt_ts(dt),
+            "measurementTimestampGMT": _fmt_ts(dtGMT),
             "systolic": systolic,
             "diastolic": diastolic,
             "pulse": pulse,
@@ -1738,6 +1735,9 @@ class Garmin:
 
         goals = []
         url = self.garmin_connect_goals_url
+        valid_statuses = {"active", "future", "past"}
+        if status not in valid_statuses:
+            raise ValueError(f"status must be one of {valid_statuses}")
         start = _validate_positive_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         params = {
@@ -1924,7 +1924,7 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_gear_activities(
-        self, gearUUID: str, limit: int = 9999
+        self, gearUUID: str, limit: int = 1000
     ) -> list[dict[str, Any]]:
         """Return activities where gear uuid was used.
         :param gearUUID: UUID of the gear to get activities for
@@ -1933,6 +1933,8 @@ class Garmin:
         """
         gearUUID = str(gearUUID)
         limit = _validate_positive_integer(limit, "limit")
+        # Optional: enforce a reasonable ceiling to avoid heavy responses
+        limit = min(limit, MAX_ACTIVITY_LIMIT)
         url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit={limit}"
         logger.debug("Requesting activities for gearUUID %s", gearUUID)
 
