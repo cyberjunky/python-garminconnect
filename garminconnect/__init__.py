@@ -55,6 +55,9 @@ def _validate_positive_number(
     if not isinstance(value, numbers.Real):
         raise ValueError(f"{param_name} must be a number")
 
+    if isinstance(value, bool):
+        raise ValueError(f"{param_name} must be a number, not bool")
+
     if value <= 0:
         raise ValueError(f"{param_name} must be positive, got: {value}")
 
@@ -63,7 +66,7 @@ def _validate_positive_number(
 
 def _validate_non_negative_integer(value: int, param_name: str = "value") -> int:
     """Validate that a value is a non-negative integer."""
-    if not isinstance(value, int):
+    if not isinstance(value, int) or isinstance(value, bool):
         raise ValueError(f"{param_name} must be an integer")
 
     if value < 0:
@@ -74,7 +77,7 @@ def _validate_non_negative_integer(value: int, param_name: str = "value") -> int
 
 def _validate_positive_integer(value: int, param_name: str = "value") -> int:
     """Validate that a value is a positive integer."""
-    if not isinstance(value, int):
+    if not isinstance(value, int) or isinstance(value, bool):
         raise ValueError(f"{param_name} must be an integer")
     if value <= 0:
         raise ValueError(f"{param_name} must be a positive integer, got: {value}")
@@ -968,44 +971,42 @@ class Garmin:
             timestamp = _fmt_ts(raw_ts)
 
         elif cdate is not None and timestamp is None:
-            # If cdate is not null, validate and use timestamp associated with midnight
+            # If cdate is provided, validate and use midnight local time
             cdate = _validate_date_format(cdate, "cdate")
-            try:
-                raw_ts = datetime.fromisoformat(cdate)
-            except ValueError:
-                # if cdate is just a date, parse with format and set time to 00:00:00
-                raw_ts = datetime.strptime(cdate, DATE_FORMAT_STR)
-            timestamp = raw_ts.replace(
-                hour=0, minute=0, second=0, microsecond=0
-            ).isoformat(timespec="microseconds")
+            raw_ts = datetime.strptime(cdate, DATE_FORMAT_STR)  # midnight local
+            timestamp = _fmt_ts(raw_ts)
 
         elif cdate is None and timestamp is not None:
-            # If timestamp is not null, validate and set cdate equal to date part of timestamp
+            # If timestamp is provided, normalize and set cdate to its date part
             if not isinstance(timestamp, str):
                 raise ValueError("timestamp must be a string")
             try:
-                raw_ts = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
-                cdate = str(raw_ts.date())
+                try:
+                    raw_ts = datetime.fromisoformat(timestamp)
+                except ValueError:
+                    raw_ts = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S")
+                cdate = raw_ts.date().isoformat()
+                timestamp = _fmt_ts(raw_ts)
             except ValueError as e:
-                raise ValueError(
-                    f"Invalid timestamp format (expected YYYY-MM-DDTHH:MM:SS.mmm): {e}"
-                ) from e
+                raise ValueError("Invalid timestamp format (expected ISO 8601)") from e
         else:
-            # Both provided - validate consistency
+            # Both provided - validate consistency and normalize
             cdate = _validate_date_format(cdate, "cdate")
             if not isinstance(timestamp, str):
                 raise ValueError("timestamp must be a string")
             try:
-                raw_ts = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S.%f")
-                ts_date = str(raw_ts.date())
+                try:
+                    raw_ts = datetime.fromisoformat(timestamp)
+                except ValueError:
+                    raw_ts = datetime.strptime(timestamp, "%Y-%m-%dT%H:%M:%S")
+                ts_date = raw_ts.date().isoformat()
                 if ts_date != cdate:
                     raise ValueError(
                         f"timestamp date ({ts_date}) doesn't match cdate ({cdate})"
                     )
-            except ValueError as e:
-                if "doesn't match" in str(e):
-                    raise
-                raise ValueError(f"invalid timestamp format: {e}") from e
+                timestamp = _fmt_ts(raw_ts)
+            except ValueError:
+                raise
 
         payload = {
             "calendarDate": cdate,
@@ -1523,7 +1524,7 @@ class Garmin:
         Create a private activity manually with a few basic parameters.
         type_key - Garmin field representing type of activity. See https://connect.garmin.com/modern/main/js/properties/activity_types/activity_types.properties
                     Value to use is the key without 'activity_type_' prefix, e.g. 'resort_skiing'
-        start_datetime - timestamp in this pattern "2023-12-02T10:00:00.00"
+        start_datetime - timestamp in this pattern "2023-12-02T10:00:00.000"
         time_zone - local timezone of the activity, e.g. 'Europe/Paris'
         distance_km - distance of the activity in kilometers
         duration_min - duration of the activity in minutes
@@ -1928,7 +1929,7 @@ class Garmin:
     ) -> list[dict[str, Any]]:
         """Return activities where gear uuid was used.
         :param gearUUID: UUID of the gear to get activities for
-        :param limit: Maximum number of activities to return (default: 9999)
+        :param limit: Maximum number of activities to return (default: 1000)
         :return: List of activities where the specified gear was used
         """
         gearUUID = str(gearUUID)
