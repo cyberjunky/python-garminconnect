@@ -239,7 +239,7 @@ username = __token__
 password = <PyPI_API_TOKEN>
 ```
 
-# Recommended: use environment variables and restrict file perms
+Recommended: use environment variables and restrict file perms
 
 ```bash
 chmod 600 ~/.pypirc

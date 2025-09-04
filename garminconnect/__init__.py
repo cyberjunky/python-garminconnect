@@ -537,10 +537,12 @@ class Garmin:
     def get_stats_and_body(self, cdate: str) -> dict[str, Any]:
         """Return activity data and body composition (compat for garminconnect)."""
 
-        return {
-            **self.get_stats(cdate),
-            **self.get_body_composition(cdate)["totalAverage"],
-        }
+        stats = self.get_stats(cdate)
+        body = self.get_body_composition(cdate)
+        body_avg = body.get("totalAverage") or {}
+        if not isinstance(body_avg, dict):
+            body_avg = {}
+        return {**stats, **body_avg}
 
     def get_body_composition(
         self, startdate: str, enddate: str | None = None
@@ -654,13 +656,20 @@ class Garmin:
 
         if unitKey not in VALID_WEIGHT_UNITS:
             raise ValueError(f"unitKey must be one of {VALID_WEIGHT_UNITS}")
-        # Validate and format the timestamps
-        dt = datetime.fromisoformat(dateTimestamp) if dateTimestamp else datetime.now()
-        dtGMT = (
-            datetime.fromisoformat(gmtTimestamp)
-            if gmtTimestamp
-            else dt.astimezone(timezone.utc)
+        # Make local timestamp timezone-aware
+        dt = (
+            datetime.fromisoformat(dateTimestamp).astimezone()
+            if dateTimestamp
+            else datetime.now().astimezone()
         )
+        if gmtTimestamp:
+            g = datetime.fromisoformat(gmtTimestamp)
+            # Assume provided GMT is UTC if naive; otherwise convert to UTC
+            if g.tzinfo is None:
+                g = g.replace(tzinfo=timezone.utc)
+            dtGMT = g.astimezone(timezone.utc)
+        else:
+            dtGMT = dt.astimezone(timezone.utc)
 
         # Validate weight for consistency with add_weigh_in
         weight = _validate_positive_number(weight, "weight")
@@ -2020,7 +2029,7 @@ class Garmin:
                 raise ValueError(f"invalid workout_json string: {e}") from e
         else:
             payload = workout_json
-        if not isinstance(payload, (dict | list)):
+        if not isinstance(payload, dict | list):
             raise ValueError("workout_json must be a JSON object or array")
         return self.garth.post("connectapi", url, json=payload, api=True).json()
 
