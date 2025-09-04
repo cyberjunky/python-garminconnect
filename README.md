@@ -2,6 +2,8 @@
 
 The Garmin Connect API demo (`example.py`) provides comprehensive access to **101 API methods** organized into **11 categories** for easy navigation:
 
+Note: The demo menu is generated dynamically; exact options may change between releases.
+
 ```bash
 $ ./example.py
 🏃‍♂️ Garmin Connect API Demo - Main Menu
@@ -45,8 +47,8 @@ Make your selection:
 
 - **Enhanced User Experience**: Categorized navigation with emoji indicators
 - **Smart Data Management**: Interactive weigh-in deletion with search capabilities
-- **Comprehensive Coverage**: All major Garmin Connect features accessible
-- **Error Handling**: Robust error handling and user-friendly prompts
+- **Comprehensive Coverage**: All major Garmin Connect features are accessible
+- **Error Handling**: Robust error handling with user-friendly prompts
 - **Data Export**: JSON export functionality for all data types
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.me/cyberjunkynl/)
@@ -71,7 +73,8 @@ Compatible with all Garmin Connect accounts. See <https://connect.garmin.com/>
 Install from PyPI:
 
 ```bash
-pip3 install garminconnect
+python3 -m pip install --upgrade pip
+python3 -m pip install garminconnect
 ```
 
 ## Run demo software (recommended)
@@ -81,7 +84,7 @@ python3 -m venv .venv --copies
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install pdm
 pdm install --group :example
-./example.py
+python3 ./example.py
 ```
 
 
@@ -178,6 +181,12 @@ garth.sso.OAUTH_CONSUMER = {
 
 **Token Storage:**
 Tokens are automatically saved to `~/.garminconnect` directory for persistent authentication.
+For security, ensure restrictive permissions:
+
+```bash
+chmod 700 ~/.garminconnect
+chmod 600 ~/.garminconnect/* 2>/dev/null || true
+```
 
 ## 🧪 Testing
 
@@ -198,6 +207,14 @@ pdm run test        # Run all tests
 pdm run testcov     # Run tests with coverage report
 ```
 
+Optional: keep test tokens isolated
+
+```bash
+export GARMINTOKENS="$(mktemp -d)"
+python3 ./example.py # create fresh tokens for tests
+pdm run test
+```
+
 **Note:** Tests automatically use `~/.garminconnect` as the default token file location. You can override this by setting the `GARMINTOKENS` environment variable. Run `example.py` first to generate authentication tokens for testing.
 
 **For Developers:** Tests use VCR cassettes to record/replay HTTP interactions. If tests fail with authentication errors, ensure valid tokens exist in `~/.garminconnect`
@@ -215,6 +232,14 @@ vi ~/.pypirc
 [pypi]
 username = __token__
 password = <PyPI_API_TOKEN>
+```
+
+# Recommended: use environment variables and restrict file perms
+
+```bash
+chmod 600 ~/.pypirc
+export TWINE_USERNAME="__token__"
+export TWINE_PASSWORD="<PyPI_API_TOKEN>"
 ```
 
 **Publish new version:**
@@ -288,7 +313,7 @@ stats = client.get_stats(_today)
 
 # Get heart rate data
 hr_data = client.get_heart_rates(_today)
-print(f"Resting HR: {hr_data['restingHeartRate']}")
+print(f"Resting HR: {hr_data.get('restingHeartRate', 'n/a')}")
 ```
 
 ### Additional Resources
