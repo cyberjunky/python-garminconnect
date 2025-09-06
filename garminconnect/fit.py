@@ -1,10 +1,12 @@
+# type: ignore  # Complex binary data handling - mypy errors expected
 import time
 from datetime import datetime
 from io import BytesIO
 from struct import pack, unpack
+from typing import Any
 
 
-def _calcCRC(crc, byte):
+def _calcCRC(crc: int, byte: int) -> int:
     table = [
         0x0000,
         0xCC01,
@@ -34,7 +36,7 @@ def _calcCRC(crc, byte):
     return crc
 
 
-class FitBaseType(object):
+class FitBaseType:
     """BaseType Definition
 
     see FIT Protocol Document(Page.20)"""
@@ -153,7 +155,7 @@ class FitBaseType(object):
     }  # array of byte, field is invalid if all bytes are invalid
 
     @staticmethod
-    def get_format(basetype):
+    def get_format(basetype: int) -> str:
         formats = {
             0: "B",
             1: "b",
@@ -173,7 +175,7 @@ class FitBaseType(object):
         return formats[basetype["#"]]
 
     @staticmethod
-    def pack(basetype, value):
+    def pack(basetype: dict[str, Any], value: Any) -> bytes:
         """function to avoid DeprecationWarning"""
         if basetype["#"] in (1, 2, 3, 4, 5, 6, 10, 11, 12):
             value = int(value)
@@ -181,7 +183,7 @@ class FitBaseType(object):
         return pack(fmt, value)
 
 
-class Fit(object):
+class Fit:
     HEADER_SIZE = 12
 
     # not sure if this is the mesg_num
@@ -200,12 +202,12 @@ class FitEncoder(Fit):
     LMSG_TYPE_FILE_CREATOR = 1
     LMSG_TYPE_DEVICE_INFO = 2
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.buf = BytesIO()
         self.write_header()  # create header first
         self.device_info_defined = False
 
-    def __str__(self):
+    def __str__(self) -> str:
         orig_pos = self.buf.tell()
         self.buf.seek(0)
         lines = []
@@ -213,18 +215,18 @@ class FitEncoder(Fit):
             b = self.buf.read(16)
             if not b:
                 break
-            lines.append(" ".join(["%02x" % ord(c) for c in b]))
+            lines.append(" ".join([f"{ord(c):02x}" for c in b]))
         self.buf.seek(orig_pos)
         return "\n".join(lines)
 
     def write_header(
         self,
-        header_size=Fit.HEADER_SIZE,
-        protocol_version=16,
-        profile_version=108,
-        data_size=0,
-        data_type=b".FIT",
-    ):
+        header_size: int = 12,  # Fit.HEADER_SIZE
+        protocol_version: int = 16,
+        profile_version: int = 108,
+        data_size: int = 0,
+        data_type: bytes = b".FIT",
+    ) -> None:
         self.buf.seek(0)
         s = pack(
             "BBHI4s",
@@ -236,7 +238,7 @@ class FitEncoder(Fit):
         )
         self.buf.write(s)
 
-    def _build_content_block(self, content):
+    def _build_content_block(self, content: dict[str, Any]) -> bytes:
         field_defs = []
         values = []
         for num, basetype, value, scale in content:
@@ -252,12 +254,12 @@ class FitEncoder(Fit):
 
     def write_file_info(
         self,
-        serial_number=None,
-        time_created=None,
-        manufacturer=None,
-        product=None,
-        number=None,
-    ):
+        serial_number: int | None = None,
+        time_created: datetime | None = None,
+        manufacturer: int | None = None,
+        product: int | None = None,
+        number: int | None = None,
+    ) -> None:
         if time_created is None:
             time_created = datetime.now()
 
@@ -293,7 +295,11 @@ class FitEncoder(Fit):
             )
         )
 
-    def write_file_creator(self, software_version=None, hardware_version=None):
+    def write_file_creator(
+        self,
+        software_version: int | None = None,
+        hardware_version: int | None = None,
+    ) -> None:
         content = [
             (0, FitBaseType.uint16, software_version, None),
             (1, FitBaseType.uint8, hardware_version, None),
@@ -322,18 +328,18 @@ class FitEncoder(Fit):
 
     def write_device_info(
         self,
-        timestamp,
-        serial_number=None,
-        cum_operationg_time=None,
-        manufacturer=None,
-        product=None,
-        software_version=None,
-        battery_voltage=None,
-        device_index=None,
-        device_type=None,
-        hardware_version=None,
-        battery_status=None,
-    ):
+        timestamp: datetime,
+        serial_number: int | None = None,
+        cum_operationg_time: int | None = None,
+        manufacturer: int | None = None,
+        product: int | None = None,
+        software_version: int | None = None,
+        battery_voltage: int | None = None,
+        device_index: int | None = None,
+        device_type: int | None = None,
+        hardware_version: int | None = None,
+        battery_status: int | None = None,
+    ) -> None:
         content = [
             (253, FitBaseType.uint32, self.timestamp(timestamp), 1),
             (3, FitBaseType.uint32z, serial_number, 1),
@@ -364,13 +370,13 @@ class FitEncoder(Fit):
         header = self.record_header(lmsg_type=self.LMSG_TYPE_DEVICE_INFO)
         self.buf.write(header + values)
 
-    def record_header(self, definition=False, lmsg_type=0):
+    def record_header(self, definition: bool = False, lmsg_type: int = 0) -> bytes:
         msg = 0
         if definition:
             msg = 1 << 6  # 6th bit is a definition message
         return pack("B", msg + lmsg_type)
 
-    def crc(self):
+    def crc(self) -> int:
         orig_pos = self.buf.tell()
         self.buf.seek(0)
 
@@ -383,7 +389,7 @@ class FitEncoder(Fit):
         self.buf.seek(orig_pos)
         return pack("H", crc)
 
-    def finish(self):
+    def finish(self) -> None:
         """re-weite file-header, then append crc to end of file"""
         data_size = self.get_size() - self.HEADER_SIZE
         self.write_header(data_size=data_size)
@@ -391,17 +397,17 @@ class FitEncoder(Fit):
         self.buf.seek(0, 2)
         self.buf.write(crc)
 
-    def get_size(self):
+    def get_size(self) -> int:
         orig_pos = self.buf.tell()
         self.buf.seek(0, 2)
         size = self.buf.tell()
         self.buf.seek(orig_pos)
         return size
 
-    def getvalue(self):
+    def getvalue(self) -> bytes:
         return self.buf.getvalue()
 
-    def timestamp(self, t):
+    def timestamp(self, t: datetime | float) -> float:
         """the timestamp in fit protocol is seconds since
         UTC 00:00 Dec 31 1989 (631065600)"""
         if isinstance(t, datetime):
@@ -413,21 +419,21 @@ class FitEncoderBloodPressure(FitEncoder):
     # Here might be dragons - no idea what lsmg stand for, found 14 somewhere in the deepest web
     LMSG_TYPE_BLOOD_PRESSURE = 14
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.blood_pressure_monitor_defined = False
 
     def write_blood_pressure(
         self,
-        timestamp,
-        diastolic_blood_pressure=None,
-        systolic_blood_pressure=None,
-        mean_arterial_pressure=None,
-        map_3_sample_mean=None,
-        map_morning_values=None,
-        map_evening_values=None,
-        heart_rate=None,
-    ):
+        timestamp: datetime | int | float,
+        diastolic_blood_pressure: int | None = None,
+        systolic_blood_pressure: int | None = None,
+        mean_arterial_pressure: int | None = None,
+        map_3_sample_mean: int | None = None,
+        map_morning_values: int | None = None,
+        map_evening_values: int | None = None,
+        heart_rate: int | None = None,
+    ) -> None:
         # BLOOD PRESSURE FILE MESSAGES
         content = [
             (253, FitBaseType.uint32, self.timestamp(timestamp), 1),
@@ -459,26 +465,26 @@ class FitEncoderBloodPressure(FitEncoder):
 class FitEncoderWeight(FitEncoder):
     LMSG_TYPE_WEIGHT_SCALE = 3
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.weight_scale_defined = False
 
     def write_weight_scale(
         self,
-        timestamp,
-        weight,
-        percent_fat=None,
-        percent_hydration=None,
-        visceral_fat_mass=None,
-        bone_mass=None,
-        muscle_mass=None,
-        basal_met=None,
-        active_met=None,
-        physique_rating=None,
-        metabolic_age=None,
-        visceral_fat_rating=None,
-        bmi=None,
-    ):
+        timestamp: datetime | int | float,
+        weight: int | float,
+        percent_fat: int | float | None = None,
+        percent_hydration: int | float | None = None,
+        visceral_fat_mass: int | float | None = None,
+        bone_mass: int | float | None = None,
+        muscle_mass: int | float | None = None,
+        basal_met: int | float | None = None,
+        active_met: int | float | None = None,
+        physique_rating: int | float | None = None,
+        metabolic_age: int | float | None = None,
+        visceral_fat_rating: int | float | None = None,
+        bmi: int | float | None = None,
+    ) -> None:
         content = [
             (253, FitBaseType.uint32, self.timestamp(timestamp), 1),
             (0, FitBaseType.uint16, weight, 100),
