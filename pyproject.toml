@@ -163,7 +163,7 @@ publish = {composite = ["build", "pdm publish"]}
 
 # VCR cassette management
 record-vcr = {env = {GARMINTOKENS = "~/.garminconnect"}, cmd = "pdm run pytest tests/test_garmin.py -v --vcr-record=new_episodes"}
-clean-vcr = "rm -f tests/cassettes/*.yaml"
+clean-vcr = "python3 -c \"import pathlib; p=pathlib.Path('tests/cassettes'); [f.unlink() for f in p.glob('*.yaml')]\""
 reset-vcr = {composite = ["clean-vcr", "record-vcr"]}
 
 # Quality checks
