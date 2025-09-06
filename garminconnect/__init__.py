@@ -12,18 +12,8 @@ from typing import Any
 
 import garth
 import requests
-from garth.exc import HTTPError
-
-# Try to import additional garth exceptions
-try:
-    from garth.exc import GarthException, GarthHTTPError
-except ImportError:
-    # Fallback if GarthException doesn't exist
-    GarthException = Exception
-    try:
-        from garth.exc import GarthHTTPError
-    except ImportError:
-        GarthHTTPError = HTTPError
+from garth.exc import GarthException, GarthHTTPError
+from requests import HTTPError
 
 from .fit import FitEncoderWeight  # type: ignore
 
