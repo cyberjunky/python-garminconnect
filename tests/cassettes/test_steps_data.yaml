@@ -10,70 +10,76 @@ interactions:
       - Bearer SANITIZED
       Connection:
       - keep-alive
+      Cookie:
+      - _cfuvid=SANITIZED
       User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
+      - GCM-iOS-5.7.2.1
     method: GET
     uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
   response:
     body:
-      string: '{"id": 2591602, "userData": {"gender": "MALE", "weight": 79800.0, "height":
-        182.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1984-10-17", "measurementSystem":
-        "metric", "activityLevel": null, "handedness": "RIGHT", "powerFormat": {"formatId":
-        30, "formatKey": "watt", "minFraction": 0, "maxFraction": 0, "groupingUsed":
-        true, "displayFormat": null}, "heartRateFormat": {"formatId": 21, "formatKey":
-        "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed": false, "displayFormat":
-        null}, "firstDayOfWeek": {"dayId": 2, "dayName": "sunday", "sortOrder": 2,
-        "isPossibleFirstDay": true}, "vo2MaxRunning": 46.0, "vo2MaxCycling": null,
-        "lactateThresholdSpeed": 0.34722125000000004, "lactateThresholdHeartRate":
-        null, "diveNumber": null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 85100.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 39.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
         3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
         "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
         null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
-        1044719868, "thresholdHeartRateAutoDetected": true, "ftpAutoDetected": null,
-        "trainingStatusPausedDate": null, "weatherLocation": {"useFixedLocation":
-        false, "latitude": null, "longitude": null, "locationName": null, "isoCountryCode":
-        null, "postalCode": null}, "golfDistanceUnit": "statute_us", "golfElevationUnit":
-        null, "golfSpeedUnit": null, "externalBottomTime": null}, "userSleep": {"sleepTime":
-        80400, "defaultSleepTime": false, "wakeTime": 24000, "defaultWakeTime": false},
-        "connectDate": null, "sourceType": null}'
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
     headers:
-      CF-Cache-Status:
-      - DYNAMIC
       CF-RAY:
-      - 7f873ddaf815b6ed-QRO
+      - 978304f7cf953466-AMS
+      Cache-Control:
+      - no-cache, no-store, private
       Connection:
       - keep-alive
+      Content-Encoding:
+      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 18 Aug 2023 03:59:00 GMT
+      - Mon, 01 Sep 2025 07:22:56 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=3dTHCTMSRwi%2F0Ahvm1maSWvDJOjAMveznEpyN%2F5DWLcjzHP0hXHS8tVKpiaAIW42ziwHj7E52yQC4Jt7KwGiUFCdbb2gqizHjlMVST8OzUSSwWhmJf3ljzr7FkpgoOMoboppJ7mBYQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=2AqDlfP6NVj0Ambq1w2ZkxaoHZxtz6zdQZXGzh%2Fi7xTjSXLYeg6xfZHfU5AV0KOepCicFylPbiqf61FOmdu1uH7N03kwMmORog2xNP%2ByJFlmspejdh0Zauc3IQuIvnLbBPr7tgEoV2SWixCbhEmtyWm%2FZQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
       - chunked
       alt-svc:
       - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
+      cf-cache-status:
+      - DYNAMIC
       pragma:
       - no-cache
-      set-cookie:
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
     status:
       code: 200
       message: OK
@@ -89,243 +95,231 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED; ADRUM_BT1=SANITIZED; ADRUM_BTa=SANITIZED; SameSite=SANITIZED
+      - _cfuvid=SANITIZED
       User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
+      - GCM-iOS-5.7.2.1
     method: GET
-    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/mtamizi?date=2023-07-01
+    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/5da0f071-075e-438c-ae63-c3f3eef73b1e?date=2023-07-01
   response:
     body:
-      string: '[{"startGMT": "2023-07-01T06:00:00.0", "endGMT": "2023-07-01T06:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+      string: '[{"startGMT": "2023-06-30T22:00:00.0", "endGMT": "2023-06-30T22:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-06-30T22:15:00.0", "endGMT": "2023-06-30T22:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-06-30T22:30:00.0", "endGMT": "2023-06-30T22:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-06-30T22:45:00.0", "endGMT": "2023-06-30T23:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-06-30T23:00:00.0", "endGMT": "2023-06-30T23:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-06-30T23:15:00.0", "endGMT": "2023-06-30T23:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-06-30T23:30:00.0", "endGMT": "2023-06-30T23:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-06-30T23:45:00.0", "endGMT": "2023-07-01T00:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T00:00:00.0", "endGMT": "2023-07-01T00:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T00:15:00.0", "endGMT": "2023-07-01T00:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T00:30:00.0", "endGMT": "2023-07-01T00:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T00:45:00.0", "endGMT": "2023-07-01T01:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T01:00:00.0", "endGMT": "2023-07-01T01:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T01:15:00.0", "endGMT": "2023-07-01T01:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T01:30:00.0", "endGMT": "2023-07-01T01:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T01:45:00.0", "endGMT": "2023-07-01T02:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T02:00:00.0", "endGMT": "2023-07-01T02:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T02:15:00.0", "endGMT": "2023-07-01T02:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T02:30:00.0", "endGMT": "2023-07-01T02:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T02:45:00.0", "endGMT": "2023-07-01T03:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T03:00:00.0", "endGMT": "2023-07-01T03:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T03:15:00.0", "endGMT": "2023-07-01T03:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T03:30:00.0", "endGMT": "2023-07-01T03:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T03:45:00.0", "endGMT": "2023-07-01T04:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T04:00:00.0", "endGMT": "2023-07-01T04:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T04:15:00.0", "endGMT": "2023-07-01T04:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T04:30:00.0", "endGMT": "2023-07-01T04:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T04:45:00.0", "endGMT": "2023-07-01T05:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T05:00:00.0", "endGMT": "2023-07-01T05:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T05:15:00.0", "endGMT": "2023-07-01T05:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T05:30:00.0", "endGMT": "2023-07-01T05:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T05:45:00.0", "endGMT": "2023-07-01T06:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T06:00:00.0", "endGMT": "2023-07-01T06:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T06:15:00.0", "endGMT": "2023-07-01T06:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T06:30:00.0", "endGMT": "2023-07-01T06:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T06:45:00.0", "endGMT": "2023-07-01T07:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T06:45:00.0", "endGMT": "2023-07-01T07:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T07:00:00.0", "endGMT": "2023-07-01T07:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T07:15:00.0", "endGMT": "2023-07-01T07:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T07:30:00.0", "endGMT": "2023-07-01T07:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T07:45:00.0", "endGMT": "2023-07-01T08:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T08:00:00.0", "endGMT": "2023-07-01T08:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T08:15:00.0", "endGMT": "2023-07-01T08:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T08:30:00.0", "endGMT": "2023-07-01T08:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T08:45:00.0", "endGMT": "2023-07-01T09:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T09:00:00.0", "endGMT": "2023-07-01T09:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T09:15:00.0", "endGMT": "2023-07-01T09:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T09:30:00.0", "endGMT": "2023-07-01T09:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T09:45:00.0", "endGMT": "2023-07-01T10:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T10:00:00.0", "endGMT": "2023-07-01T10:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T10:15:00.0", "endGMT": "2023-07-01T10:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T10:30:00.0", "endGMT": "2023-07-01T10:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T10:45:00.0", "endGMT": "2023-07-01T11:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T11:00:00.0", "endGMT": "2023-07-01T11:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T11:15:00.0", "endGMT": "2023-07-01T11:30:00.0",
-        "steps": 56, "pushes": 0, "primaryActivityLevel": "sleeping", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T11:30:00.0", "endGMT": "2023-07-01T11:45:00.0",
-        "steps": 406, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T11:30:00.0", "endGMT": "2023-07-01T11:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T11:45:00.0", "endGMT": "2023-07-01T12:00:00.0",
-        "steps": 27, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T12:00:00.0", "endGMT": "2023-07-01T12:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T12:15:00.0", "endGMT": "2023-07-01T12:30:00.0",
-        "steps": 39, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T12:30:00.0", "endGMT": "2023-07-01T12:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "highlyActive", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T12:45:00.0", "endGMT": "2023-07-01T13:00:00.0",
-        "steps": 35, "pushes": 0, "primaryActivityLevel": "highlyActive", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T13:00:00.0", "endGMT": "2023-07-01T13:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T12:45:00.0", "endGMT": "2023-07-01T13:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T13:00:00.0", "endGMT": "2023-07-01T13:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T13:15:00.0", "endGMT": "2023-07-01T13:30:00.0",
-        "steps": 13, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T13:30:00.0", "endGMT": "2023-07-01T13:45:00.0",
-        "steps": 457, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T13:45:00.0", "endGMT": "2023-07-01T14:00:00.0",
-        "steps": 370, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T14:00:00.0", "endGMT": "2023-07-01T14:15:00.0",
-        "steps": 135, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T14:15:00.0", "endGMT": "2023-07-01T14:30:00.0",
-        "steps": 1006, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T13:45:00.0", "endGMT": "2023-07-01T14:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T14:00:00.0", "endGMT": "2023-07-01T14:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T14:15:00.0", "endGMT": "2023-07-01T14:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T14:30:00.0", "endGMT": "2023-07-01T14:45:00.0",
-        "steps": 901, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T14:45:00.0", "endGMT": "2023-07-01T15:00:00.0",
-        "steps": 79, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T15:00:00.0", "endGMT": "2023-07-01T15:15:00.0",
-        "steps": 83, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T15:15:00.0", "endGMT": "2023-07-01T15:30:00.0",
-        "steps": 21, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T14:45:00.0", "endGMT": "2023-07-01T15:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T15:00:00.0", "endGMT": "2023-07-01T15:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T15:15:00.0", "endGMT": "2023-07-01T15:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T15:30:00.0", "endGMT": "2023-07-01T15:45:00.0",
-        "steps": 189, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T15:45:00.0", "endGMT": "2023-07-01T16:00:00.0",
-        "steps": 941, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T16:00:00.0", "endGMT": "2023-07-01T16:15:00.0",
-        "steps": 842, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T16:15:00.0", "endGMT": "2023-07-01T16:30:00.0",
-        "steps": 38, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T15:45:00.0", "endGMT": "2023-07-01T16:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T16:00:00.0", "endGMT": "2023-07-01T16:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T16:15:00.0", "endGMT": "2023-07-01T16:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T16:30:00.0", "endGMT": "2023-07-01T16:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T16:45:00.0", "endGMT": "2023-07-01T17:00:00.0",
-        "steps": 513, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T17:00:00.0", "endGMT": "2023-07-01T17:15:00.0",
-        "steps": 106, "pushes": 0, "primaryActivityLevel": "highlyActive", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T17:15:00.0", "endGMT": "2023-07-01T17:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T17:15:00.0", "endGMT": "2023-07-01T17:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T17:30:00.0", "endGMT": "2023-07-01T17:45:00.0",
-        "steps": 19, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T17:45:00.0", "endGMT": "2023-07-01T18:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T18:00:00.0", "endGMT": "2023-07-01T18:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T18:15:00.0", "endGMT": "2023-07-01T18:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T18:30:00.0", "endGMT": "2023-07-01T18:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T18:45:00.0", "endGMT": "2023-07-01T19:00:00.0",
-        "steps": 53, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T19:00:00.0", "endGMT": "2023-07-01T19:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T19:00:00.0", "endGMT": "2023-07-01T19:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T19:15:00.0", "endGMT": "2023-07-01T19:30:00.0",
-        "steps": 158, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T19:30:00.0", "endGMT": "2023-07-01T19:45:00.0",
-        "steps": 495, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T19:45:00.0", "endGMT": "2023-07-01T20:00:00.0",
-        "steps": 348, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T20:00:00.0", "endGMT": "2023-07-01T20:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T19:30:00.0", "endGMT": "2023-07-01T19:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T19:45:00.0", "endGMT": "2023-07-01T20:00:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T20:00:00.0", "endGMT": "2023-07-01T20:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T20:15:00.0", "endGMT": "2023-07-01T20:30:00.0",
-        "steps": 214, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T20:30:00.0", "endGMT": "2023-07-01T20:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T20:30:00.0", "endGMT": "2023-07-01T20:45:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T20:45:00.0", "endGMT": "2023-07-01T21:00:00.0",
-        "steps": 173, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T21:00:00.0", "endGMT": "2023-07-01T21:15:00.0",
-        "steps": 199, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T21:15:00.0", "endGMT": "2023-07-01T21:30:00.0",
-        "steps": 38, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T21:00:00.0", "endGMT": "2023-07-01T21:15:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "2023-07-01T21:15:00.0", "endGMT": "2023-07-01T21:30:00.0",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}, {"startGMT": "2023-07-01T21:30:00.0", "endGMT": "2023-07-01T21:45:00.0",
-        "steps": 348, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T21:45:00.0", "endGMT": "2023-07-01T22:00:00.0",
-        "steps": 544, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T22:00:00.0", "endGMT": "2023-07-01T22:15:00.0",
-        "steps": 217, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T22:15:00.0", "endGMT": "2023-07-01T22:30:00.0",
-        "steps": 133, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T22:30:00.0", "endGMT": "2023-07-01T22:45:00.0",
-        "steps": 63, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T22:45:00.0", "endGMT": "2023-07-01T23:00:00.0",
-        "steps": 39, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T23:00:00.0", "endGMT": "2023-07-01T23:15:00.0",
-        "steps": 144, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-01T23:15:00.0", "endGMT": "2023-07-01T23:30:00.0",
-        "steps": 42, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T23:30:00.0", "endGMT": "2023-07-01T23:45:00.0",
-        "steps": 320, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T23:45:00.0", "endGMT": "2023-07-02T00:00:00.0",
-        "steps": 540, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-02T00:00:00.0", "endGMT": "2023-07-02T00:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T00:15:00.0", "endGMT": "2023-07-02T00:30:00.0",
-        "steps": 84, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-02T00:30:00.0", "endGMT": "2023-07-02T00:45:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T00:45:00.0", "endGMT": "2023-07-02T01:00:00.0",
-        "steps": 140, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T01:00:00.0", "endGMT": "2023-07-02T01:15:00.0",
-        "steps": 63, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T01:15:00.0", "endGMT": "2023-07-02T01:30:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T01:30:00.0", "endGMT": "2023-07-02T01:45:00.0",
-        "steps": 164, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-02T01:45:00.0", "endGMT": "2023-07-02T02:00:00.0",
-        "steps": 318, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-02T02:00:00.0", "endGMT": "2023-07-02T02:15:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T02:15:00.0", "endGMT": "2023-07-02T02:30:00.0",
-        "steps": 23, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T02:30:00.0", "endGMT": "2023-07-02T02:45:00.0",
-        "steps": 13, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T02:45:00.0", "endGMT": "2023-07-02T03:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T03:00:00.0", "endGMT": "2023-07-02T03:15:00.0",
-        "steps": 13, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T03:15:00.0", "endGMT": "2023-07-02T03:30:00.0",
-        "steps": 9, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T03:30:00.0", "endGMT": "2023-07-02T03:45:00.0",
-        "steps": 101, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T03:45:00.0", "endGMT": "2023-07-02T04:00:00.0",
-        "steps": 279, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-02T04:00:00.0", "endGMT": "2023-07-02T04:15:00.0",
-        "steps": 10, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T04:15:00.0", "endGMT": "2023-07-02T04:30:00.0",
-        "steps": 12, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T04:30:00.0", "endGMT": "2023-07-02T04:45:00.0",
-        "steps": 11, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T04:45:00.0", "endGMT": "2023-07-02T05:00:00.0",
-        "steps": 0, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-02T05:00:00.0", "endGMT": "2023-07-02T05:15:00.0",
-        "steps": 151, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-02T05:15:00.0", "endGMT": "2023-07-02T05:30:00.0",
-        "steps": 294, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-02T05:30:00.0", "endGMT": "2023-07-02T05:45:00.0",
-        "steps": 365, "pushes": 0, "primaryActivityLevel": "active", "activityLevelConstant":
-        false}, {"startGMT": "2023-07-02T05:45:00.0", "endGMT": "2023-07-02T06:00:00.0",
-        "steps": 19, "pushes": 0, "primaryActivityLevel": "sedentary", "activityLevelConstant":
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}]'
     headers:
-      CF-Cache-Status:
-      - DYNAMIC
       CF-RAY:
-      - 7f873ddd1a594791-DFW
+      - 978304f90f0b29c4-AMS
+      Cache-Control:
+      - no-cache, no-store, private
       Connection:
       - keep-alive
+      Content-Encoding:
+      - gzip
       Content-Type:
-      - application/json;charset=UTF-8
+      - application/json
       Date:
-      - Fri, 18 Aug 2023 03:59:00 GMT
+      - Mon, 01 Sep 2025 07:22:56 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=tJacsT8vopyIAffN684LcOMbK15rMrBOqEpskYmxq4YlGwiZbrizv9WNX6lEBv89nLZ0SdMqmuDY8QGV6NKFFb2PWZkFEjQLcywqorvWGMblFTGOwq0njWceIXlL7xZkc70Bx%2BHpHQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=OwS2OMc5i8CbLFve9i6hfk9foc0qXh73Sx7moYcFqfky%2BN%2Fv5hqN4Zjg08sRcTZAN3Pio%2F98a6n5PAhBSYVDS2RMCxl07FA2TKFAZC26hALPDrb%2BDi0frKLApSiEhtvjdJgyMh9F0YIEPxpsrcymP8sWjw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
       - chunked
       alt-svc:
       - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
+      cf-cache-status:
+      - DYNAMIC
       pragma:
       - no-cache
-      set-cookie:
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
     status:
       code: 200
       message: OK
