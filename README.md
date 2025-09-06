@@ -1,12 +1,15 @@
 # Python: Garmin Connect
 
-The Garmin Connect API demo (`example.py`) provides comprehensive access to **101 API methods** organized into **11 categories** for easy navigation:
+The Garmin Connect API library comes with two examples:
+
+- **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
+- **`demo.py`** - Comprehensive demo providing access to **101 API methods** organized into **11 categories** for easy navigation
 
 Note: The demo menu is generated dynamically; exact options may change between releases.
 
 ```bash
-$ ./example.py
-🏃‍♂️ Garmin Connect API Demo - Main Menu
+$ ./demo.py
+🏃‍♂️ Full-blown Garmin Connect API Demo - Main Menu
 ==================================================
 Select a category:
 
@@ -84,7 +87,12 @@ python3 -m venv .venv --copies
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install pdm
 pdm install --group :example
+
+# Run the simple example
 python3 ./example.py
+
+# Run the comprehensive demo
+python3 ./demo.py
 ```
 
 
@@ -322,7 +330,8 @@ print(f"Resting HR: {hr_data.get('restingHeartRate', 'n/a')}")
 ```
 
 ### Additional Resources
-- **Source Code**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py)
+- **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 101 API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
