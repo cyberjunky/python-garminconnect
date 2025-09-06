@@ -1,27 +1,33 @@
 [project]
 name = "garminconnect"
-version = "0.2.28"
+version = "0.2.30"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "garth>=0.5.13,<0.6.0",
+    "garth>=0.5.17,<0.6.0",
 ]
 readme = "README.md"
 license = {text = "MIT"}
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
     "Operating System :: MacOS :: MacOS X",
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
+    "Operating System :: OS Independent",
 ]
 keywords=["garmin connect", "api", "garmin"]
 requires-python=">=3.10"
 [project.urls]
 "Homepage" = "https://github.com/cyberjunky/python-garminconnect"
-"Bug Tracker" = "https://github.com/cyberjunky/python-garminconnect/issues"
+"Issues" = "https://github.com/cyberjunky/python-garminconnect/issues"
+"Changelog" = "https://github.com/cyberjunky/python-garminconnect/releases"
 
 [build-system]
 requires = ["pdm-backend"]
@@ -32,13 +38,13 @@ addopts = "--ignore=__pypackages__ --ignore-glob=*.yaml"
 
 [tool.mypy]
 ignore_missing_imports = true
+python_version = "3.10"
+disallow_untyped_defs = true
+warn_unused_ignores = true
 
 [tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-line_length = 79
+profile = "black"
+line_length = 88
 known_first_party = "garminconnect"
 
 [project.optional-dependencies]
@@ -50,7 +56,7 @@ dev = [
     "matplotlib",
 ]
 linting = [
-    "black",
+    "black[jupyter]",
     "ruff",
     "mypy",
     "isort",
@@ -59,14 +65,110 @@ linting = [
 testing = [
     "coverage",
     "pytest",
-    "pytest-vcr",
+    "pytest-vcr>=1.0.2",
+    "vcrpy>=7.0.0",
 ]
 example = [
+    "garth>=0.5.17,<0.6.0",
+    "requests",
     "readchar",
 ]
 
 [tool.pdm]
 distribution = true
+
+[tool.pdm.build]
+excludes = [
+  "tests/**",
+  "test_data/**",
+  ".github/**",
+]
+
+[tool.pdm.python]
+path = ".venv/bin/python"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    ".pytest_cache",
+    "build",
+    "dist",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ARG", # flake8-unused-arguments
+    "SIM", # flake8-simplify
+    "S",   # flake8-bandit (security)
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+]
+unfixable = []  # Allow all fixes, including unsafe ones
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ARG", "S101"]
+
+[tool.coverage.run]
+source = ["garminconnect"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == \"__main__\":",
+    "@(abc\\.)?abstractmethod",
+]
+[tool.pdm.scripts]
+# Development workflow
+install = "pdm install --group :all"
+format = {composite = ["pdm run ruff check . --fix --unsafe-fixes", "pdm run isort . --skip-gitignore", "pdm run black -l 88 ."]}
+lint = {composite = ["pdm run isort --check-only . --skip-gitignore", "pdm run ruff check .", "pdm run black -l 88 . --check --diff", "pdm run mypy garminconnect tests"]}
+test = {cmd = "pdm run coverage run -m pytest -v --durations=10"}
+testcov = {composite = ["test", "pdm run coverage html", "pdm run coverage xml -o coverage/coverage.xml"]}
+codespell = "pre-commit run codespell --all-files"
+clean = "python -c \"import shutil, pathlib; [shutil.rmtree(p, ignore_errors=True) for p in pathlib.Path('.').rglob('__pycache__')]; [p.unlink(missing_ok=True) for p in pathlib.Path('.').rglob('*.py[co]')]\""
+
+# Pre-commit hooks
+pre-commit-install = "pre-commit install"
+pre-commit-run = "pre-commit run --all-files"
+pre-commit-run-staged = "pre-commit run"
+pre-commit-update = "pre-commit autoupdate"
+
+# Publishing
+build = "pdm build"
+publish = {composite = ["build", "pdm publish"]}
+
+# VCR cassette management
+record-vcr = {env = {GARMINTOKENS = "~/.garminconnect"}, cmd = "pdm run pytest tests/test_garmin.py -v --vcr-record=new_episodes"}
+clean-vcr = "python3 -c \"import pathlib; p=pathlib.Path('tests/cassettes'); [f.unlink() for f in p.glob('*.yaml')]\""
+reset-vcr = {composite = ["clean-vcr", "record-vcr"]}
+
+# Quality checks
+all = {composite = ["lint", "codespell", "pre-commit-run", "test"]}
+
 [tool.pdm.dev-dependencies]
 dev = [
     "ipython",
@@ -76,16 +178,19 @@ dev = [
     "matplotlib",
 ]
 linting = [
-    "black",
+    "black[jupyter]",
     "ruff",
     "mypy",
     "isort",
     "types-requests",
+    "pre-commit",
+    "codespell",
 ]
 testing = [
     "coverage",
     "pytest",
-    "pytest-vcr",
+    "pytest-vcr>=1.0.2",
+    "vcrpy>=7.0.0",
 ]
 example = [
     "readchar",

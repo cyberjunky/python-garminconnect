@@ -1,0 +1,93 @@
+name: CI
+
+"on":
+  push:
+    branches:
+      - main
+      - master
+      - revamp
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pdm
+          pdm install --group :all
+
+      - name: Lint with ruff
+        run: |
+          pdm run ruff check .
+
+      - name: Format check with black
+        run: |
+          pdm run black --check .
+
+      - name: Type check with mypy
+        run: |
+          pdm run mypy garminconnect --ignore-missing-imports
+
+      # - name: Test with pytest
+      #   env:
+      #     GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
+      #   run: |
+      #     # Use existing VCR cassettes for CI to avoid network calls
+      #     pdm run pytest tests/ -v --tb=short --vcr-record=none
+      #   continue-on-error: false
+
+      # - name: Upload coverage reports
+      #   if: matrix.python-version == '3.11'
+      #   env:
+      #     GARMINTOKENS: ${{ secrets.GARMINTOKENS }}
+      #   run: |
+      #     pdm run coverage run -m pytest -v --tb=short --vcr-record=none
+      #     pdm run coverage xml
+      #   continue-on-error: true
+
+      - name: Upload coverage artifact
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit[toml] safety
+
+      - name: Security check with bandit
+        run: |
+          bandit -r garminconnect -f json -o bandit-report.json || true
+
+      - name: Safety check
+        run: |
+          safety check --json --output safety-report.json || true
+        continue-on-error: true
