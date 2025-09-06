@@ -11,7 +11,19 @@ from pathlib import Path
 from typing import Any
 
 import garth
+import requests
 from garth.exc import HTTPError
+
+# Try to import additional garth exceptions
+try:
+    from garth.exc import GarthException, GarthHTTPError
+except ImportError:
+    # Fallback if GarthException doesn't exist
+    GarthException = Exception
+    try:
+        from garth.exc import GarthHTTPError
+    except ImportError:
+        GarthHTTPError = HTTPError
 
 from .fit import FitEncoderWeight  # type: ignore
 
@@ -278,8 +290,15 @@ class Garmin:
         """Wrapper for garth connectapi with error handling."""
         try:
             return self.garth.connectapi(path, **kwargs)
-        except HTTPError as e:
-            status = getattr(getattr(e, "response", None), "status_code", None)
+        except (HTTPError, GarthHTTPError) as e:
+            # For GarthHTTPError, extract status from the wrapped HTTPError
+            if isinstance(e, GarthHTTPError):
+                status = getattr(
+                    getattr(e.error, "response", None), "status_code", None
+                )
+            else:
+                status = getattr(getattr(e, "response", None), "status_code", None)
+
             logger.error(
                 "API call failed for path '%s': %s (status=%s)", path, e, status
             )
@@ -291,6 +310,11 @@ class Garmin:
                 raise GarminConnectTooManyRequestsError(
                     f"Rate limit exceeded: {e}"
                 ) from e
+            elif status and 400 <= status < 500:
+                # Client errors (400-499) - API endpoint issues, bad parameters, etc.
+                raise GarminConnectConnectionError(
+                    f"API client error ({status}): {e}"
+                ) from e
             else:
                 raise GarminConnectConnectionError(f"HTTP error: {e}") from e
         except Exception as e:
@@ -301,13 +325,29 @@ class Garmin:
         """Wrapper for garth download with error handling."""
         try:
             return self.garth.download(path, **kwargs)
-        except Exception as e:
-            status = getattr(getattr(e, "response", None), "status_code", None)
+        except (HTTPError, GarthHTTPError) as e:
+            # For GarthHTTPError, extract status from the wrapped HTTPError
+            if isinstance(e, GarthHTTPError):
+                status = getattr(
+                    getattr(e.error, "response", None), "status_code", None
+                )
+            else:
+                status = getattr(getattr(e, "response", None), "status_code", None)
+
             logger.exception("Download failed for path '%s' (status=%s)", path, status)
             if status == 401:
                 raise GarminConnectAuthenticationError(f"Download error: {e}") from e
-            if status == 429:
+            elif status == 429:
                 raise GarminConnectTooManyRequestsError(f"Download error: {e}") from e
+            elif status and 400 <= status < 500:
+                # Client errors (400-499) - API endpoint issues, bad parameters, etc.
+                raise GarminConnectConnectionError(
+                    f"Download client error ({status}): {e}"
+                ) from e
+            else:
+                raise GarminConnectConnectionError(f"Download error: {e}") from e
+        except Exception as e:
+            logger.exception("Download failed for path '%s'", path)
             raise GarminConnectConnectionError(f"Download error: {e}") from e
 
     def login(self, /, tokenstore: str | None = None) -> tuple[str | None, str | None]:
@@ -391,12 +431,49 @@ class Garmin:
 
             return token1, token2
 
+        except (HTTPError, requests.exceptions.HTTPError, GarthException) as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            logger.error("Login failed: %s (status=%s)", e, status)
+
+            # Check status code first
+            if status == 401:
+                raise GarminConnectAuthenticationError(
+                    f"Authentication failed: {e}"
+                ) from e
+            elif status == 429:
+                raise GarminConnectTooManyRequestsError(
+                    f"Rate limit exceeded: {e}"
+                ) from e
+
+            # If no status code, check error message for authentication indicators
+            error_str = str(e).lower()
+            auth_indicators = ["401", "unauthorized", "authentication failed"]
+            if any(indicator in error_str for indicator in auth_indicators):
+                raise GarminConnectAuthenticationError(
+                    f"Authentication failed: {e}"
+                ) from e
+
+            # Default to connection error
+            raise GarminConnectConnectionError(f"Login failed: {e}") from e
+        except FileNotFoundError:
+            # Let FileNotFoundError pass through - this is expected when no tokens exist
+            raise
         except Exception as e:
             if isinstance(e, GarminConnectAuthenticationError):
                 raise
-            else:
-                logger.exception("Login failed")
-                raise GarminConnectConnectionError(f"Login failed: {e}") from e
+            # Check if this is an authentication error based on the error message
+            error_str = str(
+                e
+            ).lower()  # Convert to lowercase for case-insensitive matching
+            auth_indicators = ["401", "unauthorized", "authentication", "login failed"]
+            is_auth_error = any(indicator in error_str for indicator in auth_indicators)
+
+            if is_auth_error:
+                raise GarminConnectAuthenticationError(
+                    f"Authentication failed: {e}"
+                ) from e
+            logger.exception("Login failed")
+            raise GarminConnectConnectionError(f"Login failed: {e}") from e
 
     def resume_login(
         self, client_state: dict[str, Any], mfa_code: str
