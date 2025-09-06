@@ -2,8 +2,8 @@
 language: "en-US"
 early_access: true
 reviews:
-  profile: "assertive"
-  request_changes_workflow: false
+  profile: "pythonic"
+  request_changes_workflow: true
   high_level_summary: true
   poem: false
   review_status: true
@@ -11,6 +11,11 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
+  auto_fix:
+    enabled: true
+    include_imports: true
+    include_type_hints: true
+    include_security_fixes: true
   path_filters:
     - "!tests/**/cassettes/**"
   path_instructions:
@@ -18,5 +23,11 @@ reviews:
       instructions: |
         - test functions shouldn't have a return type hint
         - it's ok to use `assert` instead of `pytest.assume()`
+    - path: "garminconnect/**"
+      instructions: |
+        - prefer modern Python patterns (3.10+)
+        - use type hints consistently
+        - follow PEP 8 and modern Python conventions
+        - suggest performance improvements where applicable
 chat:
   auto_reply: true

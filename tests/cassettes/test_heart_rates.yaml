@@ -10,164 +10,76 @@ interactions:
       - Bearer SANITIZED
       Connection:
       - keep-alive
-      User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
-    method: GET
-    uri: https://connectapi.garmin.com/userprofile-service/socialProfile
-  response:
-    body:
-      string: '{"id": 3154645, "profileId": 2591602, "garminGUID": "0690cc1d-d23d-4412-b027-80fd4ed1c0f6",
-        "displayName": "mtamizi", "fullName": "Matin Tamizi", "userName": "mtamizi",
-        "profileImageUuid": "73240e81-6e4d-43fc-8af8-c8f6c51b3b8f", "profileImageUrlLarge":
-        "https://s3.amazonaws.com/garmin-connect-prod/profile_images/73240e81-6e4d-43fc-8af8-c8f6c51b3b8f-2591602.png",
-        "profileImageUrlMedium": "https://s3.amazonaws.com/garmin-connect-prod/profile_images/685a19e9-a7be-4a11-9bf9-faca0c5d1f1a-2591602.png",
-        "profileImageUrlSmall": "https://s3.amazonaws.com/garmin-connect-prod/profile_images/6302f021-0ec7-4dc9-b0c3-d5a19bc5a08c-2591602.png",
-        "location": "Ciudad de M\u00e9xico, CDMX", "facebookUrl": null, "twitterUrl":
-        null, "personalWebsite": null, "motivation": null, "bio": null, "primaryActivity":
-        null, "favoriteActivityTypes": [], "runningTrainingSpeed": 0.0, "cyclingTrainingSpeed":
-        0.0, "favoriteCyclingActivityTypes": [], "cyclingClassification": null, "cyclingMaxAvgPower":
-        0.0, "swimmingTrainingSpeed": 0.0, "profileVisibility": "private", "activityStartVisibility":
-        "private", "activityMapVisibility": "public", "courseVisibility": "public",
-        "activityHeartRateVisibility": "public", "activityPowerVisibility": "public",
-        "badgeVisibility": "private", "showAge": false, "showWeight": false, "showHeight":
-        false, "showWeightClass": false, "showAgeRange": false, "showGender": false,
-        "showActivityClass": false, "showVO2Max": false, "showPersonalRecords": false,
-        "showLast12Months": false, "showLifetimeTotals": false, "showUpcomingEvents":
-        false, "showRecentFavorites": false, "showRecentDevice": false, "showRecentGear":
-        false, "showBadges": true, "otherActivity": null, "otherPrimaryActivity":
-        null, "otherMotivation": null, "userRoles": ["SCOPE_ATP_READ", "SCOPE_ATP_WRITE",
-        "SCOPE_COMMUNITY_COURSE_READ", "SCOPE_COMMUNITY_COURSE_WRITE", "SCOPE_CONNECT_READ",
-        "SCOPE_CONNECT_WRITE", "SCOPE_DT_CLIENT_ANALYTICS_WRITE", "SCOPE_GARMINPAY_READ",
-        "SCOPE_GARMINPAY_WRITE", "SCOPE_GCOFFER_READ", "SCOPE_GCOFFER_WRITE", "SCOPE_GHS_SAMD",
-        "SCOPE_GHS_UPLOAD", "SCOPE_GOLF_API_READ", "SCOPE_GOLF_API_WRITE", "SCOPE_INSIGHTS_READ",
-        "SCOPE_INSIGHTS_WRITE", "SCOPE_PRODUCT_SEARCH_READ", "ROLE_CONNECTUSER", "ROLE_FITNESS_USER",
-        "ROLE_WELLNESS_USER", "ROLE_OUTDOOR_USER", "ROLE_CONNECT_2_USER", "ROLE_TACX_APP_USER"],
-        "nameApproved": true, "userProfileFullName": "Matin Tamizi", "makeGolfScorecardsPrivate":
-        true, "allowGolfLiveScoring": false, "allowGolfScoringByConnections": true,
-        "userLevel": 3, "userPoint": 117, "levelUpdateDate": "2020-12-12T15:20:38.0",
-        "levelIsViewed": false, "levelPointThreshold": 140, "userPointOffset": 0,
-        "userPro": false}'
-    headers:
-      CF-Cache-Status:
-      - DYNAMIC
-      CF-RAY:
-      - 7f8a4dfd38ceb6ee-QRO
-      Connection:
-      - keep-alive
-      Content-Type:
-      - application/json;charset=UTF-8
-      Date:
-      - Fri, 18 Aug 2023 12:54:18 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=La2NeCtpgizXPwqTA6hQIqHxHZp3Q7NKoQpteVkisyVSSERbgN4lDUZ5tc2dxWena37ZPgY12J0dvwsfCGcoI9A1Y2s%2F%2FLMzXlGcsUBNyuYhaYlcBiD%2BBRQKODoqJCYIrgUi5GoFmA%3D%3D"}],"group":"cf-nel","max_age":604800}'
-      Server:
-      - cloudflare
-      Transfer-Encoding:
-      - chunked
-      alt-svc:
-      - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
-      pragma:
-      - no-cache
-      set-cookie:
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate
-      Authorization:
-      - Bearer SANITIZED
-      Connection:
-      - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED; ADRUM_BT1=SANITIZED; ADRUM_BTa=SANITIZED; SameSite=SANITIZED
+      - _cfuvid=SANITIZED
       User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
+      - GCM-iOS-5.7.2.1
     method: GET
     uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
   response:
     body:
-      string: '{"id": 2591602, "userData": {"gender": "MALE", "weight": 79800.0, "height":
-        182.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1984-10-17", "measurementSystem":
-        "metric", "activityLevel": null, "handedness": "RIGHT", "powerFormat": {"formatId":
-        30, "formatKey": "watt", "minFraction": 0, "maxFraction": 0, "groupingUsed":
-        true, "displayFormat": null}, "heartRateFormat": {"formatId": 21, "formatKey":
-        "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed": false, "displayFormat":
-        null}, "firstDayOfWeek": {"dayId": 2, "dayName": "sunday", "sortOrder": 2,
-        "isPossibleFirstDay": true}, "vo2MaxRunning": 46.0, "vo2MaxCycling": null,
-        "lactateThresholdSpeed": 0.34722125000000004, "lactateThresholdHeartRate":
-        null, "diveNumber": null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 85100.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 39.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
         3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
         "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
         null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
-        1044719868, "thresholdHeartRateAutoDetected": true, "ftpAutoDetected": null,
-        "trainingStatusPausedDate": null, "weatherLocation": {"useFixedLocation":
-        false, "latitude": null, "longitude": null, "locationName": null, "isoCountryCode":
-        null, "postalCode": null}, "golfDistanceUnit": "statute_us", "golfElevationUnit":
-        null, "golfSpeedUnit": null, "externalBottomTime": null}, "userSleep": {"sleepTime":
-        80400, "defaultSleepTime": false, "wakeTime": 24000, "defaultWakeTime": false},
-        "connectDate": null, "sourceType": null}'
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
     headers:
-      CF-Cache-Status:
-      - DYNAMIC
       CF-RAY:
-      - 7f8a4dfdf980b6e5-QRO
+      - 978304ff6f73fc28-AMS
+      Cache-Control:
+      - no-cache, no-store, private
       Connection:
       - keep-alive
+      Content-Encoding:
+      - gzip
       Content-Type:
       - application/json;charset=UTF-8
       Date:
-      - Fri, 18 Aug 2023 12:54:18 GMT
+      - Mon, 01 Sep 2025 07:22:58 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=I5KMiCopdLs1oRVeXXMDAPzqBe%2BvuJTYtO%2BiQ3BjpTVhWpMicJVwZ%2BQ6MKe2rMgrLFD%2FcnikpBSUW7ePlKyy2IKZJSMzxgCzIIOemxy8o70roRlr9CH2xD7rMqhMEpRsErmGVmDyaQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=SdosRMUqgsXx2pOOAomLkFFu5P1MbAv70BPx9%2F1oTs%2FA2QGZIS6fCx4%2BIjMQciEjGH7Yt1%2Fa6t85CBtwtJ%2BxwYcrBGWeZkmbaafPiuLfRYKIApH4rDChr5QtkXo%2BwA%2BdxNKuAeowU9OrwxGJLNFqPQW1Bg%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
       - chunked
       alt-svc:
       - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
+      cf-cache-status:
+      - DYNAMIC
       pragma:
       - no-cache
-      set-cookie:
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
     status:
       code: 200
       message: OK
@@ -183,234 +95,45 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED; ADRUM_BT1=SANITIZED; ADRUM_BTa=SANITIZED; SameSite=SANITIZED
+      - _cfuvid=SANITIZED
       User-Agent:
-      - Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15
-        (KHTML, like Gecko) Mobile/15E148
+      - GCM-iOS-5.7.2.1
     method: GET
-    uri: https://connectapi.garmin.com/wellness-service/wellness/dailyHeartRate/mtamizi?date=2023-07-01
+    uri: https://connectapi.garmin.com/wellness-service/wellness/dailyHeartRate/5da0f071-075e-438c-ae63-c3f3eef73b1e?date=2023-07-01
   response:
     body:
-      string: '{"userProfilePK": 2591602, "calendarDate": "2023-07-01", "startTimestampGMT":
-        "2023-07-01T06:00:00.0", "endTimestampGMT": "2023-07-02T06:00:00.0", "startTimestampLocal":
+      string: '{"userProfilePK": 82413233, "calendarDate": "2023-07-01", "startTimestampGMT":
+        "2023-06-30T22:00:00.0", "endTimestampGMT": "2023-07-01T22:00:00.0", "startTimestampLocal":
         "2023-07-01T00:00:00.0", "endTimestampLocal": "2023-07-02T00:00:00.0", "maxHeartRate":
-        106, "minHeartRate": 49, "restingHeartRate": 51, "lastSevenDaysAvgRestingHeartRate":
-        49, "heartRateValueDescriptors": [{"key": "timestamp", "index": 0}, {"key":
-        "heartrate", "index": 1}], "heartRateValues": [[1688191200000, 56], [1688191320000,
-        57], [1688191440000, 56], [1688191560000, 56], [1688191680000, 57], [1688191800000,
-        59], [1688191920000, 58], [1688192040000, 59], [1688192160000, 60], [1688192280000,
-        57], [1688192400000, 57], [1688192520000, 60], [1688192640000, 59], [1688192760000,
-        58], [1688192880000, 58], [1688193000000, 59], [1688193120000, 59], [1688193240000,
-        61], [1688193360000, 58], [1688193480000, 58], [1688193600000, 58], [1688193720000,
-        58], [1688193840000, 59], [1688193960000, 58], [1688194080000, 57], [1688194200000,
-        58], [1688194320000, 58], [1688194440000, 57], [1688194560000, 60], [1688194680000,
-        62], [1688194800000, 57], [1688194920000, 57], [1688195040000, 56], [1688195160000,
-        55], [1688195280000, 55], [1688195400000, 55], [1688195520000, 54], [1688195640000,
-        54], [1688195760000, 54], [1688195880000, 55], [1688196000000, 55], [1688196120000,
-        54], [1688196240000, 55], [1688196360000, 54], [1688196480000, 55], [1688196600000,
-        54], [1688196720000, 54], [1688196840000, 54], [1688196960000, 54], [1688197080000,
-        54], [1688197200000, 55], [1688197320000, 55], [1688197440000, 55], [1688197560000,
-        55], [1688197680000, 53], [1688197800000, 55], [1688197920000, 54], [1688198040000,
-        54], [1688198160000, 56], [1688198280000, 54], [1688198400000, 54], [1688198520000,
-        54], [1688198640000, 55], [1688198760000, 54], [1688198880000, 54], [1688199000000,
-        54], [1688199120000, 55], [1688199240000, 55], [1688199360000, 55], [1688199480000,
-        55], [1688199600000, 55], [1688199720000, 54], [1688199840000, 54], [1688199960000,
-        54], [1688200080000, 52], [1688200200000, 53], [1688200320000, 53], [1688200440000,
-        53], [1688200560000, 53], [1688200680000, 53], [1688200800000, 53], [1688200920000,
-        53], [1688201040000, 53], [1688201160000, 53], [1688201280000, 53], [1688201400000,
-        53], [1688201520000, 53], [1688201640000, 52], [1688201760000, 53], [1688201880000,
-        53], [1688202000000, 52], [1688202120000, 53], [1688202240000, 54], [1688202360000,
-        52], [1688202480000, 53], [1688202600000, 51], [1688202720000, 52], [1688202840000,
-        52], [1688202960000, 53], [1688203080000, 52], [1688203200000, 52], [1688203320000,
-        52], [1688203440000, 52], [1688203560000, 51], [1688203680000, 51], [1688203800000,
-        50], [1688203920000, 51], [1688204040000, 52], [1688204160000, 52], [1688204280000,
-        52], [1688204400000, 53], [1688204520000, 53], [1688204640000, 51], [1688204760000,
-        53], [1688204880000, 51], [1688205000000, 51], [1688205120000, 51], [1688205240000,
-        51], [1688205360000, 51], [1688205480000, 51], [1688205600000, 51], [1688205720000,
-        51], [1688205840000, 53], [1688205960000, 51], [1688206080000, 52], [1688206200000,
-        53], [1688206320000, 52], [1688206440000, 52], [1688206560000, 52], [1688206680000,
-        52], [1688206800000, 52], [1688206920000, 53], [1688207040000, 52], [1688207160000,
-        53], [1688207280000, 52], [1688207400000, 52], [1688207520000, 54], [1688207640000,
-        53], [1688207760000, 52], [1688207880000, 53], [1688208000000, 52], [1688208120000,
-        53], [1688208240000, 53], [1688208360000, 55], [1688208480000, 53], [1688208600000,
-        52], [1688208720000, 50], [1688208840000, 52], [1688208960000, 52], [1688209080000,
-        54], [1688209200000, 49], [1688209320000, null], [1688209440000, 67], [1688209560000,
-        53], [1688209680000, 51], [1688209800000, 52], [1688209920000, 51], [1688210040000,
-        51], [1688210160000, 51], [1688210280000, 52], [1688210400000, 52], [1688210520000,
-        52], [1688210640000, 54], [1688210760000, 56], [1688210880000, 59], [1688211000000,
-        75], [1688211120000, 79], [1688211240000, 84], [1688211360000, 90], [1688211480000,
-        84], [1688211600000, 77], [1688211720000, 88], [1688211840000, 78], [1688211960000,
-        83], [1688212080000, 62], [1688212200000, 56], [1688212320000, 53], [1688212440000,
-        53], [1688212560000, 53], [1688212680000, 55], [1688212800000, 56], [1688212920000,
-        59], [1688213040000, 55], [1688213160000, 60], [1688213280000, 57], [1688213400000,
-        58], [1688213520000, 56], [1688213640000, 56], [1688213760000, 57], [1688213880000,
-        55], [1688214000000, 55], [1688214120000, 57], [1688214240000, 58], [1688214360000,
-        69], [1688214480000, 72], [1688214600000, 78], [1688214720000, 79], [1688214840000,
-        77], [1688214960000, 72], [1688215080000, 75], [1688215200000, 77], [1688215320000,
-        72], [1688215440000, 75], [1688215560000, 74], [1688215680000, 77], [1688215800000,
-        75], [1688215920000, 73], [1688216040000, 77], [1688216160000, 73], [1688216280000,
-        72], [1688216400000, 78], [1688216520000, 78], [1688216640000, 72], [1688216760000,
-        73], [1688216880000, 75], [1688217000000, 77], [1688217120000, 71], [1688217240000,
-        74], [1688217360000, 74], [1688217480000, 72], [1688217600000, 73], [1688217720000,
-        71], [1688217840000, 74], [1688217960000, 72], [1688218080000, 75], [1688218200000,
-        78], [1688218320000, 73], [1688218440000, 89], [1688218560000, 96], [1688218680000,
-        102], [1688218800000, 91], [1688218920000, 91], [1688219040000, 87], [1688219160000,
-        81], [1688219280000, 71], [1688219400000, 73], [1688219520000, 84], [1688219640000,
-        85], [1688219760000, 96], [1688219880000, 72], [1688220000000, 89], [1688220120000,
-        75], [1688220240000, 74], [1688220360000, 70], [1688220480000, 75], [1688220600000,
-        75], [1688220720000, 90], [1688220840000, 94], [1688220960000, 78], [1688221080000,
-        85], [1688221200000, 93], [1688221320000, 90], [1688221440000, 96], [1688221560000,
-        103], [1688221680000, 97], [1688221800000, 92], [1688221920000, 92], [1688222040000,
-        86], [1688222160000, 84], [1688222280000, 83], [1688222400000, 86], [1688222520000,
-        72], [1688222640000, 65], [1688222760000, 63], [1688222880000, 61], [1688223000000,
-        70], [1688223120000, 75], [1688223240000, 77], [1688223360000, 75], [1688223480000,
-        70], [1688223600000, 73], [1688223720000, 77], [1688223840000, 80], [1688223960000,
-        78], [1688224080000, 70], [1688224200000, 77], [1688224320000, 76], [1688224440000,
-        79], [1688224560000, 77], [1688224680000, 74], [1688224800000, 75], [1688224920000,
-        72], [1688225040000, 71], [1688225160000, 70], [1688225280000, 76], [1688225400000,
-        70], [1688225520000, 75], [1688225640000, 80], [1688225760000, 78], [1688225880000,
-        80], [1688226000000, 80], [1688226120000, 76], [1688226240000, 81], [1688226360000,
-        81], [1688226480000, 84], [1688226600000, 93], [1688226720000, 90], [1688226840000,
-        93], [1688226960000, 77], [1688227080000, 68], [1688227200000, 67], [1688227320000,
-        90], [1688227440000, 85], [1688227560000, 83], [1688227680000, 83], [1688227800000,
-        77], [1688227920000, 74], [1688228040000, 69], [1688228160000, 76], [1688228280000,
-        62], [1688228400000, 74], [1688228520000, 61], [1688228640000, 61], [1688228760000,
-        65], [1688228880000, 68], [1688229000000, 64], [1688229120000, 63], [1688229240000,
-        74], [1688229360000, 76], [1688229480000, 73], [1688229600000, 77], [1688229720000,
-        77], [1688229840000, 77], [1688229960000, 73], [1688230080000, 78], [1688230200000,
-        77], [1688230320000, 79], [1688230440000, 86], [1688230560000, 84], [1688230680000,
-        77], [1688230800000, 80], [1688230920000, 73], [1688231040000, 59], [1688231160000,
-        54], [1688231280000, 55], [1688231400000, 68], [1688231520000, 76], [1688231640000,
-        62], [1688231760000, 67], [1688231880000, 64], [1688232000000, 61], [1688232120000,
-        62], [1688232240000, 66], [1688232360000, 66], [1688232480000, 64], [1688232600000,
-        66], [1688232720000, 63], [1688232840000, 73], [1688232960000, 68], [1688233080000,
-        65], [1688233200000, 67], [1688233320000, 67], [1688233440000, 68], [1688233560000,
-        67], [1688233680000, 71], [1688233800000, 68], [1688233920000, 70], [1688234040000,
-        69], [1688234160000, 69], [1688234280000, 65], [1688234400000, 70], [1688234520000,
-        66], [1688234640000, 69], [1688234760000, 71], [1688234880000, 66], [1688235000000,
-        69], [1688235120000, 67], [1688235240000, 67], [1688235360000, 67], [1688235480000,
-        72], [1688235600000, 71], [1688235720000, 76], [1688235840000, 74], [1688235960000,
-        69], [1688236080000, 71], [1688236200000, 70], [1688236320000, 69], [1688236440000,
-        73], [1688236560000, 73], [1688236680000, 73], [1688236800000, 71], [1688236920000,
-        72], [1688237040000, 74], [1688237160000, 74], [1688237280000, 73], [1688237400000,
-        71], [1688237520000, 72], [1688237640000, 75], [1688237760000, 73], [1688237880000,
-        79], [1688238000000, null], [1688238960000, 84], [1688239080000, null], [1688239440000,
-        86], [1688239560000, 91], [1688239680000, 74], [1688239800000, 62], [1688239920000,
-        77], [1688240040000, 84], [1688240160000, 83], [1688240280000, 73], [1688240400000,
-        89], [1688240520000, 88], [1688240640000, 81], [1688240760000, 87], [1688240880000,
-        85], [1688241000000, 94], [1688241120000, 93], [1688241240000, 95], [1688241360000,
-        90], [1688241480000, 70], [1688241600000, 60], [1688241720000, 57], [1688241840000,
-        60], [1688241960000, 61], [1688242080000, 67], [1688242200000, 64], [1688242320000,
-        62], [1688242440000, 62], [1688242560000, 63], [1688242680000, 66], [1688242800000,
-        74], [1688242920000, 75], [1688243040000, 86], [1688243160000, 78], [1688243280000,
-        74], [1688243400000, 65], [1688243520000, 59], [1688243640000, 61], [1688243760000,
-        67], [1688243880000, 64], [1688244000000, 66], [1688244120000, 63], [1688244240000,
-        63], [1688244360000, 65], [1688244480000, 70], [1688244600000, 66], [1688244720000,
-        65], [1688244840000, 85], [1688244960000, 67], [1688245080000, 60], [1688245200000,
-        68], [1688245320000, 75], [1688245440000, 77], [1688245560000, 76], [1688245680000,
-        76], [1688245800000, 75], [1688245920000, 70], [1688246040000, 70], [1688246160000,
-        71], [1688246280000, 70], [1688246400000, 72], [1688246520000, 67], [1688246640000,
-        69], [1688246760000, 70], [1688246880000, 71], [1688247000000, 69], [1688247120000,
-        67], [1688247240000, 69], [1688247360000, 67], [1688247480000, 71], [1688247600000,
-        66], [1688247720000, 85], [1688247840000, 91], [1688247960000, 84], [1688248080000,
-        89], [1688248200000, 77], [1688248320000, 85], [1688248440000, 94], [1688248560000,
-        106], [1688248680000, 106], [1688248800000, 87], [1688248920000, 71], [1688249040000,
-        69], [1688249160000, 78], [1688249280000, 84], [1688249400000, 87], [1688249520000,
-        86], [1688249640000, 84], [1688249760000, 84], [1688249880000, 78], [1688250000000,
-        85], [1688250120000, 89], [1688250240000, 92], [1688250360000, 91], [1688250480000,
-        87], [1688250600000, 85], [1688250720000, 85], [1688250840000, 85], [1688250960000,
-        83], [1688251080000, 81], [1688251200000, 88], [1688251320000, 91], [1688251440000,
-        87], [1688251560000, 91], [1688251680000, 86], [1688251800000, 85], [1688251920000,
-        77], [1688252040000, 78], [1688252160000, 86], [1688252280000, 79], [1688252400000,
-        79], [1688252520000, 89], [1688252640000, 82], [1688252760000, 79], [1688252880000,
-        77], [1688253000000, 82], [1688253120000, 76], [1688253240000, 79], [1688253360000,
-        83], [1688253480000, 80], [1688253600000, 82], [1688253720000, 73], [1688253840000,
-        72], [1688253960000, 73], [1688254080000, 76], [1688254200000, 76], [1688254320000,
-        94], [1688254440000, 94], [1688254560000, 84], [1688254680000, 85], [1688254800000,
-        90], [1688254920000, 94], [1688255040000, 87], [1688255160000, 80], [1688255280000,
-        85], [1688255400000, 86], [1688255520000, 97], [1688255640000, 96], [1688255760000,
-        85], [1688255880000, 76], [1688256000000, 71], [1688256120000, 75], [1688256240000,
-        74], [1688256360000, 74], [1688256480000, 70], [1688256600000, 69], [1688256720000,
-        69], [1688256840000, 69], [1688256960000, 70], [1688257080000, 73], [1688257200000,
-        73], [1688257320000, 74], [1688257440000, 80], [1688257560000, 94], [1688257680000,
-        102], [1688257800000, 85], [1688257920000, 74], [1688258040000, 71], [1688258160000,
-        71], [1688258280000, 70], [1688258400000, 72], [1688258520000, 69], [1688258640000,
-        70], [1688258760000, 69], [1688258880000, 69], [1688259000000, 71], [1688259120000,
-        88], [1688259240000, 93], [1688259360000, 82], [1688259480000, 80], [1688259600000,
-        76], [1688259720000, 73], [1688259840000, 93], [1688259960000, 84], [1688260080000,
-        70], [1688260200000, 67], [1688260320000, 72], [1688260440000, 76], [1688260560000,
-        71], [1688260680000, 70], [1688260800000, 73], [1688260920000, 71], [1688261040000,
-        71], [1688261160000, 70], [1688261280000, 74], [1688261400000, 78], [1688261520000,
-        74], [1688261640000, 70], [1688261760000, 72], [1688261880000, 78], [1688262000000,
-        97], [1688262120000, 96], [1688262240000, 101], [1688262360000, 85], [1688262480000,
-        88], [1688262600000, 93], [1688262720000, 72], [1688262840000, 84], [1688262960000,
-        92], [1688263080000, 96], [1688263200000, 88], [1688263320000, 81], [1688263440000,
-        79], [1688263560000, 76], [1688263680000, 78], [1688263800000, 79], [1688263920000,
-        80], [1688264040000, 78], [1688264160000, 77], [1688264280000, 84], [1688264400000,
-        77], [1688264520000, 80], [1688264640000, 77], [1688264760000, 78], [1688264880000,
-        77], [1688265000000, 89], [1688265120000, 88], [1688265240000, 85], [1688265360000,
-        80], [1688265480000, 73], [1688265600000, 76], [1688265720000, 74], [1688265840000,
-        76], [1688265960000, 77], [1688266080000, 77], [1688266200000, 79], [1688266320000,
-        75], [1688266440000, 74], [1688266560000, 77], [1688266680000, 78], [1688266800000,
-        78], [1688266920000, 80], [1688267040000, 76], [1688267160000, 77], [1688267280000,
-        75], [1688267400000, 74], [1688267520000, 75], [1688267640000, 70], [1688267760000,
-        76], [1688267880000, 76], [1688268000000, 75], [1688268120000, 75], [1688268240000,
-        72], [1688268360000, 75], [1688268480000, 74], [1688268600000, 81], [1688268720000,
-        82], [1688268840000, 81], [1688268960000, 77], [1688269080000, 73], [1688269200000,
-        89], [1688269320000, 95], [1688269440000, 94], [1688269560000, 94], [1688269680000,
-        82], [1688269800000, 81], [1688269920000, 82], [1688270040000, 85], [1688270160000,
-        81], [1688270280000, 77], [1688270400000, 71], [1688270520000, 72], [1688270640000,
-        70], [1688270760000, 70], [1688270880000, 72], [1688271000000, 73], [1688271120000,
-        70], [1688271240000, 74], [1688271360000, 68], [1688271480000, 71], [1688271600000,
-        71], [1688271720000, 72], [1688271840000, 76], [1688271960000, 78], [1688272080000,
-        62], [1688272200000, 60], [1688272320000, 62], [1688272440000, 62], [1688272560000,
-        65], [1688272680000, 64], [1688272800000, 66], [1688272920000, 67], [1688273040000,
-        65], [1688273160000, 66], [1688273280000, 63], [1688273400000, 64], [1688273520000,
-        64], [1688273640000, 66], [1688273760000, 63], [1688273880000, 63], [1688274000000,
-        62], [1688274120000, 64], [1688274240000, 86], [1688274360000, 83], [1688274480000,
-        81], [1688274600000, 78], [1688274720000, 85], [1688274840000, 83], [1688274960000,
-        80], [1688275080000, 79], [1688275200000, 85], [1688275320000, 86], [1688275440000,
-        82], [1688275560000, 84], [1688275680000, 70], [1688275800000, 86], [1688275920000,
-        80], [1688276040000, 70], [1688276160000, 81], [1688276280000, 77], [1688276400000,
-        86], [1688276520000, 90], [1688276640000, 64], [1688276760000, 62], [1688276880000,
-        65], [1688277000000, 74], [1688277120000, 65], [1688277240000, 72], [1688277360000,
-        56], [1688277480000, 56]]}'
+        null, "minHeartRate": null, "restingHeartRate": 52, "lastSevenDaysAvgRestingHeartRate":
+        49, "heartRateValueDescriptors": null, "heartRateValues": null}'
     headers:
-      CF-Cache-Status:
-      - DYNAMIC
       CF-RAY:
-      - 7f8a4dfee830b6e8-QRO
+      - 97830500cfe2b921-AMS
+      Cache-Control:
+      - no-cache, no-store, private
       Connection:
       - keep-alive
+      Content-Encoding:
+      - gzip
       Content-Type:
-      - application/json;charset=UTF-8
+      - application/json
       Date:
-      - Fri, 18 Aug 2023 12:54:18 GMT
+      - Mon, 01 Sep 2025 07:22:58 GMT
       NEL:
       - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
       Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v3?s=RtawwZ3pSW1TMssDM4vc6f7eVeb9oADwxK%2BINk45Vx4e1AyguWYrznt%2FoDCl6UEkpB1NwQ%2FFbPxambaMTGURI7ZV6N4U6yGHHCKvskFW3RdDdQ1aSXBdM1vpM%2BApri80AajDX17GxQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=QRgOZEcBnmJ8Jr7C%2FdRhtXU4U3hqpZ4ChWkNzcqEJMy1N6VqZxi032KeIHBoRbOoo78LMF6QLIJggGpkTsP4yC1xl%2FBHxTAqexd9g72EW8VvgN5rDtZvuzqmdbJ4NzLzq71vBAXeicsq30i%2F0fWuN1mWHg%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Transfer-Encoding:
       - chunked
       alt-svc:
       - h3=":443"; ma=86400
-      cache-control:
-      - no-cache, no-store, private
+      cf-cache-status:
+      - DYNAMIC
       pragma:
       - no-cache
-      set-cookie:
-      - ADRUM_BT1=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - ADRUM_BTa=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
-      - SameSite=SANITIZED; Max-Age=SANITIZED; Expires=SANITIZED; Path=SANITIZED;
-        Secure
     status:
       code: 200
       message: OK

@@ -1,166 +1,371 @@
 # Python: Garmin Connect
 
+The Garmin Connect API library comes with two examples:
+
+- **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
+- **`demo.py`** - Comprehensive demo providing access to **100+ API methods** organized into **11 categories** for easy navigation
+
+Note: The demo menu is generated dynamically; exact options may change between releases.
+
 ```bash
-$ ./example.py
-*** Garmin Connect API Demo by cyberjunky ***
+$ ./demo.py
+🏃‍♂️ Full-blown Garmin Connect API Demo - Main Menu
+==================================================
+Select a category:
 
-Trying to login to Garmin Connect using token data from directory '~/.garminconnect'...
+  [1] 👤 User & Profile
+  [2] 📊 Daily Health & Activity
+  [3] 🔬 Advanced Health Metrics
+  [4] 📈 Historical Data & Trends
+  [5] 🏃 Activities & Workouts
+  [6] ⚖️ Body Composition & Weight
+  [7] 🏆 Goals & Achievements
+  [8] ⌚ Device & Technical
+  [9] 🎽 Gear & Equipment
+  [0] 💧 Hydration & Wellness
+  [a] 🔧 System & Export
 
-1 -- Get full name
-2 -- Get unit system
-3 -- Get activity data for '2024-11-10'
-4 -- Get activity data for '2024-11-10' (compatible with garminconnect-ha)
-5 -- Get body composition data for '2024-11-10' (compatible with garminconnect-ha)
-6 -- Get body composition data for from '2024-11-03' to '2024-11-10' (to be compatible with garminconnect-ha)
-7 -- Get stats and body composition data for '2024-11-10'
-8 -- Get steps data for '2024-11-10'
-9 -- Get heart rate data for '2024-11-10'
-0 -- Get training readiness data for '2024-11-10'
-- -- Get daily step data for '2024-11-03' to '2024-11-10'
-/ -- Get body battery data for '2024-11-03' to '2024-11-10'
-! -- Get floors data for '2024-11-03'
-? -- Get blood pressure data for '2024-11-03' to '2024-11-10'
-. -- Get training status data for '2024-11-10'
-a -- Get resting heart rate data for '2024-11-10'
-b -- Get hydration data for '2024-11-10'
-c -- Get sleep data for '2024-11-10'
-d -- Get stress data for '2024-11-10'
-e -- Get respiration data for '2024-11-10'
-f -- Get SpO2 data for '2024-11-10'
-g -- Get max metric data (like vo2MaxValue and fitnessAge) for '2024-11-10'
-h -- Get personal record for user
-i -- Get earned badges for user
-j -- Get adhoc challenges data from start '0' and limit '100'
-k -- Get available badge challenges data from '1' and limit '100'
-l -- Get badge challenges data from '1' and limit '100'
-m -- Get non completed badge challenges data from '1' and limit '100'
-n -- Get activities data from start '0' and limit '100'
-o -- Get last activity
-p -- Download activities data by date from '2024-11-03' to '2024-11-10'
-r -- Get all kinds of activities data from '0'
-s -- Upload activity data from file 'MY_ACTIVITY.fit'
-t -- Get all kinds of Garmin device info
-u -- Get active goals
-v -- Get future goals
-w -- Get past goals
-y -- Get all Garmin device alarms
-x -- Get Heart Rate Variability data (HRV) for '2024-11-10'
-z -- Get progress summary from '2024-11-03' to '2024-11-10' for all metrics
-A -- Get gear, the defaults, activity types and statistics
-B -- Get weight-ins from '2024-11-03' to '2024-11-10'
-C -- Get daily weigh-ins for '2024-11-10'
-D -- Delete all weigh-ins for '2024-11-10'
-E -- Add a weigh-in of 89.6kg on '2024-11-10'
-F -- Get virtual challenges/expeditions from '2024-11-03' to '2024-11-10'
-G -- Get hill score data from '2024-11-03' to '2024-11-10'
-H -- Get endurance score data from '2024-11-03' to '2024-11-10'
-I -- Get activities for date '2024-11-10'
-J -- Get race predictions
-K -- Get all day stress data for '2024-11-10'
-L -- Add body composition for '2024-11-10'
-M -- Set blood pressure "120,80,80,notes='Testing with example.py'"
-N -- Get user profile/settings
-O -- Reload epoch data for '2024-11-10'
-P -- Get workouts 0-100, get and download last one to .FIT file
-R -- Get solar data from your devices
-S -- Get pregnancy summary data
-T -- Add hydration data
-U -- Get Fitness Age data for '2024-11-10'
-V -- Get daily wellness events data for '2024-11-03'
-W -- Get userprofile settings
-Z -- Remove stored login tokens (logout)
-q -- Exit
-Make your selection: 
+  [q] Exit program
+
+Make your selection:
 ```
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
+## API Coverage Statistics
 
-Python 3 API wrapper for Garmin Connect.
+- **Total API Methods**: 100+ unique endpoints (snapshot)
+- **Categories**: 11 organized sections
+- **User & Profile**: 4 methods (basic user info, settings)
+- **Daily Health & Activity**: 8 methods (today's health data)
+- **Advanced Health Metrics**: 10 methods (fitness metrics, HRV, VO2)
+- **Historical Data & Trends**: 6 methods (date range queries)
+- **Activities & Workouts**: 20 methods (comprehensive activity management)
+- **Body Composition & Weight**: 8 methods (weight tracking, body composition)
+- **Goals & Achievements**: 15 methods (challenges, badges, goals)
+- **Device & Technical**: 7 methods (device info, settings)
+- **Gear & Equipment**: 6 methods (gear management, tracking)
+- **Hydration & Wellness**: 9 methods (hydration, blood pressure, menstrual)
+- **System & Export**: 4 methods (reporting, logout, GraphQL)
 
-## About
+### Interactive Features
 
-This package allows you to request garmin device, activity and health data from your Garmin Connect account.
-See <https://connect.garmin.com/>
+- **Enhanced User Experience**: Categorized navigation with emoji indicators
+- **Smart Data Management**: Interactive weigh-in deletion with search capabilities
+- **Comprehensive Coverage**: All major Garmin Connect features are accessible
+- **Error Handling**: Robust error handling with user-friendly prompts
+- **Data Export**: JSON export functionality for all data types
 
-## Installation
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.me/cyberjunkynl/)
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-red.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/cyberjunky)
+
+A comprehensive Python3 API wrapper for Garmin Connect, providing access to health, fitness, and device data.
+
+## 📖 About
+
+This library enables developers to programmatically access Garmin Connect data including:
+
+- **Health Metrics**: Heart rate, sleep, stress, body composition, SpO2, HRV
+- **Activity Data**: Workouts, exercises, training status, performance metrics
+- **Device Information**: Connected devices, settings, alarms, solar data
+- **Goals & Achievements**: Personal records, badges, challenges, race predictions
+- **Historical Data**: Trends, progress tracking, date range queries
+
+Compatible with all Garmin Connect accounts. See <https://connect.garmin.com/>
+
+## 📦 Installation
+
+Install from PyPI:
 
 ```bash
-pip3 install garminconnect
+python3 -m pip install --upgrade pip
+python3 -m pip install garminconnect
 ```
 
-## Authentication
-
-The library uses the same authentication method as the app using [Garth](https://github.com/matin/garth).
-The login credentials generated with Garth are valid for a year to avoid needing to login each time.  
-NOTE: We obtain the OAuth tokens using the consumer key and secret as the Connect app does.
-`garth.sso.OAUTH_CONSUMER` can be set manually prior to calling api.login() if someone wants to use a custom consumer key and secret.
-
-## Testing
-
-The test files use the credential tokens created by `example.py` script, so use that first.
+## Run demo software (recommended)
 
 ```bash
-export GARMINTOKENS=~/.garminconnect
-sudo apt install python3-pytest (needed some distros)
+python3 -m venv .venv --copies
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install pdm
+pdm install --group :example
 
-make install-test
-make test
+# Run the simple example
+python3 ./example.py
+
+# Run the comprehensive demo
+python3 ./demo.py
 ```
 
-## Development
 
-To create a development environment to commit code.
+## 🛠️ Development
+
+Set up a development environment for contributing:
+
+> **Note**: This project uses [PDM](https://pdm.fming.dev/) for modern Python dependency management and task automation. All development tasks are configured as PDM scripts in `pyproject.toml`. The Python interpreter is automatically configured to use `.venv/bin/python` when you create the virtual environment.
+
+**Environment Setup:**
+
+> **⚠️ Important**: On externally-managed Python environments (like Debian/Ubuntu), you must create a virtual environment before installing PDM to avoid system package conflicts.
 
 ```bash
-make .venv
-source .venv/bin/activate
+# 1. Create and activate a virtual environment
+python3 -m venv .venv --copies
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-pip3 install pdm
-pip3 install ruff
-pdm init
+# 2. Install PDM (Python Dependency Manager)
+pip install pdm
 
-sudo apt install pre-commit isort black mypy
-pip3 install pre-commit
+# 3. Install all development dependencies
+pdm install --group :all
+
+# 4. Install optional tools for enhanced development experience
+pip install "black[jupyter]" codespell pre-commit
+
+# 5. Setup pre-commit hooks (optional)
+pre-commit install --install-hooks
 ```
 
-Run checks before PR/Commit:
-
+**Alternative for System-wide PDM Installation:**
 ```bash
-make format
-make lint
-make codespell
+# Install PDM via pipx (recommended for system-wide tools)
+python3 -m pip install --user pipx
+pipx install pdm
+
+# Then proceed with project setup
+pdm install --group :all
 ```
 
-## Publish
+**Available Development Commands:**
+```bash
+pdm run format      # Auto-format code (isort, black, ruff --fix)
+pdm run lint        # Check code quality (isort, ruff, black, mypy)
+pdm run codespell   # Check spelling errors (install codespell if needed)
+pdm run test        # Run test suite
+pdm run testcov     # Run tests with coverage report
+pdm run all         # Run all checks
+pdm run clean      # Clean build artifacts and cache files
+pdm run build      # Build package for distribution
+pdm run publish    # Build and publish to PyPI
+```
 
-To publish new package (author only)
+**View all available commands:**
+```bash
+pdm run --list     # Display all available PDM scripts
+```
+
+**Code Quality Workflow:**
+```bash
+# Before making changes
+pdm run lint       # Check current code quality
+
+# After making changes
+pdm run format     # Auto-format your code
+pdm run lint       # Verify code quality
+pdm run codespell  # Check spelling
+pdm run test       # Run tests to ensure nothing broke
+```
+
+Run these commands before submitting PRs to ensure code quality standards.
+
+## 🔐 Authentication
+
+The library uses the same OAuth authentication as the official Garmin Connect app via [Garth](https://github.com/matin/garth).
+
+**Key Features:**
+- Login credentials valid for one year (no repeated logins)
+- Secure OAuth token storage
+- Same authentication flow as official app
+
+**Advanced Configuration:**
+```python
+# Optional: Custom OAuth consumer (before login)
+import os
+import garth
+garth.sso.OAUTH_CONSUMER = {
+    'key': os.getenv('GARTH_OAUTH_KEY', '<YOUR_KEY>'),
+    'secret': os.getenv('GARTH_OAUTH_SECRET', '<YOUR_SECRET>'),
+}
+# Note: Set these env vars securely; placeholders are non-sensitive.
+```
+
+**Token Storage:**
+Tokens are automatically saved to `~/.garminconnect` directory for persistent authentication.
+For security, ensure restrictive permissions:
 
 ```bash
-sudo apt install twine
-vi ~/.pypirc
+chmod 700 ~/.garminconnect
+chmod 600 ~/.garminconnect/* 2>/dev/null || true
+```
+
+## 🧪 Testing
+
+Run the test suite to verify functionality:
+
+**Prerequisites:**
+
+Create tokens in ~/.garminconnect by running the example program.
+
+```bash
+# Install development dependencies
+pdm install --group :all
+```
+
+**Run Tests:**
+```bash
+pdm run test        # Run all tests
+pdm run testcov     # Run tests with coverage report
+```
+
+Optional: keep test tokens isolated
+
+```bash
+export GARMINTOKENS="$(mktemp -d)"
+python3 ./example.py # create fresh tokens for tests
+pdm run test
+```
+
+**Note:** Tests automatically use `~/.garminconnect` as the default token file location. You can override this by setting the `GARMINTOKENS` environment variable. Run `example.py` first to generate authentication tokens for testing.
+
+**For Developers:** Tests use VCR cassettes to record/replay HTTP interactions. If tests fail with authentication errors, ensure valid tokens exist in `~/.garminconnect`
+
+## 📦 Publishing
+
+For package maintainers:
+
+**Setup PyPI credentials:**
+```bash
+pip install twine
+# Edit with your preferred editor, or create via here-doc:
+# cat > ~/.pypirc <<'EOF'
+# [pypi]
+# username = __token__
+# password = <PyPI_API_TOKEN>
+# EOF
+```
+```ini
 [pypi]
 username = __token__
-password = <PyPI token>
-
-make publish
+password = <PyPI_API_TOKEN>
 ```
 
-## Example
-
-The tests provide examples of how to use the library.  
-There is a Jupyter notebook called `reference.ipynb` provided [here](https://github.com/cyberjunky/python-garminconnect/blob/master/reference.ipynb).  
-And you can check out the `example.py` code you can find [here](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py), you can run it like so:  
+Recommended: use environment variables and restrict file perms
 
 ```bash
-pip3 install -r requirements-dev.txt
-./example.py
+chmod 600 ~/.pypirc
+export TWINE_USERNAME="__token__"
+export TWINE_PASSWORD="<PyPI_API_TOKEN>"
 ```
 
-## Credits
+**Publish new version:**
+```bash
+pdm run publish    # Build and publish to PyPI
+```
 
-:heart: Special thanks to all people contributed, either by asking questions, reporting bugs, coming up with great ideas, or even by creating whole Pull Requests to add new features!
-This project deserves more attention, but I'm struggling to free up time sometimes, so thank you for your patience too!
+**Alternative publishing steps:**
+```bash
+pdm run build      # Build package only
+pdm publish        # Publish pre-built package
+```
 
-## Donations
+## 🤝 Contributing
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/cyberjunkynl/)
+We welcome contributions! Here's how you can help:
+
+- **Report Issues**: Bug reports and feature requests via GitHub issues
+- **Submit PRs**: Code improvements, new features, documentation updates
+- **Testing**: Help test new features and report compatibility issues
+- **Documentation**: Improve examples, add use cases, fix typos
+
+**Before Contributing:**
+1. Set up development environment (`pdm install --group :all`)
+2. Execute code quality checks (`pdm run format && pdm run lint`)
+3. Test your changes (`pdm run test`)
+4. Follow existing code style and patterns
+
+**Development Workflow:**
+```bash
+# 1. Setup environment (with virtual environment)
+python3 -m venv .venv --copies
+source .venv/bin/activate
+pip install pdm
+pdm install --group :all
+
+# 2. Make your changes
+# ... edit code ...
+
+# 3. Quality checks
+pdm run format     # Auto-format code
+pdm run lint       # Check code quality
+pdm run test       # Run tests
+
+# 4. Submit PR
+git commit -m "Your changes"
+git push origin your-branch
+```
+
+### Jupyter Notebook
+
+Explore the API interactively with our [reference notebook](https://github.com/cyberjunky/python-garminconnect/blob/master/reference.ipynb).
+
+### Python Code Examples
+
+```python
+from garminconnect import Garmin
+import os
+
+# Initialize and login
+client = Garmin(
+    os.getenv("GARMIN_EMAIL", "<YOUR_EMAIL>"),
+    os.getenv("GARMIN_PASSWORD", "<YOUR_PASSWORD>")
+)
+client.login()
+
+# Get today's stats
+from datetime import date
+_today = date.today().strftime('%Y-%m-%d')
+stats = client.get_stats(_today)
+
+# Get heart rate data
+hr_data = client.get_heart_rates(_today)
+print(f"Resting HR: {hr_data.get('restingHeartRate', 'n/a')}")
+```
+
+### Additional Resources
+- **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 101 API methods
+- **API Documentation**: Comprehensive method documentation in source code
+- **Test Cases**: Real-world usage examples in `tests/` directory
+
+## 🙏 Acknowledgments
+
+Special thanks to all contributors who have helped improve this project:
+
+- **Community Contributors**: Bug reports, feature requests, and code improvements
+- **Issue Reporters**: Helping identify and resolve compatibility issues
+- **Feature Developers**: Adding new API endpoints and functionality
+- **Documentation Authors**: Improving examples and user guides
+
+This project thrives thanks to community involvement and feedback.
+
+## 💖 Support This Project
+
+If you find this library useful for your projects, please consider supporting its continued development and maintenance:
+
+### 🌟 Ways to Support
+
+- **⭐ Star this repository** - Help others discover the project
+- **💰 Financial Support** - Contribute to development and hosting costs
+- **🐛 Report Issues** - Help improve stability and compatibility
+- **📖 Spread the Word** - Share with other developers
+
+### 💳 Financial Support Options
+
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.me/cyberjunkynl/)
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-red.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/cyberjunky)
+
+**Why Support?**
+- Keeps the project actively maintained
+- Enables faster bug fixes and new features
+- Supports infrastructure costs (testing, AI, CI/CD)
+- Shows appreciation for hundreds of hours of development
+
+Every contribution, no matter the size, makes a difference and is greatly appreciated! 🙏
