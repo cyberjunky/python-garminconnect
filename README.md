@@ -3,7 +3,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **101 API methods** organized into **11 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **100+ API methods** organized into **11 categories** for easy navigation
 
 Note: The demo menu is generated dynamically; exact options may change between releases.
 
@@ -32,7 +32,7 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 101 unique endpoints (snapshot)
+- **Total API Methods**: 100+ unique endpoints (snapshot)
 - **Categories**: 11 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 8 methods (today's health data)
@@ -57,7 +57,7 @@ Make your selection:
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.me/cyberjunkynl/)
 [![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-red.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/cyberjunky)
 
-A comprehensive Python 3 API wrapper for Garmin Connect, providing access to health, fitness, and device data.
+A comprehensive Python3 API wrapper for Garmin Connect, providing access to health, fitness, and device data.
 
 ## 📖 About
 

@@ -103,16 +103,18 @@ def safe_api_call(api_method, *args, **kwargs):
         else:
             return False, None, f"HTTP error: {e}"
 
-    except (
-        FileNotFoundError,
-        GarminConnectAuthenticationError,
-        GarminConnectConnectionError,
-    ):
+    except FileNotFoundError:
         return (
             False,
             None,
-            "No valid tokens found. Please run with your email/password credentials to create new tokens.",
+            "No valid tokens found. Please login with your email/password to create new tokens.",
         )
+
+    except GarminConnectAuthenticationError as e:
+        return False, None, f"Authentication issue: {e}"
+
+    except GarminConnectConnectionError as e:
+        return False, None, f"Connection issue: {e}"
 
     except GarminConnectTooManyRequestsError as e:
         return False, None, f"Rate limit exceeded: {e}"
