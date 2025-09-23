@@ -24,6 +24,7 @@ Select a category:
   [9] 🎽 Gear & Equipment
   [0] 💧 Hydration & Wellness
   [a] 🔧 System & Export
+  [b] 📅 Training plans 
 
   [q] Exit program
 
@@ -45,6 +46,7 @@ Make your selection:
 - **Gear & Equipment**: 6 methods (gear management, tracking)
 - **Hydration & Wellness**: 9 methods (hydration, blood pressure, menstrual)
 - **System & Export**: 4 methods (reporting, logout, GraphQL)
+- **Traning plans**: 3 methods
 
 ### Interactive Features
 
