@@ -415,6 +415,13 @@ menu_categories = {
             "4": {"desc": "Execute GraphQL query", "key": "query_garmin_graphql"},
         },
     },
+    "b": {
+        "name": "📅 Training Plans",
+        "options": {
+            "1": {"desc": "Get training plans", "key": "get_training_plans"},
+            "2": {"desc": "Get training plan by ID", "key": "get_training_plan_by_id"},
+        },
+    },
 }
 
 current_category = None
@@ -1761,6 +1768,35 @@ def get_activity_exercise_sets_data(api: Garmin) -> None:
             print("ℹ️ No strength training activities found")
     except Exception:
         print("ℹ️ No activity exercise sets available")
+
+
+def get_training_plan_by_id_data(api: Garmin) -> None:
+    """Get training plan by ID. adaptive plans are not supported. use get_adaptive_training_plan_by_id instead"""
+    try:
+        training_plans = api.get_training_plans()["trainingPlanList"]
+        if training_plans:
+            plan_id = training_plans[-1]["trainingPlanId"]
+            plan_name = training_plans[-1]["name"]
+            plan_category = training_plans[-1]["trainingPlanCategory"]
+
+            if plan_category == "FBT_ADAPTIVE":
+                call_and_display(
+                    api.get_adaptive_training_plan_by_id,
+                    plan_id,
+                    method_name="get_adaptive_training_plan_by_id",
+                    api_call_desc=f"api.get_adaptive_training_plan_by_id({plan_id}) - {plan_name}",
+                )
+            else:
+                call_and_display(
+                    api.get_training_plan_by_id,
+                    plan_id,
+                    method_name="get_training_plan_by_id",
+                    api_call_desc=f"api.get_training_plan_by_id({plan_id}) - {plan_name}",
+                )
+        else:
+            print("ℹ️ No training plans found")
+    except Exception as e:
+        print(f"❌ Error getting plan by ID: {e}")
 
 
 def get_workout_by_id_data(api: Garmin) -> None:
@@ -3122,6 +3158,12 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 api.get_workouts,
                 method_name="get_workouts",
                 api_call_desc="api.get_workouts()",
+            ),
+            "get_training_plan_by_id": lambda: get_training_plan_by_id_data(api),
+            "get_training_plans": lambda: call_and_display(
+                api.get_training_plans,
+                method_name="get_training_plans",
+                api_call_desc="api.get_training_plans()",
             ),
             "upload_activity": lambda: upload_activity_file(api),
             "download_activities": lambda: download_activities_by_date(api),
