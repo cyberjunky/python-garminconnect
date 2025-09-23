@@ -2025,36 +2025,50 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def add_gear_to_activity(self, gear_uid: str, activity_id: int) -> dict[str, Any]:
+    def add_gear_to_activity(
+        self, gearUUID: str, activity_id: int | str
+    ) -> dict[str, Any]:
         """
-        Associates gear with an activity. Requires a gear_uid and an activity_id
+        Associates gear with an activity. Requires a gearUUID and an activity_id
 
         Args:
-            gear_uid: UID for gear to add to activity. Findable though the get_gear function
+            gearUUID: UID for gear to add to activity. Findable though the get_gear function
             activity_id: Integer ID for the activity to add the gear to
 
         Returns:
             Dictionary containing information for the added gear
-
         """
 
-        url = f"{self.garmin_connect_gear_baseurl}/link/{gear_uid}/activity/{activity_id}"
+        gearUUID = str(gearUUID)
+        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+
+        url = (
+            f"{self.garmin_connect_gear_baseurl}/link/{gearUUID}/activity/{activity_id}"
+        )
+        logger.debug("Linking gear %s to activity %s", gearUUID, activity_id)
+
         return self.garth.put("connectapi", url).json()
 
-    def remove_gear_from_activity(self, gear_uid: str, activity_id: int) -> dict[str, Any]:
+    def remove_gear_from_activity(
+        self, gearUUID: str, activity_id: int | str
+    ) -> dict[str, Any]:
         """
-        Removes gear from an activity. Requires a gear_uid and an activity_id
+        Removes gear from an activity. Requires a gearUUID and an activity_id
 
         Args:
-            gear_uid: UID for gear to remove from activity. Findable though the get_gear method.
+            gearUUID: UID for gear to remove from activity. Findable though the get_gear method.
             activity_id: Integer ID for the activity to remove the gear from
 
         Returns:
-            Dictionary containing information for the added gear
-
+            Dictionary containing information about the removed gear
         """
 
-        url = f"{self.garmin_connect_gear_baseurl}/unlink/{gear_uid}/activity/{activity_id}"
+        gearUUID = str(gearUUID)
+        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+
+        url = f"{self.garmin_connect_gear_baseurl}/unlink/{gearUUID}/activity/{activity_id}"
+        logger.debug("Unlinking gear %s from activity %s", gearUUID, activity_id)
+
         return self.garth.put("connectapi", url).json()
 
     def get_user_profile(self) -> dict[str, Any]:
