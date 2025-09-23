@@ -2025,6 +2025,38 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def add_gear_to_activity(self, gear_uid: str, activity_id: int) -> dict[str, Any]:
+        """
+        Associates gear with an activity. Requires a gear_uid and an activity_id
+
+        Args:
+            gear_uid: UID for gear to add to activity. Findable though the get_gear function
+            activity_id: Integer ID for the activity to add the gear to
+
+        Returns:
+            Dictionary containing information for the added gear
+
+        """
+
+        url = f"{self.garmin_connect_gear_baseurl}link/{gear_uid}/activity/{activity_id}"
+        return self.garth.put("connectapi", url).json()
+
+    def remove_gear_from_activity(self, gear_uid: str, activity_id: int) -> dict[str, Any]:
+        """
+        Removes gear from an activity. Requires a gear_uid and an activity_id
+
+        Args:
+            gear_uid: UID for gear to remove from activity. Findable though the get_gear method.
+            activity_id: Integer ID for the activity to remove the gear from
+
+        Returns:
+            Dictionary containing information for the added gear
+
+        """
+
+        url = f"{self.garmin_connect_gear_baseurl}unlink/{gear_uid}/activity/{activity_id}"
+        return self.garth.put("connectapi", url).json()
+
     def get_user_profile(self) -> dict[str, Any]:
         """Get all users settings."""
 
