@@ -256,7 +256,7 @@ class Garmin:
         self.garmin_connect_upload = "/upload-service/upload"
 
         self.garmin_connect_gear = "/gear-service/gear/filterGear"
-        self.garmin_connect_gear_baseurl = "/gear-service/gear/"
+        self.garmin_connect_gear_baseurl = "/gear-service/gear"
 
         self.garmin_request_reload_url = "/wellness-service/wellness/epoch/request"
 
@@ -1855,13 +1855,13 @@ class Garmin:
         return self.connectapi(url)
 
     def get_gear_stats(self, gearUUID: str) -> dict[str, Any]:
-        url = f"{self.garmin_connect_gear_baseurl}stats/{gearUUID}"
+        url = f"{self.garmin_connect_gear_baseurl}/stats/{gearUUID}"
         logger.debug("Requesting gear stats for gearUUID %s", gearUUID)
         return self.connectapi(url)
 
     def get_gear_defaults(self, userProfileNumber: str) -> dict[str, Any]:
         url = (
-            f"{self.garmin_connect_gear_baseurl}user/"
+            f"{self.garmin_connect_gear_baseurl}/user/"
             f"{userProfileNumber}/activityTypes"
         )
         logger.debug("Requesting gear defaults for user %s", userProfileNumber)
@@ -1873,7 +1873,7 @@ class Garmin:
         defaultGearString = "/default/true" if defaultGear else ""
         method_override = "PUT" if defaultGear else "DELETE"
         url = (
-            f"{self.garmin_connect_gear_baseurl}{gearUUID}/"
+            f"{self.garmin_connect_gear_baseurl}/{gearUUID}/"
             f"activityType/{activityType}{defaultGearString}"
         )
         return self.garth.request(method_override, "connectapi", url, api=True)
@@ -2038,7 +2038,7 @@ class Garmin:
 
         """
 
-        url = f"{self.garmin_connect_gear_baseurl}link/{gear_uid}/activity/{activity_id}"
+        url = f"{self.garmin_connect_gear_baseurl}/link/{gear_uid}/activity/{activity_id}"
         return self.garth.put("connectapi", url).json()
 
     def remove_gear_from_activity(self, gear_uid: str, activity_id: int) -> dict[str, Any]:
@@ -2054,7 +2054,7 @@ class Garmin:
 
         """
 
-        url = f"{self.garmin_connect_gear_baseurl}unlink/{gear_uid}/activity/{activity_id}"
+        url = f"{self.garmin_connect_gear_baseurl}/unlink/{gear_uid}/activity/{activity_id}"
         return self.garth.put("connectapi", url).json()
 
     def get_user_profile(self) -> dict[str, Any]:
