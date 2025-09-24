@@ -46,7 +46,7 @@ Make your selection:
 - **Gear & Equipment**: 6 methods (gear management, tracking)
 - **Hydration & Wellness**: 9 methods (hydration, blood pressure, menstrual)
 - **System & Export**: 4 methods (reporting, logout, GraphQL)
-- **Traning plans**: 3 methods
+- **Training Plans**: 3 methods
 
 ### Interactive Features
 
