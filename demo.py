@@ -1771,32 +1771,60 @@ def get_activity_exercise_sets_data(api: Garmin) -> None:
 
 
 def get_training_plan_by_id_data(api: Garmin) -> None:
-    """Get training plan by ID. adaptive plans are not supported. use get_adaptive_training_plan_by_id instead"""
-    try:
-        training_plans = api.get_training_plans()["trainingPlanList"]
-        if training_plans:
-            plan_id = training_plans[-1]["trainingPlanId"]
-            plan_name = training_plans[-1]["name"]
-            plan_category = training_plans[-1]["trainingPlanCategory"]
+    """Get training plan details by ID (routes FBT_ADAPTIVE plans to the adaptive endpoint)."""
+    resp = api.get_training_plans() or {}
+    training_plans = resp.get("trainingPlanList") or []
+    if not training_plans:
+        print("ℹ️ No training plans found")
+        return
 
-            if plan_category == "FBT_ADAPTIVE":
-                call_and_display(
-                    api.get_adaptive_training_plan_by_id,
-                    plan_id,
-                    method_name="get_adaptive_training_plan_by_id",
-                    api_call_desc=f"api.get_adaptive_training_plan_by_id({plan_id}) - {plan_name}",
+    user_input = input("Enter training plan ID (press Enter for most recent): ").strip()
+    selected = None
+    if user_input:
+        try:
+            wanted_id = int(user_input)
+            selected = next(
+                (
+                    p
+                    for p in training_plans
+                    if int(p.get("trainingPlanId", 0)) == wanted_id
+                ),
+                None,
+            )
+            if not selected:
+                print(
+                    f"ℹ️ Plan ID {wanted_id} not found in your plans; attempting fetch anyway"
                 )
+                plan_id = wanted_id
+                plan_name = f"Plan {wanted_id}"
+                plan_category = None
             else:
-                call_and_display(
-                    api.get_training_plan_by_id,
-                    plan_id,
-                    method_name="get_training_plan_by_id",
-                    api_call_desc=f"api.get_training_plan_by_id({plan_id}) - {plan_name}",
-                )
-        else:
-            print("ℹ️ No training plans found")
-    except Exception as e:
-        print(f"❌ Error getting plan by ID: {e}")
+                plan_id = int(selected["trainingPlanId"])
+                plan_name = selected.get("name", str(plan_id))
+                plan_category = selected.get("trainingPlanCategory")
+        except ValueError:
+            print("❌ Invalid plan ID")
+            return
+    else:
+        selected = training_plans[-1]
+        plan_id = int(selected["trainingPlanId"])
+        plan_name = selected.get("name", str(plan_id))
+        plan_category = selected.get("trainingPlanCategory")
+
+    if plan_category == "FBT_ADAPTIVE":
+        call_and_display(
+            api.get_adaptive_training_plan_by_id,
+            plan_id,
+            method_name="get_adaptive_training_plan_by_id",
+            api_call_desc=f"api.get_adaptive_training_plan_by_id({plan_id}) - {plan_name}",
+        )
+    else:
+        call_and_display(
+            api.get_training_plan_by_id,
+            plan_id,
+            method_name="get_training_plan_by_id",
+            api_call_desc=f"api.get_training_plan_by_id({plan_id}) - {plan_name}",
+        )
 
 
 def get_workout_by_id_data(api: Garmin) -> None:
