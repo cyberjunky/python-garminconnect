@@ -3351,6 +3351,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_gear_activities": lambda: get_gear_activities_data(api),
             "set_gear_default": lambda: set_gear_default_data(api),
             "track_gear_usage": lambda: track_gear_usage_data(api),
+            "add_and_remove_gear_to_activity": lambda: add_and_remove_gear_to_activity(api),
             # Hydration & Wellness
             "get_hydration_data": lambda: call_and_display(
                 api.get_hydration_data,
