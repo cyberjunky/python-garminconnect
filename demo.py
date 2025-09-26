@@ -366,6 +366,10 @@ menu_categories = {
                 "desc": "Track gear usage (total time used)",
                 "key": "track_gear_usage",
             },
+            "7": {
+                "desc": "Add and remove gear to/from activity (interactive)",
+                "key": "add_and_remove_gear_to_activity",
+            },
         },
     },
     "0": {
@@ -2392,6 +2396,58 @@ def set_gear_default_data(api: Garmin) -> None:
             print("❌ Could not get user profile number")
     except Exception as e:
         print(f"❌ Error setting gear default: {e}")
+
+
+def add_and_remove_gear_to_activity(api: Garmin) -> None:
+    """Add gear to most recent activity, then remove."""
+    try:
+        device_last_used = api.get_device_last_used()
+        user_profile_number = device_last_used.get("userProfileNumber")
+        if user_profile_number:
+            gear_list = api.get_gear(user_profile_number)
+            if gear_list:
+                activity = api.get_activities(0, 1)[0]
+                activity_id = activity.get("activityId")
+                activity_name = activity.get("activityName")
+                for gear in gear_list:
+                    if gear["gearStatusName"] == "active":
+                        break
+                gear_uuid = gear.get("uuid")
+                gear_name = gear.get("displayName", "Unknown")
+                if gear_uuid:
+                    # Add gear to an activity
+                    # Correct method signature: add_gear_to_activity(gearUUID, activity_id)
+                    call_and_display(
+                        api.add_gear_to_activity,
+                        gear_uuid,
+                        activity_id,
+                        method_name="add_gear_to_activity",
+                        api_call_desc=f"api.add_gear_to_activity('{gear_uuid}', {activity_id}) - Add {gear_name} to {activity_name}",
+                    )
+                    print("✅ Gear added successfully!")
+
+                    # Wait for user to check gear, then continue
+                    input("Go check Garmin to confirm, then press Enter to continue")
+
+                    # Remove gear from an activity
+                    # Correct method signature: remove_gear_from_activity(gearUUID, activity_id)
+                    call_and_display(
+                        api.remove_gear_from_activity,
+                        gear_uuid,
+                        activity_id,
+                        method_name="remove_gear_from_activity",
+                        api_call_desc=f"api.remove_gear_from_activity('{gear_uuid}', {activity_id}) - Remove {gear_name} from {activity_name}",
+                    )
+                    print("✅ Gear removed successfully!")
+
+                else:
+                    print("❌ No gear UUID found")
+            else:
+                print("ℹ️ No gear found")
+        else:
+            print("❌ Could not get user profile number")
+    except Exception as e:
+        print(f"❌ Error adding gear: {e}")
 
 
 def set_activity_name_data(api: Garmin) -> None:
