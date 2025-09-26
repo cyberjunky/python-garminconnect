@@ -42,7 +42,7 @@ Make your selection:
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
-- **Gear & Equipment**: 6 methods (gear management, tracking)
+- **Gear & Equipment**: 8 methods (gear management, tracking)
 - **Hydration & Wellness**: 9 methods (hydration, blood pressure, menstrual)
 - **System & Export**: 4 methods (reporting, logout, GraphQL)
 
