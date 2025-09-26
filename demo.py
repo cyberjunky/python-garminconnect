@@ -2406,40 +2406,45 @@ def add_and_remove_gear_to_activity(api: Garmin) -> None:
         if user_profile_number:
             gear_list = api.get_gear(user_profile_number)
             if gear_list:
-                activity = api.get_activities(0, 1)[0]
-                activity_id = activity.get("activityId")
-                activity_name = activity.get("activityName")
-                for gear in gear_list:
-                    if gear["gearStatusName"] == "active":
-                        break
-                gear_uuid = gear.get("uuid")
-                gear_name = gear.get("displayName", "Unknown")
-                if gear_uuid:
-                    # Add gear to an activity
-                    # Correct method signature: add_gear_to_activity(gearUUID, activity_id)
-                    call_and_display(
-                        api.add_gear_to_activity,
-                        gear_uuid,
-                        activity_id,
-                        method_name="add_gear_to_activity",
-                        api_call_desc=f"api.add_gear_to_activity('{gear_uuid}', {activity_id}) - Add {gear_name} to {activity_name}",
-                    )
-                    print("✅ Gear added successfully!")
+                activities = api.get_activities(0, 1)
+                if activities:
 
-                    # Wait for user to check gear, then continue
-                    input("Go check Garmin to confirm, then press Enter to continue")
+                    activity_id = activities[0].get("activityId")
+                    activity_name = activities[0].get("activityName")
+                    for gear in gear_list:
+                        if gear["gearStatusName"] == "active":
+                            break
+                    gear_uuid = gear.get("uuid")
+                    gear_name = gear.get("displayName", "Unknown")
+                    if gear_uuid:
+                        # Add gear to an activity
+                        # Correct method signature: add_gear_to_activity(gearUUID, activity_id)
+                        call_and_display(
+                            api.add_gear_to_activity,
+                            gear_uuid,
+                            activity_id,
+                            method_name="add_gear_to_activity",
+                            api_call_desc=f"api.add_gear_to_activity('{gear_uuid}', {activity_id}) - Add {gear_name} to {activity_name}",
+                        )
+                        print("✅ Gear added successfully!")
 
-                    # Remove gear from an activity
-                    # Correct method signature: remove_gear_from_activity(gearUUID, activity_id)
-                    call_and_display(
-                        api.remove_gear_from_activity,
-                        gear_uuid,
-                        activity_id,
-                        method_name="remove_gear_from_activity",
-                        api_call_desc=f"api.remove_gear_from_activity('{gear_uuid}', {activity_id}) - Remove {gear_name} from {activity_name}",
-                    )
-                    print("✅ Gear removed successfully!")
+                        # Wait for user to check gear, then continue
+                        input(
+                            "Go check Garmin to confirm, then press Enter to continue"
+                        )
 
+                        # Remove gear from an activity
+                        # Correct method signature: remove_gear_from_activity(gearUUID, activity_id)
+                        call_and_display(
+                            api.remove_gear_from_activity,
+                            gear_uuid,
+                            activity_id,
+                            method_name="remove_gear_from_activity",
+                            api_call_desc=f"api.remove_gear_from_activity('{gear_uuid}', {activity_id}) - Remove {gear_name} from {activity_name}",
+                        )
+                        print("✅ Gear removed successfully!")
+                    else:
+                        print("❌ No activities found")
                 else:
                     print("❌ No gear UUID found")
             else:
@@ -3351,7 +3356,9 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_gear_activities": lambda: get_gear_activities_data(api),
             "set_gear_default": lambda: set_gear_default_data(api),
             "track_gear_usage": lambda: track_gear_usage_data(api),
-            "add_and_remove_gear_to_activity": lambda: add_and_remove_gear_to_activity(api),
+            "add_and_remove_gear_to_activity": lambda: add_and_remove_gear_to_activity(
+                api
+            ),
             # Hydration & Wellness
             "get_hydration_data": lambda: call_and_display(
                 api.get_hydration_data,
