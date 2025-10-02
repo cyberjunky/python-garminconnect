@@ -90,6 +90,11 @@ def _fmt_ts(dt: datetime) -> str:
     # Use ms precision to match server expectations
     return dt.replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
 
+def _validate_json_exists(response: requests.Response) -> dict[str, Any] | None:
+     if response.status_code == 204:
+        return None
+     return response.json()
+
 
 class Garmin:
     """Class for fetching data from Garmin Connect."""
@@ -675,7 +680,7 @@ class Garmin:
 
     def add_weigh_in(
         self, weight: int | float, unitKey: str = "kg", timestamp: str = ""
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
         """Add a weigh-in (default to kg)"""
 
         # Validate inputs
@@ -701,8 +706,7 @@ class Garmin:
             "value": weight,
         }
         logger.debug("Adding weigh-in")
-
-        return self.garth.post("connectapi", url, json=payload).json()
+        return _validate_json_exists(self.garth.post("connectapi", url, json=payload))
 
     def add_weigh_in_with_timestamps(
         self,
@@ -710,7 +714,7 @@ class Garmin:
         unitKey: str = "kg",
         dateTimestamp: str = "",
         gmtTimestamp: str = "",
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
         """Add a weigh-in with explicit timestamps (default to kg)"""
 
         url = f"{self.garmin_connect_weight_url}/user-weight"
@@ -747,7 +751,7 @@ class Garmin:
         logger.debug("Adding weigh-in with explicit timestamps: %s", payload)
 
         # Make the POST request
-        return self.garth.post("connectapi", url, json=payload).json()
+        return _validate_json_exists(self.garth.post("connectapi", url, json=payload))
 
     def get_weigh_ins(self, startdate: str, enddate: str) -> dict[str, Any]:
         """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
