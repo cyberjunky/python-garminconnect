@@ -1287,7 +1287,6 @@ def get_solar_data(api: Garmin) -> None:
 def upload_activity_file(api: Garmin) -> None:
     """Upload activity data from file."""
     import glob
-    import os
 
     try:
         # List all .gpx files in test_data
@@ -1313,9 +1312,6 @@ def upload_activity_file(api: Garmin) -> None:
                 print("Please enter a valid number.")
 
         print(f"📤 Uploading activity from file: {selected_file}")
-        if not os.path.exists(selected_file):
-            print(f"❌ File not found: {selected_file}")
-            return
 
         result = api.upload_activity(selected_file)
 
