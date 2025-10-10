@@ -1290,7 +1290,7 @@ def upload_activity_file(api: Garmin) -> None:
 
     try:
         # List all .gpx files in test_data
-        gpx_files = glob.glob("test_data/*.gpx")
+        gpx_files = glob.glob(config.activityfile)
         if not gpx_files:
             print("❌ No .gpx files found in test_data directory.")
             print("ℹ️ Please add GPX files to test_data before uploading.")
