@@ -1313,18 +1313,12 @@ def upload_activity_file(api: Garmin) -> None:
 
         print(f"📤 Uploading activity from file: {selected_file}")
 
-        result = api.upload_activity(selected_file)
-
-        if result:
-            print("✅ Activity uploaded successfully!")
-            call_and_display(
-                api.upload_activity,
-                selected_file,
-                method_name="upload_activity",
-                api_call_desc=f"api.upload_activity({selected_file})",
-            )
-        else:
-            print(f"❌ Failed to upload activity from {selected_file}")
+        call_and_display(
+            api.upload_activity,
+            selected_file,
+            method_name="upload_activity",
+            api_call_desc=f"api.upload_activity({selected_file})",
+        )
 
     except FileNotFoundError:
         print(f"❌ File not found: {selected_file}")
