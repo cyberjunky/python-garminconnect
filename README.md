@@ -210,6 +210,7 @@ pdm install --group :all
 ```
 
 **Run Tests:**
+
 ```bash
 pdm run test        # Run all tests
 pdm run testcov     # Run tests with coverage report
@@ -232,6 +233,7 @@ pdm run test
 For package maintainers:
 
 **Setup PyPI credentials:**
+
 ```bash
 pip install twine
 # Edit with your preferred editor, or create via here-doc:
@@ -241,6 +243,7 @@ pip install twine
 # password = <PyPI_API_TOKEN>
 # EOF
 ```
+
 ```ini
 [pypi]
 username = __token__
@@ -256,11 +259,13 @@ export TWINE_PASSWORD="<PyPI_API_TOKEN>"
 ```
 
 **Publish new version:**
+
 ```bash
 pdm run publish    # Build and publish to PyPI
 ```
 
 **Alternative publishing steps:**
+
 ```bash
 pdm run build      # Build package only
 pdm publish        # Publish pre-built package
