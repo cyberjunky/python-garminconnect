@@ -38,7 +38,7 @@ Make your selection:
 - **Daily Health & Activity**: 8 methods (today's health data)
 - **Advanced Health Metrics**: 10 methods (fitness metrics, HRV, VO2)
 - **Historical Data & Trends**: 6 methods (date range queries)
-- **Activities & Workouts**: 20 methods (comprehensive activity management)
+- **Activities & Workouts**: 21 methods (comprehensive activity management)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
@@ -64,7 +64,7 @@ A comprehensive Python3 API wrapper for Garmin Connect, providing access to heal
 This library enables developers to programmatically access Garmin Connect data including:
 
 - **Health Metrics**: Heart rate, sleep, stress, body composition, SpO2, HRV
-- **Activity Data**: Workouts, exercises, training status, performance metrics
+- **Activity Data**: Workouts, scheduled workouts, exercises, training status, performance metrics
 - **Device Information**: Connected devices, settings, alarms, solar data
 - **Goals & Achievements**: Personal records, badges, challenges, race predictions
 - **Historical Data**: Trends, progress tracking, date range queries
