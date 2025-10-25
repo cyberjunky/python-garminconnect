@@ -242,7 +242,6 @@ class Garmin:
         )
         self.garmin_connect_activities_count = "/activitylist-service/activities/count"
         self.garmin_connect_activities_baseurl = "/activitylist-service/activities/"
-        self.garmin_connect_activities_count = "/activitylist-service/activities/count"
         self.garmin_connect_activity = "/activity-service/activity"
         self.garmin_connect_activity_types = "/activity-service/activity/activityTypes"
         self.garmin_connect_activity_fordate = "/mobile-gateway/heartRate/forDate"
