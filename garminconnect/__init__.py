@@ -1526,7 +1526,7 @@ class Garmin:
         logger.debug("Requesting activities count")
 
         activities_count = self.connectapi(url)
-        if activities_count is None:
+        if not activities_count or "totalCount" not in activities_count:
             raise GarminConnectConnectionError("No activities count data received")
         return activities_count["totalCount"]
 
