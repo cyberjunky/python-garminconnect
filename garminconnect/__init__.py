@@ -368,12 +368,6 @@ class Garmin:
                         "Username and password are required"
                     )
 
-                # Validate email format when actually used for login
-                if not self.is_cn and self.username and "@" not in self.username:
-                    raise GarminConnectAuthenticationError(
-                        "Email must contain '@' symbol"
-                    )
-
                 if self.return_on_mfa:
                     token1, token2 = self.garth.login(
                         self.username,
