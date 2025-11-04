@@ -70,9 +70,7 @@ class Config:
 
         # Activity settings
         self.activitytype = ""  # Possible values: cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other
-        self.activityfile = (
-            "test_data/sample_activity.gpx"  # Supported file types: .fit .gpx .tcx
-        )
+        self.activityfile = "test_data/*.gpx"  # Supported file types: .fit .gpx .tcx
         self.workoutfile = "test_data/sample_workout.json"  # Sample workout JSON file
 
         # Export settings
@@ -1288,37 +1286,42 @@ def get_solar_data(api: Garmin) -> None:
 
 def upload_activity_file(api: Garmin) -> None:
     """Upload activity data from file."""
+    import glob
+
     try:
-        # Default activity file from config
-        print(f"📤 Uploading activity from file: {config.activityfile}")
-
-        # Check if file exists
-        import os
-
-        if not os.path.exists(config.activityfile):
-            print(f"❌ File not found: {config.activityfile}")
-            print(
-                "ℹ️ Please place your activity file (.fit, .gpx, or .tcx) under the 'test_data' directory or update config.activityfile"
-            )
-            print("ℹ️ Supported formats: FIT, GPX, TCX")
+        # List all .gpx files in test_data
+        gpx_files = glob.glob(config.activityfile)
+        if not gpx_files:
+            print("❌ No .gpx files found in test_data directory.")
+            print("ℹ️ Please add GPX files to test_data before uploading.")
             return
 
-        # Upload the activity
-        result = api.upload_activity(config.activityfile)
+        print("Select a GPX file to upload:")
+        for idx, fname in enumerate(gpx_files, 1):
+            print(f"  {idx}. {fname}")
 
-        if result:
-            print("✅ Activity uploaded successfully!")
-            call_and_display(
-                api.upload_activity,
-                config.activityfile,
-                method_name="upload_activity",
-                api_call_desc=f"api.upload_activity({config.activityfile})",
-            )
-        else:
-            print(f"❌ Failed to upload activity from {config.activityfile}")
+        while True:
+            try:
+                choice = int(input(f"Enter number (1-{len(gpx_files)}): "))
+                if 1 <= choice <= len(gpx_files):
+                    selected_file = gpx_files[choice - 1]
+                    break
+                else:
+                    print("Invalid selection. Try again.")
+            except ValueError:
+                print("Please enter a valid number.")
+
+        print(f"📤 Uploading activity from file: {selected_file}")
+
+        call_and_display(
+            api.upload_activity,
+            selected_file,
+            method_name="upload_activity",
+            api_call_desc=f"api.upload_activity({selected_file})",
+        )
 
     except FileNotFoundError:
-        print(f"❌ File not found: {config.activityfile}")
+        print(f"❌ File not found: {selected_file}")
         print("ℹ️ Please ensure the activity file exists in the current directory")
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 409:
@@ -1363,7 +1366,6 @@ def upload_activity_file(api: Garmin) -> None:
         print(f"❌ Too many requests: {e}")
         print("💡 Please wait a few minutes before trying again")
     except Exception as e:
-        # Check if this is a wrapped HTTP error from the Garmin library
         error_str = str(e)
         if "409 Client Error: Conflict" in error_str:
             print(
