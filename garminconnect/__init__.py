@@ -266,6 +266,8 @@ class Garmin:
 
         self.garmin_graphql_endpoint = "graphql-gateway/graphql"
 
+        self.garmin_connect_training_plan_url = "/trainingplan-service/trainingplan"
+
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com",
             pool_connections=20,
@@ -2208,6 +2210,31 @@ class Garmin:
         logger.warning(
             "Deprecated: Alternative is to delete the login tokens to logout."
         )
+
+    def get_training_plans(self) -> dict[str, Any]:
+        """Return all available training plans."""
+
+        url = f"{self.garmin_connect_training_plan_url}/plans"
+        logger.debug("Requesting training plans.")
+        return self.connectapi(url)
+
+    def get_training_plan_by_id(self, plan_id: int | str) -> dict[str, Any]:
+        """Return details for a specific training plan."""
+
+        plan_id = _validate_positive_integer(int(plan_id), "plan_id")
+
+        url = f"{self.garmin_connect_training_plan_url}/plans/{plan_id}"
+        logger.debug("Requesting training plan details for %s", plan_id)
+        return self.connectapi(url)
+
+    def get_adaptive_training_plan_by_id(self, plan_id: int | str) -> dict[str, Any]:
+        """Return details for a specific adaptive training plan."""
+
+        plan_id = _validate_positive_integer(int(plan_id), "plan_id")
+        url = f"{self.garmin_connect_training_plan_url}/fbt-adaptive/{plan_id}"
+
+        logger.debug("Requesting adaptive training plan details for %s", plan_id)
+        return self.connectapi(url)
 
 
 class GarminConnectConnectionError(Exception):

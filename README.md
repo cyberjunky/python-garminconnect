@@ -3,7 +3,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **100+ API methods** organized into **11 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **100+ API methods** organized into **12 categories** for easy navigation
 
 Note: The demo menu is generated dynamically; exact options may change between releases.
 
@@ -24,6 +24,7 @@ Select a category:
   [9] 🎽 Gear & Equipment
   [0] 💧 Hydration & Wellness
   [a] 🔧 System & Export
+  [b] 📅 Training plans
 
   [q] Exit program
 
@@ -45,6 +46,7 @@ Make your selection:
 - **Gear & Equipment**: 8 methods (gear management, tracking)
 - **Hydration & Wellness**: 9 methods (hydration, blood pressure, menstrual)
 - **System & Export**: 4 methods (reporting, logout, GraphQL)
+- **Training Plans**: 3 methods
 
 ### Interactive Features
 
