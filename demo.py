@@ -266,6 +266,10 @@ menu_categories = {
             "l": {"desc": "Set activity type", "key": "set_activity_type"},
             "m": {"desc": "Create manual activity", "key": "create_manual_activity"},
             "n": {"desc": "Delete activity", "key": "delete_activity"},
+            "o": {
+                "desc": "Get scheduled workout by ID",
+                "key": "get_scheduled_workout_by_id",
+            },
         },
     },
     "6": {
@@ -1976,6 +1980,25 @@ def upload_workout_data(api: Garmin) -> None:
             print("💡 Workout data validation failed")
 
 
+def get_scheduled_workout_by_id_data(api: Garmin) -> None:
+    """Get scheduled workout by ID."""
+    try:
+        scheduled_workout_id = input("Enter scheduled workout ID: ").strip()
+
+        if not scheduled_workout_id:
+            print("❌ Scheduled workout ID is required")
+            return
+
+        call_and_display(
+            api.get_scheduled_workout_by_id,
+            scheduled_workout_id,
+            method_name="get_scheduled_workout_by_id",
+            api_call_desc=f"api.get_scheduled_workout_by_id({scheduled_workout_id})",
+        )
+    except Exception as e:
+        print(f"❌ Error getting scheduled workout by ID: {e}")
+
+
 def set_body_composition_data(api: Garmin) -> None:
     """Set body composition data."""
     try:
@@ -3272,6 +3295,9 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_workout_by_id": lambda: get_workout_by_id_data(api),
             "download_workout": lambda: download_workout_data(api),
             "upload_workout": lambda: upload_workout_data(api),
+            "get_scheduled_workout_by_id": lambda: get_scheduled_workout_by_id_data(
+                api
+            ),
             # Body Composition & Weight
             "get_body_composition": lambda: call_and_display(
                 api.get_body_composition,

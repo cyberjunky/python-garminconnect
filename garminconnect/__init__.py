@@ -267,6 +267,8 @@ class Garmin:
 
         self.garmin_workouts = "/workout-service"
 
+        self.garmin_workouts_schedule_url = f"{self.garmin_workouts}/schedule"
+
         self.garmin_connect_delete_activity_url = "/activity-service/activity"
 
         self.garmin_graphql_endpoint = "graphql-gateway/graphql"
@@ -2145,6 +2147,18 @@ class Garmin:
         if not isinstance(payload, dict | list):
             raise ValueError("workout_json must be a JSON object or array")
         return self.garth.post("connectapi", url, json=payload, api=True).json()
+
+    def get_scheduled_workout_by_id(
+        self, scheduled_workout_id: int | str
+    ) -> dict[str, Any]:
+        """Return scheduled workout by ID"""
+
+        scheduled_workout_id = _validate_positive_integer(
+            int(scheduled_workout_id), "scheduled_workout_id"
+        )
+        url = f"{self.garmin_workouts_schedule_url}/{scheduled_workout_id}"
+        logger.debug("Requesting scheduled workout by id %d", scheduled_workout_id)
+        return self.connectapi(url)
 
     def get_menstrual_data_for_date(self, fordate: str) -> dict[str, Any]:
         """Return menstrual data for date."""
