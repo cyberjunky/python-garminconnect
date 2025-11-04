@@ -270,6 +270,10 @@ menu_categories = {
                 "desc": "Get scheduled workout by ID",
                 "key": "get_scheduled_workout_by_id",
             },
+            "p": {
+                "desc": "Count activities for current user",
+                "key": "count_activities",
+            },
         },
     },
     "6": {
@@ -2497,7 +2501,6 @@ def add_and_remove_gear_to_activity(api: Garmin) -> None:
             if gear_list:
                 activities = api.get_activities(0, 1)
                 if activities:
-
                     activity_id = activities[0].get("activityId")
                     activity_name = activities[0].get("activityName")
                     for gear in gear_list:
@@ -3297,6 +3300,11 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "upload_workout": lambda: upload_workout_data(api),
             "get_scheduled_workout_by_id": lambda: get_scheduled_workout_by_id_data(
                 api
+            ),
+            "count_activities": lambda: call_and_display(
+                api.count_activities,
+                method_name="count_activities",
+                api_call_desc="api.count_activities()",
             ),
             # Body Composition & Weight
             "get_body_composition": lambda: call_and_display(
