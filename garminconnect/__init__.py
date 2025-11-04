@@ -403,14 +403,16 @@ class Garmin:
                     raise GarminConnectAuthenticationError(
                         "Failed to retrieve profile"
                     ) from e
-                if not prof or "displayName" not in prof:
+                if not prof or not isinstance(prof, dict) or "displayName" not in prof:
                     raise GarminConnectAuthenticationError("Invalid profile data found")
                 # Use profile data directly since garth.profile is read-only
                 self.display_name = prof.get("displayName")
                 self.full_name = prof.get("fullName")
             else:
-                self.display_name = self.garth.profile.get("displayName")
-                self.full_name = self.garth.profile.get("fullName")
+                profile = self.garth.profile
+                if isinstance(profile, dict):
+                    self.display_name = profile.get("displayName")
+                    self.full_name = profile.get("fullName")
 
             settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
 
@@ -419,7 +421,7 @@ class Garmin:
                     "Failed to retrieve user settings"
                 )
 
-            if "userData" not in settings:
+            if not isinstance(settings, dict) or "userData" not in settings:
                 raise GarminConnectAuthenticationError("Invalid user settings found")
 
             self.unit_system = settings["userData"].get("measurementSystem")
@@ -477,11 +479,13 @@ class Garmin:
         result1, result2 = self.garth.resume_login(client_state, mfa_code)
 
         if self.garth.profile:
-            self.display_name = self.garth.profile["displayName"]
-            self.full_name = self.garth.profile["fullName"]
+            profile = self.garth.profile
+            if isinstance(profile, dict):
+                self.display_name = profile.get("displayName")
+                self.full_name = profile.get("fullName")
 
         settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
-        if settings and "userData" in settings:
+        if settings and isinstance(settings, dict) and "userData" in settings:
             self.unit_system = settings["userData"]["measurementSystem"]
 
         return result1, result2
