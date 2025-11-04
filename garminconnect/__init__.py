@@ -245,6 +245,7 @@ class Garmin:
         self.garmin_connect_activities = (
             "/activitylist-service/activities/search/activities"
         )
+        self.garmin_connect_activities_count = "/activitylist-service/activities/count"
         self.garmin_connect_activities_baseurl = "/activitylist-service/activities/"
         self.garmin_connect_activity = "/activity-service/activity"
         self.garmin_connect_activity_types = "/activity-service/activity/activityTypes"
@@ -1519,6 +1520,17 @@ class Garmin:
         logger.debug("Requesting device last used")
 
         return self.connectapi(url)
+
+    def count_activities(self) -> int:
+        """Return total number of activities for the current user account."""
+
+        url = f"{self.garmin_connect_activities_count}"
+        logger.debug("Requesting activities count")
+
+        activities_count = self.connectapi(url)
+        if not activities_count or "totalCount" not in activities_count:
+            raise GarminConnectConnectionError("No activities count data received")
+        return activities_count["totalCount"]
 
     def get_activities(
         self,
