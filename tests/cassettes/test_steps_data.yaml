@@ -11,7 +11,7 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED
+      - SANITIZED
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
@@ -54,32 +54,14 @@ interactions:
         "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
         23400}]}'
     headers:
-      CF-RAY:
-      - 978304f7cf953466-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
-      Date:
-      - Mon, 01 Sep 2025 07:22:56 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=2AqDlfP6NVj0Ambq1w2ZkxaoHZxtz6zdQZXGzh%2Fi7xTjSXLYeg6xfZHfU5AV0KOepCicFylPbiqf61FOmdu1uH7N03kwMmORog2xNP%2ByJFlmspejdh0Zauc3IQuIvnLbBPr7tgEoV2SWixCbhEmtyWm%2FZQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
-      Transfer-Encoding:
-      - chunked
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      pragma:
-      - no-cache
     status:
       code: 200
       message: OK
@@ -95,231 +77,887 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED
+      - SANITIZED
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
     uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/5da0f071-075e-438c-ae63-c3f3eef73b1e?date=2023-07-01
   response:
     body:
-      string: '[{"startGMT": "2023-06-30T22:00:00.0", "endGMT": "2023-06-30T22:15:00.0",
+      string: '[{"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-06-30T22:15:00.0", "endGMT": "2023-06-30T22:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-06-30T22:30:00.0", "endGMT": "2023-06-30T22:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-06-30T22:45:00.0", "endGMT": "2023-06-30T23:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-06-30T23:00:00.0", "endGMT": "2023-06-30T23:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-06-30T23:15:00.0", "endGMT": "2023-06-30T23:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-06-30T23:30:00.0", "endGMT": "2023-06-30T23:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-06-30T23:45:00.0", "endGMT": "2023-07-01T00:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T00:00:00.0", "endGMT": "2023-07-01T00:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T00:15:00.0", "endGMT": "2023-07-01T00:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T00:30:00.0", "endGMT": "2023-07-01T00:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T00:45:00.0", "endGMT": "2023-07-01T01:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T01:00:00.0", "endGMT": "2023-07-01T01:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T01:15:00.0", "endGMT": "2023-07-01T01:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T01:30:00.0", "endGMT": "2023-07-01T01:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T01:45:00.0", "endGMT": "2023-07-01T02:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T02:00:00.0", "endGMT": "2023-07-01T02:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T02:15:00.0", "endGMT": "2023-07-01T02:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T02:30:00.0", "endGMT": "2023-07-01T02:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T02:45:00.0", "endGMT": "2023-07-01T03:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T03:00:00.0", "endGMT": "2023-07-01T03:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T03:15:00.0", "endGMT": "2023-07-01T03:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T03:30:00.0", "endGMT": "2023-07-01T03:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T03:45:00.0", "endGMT": "2023-07-01T04:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T04:00:00.0", "endGMT": "2023-07-01T04:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T04:15:00.0", "endGMT": "2023-07-01T04:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T04:30:00.0", "endGMT": "2023-07-01T04:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T04:45:00.0", "endGMT": "2023-07-01T05:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T05:00:00.0", "endGMT": "2023-07-01T05:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T05:15:00.0", "endGMT": "2023-07-01T05:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T05:30:00.0", "endGMT": "2023-07-01T05:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T05:45:00.0", "endGMT": "2023-07-01T06:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T06:00:00.0", "endGMT": "2023-07-01T06:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T06:15:00.0", "endGMT": "2023-07-01T06:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T06:30:00.0", "endGMT": "2023-07-01T06:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T06:45:00.0", "endGMT": "2023-07-01T07:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T07:00:00.0", "endGMT": "2023-07-01T07:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T07:15:00.0", "endGMT": "2023-07-01T07:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T07:30:00.0", "endGMT": "2023-07-01T07:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T07:45:00.0", "endGMT": "2023-07-01T08:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T08:00:00.0", "endGMT": "2023-07-01T08:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T08:15:00.0", "endGMT": "2023-07-01T08:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T08:30:00.0", "endGMT": "2023-07-01T08:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T08:45:00.0", "endGMT": "2023-07-01T09:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T09:00:00.0", "endGMT": "2023-07-01T09:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T09:15:00.0", "endGMT": "2023-07-01T09:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T09:30:00.0", "endGMT": "2023-07-01T09:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T09:45:00.0", "endGMT": "2023-07-01T10:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T10:00:00.0", "endGMT": "2023-07-01T10:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T10:15:00.0", "endGMT": "2023-07-01T10:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T10:30:00.0", "endGMT": "2023-07-01T10:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T10:45:00.0", "endGMT": "2023-07-01T11:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T11:00:00.0", "endGMT": "2023-07-01T11:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T11:15:00.0", "endGMT": "2023-07-01T11:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T11:30:00.0", "endGMT": "2023-07-01T11:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T11:45:00.0", "endGMT": "2023-07-01T12:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T12:00:00.0", "endGMT": "2023-07-01T12:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T12:15:00.0", "endGMT": "2023-07-01T12:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T12:30:00.0", "endGMT": "2023-07-01T12:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T12:45:00.0", "endGMT": "2023-07-01T13:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T13:00:00.0", "endGMT": "2023-07-01T13:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T13:15:00.0", "endGMT": "2023-07-01T13:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T13:30:00.0", "endGMT": "2023-07-01T13:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T13:45:00.0", "endGMT": "2023-07-01T14:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T14:00:00.0", "endGMT": "2023-07-01T14:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T14:15:00.0", "endGMT": "2023-07-01T14:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T14:30:00.0", "endGMT": "2023-07-01T14:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T14:45:00.0", "endGMT": "2023-07-01T15:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T15:00:00.0", "endGMT": "2023-07-01T15:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T15:15:00.0", "endGMT": "2023-07-01T15:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T15:30:00.0", "endGMT": "2023-07-01T15:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T15:45:00.0", "endGMT": "2023-07-01T16:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T16:00:00.0", "endGMT": "2023-07-01T16:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T16:15:00.0", "endGMT": "2023-07-01T16:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T16:30:00.0", "endGMT": "2023-07-01T16:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T16:45:00.0", "endGMT": "2023-07-01T17:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T17:00:00.0", "endGMT": "2023-07-01T17:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T17:15:00.0", "endGMT": "2023-07-01T17:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T17:30:00.0", "endGMT": "2023-07-01T17:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T17:45:00.0", "endGMT": "2023-07-01T18:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T18:00:00.0", "endGMT": "2023-07-01T18:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T18:15:00.0", "endGMT": "2023-07-01T18:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T18:30:00.0", "endGMT": "2023-07-01T18:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T18:45:00.0", "endGMT": "2023-07-01T19:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T19:00:00.0", "endGMT": "2023-07-01T19:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T19:15:00.0", "endGMT": "2023-07-01T19:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T19:30:00.0", "endGMT": "2023-07-01T19:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T19:45:00.0", "endGMT": "2023-07-01T20:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T20:00:00.0", "endGMT": "2023-07-01T20:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T20:15:00.0", "endGMT": "2023-07-01T20:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T20:30:00.0", "endGMT": "2023-07-01T20:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T20:45:00.0", "endGMT": "2023-07-01T21:00:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T21:00:00.0", "endGMT": "2023-07-01T21:15:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T21:15:00.0", "endGMT": "2023-07-01T21:30:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
-        true}, {"startGMT": "2023-07-01T21:30:00.0", "endGMT": "2023-07-01T21:45:00.0",
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
         "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
         true}]'
     headers:
-      CF-RAY:
-      - 978304f90f0b29c4-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json
-      Date:
-      - Mon, 01 Sep 2025 07:22:56 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=OwS2OMc5i8CbLFve9i6hfk9foc0qXh73Sx7moYcFqfky%2BN%2Fv5hqN4Zjg08sRcTZAN3Pio%2F98a6n5PAhBSYVDS2RMCxl07FA2TKFAZC26hALPDrb%2BDi0frKLApSiEhtvjdJgyMh9F0YIEPxpsrcymP8sWjw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
-      Transfer-Encoding:
-      - chunked
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      pragma:
-      - no-cache
+    status:
+      code: 200
+      message: OK
+- request:
+    body: mfa_token=MFA-43851-i7hWWWBtysft01HGvG7ciXegf07gQEVbRY5N90lCDkPog50CmK-cas
+    headers:
+      Accept:
+      - !!binary |
+        Ki8q
+      Accept-Encoding:
+      - !!binary |
+        Z3ppcCwgZGVmbGF0ZQ==
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - !!binary |
+        a2VlcC1hbGl2ZQ==
+      Content-Length:
+      - '74'
+      Content-Type:
+      - !!binary |
+        YXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVk
+      User-Agent:
+      - !!binary |
+        Y29tLmdhcm1pbi5hbmRyb2lkLmFwcHMuY29ubmVjdG1vYmlsZQ==
+    method: POST
+    uri: https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0
+  response:
+    body:
+      string: '{"scope": "GARMINPAY_WRITE ATP_READ GHS_SAMD INSIGHTS_READ CIQ_APPSTORE_SERVICES_CREATE
+        COMMUNITY_COURSE_WRITE GCOFFER_WRITE DT_CLIENT_ANALYTICS_WRITE CIQ_APPSTORE_SERVICES_DELETE
+        OMT_SUBSCRIPTION_READ CONNECT_READ COMMUNITY_COURSE_READ GOLF_API_READ GHS_UPLOAD
+        DIVE_API_READ CIQ_APPSTORE_SERVICES_READ CIQ_APPSTORE_SERVICES_UPDATE CONNECT_WRITE
+        CONNECT_MCT_DAILY_LOG_READ DI_OAUTH_2_AUTHORIZATION_CODE_CREATE GARMINPAY_READ
+        GOLF_API_WRITE INSIGHTS_WRITE PRODUCT_SEARCH_READ OMT_CAMPAIGN_READ GCOFFER_READ
+        ATP_WRITE", "jti": "SANITIZED", "access_token": "SANITIZED", "token_type":
+        "bearer", "refresh_token": "SANITIZED", "expires_in": 86823, "refresh_token_expires_in":
+        2591999}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
+  response:
+    body:
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 87160.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 41.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+        3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
+        "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
+        null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/5da0f071-075e-438c-ae63-c3f3eef73b1e?date=2023-07-01
+  response:
+    body:
+      string: '[{"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}]'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+- request:
+    body: mfa_token=MFA-43851-i7hWWWBtysft01HGvG7ciXegf07gQEVbRY5N90lCDkPog50CmK-cas
+    headers:
+      Accept:
+      - !!binary |
+        Ki8q
+      Accept-Encoding:
+      - !!binary |
+        Z3ppcCwgZGVmbGF0ZQ==
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - !!binary |
+        a2VlcC1hbGl2ZQ==
+      Content-Length:
+      - '74'
+      Content-Type:
+      - !!binary |
+        YXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVk
+      User-Agent:
+      - !!binary |
+        Y29tLmdhcm1pbi5hbmRyb2lkLmFwcHMuY29ubmVjdG1vYmlsZQ==
+    method: POST
+    uri: https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0
+  response:
+    body:
+      string: '{"scope": "GARMINPAY_WRITE ATP_READ GHS_SAMD INSIGHTS_READ CIQ_APPSTORE_SERVICES_CREATE
+        COMMUNITY_COURSE_WRITE GCOFFER_WRITE DT_CLIENT_ANALYTICS_WRITE CIQ_APPSTORE_SERVICES_DELETE
+        OMT_SUBSCRIPTION_READ CONNECT_READ COMMUNITY_COURSE_READ GOLF_API_READ GHS_UPLOAD
+        DIVE_API_READ CIQ_APPSTORE_SERVICES_READ CIQ_APPSTORE_SERVICES_UPDATE CONNECT_WRITE
+        CONNECT_MCT_DAILY_LOG_READ DI_OAUTH_2_AUTHORIZATION_CODE_CREATE GARMINPAY_READ
+        GOLF_API_WRITE INSIGHTS_WRITE PRODUCT_SEARCH_READ OMT_CAMPAIGN_READ GCOFFER_READ
+        ATP_WRITE", "jti": "SANITIZED", "access_token": "SANITIZED", "token_type":
+        "bearer", "refresh_token": "SANITIZED", "expires_in": 88312, "refresh_token_expires_in":
+        2591999}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
+  response:
+    body:
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 87160.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 41.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+        3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
+        "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
+        null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/5da0f071-075e-438c-ae63-c3f3eef73b1e?date=2023-07-01
+  response:
+    body:
+      string: '[{"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}, {"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
+        "steps": 0, "pushes": 0, "primaryActivityLevel": "none", "activityLevelConstant":
+        true}]'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
     status:
       code: 200
       message: OK

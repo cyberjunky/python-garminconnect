@@ -104,12 +104,26 @@ def sanitize_response(response: Any) -> Any:
     except json.JSONDecodeError:
         pass
     else:
+        # Sanitize auth/token fields
         for field in [
             "access_token",
             "refresh_token",
             "jti",
             "consumer_key",
             "consumer_secret",
+        ]:
+            if field in body_json:
+                body_json[field] = "SANITIZED"
+
+        # Sanitize personal identifying information
+        for field in [
+            "displayName",
+            "fullName",
+            "profileImageUrlLarge",
+            "profileImageUrlMedium",
+            "profileImageUrlSmall",
+            "userProfileId",
+            "emailAddress",
         ]:
             if field in body_json:
                 body_json[field] = "SANITIZED"

@@ -11,7 +11,7 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED
+      - SANITIZED
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
@@ -54,32 +54,14 @@ interactions:
         "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
         23400}]}'
     headers:
-      CF-RAY:
-      - 978304f53c638239-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
-      Date:
-      - Mon, 01 Sep 2025 07:22:56 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=msX55lzEd47cjeOi50naVwMTeOf08BxzaeJW1hnsc1jIipDLlDDyBSNewDMaQYnDHsGcZEhs4NO%2Fa5tPpu6ilECKqx3AczS39PkSAI82VIZVrPQgsqEtSpgrfpWIuMUJuUIBAl5Ia7vDXujyUEeMjA%2FMvw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
-      Transfer-Encoding:
-      - chunked
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      pragma:
-      - no-cache
     status:
       code: 200
       message: OK
@@ -95,31 +77,31 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED
+      - SANITIZED
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
     uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/5da0f071-075e-438c-ae63-c3f3eef73b1e?calendarDate=2023-07-01
   response:
     body:
-      string: '{"userProfileId": 82413233, "totalKilocalories": 2202.0, "activeKilocalories":
+      string: '{"userProfileId": "SANITIZED", "totalKilocalories": 2202.0, "activeKilocalories":
         26.0, "bmrKilocalories": 2176.0, "wellnessKilocalories": 2202.0, "burnedKilocalories":
         null, "consumedKilocalories": null, "remainingKilocalories": 2202.0, "totalSteps":
         1119, "netCalorieGoal": 1500, "totalDistanceMeters": 937, "wellnessDistanceMeters":
         937, "wellnessActiveKilocalories": 26.0, "netRemainingKilocalories": 1526.0,
         "userDailySummaryId": 82413233, "calendarDate": "2023-07-01", "rule": {"typeId":
         2, "typeKey": "private"}, "uuid": "7ce5013a375447658c41b25330938228", "dailyStepGoal":
-        3490, "wellnessStartTimeGmt": "2023-06-30T22:00:00.0", "wellnessStartTimeLocal":
-        "2023-07-01T00:00:00.0", "wellnessEndTimeGmt": "2023-07-01T22:00:00.0", "wellnessEndTimeLocal":
-        "2023-07-02T00:00:00.0", "durationInMilliseconds": 86400000, "wellnessDescription":
-        null, "highlyActiveSeconds": 164, "activeSeconds": 384, "sedentarySeconds":
-        85852, "sleepingSeconds": 0, "includesWellnessData": true, "includesActivityData":
-        false, "includesCalorieConsumedData": false, "privacyProtected": false, "moderateIntensityMinutes":
-        0, "vigorousIntensityMinutes": 0, "floorsAscendedInMeters": 10.375, "floorsDescendedInMeters":
-        12.415, "floorsAscended": 3.40387, "floorsDescended": 4.07316, "intensityMinutesGoal":
-        150, "userFloorsAscendedGoal": 10, "minHeartRate": 51, "maxHeartRate": 102,
-        "restingHeartRate": 52, "lastSevenDaysAvgRestingHeartRate": 49, "source":
-        "GARMIN", "averageStressLevel": 28, "maxStressLevel": 87, "stressDuration":
+        3490, "wellnessStartTimeGmt": "1970-01-01T00:00:00.000", "wellnessStartTimeLocal":
+        "1970-01-01T00:00:00.000", "wellnessEndTimeGmt": "1970-01-01T00:00:00.000",
+        "wellnessEndTimeLocal": "1970-01-01T00:00:00.000", "durationInMilliseconds":
+        86400000, "wellnessDescription": null, "highlyActiveSeconds": 164, "activeSeconds":
+        384, "sedentarySeconds": 85852, "sleepingSeconds": 0, "includesWellnessData":
+        true, "includesActivityData": false, "includesCalorieConsumedData": false,
+        "privacyProtected": false, "moderateIntensityMinutes": 0, "vigorousIntensityMinutes":
+        0, "floorsAscendedInMeters": 10.375, "floorsDescendedInMeters": 12.415, "floorsAscended":
+        3.40387, "floorsDescended": 4.07316, "intensityMinutesGoal": 150, "userFloorsAscendedGoal":
+        10, "minHeartRate": 51, "maxHeartRate": 102, "restingHeartRate": 52, "lastSevenDaysAvgRestingHeartRate":
+        49, "source": "GARMIN", "averageStressLevel": 28, "maxStressLevel": 87, "stressDuration":
         16680, "restStressDuration": 25320, "activityStressDuration": 10620, "uncategorizedStressDuration":
         1560, "totalStressDuration": 54180, "lowStressDuration": 11820, "mediumStressDuration":
         4620, "highStressDuration": 240, "stressPercentage": 30.79, "restStressPercentage":
@@ -131,38 +113,380 @@ interactions:
         66, "bodyBatteryLowestValue": 47, "bodyBatteryMostRecentValue": 60, "bodyBatteryDuringSleep":
         null, "bodyBatteryAtWakeTime": null, "bodyBatteryVersion": 1.0, "abnormalHeartRateAlertsCount":
         null, "averageSpo2": 95.0, "lowestSpo2": 91, "latestSpo2": 95, "latestSpo2ReadingTimeGmt":
-        "2023-07-01T22:00:00.0", "latestSpo2ReadingTimeLocal": "2023-07-02T00:00:00.0",
+        "1970-01-01T00:00:00.000", "latestSpo2ReadingTimeLocal": "1970-01-01T00:00:00.000",
         "averageMonitoringEnvironmentAltitude": null, "restingCaloriesFromActivity":
         null, "avgWakingRespirationValue": 13.0, "highestRespirationValue": 16.0,
         "lowestRespirationValue": 10.0, "latestRespirationValue": 11.0, "latestRespirationTimeGMT":
-        "2023-07-01T22:00:00.0"}'
+        "1970-01-01T00:00:00.000"}'
     headers:
-      CF-RAY:
-      - 978304f68ed0fc21-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json
-      Date:
-      - Mon, 01 Sep 2025 07:22:56 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=8%2Fn3rNFDbjB5bQGrV0w3oUuJghubRCETpScpuV9zt%2FVna9fsUXsz%2F6zHR0PVTY4AqWeEyFtphIiZCw3uyf8neZFba2Iuc8nYfjg5TRkbPu2IF5bR1Shs9Y3voh2r2Abm7MY48JIZ%2Ffdy7WLFC18XP3aGAw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
-      Transfer-Encoding:
-      - chunked
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      pragma:
-      - no-cache
+    status:
+      code: 200
+      message: OK
+- request:
+    body: mfa_token=MFA-43851-i7hWWWBtysft01HGvG7ciXegf07gQEVbRY5N90lCDkPog50CmK-cas
+    headers:
+      Accept:
+      - !!binary |
+        Ki8q
+      Accept-Encoding:
+      - !!binary |
+        Z3ppcCwgZGVmbGF0ZQ==
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - !!binary |
+        a2VlcC1hbGl2ZQ==
+      Content-Length:
+      - '74'
+      Content-Type:
+      - !!binary |
+        YXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVk
+      User-Agent:
+      - !!binary |
+        Y29tLmdhcm1pbi5hbmRyb2lkLmFwcHMuY29ubmVjdG1vYmlsZQ==
+    method: POST
+    uri: https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0
+  response:
+    body:
+      string: '{"scope": "GARMINPAY_WRITE ATP_READ GHS_SAMD INSIGHTS_READ CIQ_APPSTORE_SERVICES_CREATE
+        COMMUNITY_COURSE_WRITE GCOFFER_WRITE DT_CLIENT_ANALYTICS_WRITE CIQ_APPSTORE_SERVICES_DELETE
+        OMT_SUBSCRIPTION_READ CONNECT_READ COMMUNITY_COURSE_READ GOLF_API_READ GHS_UPLOAD
+        DIVE_API_READ CIQ_APPSTORE_SERVICES_READ CIQ_APPSTORE_SERVICES_UPDATE CONNECT_WRITE
+        CONNECT_MCT_DAILY_LOG_READ DI_OAUTH_2_AUTHORIZATION_CODE_CREATE GARMINPAY_READ
+        GOLF_API_WRITE INSIGHTS_WRITE PRODUCT_SEARCH_READ OMT_CAMPAIGN_READ GCOFFER_READ
+        ATP_WRITE", "jti": "SANITIZED", "access_token": "SANITIZED", "token_type":
+        "bearer", "refresh_token": "SANITIZED", "expires_in": 99882, "refresh_token_expires_in":
+        2591999}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
+  response:
+    body:
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 87160.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 41.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+        3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
+        "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
+        null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/5da0f071-075e-438c-ae63-c3f3eef73b1e?calendarDate=2023-07-01
+  response:
+    body:
+      string: '{"userProfileId": "SANITIZED", "totalKilocalories": 2202.0, "activeKilocalories":
+        26.0, "bmrKilocalories": 2176.0, "wellnessKilocalories": 2202.0, "burnedKilocalories":
+        null, "consumedKilocalories": null, "remainingKilocalories": 2202.0, "totalSteps":
+        1119, "netCalorieGoal": 1500, "totalDistanceMeters": 937, "wellnessDistanceMeters":
+        937, "wellnessActiveKilocalories": 26.0, "netRemainingKilocalories": 1526.0,
+        "userDailySummaryId": 82413233, "calendarDate": "2023-07-01", "rule": {"typeId":
+        2, "typeKey": "private"}, "uuid": "7ce5013a375447658c41b25330938228", "dailyStepGoal":
+        3490, "wellnessStartTimeGmt": "1970-01-01T00:00:00.000", "wellnessStartTimeLocal":
+        "1970-01-01T00:00:00.000", "wellnessEndTimeGmt": "1970-01-01T00:00:00.000",
+        "wellnessEndTimeLocal": "1970-01-01T00:00:00.000", "durationInMilliseconds":
+        86400000, "wellnessDescription": null, "highlyActiveSeconds": 164, "activeSeconds":
+        384, "sedentarySeconds": 85852, "sleepingSeconds": 0, "includesWellnessData":
+        true, "includesActivityData": false, "includesCalorieConsumedData": false,
+        "privacyProtected": false, "moderateIntensityMinutes": 0, "vigorousIntensityMinutes":
+        0, "floorsAscendedInMeters": 10.375, "floorsDescendedInMeters": 12.415, "floorsAscended":
+        3.40387, "floorsDescended": 4.07316, "intensityMinutesGoal": 150, "userFloorsAscendedGoal":
+        10, "minHeartRate": 51, "maxHeartRate": 102, "restingHeartRate": 52, "lastSevenDaysAvgRestingHeartRate":
+        49, "source": "GARMIN", "averageStressLevel": 28, "maxStressLevel": 87, "stressDuration":
+        16680, "restStressDuration": 25320, "activityStressDuration": 10620, "uncategorizedStressDuration":
+        1560, "totalStressDuration": 54180, "lowStressDuration": 11820, "mediumStressDuration":
+        4620, "highStressDuration": 240, "stressPercentage": 30.79, "restStressPercentage":
+        46.73, "activityStressPercentage": 19.6, "uncategorizedStressPercentage":
+        2.88, "lowStressPercentage": 21.82, "mediumStressPercentage": 8.53, "highStressPercentage":
+        0.44, "stressQualifier": "CALM_AWAKE", "measurableAwakeDuration": 52620, "measurableAsleepDuration":
+        0, "lastSyncTimestampGMT": null, "minAvgHeartRate": 51, "maxAvgHeartRate":
+        97, "bodyBatteryChargedValue": 23, "bodyBatteryDrainedValue": 23, "bodyBatteryHighestValue":
+        66, "bodyBatteryLowestValue": 47, "bodyBatteryMostRecentValue": 60, "bodyBatteryDuringSleep":
+        null, "bodyBatteryAtWakeTime": null, "bodyBatteryVersion": 1.0, "abnormalHeartRateAlertsCount":
+        null, "averageSpo2": 95.0, "lowestSpo2": 91, "latestSpo2": 95, "latestSpo2ReadingTimeGmt":
+        "1970-01-01T00:00:00.000", "latestSpo2ReadingTimeLocal": "1970-01-01T00:00:00.000",
+        "averageMonitoringEnvironmentAltitude": null, "restingCaloriesFromActivity":
+        null, "avgWakingRespirationValue": 13.0, "highestRespirationValue": 16.0,
+        "lowestRespirationValue": 10.0, "latestRespirationValue": 11.0, "latestRespirationTimeGMT":
+        "1970-01-01T00:00:00.000"}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+- request:
+    body: mfa_token=MFA-43851-i7hWWWBtysft01HGvG7ciXegf07gQEVbRY5N90lCDkPog50CmK-cas
+    headers:
+      Accept:
+      - !!binary |
+        Ki8q
+      Accept-Encoding:
+      - !!binary |
+        Z3ppcCwgZGVmbGF0ZQ==
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - !!binary |
+        a2VlcC1hbGl2ZQ==
+      Content-Length:
+      - '74'
+      Content-Type:
+      - !!binary |
+        YXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVk
+      User-Agent:
+      - !!binary |
+        Y29tLmdhcm1pbi5hbmRyb2lkLmFwcHMuY29ubmVjdG1vYmlsZQ==
+    method: POST
+    uri: https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0
+  response:
+    body:
+      string: '{"scope": "GARMINPAY_WRITE ATP_READ GHS_SAMD INSIGHTS_READ CIQ_APPSTORE_SERVICES_CREATE
+        COMMUNITY_COURSE_WRITE GCOFFER_WRITE DT_CLIENT_ANALYTICS_WRITE CIQ_APPSTORE_SERVICES_DELETE
+        OMT_SUBSCRIPTION_READ CONNECT_READ COMMUNITY_COURSE_READ GOLF_API_READ GHS_UPLOAD
+        DIVE_API_READ CIQ_APPSTORE_SERVICES_READ CIQ_APPSTORE_SERVICES_UPDATE CONNECT_WRITE
+        CONNECT_MCT_DAILY_LOG_READ DI_OAUTH_2_AUTHORIZATION_CODE_CREATE GARMINPAY_READ
+        GOLF_API_WRITE INSIGHTS_WRITE PRODUCT_SEARCH_READ OMT_CAMPAIGN_READ GCOFFER_READ
+        ATP_WRITE", "jti": "SANITIZED", "access_token": "SANITIZED", "token_type":
+        "bearer", "refresh_token": "SANITIZED", "expires_in": 81140, "refresh_token_expires_in":
+        2591999}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
+  response:
+    body:
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 87160.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 41.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+        3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
+        "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
+        null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/5da0f071-075e-438c-ae63-c3f3eef73b1e?calendarDate=2023-07-01
+  response:
+    body:
+      string: '{"userProfileId": "SANITIZED", "totalKilocalories": 2202.0, "activeKilocalories":
+        26.0, "bmrKilocalories": 2176.0, "wellnessKilocalories": 2202.0, "burnedKilocalories":
+        null, "consumedKilocalories": null, "remainingKilocalories": 2202.0, "totalSteps":
+        1119, "netCalorieGoal": 1500, "totalDistanceMeters": 937, "wellnessDistanceMeters":
+        937, "wellnessActiveKilocalories": 26.0, "netRemainingKilocalories": 1526.0,
+        "userDailySummaryId": 82413233, "calendarDate": "2023-07-01", "rule": {"typeId":
+        2, "typeKey": "private"}, "uuid": "7ce5013a375447658c41b25330938228", "dailyStepGoal":
+        3490, "wellnessStartTimeGmt": "1970-01-01T00:00:00.000", "wellnessStartTimeLocal":
+        "1970-01-01T00:00:00.000", "wellnessEndTimeGmt": "1970-01-01T00:00:00.000",
+        "wellnessEndTimeLocal": "1970-01-01T00:00:00.000", "durationInMilliseconds":
+        86400000, "wellnessDescription": null, "highlyActiveSeconds": 164, "activeSeconds":
+        384, "sedentarySeconds": 85852, "sleepingSeconds": 0, "includesWellnessData":
+        true, "includesActivityData": false, "includesCalorieConsumedData": false,
+        "privacyProtected": false, "moderateIntensityMinutes": 0, "vigorousIntensityMinutes":
+        0, "floorsAscendedInMeters": 10.375, "floorsDescendedInMeters": 12.415, "floorsAscended":
+        3.40387, "floorsDescended": 4.07316, "intensityMinutesGoal": 150, "userFloorsAscendedGoal":
+        10, "minHeartRate": 51, "maxHeartRate": 102, "restingHeartRate": 52, "lastSevenDaysAvgRestingHeartRate":
+        49, "source": "GARMIN", "averageStressLevel": 28, "maxStressLevel": 87, "stressDuration":
+        16680, "restStressDuration": 25320, "activityStressDuration": 10620, "uncategorizedStressDuration":
+        1560, "totalStressDuration": 54180, "lowStressDuration": 11820, "mediumStressDuration":
+        4620, "highStressDuration": 240, "stressPercentage": 30.79, "restStressPercentage":
+        46.73, "activityStressPercentage": 19.6, "uncategorizedStressPercentage":
+        2.88, "lowStressPercentage": 21.82, "mediumStressPercentage": 8.53, "highStressPercentage":
+        0.44, "stressQualifier": "CALM_AWAKE", "measurableAwakeDuration": 52620, "measurableAsleepDuration":
+        0, "lastSyncTimestampGMT": null, "minAvgHeartRate": 51, "maxAvgHeartRate":
+        97, "bodyBatteryChargedValue": 23, "bodyBatteryDrainedValue": 23, "bodyBatteryHighestValue":
+        66, "bodyBatteryLowestValue": 47, "bodyBatteryMostRecentValue": 60, "bodyBatteryDuringSleep":
+        null, "bodyBatteryAtWakeTime": null, "bodyBatteryVersion": 1.0, "abnormalHeartRateAlertsCount":
+        null, "averageSpo2": 95.0, "lowestSpo2": 91, "latestSpo2": 95, "latestSpo2ReadingTimeGmt":
+        "1970-01-01T00:00:00.000", "latestSpo2ReadingTimeLocal": "1970-01-01T00:00:00.000",
+        "averageMonitoringEnvironmentAltitude": null, "restingCaloriesFromActivity":
+        null, "avgWakingRespirationValue": 13.0, "highestRespirationValue": 16.0,
+        "lowestRespirationValue": 10.0, "latestRespirationValue": 11.0, "latestRespirationTimeGMT":
+        "1970-01-01T00:00:00.000"}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
     status:
       code: 200
       message: OK
