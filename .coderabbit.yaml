@@ -2,7 +2,7 @@
 language: "en-US"
 early_access: true
 reviews:
-  profile: "pythonic"
+  profile: "assertive"
   request_changes_workflow: true
   high_level_summary: true
   poem: false
@@ -11,11 +11,7 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
-  auto_fix:
-    enabled: true
-    include_imports: true
-    include_type_hints: true
-    include_security_fixes: true
+
   path_filters:
     - "!tests/**/cassettes/**"
   path_instructions:
