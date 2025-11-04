@@ -11,7 +11,7 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED
+      - SANITIZED
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
@@ -54,32 +54,14 @@ interactions:
         "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
         23400}]}'
     headers:
-      CF-RAY:
-      - 978331fdccf80df4-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
-      Date:
-      - Mon, 01 Sep 2025 07:53:40 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=YzRywljzoU2Eze%2BlN2kNg5j1DyR%2BuaFpC3xpdVt1328IlZLyaf3L5u86zXb3hOHjoZ9LEyVHnTilxxuZV0vJaFsugzuG0uw1NK%2FajOnrpt%2FhFvseWuYHhinI2PqGQ4k4Wax4GreeeL%2BB42QkZ3kOW%2FmWHw%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
-      Transfer-Encoding:
-      - chunked
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      pragma:
-      - no-cache
     status:
       code: 200
       message: OK
@@ -195,7 +177,7 @@ interactions:
       Content-Type:
       - multipart/form-data; boundary=c276c5ec14299c203dc301694558a93a
       Cookie:
-      - _cfuvid=SANITIZED
+      - SANITIZED
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: POST
@@ -209,8 +191,6 @@ interactions:
         "externalId": "1064880658", "messages": [{"code": 202, "content": "Duplicate
         Activity."}]}]}}'
     headers:
-      CF-RAY:
-      - 978331ff3c6366a9-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
@@ -219,20 +199,516 @@ interactions:
       - '363'
       Content-Type:
       - application/json
-      Date:
-      - Mon, 01 Sep 2025 07:53:41 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=KaXGVPa%2FaaI5%2BMOHJonXeaNxKAb%2BNrjHpANcvmGTq2yWzy4QFxMwO%2BkBRFKIhSkxD6Mw%2FRP3XSYO9ZpPUIeriFY3%2BkPu5nmScYSxnvFLhqtRgqVVEbTaZucFDXGdXOnLDE8GBjAQ2wIYv85caAujKNhoeA%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      pragma:
-      - no-cache
+    status:
+      code: 409
+      message: Conflict
+- request:
+    body: mfa_token=MFA-43851-i7hWWWBtysft01HGvG7ciXegf07gQEVbRY5N90lCDkPog50CmK-cas
+    headers:
+      Accept:
+      - !!binary |
+        Ki8q
+      Accept-Encoding:
+      - !!binary |
+        Z3ppcCwgZGVmbGF0ZQ==
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - !!binary |
+        a2VlcC1hbGl2ZQ==
+      Content-Length:
+      - '74'
+      Content-Type:
+      - !!binary |
+        YXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVk
+      User-Agent:
+      - !!binary |
+        Y29tLmdhcm1pbi5hbmRyb2lkLmFwcHMuY29ubmVjdG1vYmlsZQ==
+    method: POST
+    uri: https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0
+  response:
+    body:
+      string: '{"scope": "GARMINPAY_WRITE ATP_READ GHS_SAMD INSIGHTS_READ CIQ_APPSTORE_SERVICES_CREATE
+        COMMUNITY_COURSE_WRITE GCOFFER_WRITE DT_CLIENT_ANALYTICS_WRITE CIQ_APPSTORE_SERVICES_DELETE
+        OMT_SUBSCRIPTION_READ CONNECT_READ COMMUNITY_COURSE_READ GOLF_API_READ GHS_UPLOAD
+        DIVE_API_READ CIQ_APPSTORE_SERVICES_READ CIQ_APPSTORE_SERVICES_UPDATE CONNECT_WRITE
+        CONNECT_MCT_DAILY_LOG_READ DI_OAUTH_2_AUTHORIZATION_CODE_CREATE GARMINPAY_READ
+        GOLF_API_WRITE INSIGHTS_WRITE PRODUCT_SEARCH_READ OMT_CAMPAIGN_READ GCOFFER_READ
+        ATP_WRITE", "jti": "SANITIZED", "access_token": "SANITIZED", "token_type":
+        "bearer", "refresh_token": "SANITIZED", "expires_in": 93908, "refresh_token_expires_in":
+        2591999}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
+  response:
+    body:
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 87160.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 41.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+        3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
+        "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
+        null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+- request:
+    body: !!binary |
+      LS1jOTkyN2Y5Y2MzYWJmMTBjY2VjZjM0YTE2ZDllMzA0Mw0KQ29udGVudC1EaXNwb3NpdGlvbjog
+      Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9IjEyMTI5MTE1NzI2X0FDVElWSVRZLmZp
+      dCINCg0KDhB5UpkUAAAuRklUyeVAAAAAAAcDBIwEBIYHBIYBAoQCAoQFAoQAAQAAOXF7xhLKeD//
+      ////AQDbDP//BEEAADEABQIUBwAChAEBAgMBAAQBAAEAAAAAAAAAAAAAAAAAAAAAAAAAACgK////
+      QgAAIAEE/QSGAgKEAAEBAQEBAhHKeD///39/QwAARwEI/QSGAwSGBASGBQSGAAECAQECAgECBgEA
+      AxHKeD8MAAAAoCAAAAQAAAAJAQIAAxHKeD8MAAAAoCAAAAQAAAAJAQIARAAARgED/QSGAASGAQSG
+      BBHKeD8xAAAAAwAAAEUAABUAB/0EhgMEhgABAAEBAAQBAhMBAhQBAgURyng/AAAAAAAAAP//RgAA
+      FwAc/QSGAwSMBwSGCASGDwSGEASGESAHGASMHwSGAgKEBAKEBQKECgKEDQKEFQKLAAECAQECBgEC
+      CQECCwECEgEAFAEKFgEAFwECGQEAHQYCHgECIAECBhHKeD85cXvG/////////////////////wAA
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////8BANsMKAr/////AAAA//////8A
+      //8F//////////8GEcp4PwAAAAD/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAAAA/////wEA2wwoCv////8AAAEE/////wD//wX//////////wYRyng/AAAA
+      AP////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////
+      /////////////wAAAgj/////AP//Bf//////////BhHKeD8AAAAA/////////////////////wAA
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////////ZAD/////AAADCv////8A
+      //8F//////////8GEcp4PwAAAAD/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAAAA/////wEA4AyhCP////8AAAQM/////wD//wX//////////0cAABYAC/0E
+      hgABAgEBAgIBAgMBAgQBAgUBAAYBAggBAg4BAg8BAgcRyng//////wMD/////0gAAI0ABf0EhgEE
+      hgIEhgMEhgABAAgRyng/AHZ3P4CwgD//////AUkAAAIAawEEhgIEhloEhqdABwgChDEChDoChDsC
+      hAABAgMBAAQBAAUBAQkBAAoBAAsBAAwBAA0BAg4BAg8BAhYBABcBABkBABoBABwBAB4BAB8BACIB
+      ACMBACQBACYBACkBACoBACsBACwBAC0BAC4BAC8BADABADUBADYBADcBADgBAD8NAEABAEEBAEIB
+      AEMBAEQBAEUBAEsBAEwBAE0BAFABAFEBAFIBAFMBAFQBAFUBAFcBAF4BAmABAGEBCmIBAGUBAGge
+      AGsBAGwBAG0BAG4BAG8BAHABAHQBAHUBAHwBAn0BAn4BAH8BAIABAIEBAIIBAIMBAIQBAIUBAIkB
+      AIoBAIsBAI0BAo4BAo8BApABAJEBAJQBAJUBAJcBAKABAKEBAKMBAKQBAqgBAKoPArEBArIBArMB
+      ALQBALUBANoBANsBAAkAAAAAoKv//////38AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////9AH8AAAAgEA/wADAwQeMgABAf7/
+      Af//AQEBAQEA/wEAAQAB//8BAQAAAAAAAAEAAQABAQEAAgEBAwEBCQEBAQIAAQH/AAMAAgAhBBAO
+      DAYaAwId/////////////////////////wEBAQEBAQACMgQBAQIAAQIAAQAAAQMAZAEBAQAAAQAA
+      KAAIBwkNCwwFBg4KAQQAAgMFHgEBAAEBSgAAAwAkHASGHQSGKQSGKgSGBAKEHwKEIAKEIQKEJQKE
+      JgKEAQEAAwECBQEABgEABwEACAECDAEADQEADgEAEQEAEgEAFQEAGAECHgEAJAECKwEALAECLQEK
+      LwEANAEANQECNgECOQEAOgEAPAcAPgEACsBdAAAQOgEA/ChFPv////9FA////////30A//8BtgAA
+      AAABAAAyAgBUAAAAEQoBAAMEAAEAAAAAAAICAUsAAJMAQQAEjAIQBw0EhhIEChQMCkAEhkEEhkYE
+      hv4ChAoChAsChBUChBkChBoChCAChCEChCIChCMChCgCizcChDgChDkChEkCi1UChAEBAgMBAAQB
+      AAUBAAYBAAcBAAkBAgwBAg4BAg8BAhABAhEBChMBChgBAB8BAiQBACUHACYHACcHACkHAioBACsB
+      ACwBCi0BAC4BAC8BADABADIGAjMBADQBADUBAjoBADsBAjwBAD0BAD4BAj8BAEcBAFIBAFYBAFcB
+      AAvkR3ihSFJNLVBybzo2NzM3NjQAAP////8AAAAAAAAAAAAAAAAAAAAA////////////////AAD/
+      ////////////5AwBAHAD//8AAP///////wMA//8AAf///////////wAA////////////////////
+      ////////////////////////vwEB//9U5BJ+o90AAAH/////AP//////CwAAAABCZWF0cyBGaXQg
+      UHJvAAAA/////wAAAAAAAAAAAAAAAAAAAAD///////////////8BAP//////////////////////
+      /wAA////////BAD///8B////////////AAD/////////////////////////////////////////
+      //8A//////TUiNzp7wIW//////////////9MAABPACf9BIYQBIYRBIUSBIUTBIUVBIUWBIUZBIYa
+      BIYdBIYeBIYjBIYkBIUAAoQDAoQIAoQJAoQLAoQMAoQNAoQUAoQXAoMhAoQiAoQlAoMBAQICAQIE
+      AQAFAQAGAQIHAQEKAQIOAQIPAQIYAQIbAQIcAQIfAQIgAQIMEcp4P0MEN+sHwQwAi70OACTADABP
+      cAEAIdAeAMBdAAAQOgEAfDIpAGj+ZgCSAizrHTEWAAQzPgMBAH8CqADIAH0AAACY/gAAswAAACa2
+      AUa+ASoAGf8MAP//TQAADAANAyAHCgQCAAEAAQEABQEABgEACQECCwEADAECDQEADwEAEwMAFQEA
+      DVlvZ2EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/1UA/worAQAAAf8A/wD//wFOAAANAEsE
+      BIYFBIUGBIUfBIYhBIYpBIU2BIZEBIVJEIVKEIVaBIb+AoQCAoQIAoQWAoQgAoRAAoQBAQADAQAH
+      AQALAQIMAQANAQAOAQAPAQAQAQAVAQAXAQAYAQAbAQAcAQAdAQAeAQAiAQAjAQAkAQAlAQAmAQIn
+      AQIoAQAqAQIrAQAsAQAtAQAuAQAvAQAwAQAzAQA1AQA3AQA5AQA8AQA+AQA/AQBBAQBCAQBHAQBI
+      AQBLAQBMAQBOAQBPAQBRAQBSAQBTAQBVAQBWAQJZAQBdAQBeAQBoAQBrAQBsAQB0AQB4AQAOoIYB
+      AP///3////9/pnQCAP////8bQQAA/////////3////9/////f////3////9/////f////3////9/
+      ////f/////8AAEcQbQX//zIaTQAABgAKAAAAAAH//wAA//8AAQAAAP//AR7///8B/////wD/Af8A
+      AAD///8AAf///////wD///8AAP//TwAABwANEASG/gKEAwKECAKEDwKEAQECAgECBQEABwEACQEA
+      CgEACwEADAEAD/////8AAMgA/////76oAQEAAQEAQAAAFAAH/QSGdAKEAwECDQEBhgEChwECiAEC
+      ABHKeD+cGFYi/7BWQQAA6QABAgQNARsBBAAAEsp4P5wYVSL/sFUBHqAPCwATyng/nBhWIv+wVgEI
+      AAAQABTKeD+cGFci/7BXQgAA4QAO/gSGAASGBgSGAwKEBAKEBwaECAaECQKECgKECwKEDAKEDQKE
+      AgMKBQECAhTKeD9lCwAAEcp4P////////////////////////wAA////////AAAAAUMAANgADf0E
+      hgIchgUghgkQhAAChAEChA8ChAYGAgoBAAsBAgwBAg0BAg4BAAMUyng/ywoAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAP//////////////////////////////////////////////////////////
+      /////9gAAAD//3yJlqOxvgG+AKj/AQoAABgAFcp4P5wYViL/sFYBCkAJIAAWyng/nBhWIv+wVgEE
+      XgUoABjKeD+cGFki/7BZAcAf8DcAGcp4P5wYWCL/sFgCGcp4PyUPAAAUyng/////////////////
+      ////////AQD///////8AAAABAxnKeD8gDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////
+      ////////////////////////////////////////////////////////2AABAP//fImWo7G+Ab4A
+      qP8BrsgCOAAayng/cBdYIv+wWAEoZCBAABvKeD9wF1ci/7BXBRvKeD8AAAAAAAQA//8GG8p4Pzlx
+      e8b/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////
+      /wEA2wwoCv////8AAAD//////wD//wX//////////wYbyng/AAAAAP////////////////////8A
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AQDbDCgK/////wAAAQT/////
+      AP//Bf//////////BhvKeD8AAAAA/////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAAAAAP//////////////////AAACCP////8A//8F//////////8GG8p4PwAA
+      AAD/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////
+      //////9kAP////8AAAMK/////wD//wX//////////wYbyng/AAAAAP////////////////////8A
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AQDgDKEI/////wAABAz/////
+      AP//Bf//////////AQwADEgBAAAAUAEbAQQAAR6gDwsBEgAAEAEKAAAYAiDKeD9CCwAAGcp4P///
+      /////////////////////wIA////////AAAAAQMgyng/PgsAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAP///////////////////////////////////////////////////////////////9gAAgD/
+      /3yJlqOxvgG+AKj/BSHKeD/YAAAAMAMB//9EAACMADv9BIYCBIUDBIUFBIUGBIUHBIUVBIUYBIUa
+      BIUbBIUcBIUdBIUgBIUjBIYkBIYlBIUmBIUnBIUoBIUwBIY2BIUJAoQKAoQOAoQPAoQQAoQrAoMs
+      AoMtAoM3AoQ5AoQ6AoQAAQIBAQIEAQIIAQELAQAMAQANAQIRAQESAQITAQIUAQIWAQIXAQIZAQIe
+      AQEfAQEhAQIiAQApAQAqAQIuAQIxAQIyAQIzAQA0AQA1AQI4AQIEIcp4P8QUAADEFAAAn9MEAKJD
+      AQAAAAAA+KYVALXAGwDEFAAAAAAAAAAAAAAAAAAAAAAgTucmAAD/////xBQAAAAAAADEFAAAAAAA
+      AMF1eD8AAAAAAQCn8AAAAAAAAAAAAAAAAAAA/////1oAAAAKKwAAARQAEgAZnP8AAAD/Av//AP8A
+      CkcAABIAdP0EhgIEhgMEhQQEhQcEhggEhgkEhgoEhh0EhR4EhR8EhSAEhSYEhScEhSkEhjAEhk4E
+      hm4gB3AEhnQEAnUEAnYEAncEAngEhHkEhHwEhn0EhpgEhqgEhbUEiLsEiP4ChAsChA4ChA8ChBQC
+      hBUChBYChBcChBkChBoChCEChCIChCMChCQChCUChCoChCwChC0ChC8ChE8ChFAChFkChFoChFsC
+      hGoChGsChGwChHEChIQChIUChIYChJcChJ0ChJ4ChKkChKoChLEChLIChLMChLQChL0ChL4ChMQC
+      hAABAAEBAAUBAAYBABABAhEBAhIBAhMBAhgBAhsBAhwBACsBAC4BADkBAToBAVEBAFwBAl0BAl4B
+      AmUBAmYBAmcBAmgBAmkBAm0BAnIBAXMBAXoCAnsCAokBAooCApYBAbgBALwBAMABAsEBAsIBAsMB
+      AscBAsgBAskBAsoBAgchyng/Ecp4P////3////9/zCUAAMwlAAD/////AAAAAP///3////9/////
+      f////3////9/////f///////////zCUAAFlvZ2EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      ////////////////////////////////////////////////AAAAAMQUAAD//////////wAAAQD/
+      //////////////8AAAMA/////////////////////////////////////wAA////////////////
+      AwD/////////////AQD/////nBhwFwAACQEKK1dZ//8A/wD//yIiAP///////////39//////wAS
+      ACIAAP///z7//z//AyHKeD8pJQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////////////
+      ////////////////////////////////////////////////EgAAAP//fImWo7G+Ab4AqP9IAAAi
+      AAn9BIYABIYFBIYBAoQCAQADAQAEAQAGAQIHAQIIIcp4P8wlAADBdXg/AQAAGgH//z81DQotLWM5
+      OTI3ZjljYzNhYmYxMGNjZWNmMzRhMTZkOWUzMDQzLS0NCg==
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '5449'
+      Content-Type:
+      - multipart/form-data; boundary=c9927f9cc3abf10ccecf34a16d9e3043
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: POST
+    uri: https://connectapi.garmin.com/upload-service/upload
+  response:
+    body:
+      string: '{"detailedImportResult": {"uploadId": "", "uploadUuid": null, "owner":
+        82413233, "fileSize": 5289, "processingTime": 11, "creationDate": "2025-11-04
+        13:25:32.525 GMT", "ipAddress": "2a02:a460:8a11:1:be24:11ff:fee0:29ad", "fileName":
+        "12129115726_ACTIVITY.fit", "report": null, "successes": [], "failures": [{"internalId":
+        20242598711, "externalId": "1064880658", "messages": [{"code": 202, "content":
+        "Duplicate Activity."}]}]}}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '398'
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 409
+      message: Conflict
+- request:
+    body: mfa_token=MFA-43851-i7hWWWBtysft01HGvG7ciXegf07gQEVbRY5N90lCDkPog50CmK-cas
+    headers:
+      Accept:
+      - !!binary |
+        Ki8q
+      Accept-Encoding:
+      - !!binary |
+        Z3ppcCwgZGVmbGF0ZQ==
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - !!binary |
+        a2VlcC1hbGl2ZQ==
+      Content-Length:
+      - '74'
+      Content-Type:
+      - !!binary |
+        YXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVk
+      User-Agent:
+      - !!binary |
+        Y29tLmdhcm1pbi5hbmRyb2lkLmFwcHMuY29ubmVjdG1vYmlsZQ==
+    method: POST
+    uri: https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0
+  response:
+    body:
+      string: '{"scope": "GARMINPAY_WRITE ATP_READ GHS_SAMD INSIGHTS_READ CIQ_APPSTORE_SERVICES_CREATE
+        COMMUNITY_COURSE_WRITE GCOFFER_WRITE DT_CLIENT_ANALYTICS_WRITE CIQ_APPSTORE_SERVICES_DELETE
+        OMT_SUBSCRIPTION_READ CONNECT_READ COMMUNITY_COURSE_READ GOLF_API_READ GHS_UPLOAD
+        DIVE_API_READ CIQ_APPSTORE_SERVICES_READ CIQ_APPSTORE_SERVICES_UPDATE CONNECT_WRITE
+        CONNECT_MCT_DAILY_LOG_READ DI_OAUTH_2_AUTHORIZATION_CODE_CREATE GARMINPAY_READ
+        GOLF_API_WRITE INSIGHTS_WRITE PRODUCT_SEARCH_READ OMT_CAMPAIGN_READ GCOFFER_READ
+        ATP_WRITE", "jti": "SANITIZED", "access_token": "SANITIZED", "token_type":
+        "bearer", "refresh_token": "SANITIZED", "expires_in": 83600, "refresh_token_expires_in":
+        2591999}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
+  response:
+    body:
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 87160.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 41.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+        3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
+        "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
+        null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+- request:
+    body: !!binary |
+      LS1mNDVhNWFkNDQyMjA5MzJmOGM5MTQyNGY2NjE5OGZmNw0KQ29udGVudC1EaXNwb3NpdGlvbjog
+      Zm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9IjEyMTI5MTE1NzI2X0FDVElWSVRZLmZp
+      dCINCg0KDhB5UpkUAAAuRklUyeVAAAAAAAcDBIwEBIYHBIYBAoQCAoQFAoQAAQAAOXF7xhLKeD//
+      ////AQDbDP//BEEAADEABQIUBwAChAEBAgMBAAQBAAEAAAAAAAAAAAAAAAAAAAAAAAAAACgK////
+      QgAAIAEE/QSGAgKEAAEBAQEBAhHKeD///39/QwAARwEI/QSGAwSGBASGBQSGAAECAQECAgECBgEA
+      AxHKeD8MAAAAoCAAAAQAAAAJAQIAAxHKeD8MAAAAoCAAAAQAAAAJAQIARAAARgED/QSGAASGAQSG
+      BBHKeD8xAAAAAwAAAEUAABUAB/0EhgMEhgABAAEBAAQBAhMBAhQBAgURyng/AAAAAAAAAP//RgAA
+      FwAc/QSGAwSMBwSGCASGDwSGEASGESAHGASMHwSGAgKEBAKEBQKECgKEDQKEFQKLAAECAQECBgEC
+      CQECCwECEgEAFAEKFgEAFwECGQEAHQYCHgECIAECBhHKeD85cXvG/////////////////////wAA
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP////8BANsMKAr/////AAAA//////8A
+      //8F//////////8GEcp4PwAAAAD/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAAAA/////wEA2wwoCv////8AAAEE/////wD//wX//////////wYRyng/AAAA
+      AP////////////////////8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////
+      /////////////wAAAgj/////AP//Bf//////////BhHKeD8AAAAA/////////////////////wAA
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//////////ZAD/////AAADCv////8A
+      //8F//////////8GEcp4PwAAAAD/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAAAA/////wEA4AyhCP////8AAAQM/////wD//wX//////////0cAABYAC/0E
+      hgABAgEBAgIBAgMBAgQBAgUBAAYBAggBAg4BAg8BAgcRyng//////wMD/////0gAAI0ABf0EhgEE
+      hgIEhgMEhgABAAgRyng/AHZ3P4CwgD//////AUkAAAIAawEEhgIEhloEhqdABwgChDEChDoChDsC
+      hAABAgMBAAQBAAUBAQkBAAoBAAsBAAwBAA0BAg4BAg8BAhYBABcBABkBABoBABwBAB4BAB8BACIB
+      ACMBACQBACYBACkBACoBACsBACwBAC0BAC4BAC8BADABADUBADYBADcBADgBAD8NAEABAEEBAEIB
+      AEMBAEQBAEUBAEsBAEwBAE0BAFABAFEBAFIBAFMBAFQBAFUBAFcBAF4BAmABAGEBCmIBAGUBAGge
+      AGsBAGwBAG0BAG4BAG8BAHABAHQBAHUBAHwBAn0BAn4BAH8BAIABAIEBAIIBAIMBAIQBAIUBAIkB
+      AIoBAIsBAI0BAo4BAo8BApABAJEBAJQBAJUBAJcBAKABAKEBAKMBAKQBAqgBAKoPArEBArIBArMB
+      ALQBALUBANoBANsBAAkAAAAAoKv//////38AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/////9AH8AAAAgEA/wADAwQeMgABAf7/
+      Af//AQEBAQEA/wEAAQAB//8BAQAAAAAAAAEAAQABAQEAAgEBAwEBCQEBAQIAAQH/AAMAAgAhBBAO
+      DAYaAwId/////////////////////////wEBAQEBAQACMgQBAQIAAQIAAQAAAQMAZAEBAQAAAQAA
+      KAAIBwkNCwwFBg4KAQQAAgMFHgEBAAEBSgAAAwAkHASGHQSGKQSGKgSGBAKEHwKEIAKEIQKEJQKE
+      JgKEAQEAAwECBQEABgEABwEACAECDAEADQEADgEAEQEAEgEAFQEAGAECHgEAJAECKwEALAECLQEK
+      LwEANAEANQECNgECOQEAOgEAPAcAPgEACsBdAAAQOgEA/ChFPv////9FA////////30A//8BtgAA
+      AAABAAAyAgBUAAAAEQoBAAMEAAEAAAAAAAICAUsAAJMAQQAEjAIQBw0EhhIEChQMCkAEhkEEhkYE
+      hv4ChAoChAsChBUChBkChBoChCAChCEChCIChCMChCgCizcChDgChDkChEkCi1UChAEBAgMBAAQB
+      AAUBAAYBAAcBAAkBAgwBAg4BAg8BAhABAhEBChMBChgBAB8BAiQBACUHACYHACcHACkHAioBACsB
+      ACwBCi0BAC4BAC8BADABADIGAjMBADQBADUBAjoBADsBAjwBAD0BAD4BAj8BAEcBAFIBAFYBAFcB
+      AAvkR3ihSFJNLVBybzo2NzM3NjQAAP////8AAAAAAAAAAAAAAAAAAAAA////////////////AAD/
+      ////////////5AwBAHAD//8AAP///////wMA//8AAf///////////wAA////////////////////
+      ////////////////////////vwEB//9U5BJ+o90AAAH/////AP//////CwAAAABCZWF0cyBGaXQg
+      UHJvAAAA/////wAAAAAAAAAAAAAAAAAAAAD///////////////8BAP//////////////////////
+      /wAA////////BAD///8B////////////AAD/////////////////////////////////////////
+      //8A//////TUiNzp7wIW//////////////9MAABPACf9BIYQBIYRBIUSBIUTBIUVBIUWBIUZBIYa
+      BIYdBIYeBIYjBIYkBIUAAoQDAoQIAoQJAoQLAoQMAoQNAoQUAoQXAoMhAoQiAoQlAoMBAQICAQIE
+      AQAFAQAGAQIHAQEKAQIOAQIPAQIYAQIbAQIcAQIfAQIgAQIMEcp4P0MEN+sHwQwAi70OACTADABP
+      cAEAIdAeAMBdAAAQOgEAfDIpAGj+ZgCSAizrHTEWAAQzPgMBAH8CqADIAH0AAACY/gAAswAAACa2
+      AUa+ASoAGf8MAP//TQAADAANAyAHCgQCAAEAAQEABQEABgEACQECCwEADAECDQEADwEAEwMAFQEA
+      DVlvZ2EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/1UA/worAQAAAf8A/wD//wFOAAANAEsE
+      BIYFBIUGBIUfBIYhBIYpBIU2BIZEBIVJEIVKEIVaBIb+AoQCAoQIAoQWAoQgAoRAAoQBAQADAQAH
+      AQALAQIMAQANAQAOAQAPAQAQAQAVAQAXAQAYAQAbAQAcAQAdAQAeAQAiAQAjAQAkAQAlAQAmAQIn
+      AQIoAQAqAQIrAQAsAQAtAQAuAQAvAQAwAQAzAQA1AQA3AQA5AQA8AQA+AQA/AQBBAQBCAQBHAQBI
+      AQBLAQBMAQBOAQBPAQBRAQBSAQBTAQBVAQBWAQJZAQBdAQBeAQBoAQBrAQBsAQB0AQB4AQAOoIYB
+      AP///3////9/pnQCAP////8bQQAA/////////3////9/////f////3////9/////f////3////9/
+      ////f/////8AAEcQbQX//zIaTQAABgAKAAAAAAH//wAA//8AAQAAAP//AR7///8B/////wD/Af8A
+      AAD///8AAf///////wD///8AAP//TwAABwANEASG/gKEAwKECAKEDwKEAQECAgECBQEABwEACQEA
+      CgEACwEADAEAD/////8AAMgA/////76oAQEAAQEAQAAAFAAH/QSGdAKEAwECDQEBhgEChwECiAEC
+      ABHKeD+cGFYi/7BWQQAA6QABAgQNARsBBAAAEsp4P5wYVSL/sFUBHqAPCwATyng/nBhWIv+wVgEI
+      AAAQABTKeD+cGFci/7BXQgAA4QAO/gSGAASGBgSGAwKEBAKEBwaECAaECQKECgKECwKEDAKEDQKE
+      AgMKBQECAhTKeD9lCwAAEcp4P////////////////////////wAA////////AAAAAUMAANgADf0E
+      hgIchgUghgkQhAAChAEChA8ChAYGAgoBAAsBAgwBAg0BAg4BAAMUyng/ywoAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAP//////////////////////////////////////////////////////////
+      /////9gAAAD//3yJlqOxvgG+AKj/AQoAABgAFcp4P5wYViL/sFYBCkAJIAAWyng/nBhWIv+wVgEE
+      XgUoABjKeD+cGFki/7BZAcAf8DcAGcp4P5wYWCL/sFgCGcp4PyUPAAAUyng/////////////////
+      ////////AQD///////8AAAABAxnKeD8gDwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////
+      ////////////////////////////////////////////////////////2AABAP//fImWo7G+Ab4A
+      qP8BrsgCOAAayng/cBdYIv+wWAEoZCBAABvKeD9wF1ci/7BXBRvKeD8AAAAAAAQA//8GG8p4Pzlx
+      e8b/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////
+      /wEA2wwoCv////8AAAD//////wD//wX//////////wYbyng/AAAAAP////////////////////8A
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AQDbDCgK/////wAAAQT/////
+      AP//Bf//////////BhvKeD8AAAAA/////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAAAAAAAAAAAAAAAAAP//////////////////AAACCP////8A//8F//////////8GG8p4PwAA
+      AAD/////////////////////AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////
+      //////9kAP////8AAAMK/////wD//wX//////////wYbyng/AAAAAP////////////////////8A
+      AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////AQDgDKEI/////wAABAz/////
+      AP//Bf//////////AQwADEgBAAAAUAEbAQQAAR6gDwsBEgAAEAEKAAAYAiDKeD9CCwAAGcp4P///
+      /////////////////////wIA////////AAAAAQMgyng/PgsAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      AAAAAP///////////////////////////////////////////////////////////////9gAAgD/
+      /3yJlqOxvgG+AKj/BSHKeD/YAAAAMAMB//9EAACMADv9BIYCBIUDBIUFBIUGBIUHBIUVBIUYBIUa
+      BIUbBIUcBIUdBIUgBIUjBIYkBIYlBIUmBIUnBIUoBIUwBIY2BIUJAoQKAoQOAoQPAoQQAoQrAoMs
+      AoMtAoM3AoQ5AoQ6AoQAAQIBAQIEAQIIAQELAQAMAQANAQIRAQESAQITAQIUAQIWAQIXAQIZAQIe
+      AQEfAQEhAQIiAQApAQAqAQIuAQIxAQIyAQIzAQA0AQA1AQI4AQIEIcp4P8QUAADEFAAAn9MEAKJD
+      AQAAAAAA+KYVALXAGwDEFAAAAAAAAAAAAAAAAAAAAAAgTucmAAD/////xBQAAAAAAADEFAAAAAAA
+      AMF1eD8AAAAAAQCn8AAAAAAAAAAAAAAAAAAA/////1oAAAAKKwAAARQAEgAZnP8AAAD/Av//AP8A
+      CkcAABIAdP0EhgIEhgMEhQQEhQcEhggEhgkEhgoEhh0EhR4EhR8EhSAEhSYEhScEhSkEhjAEhk4E
+      hm4gB3AEhnQEAnUEAnYEAncEAngEhHkEhHwEhn0EhpgEhqgEhbUEiLsEiP4ChAsChA4ChA8ChBQC
+      hBUChBYChBcChBkChBoChCEChCIChCMChCQChCUChCoChCwChC0ChC8ChE8ChFAChFkChFoChFsC
+      hGoChGsChGwChHEChIQChIUChIYChJcChJ0ChJ4ChKkChKoChLEChLIChLMChLQChL0ChL4ChMQC
+      hAABAAEBAAUBAAYBABABAhEBAhIBAhMBAhgBAhsBAhwBACsBAC4BADkBAToBAVEBAFwBAl0BAl4B
+      AmUBAmYBAmcBAmgBAmkBAm0BAnIBAXMBAXoCAnsCAokBAooCApYBAbgBALwBAMABAsEBAsIBAsMB
+      AscBAsgBAskBAsoBAgchyng/Ecp4P////3////9/zCUAAMwlAAD/////AAAAAP///3////9/////
+      f////3////9/////f///////////zCUAAFlvZ2EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+      ////////////////////////////////////////////////AAAAAMQUAAD//////////wAAAQD/
+      //////////////8AAAMA/////////////////////////////////////wAA////////////////
+      AwD/////////////AQD/////nBhwFwAACQEKK1dZ//8A/wD//yIiAP///////////39//////wAS
+      ACIAAP///z7//z//AyHKeD8pJQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA////////////////
+      ////////////////////////////////////////////////EgAAAP//fImWo7G+Ab4AqP9IAAAi
+      AAn9BIYABIYFBIYBAoQCAQADAQAEAQAGAQIHAQIIIcp4P8wlAADBdXg/AQAAGgH//z81DQotLWY0
+      NWE1YWQ0NDIyMDkzMmY4YzkxNDI0ZjY2MTk4ZmY3LS0NCg==
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '5449'
+      Content-Type:
+      - multipart/form-data; boundary=f45a5ad44220932f8c91424f66198ff7
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: POST
+    uri: https://connectapi.garmin.com/upload-service/upload
+  response:
+    body:
+      string: '{"detailedImportResult": {"uploadId": "", "uploadUuid": null, "owner":
+        82413233, "fileSize": 5289, "processingTime": 7, "creationDate": "2025-11-04
+        13:29:13.845 GMT", "ipAddress": "2a02:a460:8a11:1:be24:11ff:fee0:29ad", "fileName":
+        "12129115726_ACTIVITY.fit", "report": null, "successes": [], "failures": [{"internalId":
+        20242598711, "externalId": "1064880658", "messages": [{"code": 202, "content":
+        "Duplicate Activity."}]}]}}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '397'
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
     status:
       code: 409
       message: Conflict

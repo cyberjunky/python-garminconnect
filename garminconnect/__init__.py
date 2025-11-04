@@ -90,10 +90,11 @@ def _fmt_ts(dt: datetime) -> str:
     # Use ms precision to match server expectations
     return dt.replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
 
+
 def _validate_json_exists(response: requests.Response) -> dict[str, Any] | None:
-     if response.status_code == 204:
+    if response.status_code == 204:
         return None
-     return response.json()
+    return response.json()
 
 
 class Garmin:
