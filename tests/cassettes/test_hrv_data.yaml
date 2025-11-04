@@ -17,11 +17,9 @@ interactions:
   response:
     body:
       string: '{"id": 376735957, "profileId": 82413233, "garminGUID": "3c814e7a-0db1-41a4-bdb8-4944db6fb8b3",
-        "displayName": "5da0f071-075e-438c-ae63-c3f3eef73b1e", "fullName": "Ron",
-        "userName": "ron@cyberjunky.nl", "profileImageType": "UPLOADED_PHOTO", "profileImageUrlLarge":
-        "https://s3.amazonaws.com/garmin-connect-prod/profile_images/72374c73-8173-4d9c-b64a-ad26b0e8e664-prof.png",
-        "profileImageUrlMedium": "https://s3.amazonaws.com/garmin-connect-prod/profile_images/72374c73-8173-4d9c-b64a-ad26b0e8e664-prfr.png",
-        "profileImageUrlSmall": "https://s3.amazonaws.com/garmin-connect-prod/profile_images/72374c73-8173-4d9c-b64a-ad26b0e8e664-prth.png",
+        "displayName": "SANITIZED", "fullName": "SANITIZED", "userName": "ron@cyberjunky.nl",
+        "profileImageType": "UPLOADED_PHOTO", "profileImageUrlLarge": "SANITIZED",
+        "profileImageUrlMedium": "SANITIZED", "profileImageUrlSmall": "SANITIZED",
         "hasPremiumSocialIcon": false, "location": "Dordrecht", "facebookUrl": "",
         "twitterUrl": "", "personalWebsite": "", "motivation": 3, "bio": null, "primaryActivity":
         "running", "favoriteActivityTypes": ["running", "walking", "hiking", "weight_training"],
@@ -46,38 +44,20 @@ interactions:
         "ROLE_CONNECTUSER", "ROLE_FITNESS_USER", "ROLE_WELLNESS_USER", "ROLE_OUTDOOR_USER"],
         "nameApproved": true, "userProfileFullName": "Ron", "makeGolfScorecardsPrivate":
         true, "allowGolfLiveScoring": false, "allowGolfScoringByConnections": true,
-        "userLevel": 3, "userPoint": 137, "levelUpdateDate": "2022-02-22T13:15:51.0",
+        "userLevel": 3, "userPoint": 137, "levelUpdateDate": "1970-01-01T00:00:00.000",
         "levelIsViewed": false, "levelPointThreshold": 140, "userPointOffset": 0,
         "userPro": false}'
     headers:
-      CF-RAY:
-      - 978321815870b93c-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
-      Date:
-      - Mon, 01 Sep 2025 07:42:25 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=vWaFPaQ438Fqt%2BcXoUDtfW8Flm6MJTvUH6GXq3F8rNbg%2Fb%2BwdxxKNVuv1R604SmkmMkWRFkVoMV5mnveIXmlQi6rrb7r%2BKvRbw6U1Iwj3szbjmzLUODeKVXjH2v8Af9aynuYcG7IVXY9OTijvjhU6ka9SA%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
       Set-Cookie:
       - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
-      Transfer-Encoding:
-      - chunked
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      pragma:
-      - no-cache
     status:
       code: 200
       message: OK
@@ -93,7 +73,7 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED
+      - SANITIZED
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
@@ -136,32 +116,63 @@ interactions:
         "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
         23400}]}'
     headers:
-      CF-RAY:
-      - 978321855802f4d1-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Type:
       - application/json;charset=UTF-8
-      Date:
-      - Mon, 01 Sep 2025 07:42:26 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=oOm2Xf9HoXi2Bc3g3f60W%2FsrMKcHkNQpSwnQLV7%2F8jI6VUg5I7F0VF2NmwZYdK8rM1Tm0SRknVC%2BxBL0O0u6R8iJvsfKoc7c3qgpTsdfnZyfUuSZbEMTztIlOo1y9OHlIqOfzXXtDiT1HauaWtKvuL4Q0Q%3D%3D"}],"group":"cf-nel","max_age":604800}'
       Server:
       - cloudflare
-      Transfer-Encoding:
-      - chunked
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      pragma:
-      - no-cache
+    status:
+      code: 200
+      message: OK
+- request:
+    body: mfa_token=MFA-43851-i7hWWWBtysft01HGvG7ciXegf07gQEVbRY5N90lCDkPog50CmK-cas
+    headers:
+      Accept:
+      - !!binary |
+        Ki8q
+      Accept-Encoding:
+      - !!binary |
+        Z3ppcCwgZGVmbGF0ZQ==
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - !!binary |
+        a2VlcC1hbGl2ZQ==
+      Content-Length:
+      - '74'
+      Content-Type:
+      - !!binary |
+        YXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVk
+      User-Agent:
+      - !!binary |
+        Y29tLmdhcm1pbi5hbmRyb2lkLmFwcHMuY29ubmVjdG1vYmlsZQ==
+    method: POST
+    uri: https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0
+  response:
+    body:
+      string: '{"scope": "GARMINPAY_WRITE ATP_READ GHS_SAMD INSIGHTS_READ CIQ_APPSTORE_SERVICES_CREATE
+        COMMUNITY_COURSE_WRITE GCOFFER_WRITE DT_CLIENT_ANALYTICS_WRITE CIQ_APPSTORE_SERVICES_DELETE
+        OMT_SUBSCRIPTION_READ CONNECT_READ COMMUNITY_COURSE_READ GOLF_API_READ GHS_UPLOAD
+        DIVE_API_READ CIQ_APPSTORE_SERVICES_READ CIQ_APPSTORE_SERVICES_UPDATE CONNECT_WRITE
+        CONNECT_MCT_DAILY_LOG_READ DI_OAUTH_2_AUTHORIZATION_CODE_CREATE GARMINPAY_READ
+        GOLF_API_WRITE INSIGHTS_WRITE PRODUCT_SEARCH_READ OMT_CAMPAIGN_READ GCOFFER_READ
+        ATP_WRITE", "jti": "SANITIZED", "access_token": "SANITIZED", "token_type":
+        "bearer", "refresh_token": "SANITIZED", "expires_in": 74915, "refresh_token_expires_in":
+        2591999}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
     status:
       code: 200
       message: OK
@@ -177,36 +188,173 @@ interactions:
       Connection:
       - keep-alive
       Cookie:
-      - _cfuvid=SANITIZED
+      - SANITIZED
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
-    uri: https://connectapi.garmin.com/hrv-service/hrv/2023-07-01
+    uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
   response:
     body:
-      string: ''
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 87160.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 41.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+        3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
+        "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
+        null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
     headers:
-      CF-RAY:
-      - 97832186be660eb3-AMS
       Cache-Control:
       - no-cache, no-store, private
       Connection:
       - keep-alive
-      Date:
-      - Mon, 01 Sep 2025 07:42:26 GMT
-      NEL:
-      - '{"success_fraction":0.01,"report_to":"cf-nel","max_age":604800}'
-      Report-To:
-      - '{"endpoints":[{"url":"https:\/\/a.nel.cloudflare.com\/report\/v4?s=aujNEUob0oq%2FCma0ua%2B5qH5fdbMX3DI4nqJJXJ9ymOECoq83jMLQaO89SZySV5MPpue%2BRDXIK%2BCZJ40B%2Bltju4mvdJd0PD3OWph%2Fi17yvJ%2BEo0UTERQe0ZXPPiOMuCVw4goZ7GccQ5a%2FFbKnPJk78e94KQ%3D%3D"}],"group":"cf-nel","max_age":604800}'
+      Content-Type:
+      - application/json
       Server:
       - cloudflare
-      alt-svc:
-      - h3=":443"; ma=86400
-      cf-cache-status:
-      - DYNAMIC
-      pragma:
-      - no-cache
     status:
-      code: 204
-      message: No Content
+      code: 200
+      message: OK
+- request:
+    body: mfa_token=MFA-43851-i7hWWWBtysft01HGvG7ciXegf07gQEVbRY5N90lCDkPog50CmK-cas
+    headers:
+      Accept:
+      - !!binary |
+        Ki8q
+      Accept-Encoding:
+      - !!binary |
+        Z3ppcCwgZGVmbGF0ZQ==
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - !!binary |
+        a2VlcC1hbGl2ZQ==
+      Content-Length:
+      - '74'
+      Content-Type:
+      - !!binary |
+        YXBwbGljYXRpb24veC13d3ctZm9ybS11cmxlbmNvZGVk
+      User-Agent:
+      - !!binary |
+        Y29tLmdhcm1pbi5hbmRyb2lkLmFwcHMuY29ubmVjdG1vYmlsZQ==
+    method: POST
+    uri: https://connectapi.garmin.com/oauth-service/oauth/exchange/user/2.0
+  response:
+    body:
+      string: '{"scope": "GARMINPAY_WRITE ATP_READ GHS_SAMD INSIGHTS_READ CIQ_APPSTORE_SERVICES_CREATE
+        COMMUNITY_COURSE_WRITE GCOFFER_WRITE DT_CLIENT_ANALYTICS_WRITE CIQ_APPSTORE_SERVICES_DELETE
+        OMT_SUBSCRIPTION_READ CONNECT_READ COMMUNITY_COURSE_READ GOLF_API_READ GHS_UPLOAD
+        DIVE_API_READ CIQ_APPSTORE_SERVICES_READ CIQ_APPSTORE_SERVICES_UPDATE CONNECT_WRITE
+        CONNECT_MCT_DAILY_LOG_READ DI_OAUTH_2_AUTHORIZATION_CODE_CREATE GARMINPAY_READ
+        GOLF_API_WRITE INSIGHTS_WRITE PRODUCT_SEARCH_READ OMT_CAMPAIGN_READ GCOFFER_READ
+        ATP_WRITE", "jti": "SANITIZED", "access_token": "SANITIZED", "token_type":
+        "bearer", "refresh_token": "SANITIZED", "expires_in": 76494, "refresh_token_expires_in":
+        2591999}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/userprofile/user-settings
+  response:
+    body:
+      string: '{"id": 82413233, "userData": {"gender": "MALE", "weight": 87160.0,
+        "height": 184.0, "timeFormat": "time_twenty_four_hr", "birthDate": "1966-09-15",
+        "measurementSystem": "metric", "activityLevel": 4, "handedness": "RIGHT",
+        "powerFormat": {"formatId": 30, "formatKey": "watt", "minFraction": 0, "maxFraction":
+        0, "groupingUsed": true, "displayFormat": null}, "heartRateFormat": {"formatId":
+        21, "formatKey": "bpm", "minFraction": 0, "maxFraction": 0, "groupingUsed":
+        false, "displayFormat": null}, "firstDayOfWeek": {"dayId": 3, "dayName": "monday",
+        "sortOrder": 3, "isPossibleFirstDay": true}, "vo2MaxRunning": 41.0, "vo2MaxCycling":
+        null, "lactateThresholdSpeed": null, "lactateThresholdHeartRate": null, "diveNumber":
+        null, "intensityMinutesCalcMethod": "AUTO", "moderateIntensityMinutesHrZone":
+        3, "vigorousIntensityMinutesHrZone": 4, "hydrationMeasurementUnit": "milliliter",
+        "hydrationContainers": [], "hydrationAutoGoalEnabled": true, "firstbeatMaxStressScore":
+        null, "firstbeatCyclingLtTimestamp": null, "firstbeatRunningLtTimestamp":
+        null, "thresholdHeartRateAutoDetected": null, "ftpAutoDetected": null, "trainingStatusPausedDate":
+        null, "weatherLocation": {"useFixedLocation": null, "latitude": null, "longitude":
+        null, "locationName": null, "isoCountryCode": null, "postalCode": null}, "golfDistanceUnit":
+        null, "golfElevationUnit": null, "golfSpeedUnit": null, "externalBottomTime":
+        null, "availableTrainingDays": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
+        "FRIDAY", "SATURDAY", "SUNDAY"], "preferredLongTrainingDays": ["SATURDAY",
+        "SUNDAY"], "virtualCaddieDataSource": null, "numberDivesAutomatically": null},
+        "userSleep": {"sleepTime": 81000, "defaultSleepTime": false, "wakeTime": 23400,
+        "defaultWakeTime": false}, "connectDate": null, "sourceType": null, "userSleepWindows":
+        [{"sleepWindowFrequency": "SUNDAY", "startSleepTimeSecondsFromMidnight": 81000,
+        "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency": "MONDAY",
+        "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "TUESDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "WEDNESDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "THURSDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "FRIDAY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}, {"sleepWindowFrequency": "SATURDAY", "startSleepTimeSecondsFromMidnight":
+        81000, "endSleepTimeSecondsFromMidnight": 23400}, {"sleepWindowFrequency":
+        "DAILY", "startSleepTimeSecondsFromMidnight": 81000, "endSleepTimeSecondsFromMidnight":
+        23400}]}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
 version: 1
