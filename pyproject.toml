@@ -84,9 +84,6 @@ excludes = [
   ".github/**",
 ]
 
-[tool.pdm.python]
-path = ".venv/bin/python"
-
 [tool.ruff]
 line-length = 88
 target-version = "py310"

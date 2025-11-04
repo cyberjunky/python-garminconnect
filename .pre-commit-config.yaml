@@ -18,11 +18,12 @@ repos:
       - tomli
     exclude: 'cassettes/'
 
-- repo: https://github.com/psf/black
-  rev: 24.8.0
-  hooks:
-  - id: black
-    language_version: python3
+# Removed black - using ruff-format instead to avoid formatting conflicts
+# - repo: https://github.com/psf/black
+#   rev: 24.8.0
+#   hooks:
+#   - id: black
+#     language_version: python3
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
   rev: v0.6.4
@@ -35,7 +36,7 @@ repos:
   hooks:
   - id: mypy
     name: mypy type checking
-    entry: .venv/bin/pdm run mypy garminconnect tests
+    entry: pdm run mypy garminconnect tests
     types: [python]
     language: system
     pass_filenames: false

@@ -61,8 +61,17 @@ jobs:
       #     pdm run coverage xml
       #   continue-on-error: true
 
+      - name: Check for coverage report
+        id: coverage_check
+        run: |
+          if [ -f coverage.xml ]; then
+            echo "coverage_generated=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "coverage_generated=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Upload coverage artifact
-        if: matrix.python-version == '3.11'
+        if: matrix.python-version == '3.11' && steps.coverage_check.outputs.coverage_generated == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
