@@ -256,7 +256,7 @@ class Garmin:
         self.garmin_connect_upload = "/upload-service/upload"
 
         self.garmin_connect_gear = "/gear-service/gear/filterGear"
-        self.garmin_connect_gear_baseurl = "/gear-service/gear/"
+        self.garmin_connect_gear_baseurl = "/gear-service/gear"
 
         self.garmin_request_reload_url = "/wellness-service/wellness/epoch/request"
 
@@ -1855,13 +1855,13 @@ class Garmin:
         return self.connectapi(url)
 
     def get_gear_stats(self, gearUUID: str) -> dict[str, Any]:
-        url = f"{self.garmin_connect_gear_baseurl}stats/{gearUUID}"
+        url = f"{self.garmin_connect_gear_baseurl}/stats/{gearUUID}"
         logger.debug("Requesting gear stats for gearUUID %s", gearUUID)
         return self.connectapi(url)
 
     def get_gear_defaults(self, userProfileNumber: str) -> dict[str, Any]:
         url = (
-            f"{self.garmin_connect_gear_baseurl}user/"
+            f"{self.garmin_connect_gear_baseurl}/user/"
             f"{userProfileNumber}/activityTypes"
         )
         logger.debug("Requesting gear defaults for user %s", userProfileNumber)
@@ -1873,7 +1873,7 @@ class Garmin:
         defaultGearString = "/default/true" if defaultGear else ""
         method_override = "PUT" if defaultGear else "DELETE"
         url = (
-            f"{self.garmin_connect_gear_baseurl}{gearUUID}/"
+            f"{self.garmin_connect_gear_baseurl}/{gearUUID}/"
             f"activityType/{activityType}{defaultGearString}"
         )
         return self.garth.request(method_override, "connectapi", url, api=True)
@@ -2024,6 +2024,52 @@ class Garmin:
         logger.debug("Requesting activities for gearUUID %s", gearUUID)
 
         return self.connectapi(url)
+
+    def add_gear_to_activity(
+        self, gearUUID: str, activity_id: int | str
+    ) -> dict[str, Any]:
+        """
+        Associates gear with an activity. Requires a gearUUID and an activity_id
+
+        Args:
+            gearUUID: UID for gear to add to activity. Findable though the get_gear function
+            activity_id: Integer ID for the activity to add the gear to
+
+        Returns:
+            Dictionary containing information for the added gear
+        """
+
+        gearUUID = str(gearUUID)
+        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+
+        url = (
+            f"{self.garmin_connect_gear_baseurl}/link/{gearUUID}/activity/{activity_id}"
+        )
+        logger.debug("Linking gear %s to activity %s", gearUUID, activity_id)
+
+        return self.garth.put("connectapi", url).json()
+
+    def remove_gear_from_activity(
+        self, gearUUID: str, activity_id: int | str
+    ) -> dict[str, Any]:
+        """
+        Removes gear from an activity. Requires a gearUUID and an activity_id
+
+        Args:
+            gearUUID: UID for gear to remove from activity. Findable though the get_gear method.
+            activity_id: Integer ID for the activity to remove the gear from
+
+        Returns:
+            Dictionary containing information about the removed gear
+        """
+
+        gearUUID = str(gearUUID)
+        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+
+        url = f"{self.garmin_connect_gear_baseurl}/unlink/{gearUUID}/activity/{activity_id}"
+        logger.debug("Unlinking gear %s from activity %s", gearUUID, activity_id)
+
+        return self.garth.put("connectapi", url).json()
 
     def get_user_profile(self) -> dict[str, Any]:
         """Get all users settings."""
