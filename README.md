@@ -1,3 +1,11 @@
+[![GitHub Release][releases-shield]][releases]
+[![GitHub Activity][commits-shield]][commits]
+[![License][license-shield]](LICENSE)
+![Project Maintenance][maintenance-shield]
+
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.me/cyberjunkynl/)
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-red.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/cyberjunky)
+
 # Python: Garmin Connect
 
 The Garmin Connect API library comes with two examples:
@@ -376,3 +384,10 @@ If you find this library useful for your projects, please consider supporting it
 - Shows appreciation for hundreds of hours of development
 
 Every contribution, no matter the size, makes a difference and is greatly appreciated! 🙏
+
+[releases-shield]: https://img.shields.io/github/release/cyberjunky/python-garminconnect.svg?style=for-the-badge
+[releases]: https://github.com/cyberjunky/python-garminconnect/releases
+[commits-shield]: https://img.shields.io/github/commit-activity/y/cyberjunky/python-garminconnect.svg?style=for-the-badge
+[commits]: https://github.com/cyberjunky/python-garminconnect/commits/main
+[license-shield]: https://img.shields.io/github/license/cyberjunky/python-garminconnect.svg?style=for-the-badge
+[maintenance-shield]: https://img.shields.io/badge/maintainer-cyberjunky-blue.svg?style=for-the-badge
