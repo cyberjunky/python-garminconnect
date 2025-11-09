@@ -97,6 +97,11 @@ def _validate_json_exists(response: requests.Response) -> dict[str, Any] | None:
     return response.json()
 
 
+def _is_gear_removed(gearUUID: str) -> bool:
+    """Check if gear has been removed/retired (Garmin returns 'REMOVED' as UUID)."""
+    return str(gearUUID) == "REMOVED"
+
+
 class Garmin:
     """Class for fetching data from Garmin Connect."""
 
@@ -1874,6 +1879,13 @@ class Garmin:
         return self.connectapi(url)
 
     def get_gear_stats(self, gearUUID: str) -> dict[str, Any]:
+        # Check if gear has been removed/retired
+        if _is_gear_removed(gearUUID):
+            logger.warning(
+                "Cannot get stats for removed/retired gear (UUID: %s)", gearUUID
+            )
+            return {}
+
         url = f"{self.garmin_connect_gear_baseurl}/stats/{gearUUID}"
         logger.debug("Requesting gear stats for gearUUID %s", gearUUID)
         return self.connectapi(url)
@@ -1889,6 +1901,12 @@ class Garmin:
     def set_gear_default(
         self, activityType: str, gearUUID: str, defaultGear: bool = True
     ) -> Any:
+        # Check if gear has been removed/retired
+        if _is_gear_removed(gearUUID):
+            raise GarminConnectConnectionError(
+                "Cannot set default for removed/retired gear"
+            )
+
         defaultGearString = "/default/true" if defaultGear else ""
         method_override = "PUT" if defaultGear else "DELETE"
         url = (
@@ -2036,6 +2054,14 @@ class Garmin:
         :return: List of activities where the specified gear was used
         """
         gearUUID = str(gearUUID)
+
+        # Check if gear has been removed/retired
+        if _is_gear_removed(gearUUID):
+            logger.warning(
+                "Cannot get activities for removed/retired gear (UUID: %s)", gearUUID
+            )
+            return []
+
         limit = _validate_positive_integer(limit, "limit")
         # Optional: enforce a reasonable ceiling to avoid heavy responses
         limit = min(limit, MAX_ACTIVITY_LIMIT)
@@ -2061,6 +2087,12 @@ class Garmin:
         gearUUID = str(gearUUID)
         activity_id = _validate_positive_integer(int(activity_id), "activity_id")
 
+        # Check if gear has been removed/retired
+        if _is_gear_removed(gearUUID):
+            raise GarminConnectConnectionError(
+                "Cannot add removed/retired gear to activity"
+            )
+
         url = (
             f"{self.garmin_connect_gear_baseurl}/link/{gearUUID}/activity/{activity_id}"
         )
@@ -2084,6 +2116,12 @@ class Garmin:
 
         gearUUID = str(gearUUID)
         activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+
+        # Check if gear has been removed/retired
+        if _is_gear_removed(gearUUID):
+            raise GarminConnectConnectionError(
+                "Cannot remove removed/retired gear from activity"
+            )
 
         url = f"{self.garmin_connect_gear_baseurl}/unlink/{gearUUID}/activity/{activity_id}"
         logger.debug("Unlinking gear %s from activity %s", gearUUID, activity_id)
