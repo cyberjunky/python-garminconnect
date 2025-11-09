@@ -97,11 +97,6 @@ def _validate_json_exists(response: requests.Response) -> dict[str, Any] | None:
     return response.json()
 
 
-def _is_gear_removed(gearUUID: str) -> bool:
-    """Check if gear has been removed/retired (Garmin returns 'REMOVED' as UUID)."""
-    return str(gearUUID) == "REMOVED"
-
-
 class Garmin:
     """Class for fetching data from Garmin Connect."""
 
@@ -1879,16 +1874,20 @@ class Garmin:
         return self.connectapi(url)
 
     def get_gear_stats(self, gearUUID: str) -> dict[str, Any]:
-        # Check if gear has been removed/retired
-        if _is_gear_removed(gearUUID):
-            logger.warning(
-                "Cannot get stats for removed/retired gear (UUID: %s)", gearUUID
-            )
-            return {}
-
         url = f"{self.garmin_connect_gear_baseurl}/stats/{gearUUID}"
         logger.debug("Requesting gear stats for gearUUID %s", gearUUID)
-        return self.connectapi(url)
+
+        try:
+            return self.connectapi(url)
+        except GarthHTTPError as e:
+            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            if status == 404:
+                logger.warning(
+                    "Gear stats not found for UUID %s (likely retired/removed gear)",
+                    gearUUID,
+                )
+                return {}
+            raise
 
     def get_gear_defaults(self, userProfileNumber: str) -> dict[str, Any]:
         url = (
@@ -1901,19 +1900,22 @@ class Garmin:
     def set_gear_default(
         self, activityType: str, gearUUID: str, defaultGear: bool = True
     ) -> Any:
-        # Check if gear has been removed/retired
-        if _is_gear_removed(gearUUID):
-            raise GarminConnectConnectionError(
-                "Cannot set default for removed/retired gear"
-            )
-
         defaultGearString = "/default/true" if defaultGear else ""
         method_override = "PUT" if defaultGear else "DELETE"
         url = (
             f"{self.garmin_connect_gear_baseurl}/{gearUUID}/"
             f"activityType/{activityType}{defaultGearString}"
         )
-        return self.garth.request(method_override, "connectapi", url, api=True)
+
+        try:
+            return self.garth.request(method_override, "connectapi", url, api=True)
+        except GarthHTTPError as e:
+            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            if status == 404:
+                raise GarminConnectConnectionError(
+                    f"Cannot set gear default for UUID {gearUUID}: gear not found (likely retired/removed)"
+                ) from e
+            raise
 
     class ActivityDownloadFormat(Enum):
         """Activity variables."""
@@ -2054,21 +2056,23 @@ class Garmin:
         :return: List of activities where the specified gear was used
         """
         gearUUID = str(gearUUID)
-
-        # Check if gear has been removed/retired
-        if _is_gear_removed(gearUUID):
-            logger.warning(
-                "Cannot get activities for removed/retired gear (UUID: %s)", gearUUID
-            )
-            return []
-
         limit = _validate_positive_integer(limit, "limit")
         # Optional: enforce a reasonable ceiling to avoid heavy responses
         limit = min(limit, MAX_ACTIVITY_LIMIT)
         url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit={limit}"
         logger.debug("Requesting activities for gearUUID %s", gearUUID)
 
-        return self.connectapi(url)
+        try:
+            return self.connectapi(url)
+        except GarthHTTPError as e:
+            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            if status == 404:
+                logger.warning(
+                    "Gear activities not found for UUID %s (likely retired/removed gear)",
+                    gearUUID,
+                )
+                return []
+            raise
 
     def add_gear_to_activity(
         self, gearUUID: str, activity_id: int | str
@@ -2087,18 +2091,20 @@ class Garmin:
         gearUUID = str(gearUUID)
         activity_id = _validate_positive_integer(int(activity_id), "activity_id")
 
-        # Check if gear has been removed/retired
-        if _is_gear_removed(gearUUID):
-            raise GarminConnectConnectionError(
-                "Cannot add removed/retired gear to activity"
-            )
-
         url = (
             f"{self.garmin_connect_gear_baseurl}/link/{gearUUID}/activity/{activity_id}"
         )
         logger.debug("Linking gear %s to activity %s", gearUUID, activity_id)
 
-        return self.garth.put("connectapi", url).json()
+        try:
+            return self.garth.put("connectapi", url).json()
+        except GarthHTTPError as e:
+            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            if status == 404:
+                raise GarminConnectConnectionError(
+                    f"Cannot add gear {gearUUID} to activity {activity_id}: gear not found (likely retired/removed)"
+                ) from e
+            raise
 
     def remove_gear_from_activity(
         self, gearUUID: str, activity_id: int | str
@@ -2117,16 +2123,18 @@ class Garmin:
         gearUUID = str(gearUUID)
         activity_id = _validate_positive_integer(int(activity_id), "activity_id")
 
-        # Check if gear has been removed/retired
-        if _is_gear_removed(gearUUID):
-            raise GarminConnectConnectionError(
-                "Cannot remove removed/retired gear from activity"
-            )
-
         url = f"{self.garmin_connect_gear_baseurl}/unlink/{gearUUID}/activity/{activity_id}"
         logger.debug("Unlinking gear %s from activity %s", gearUUID, activity_id)
 
-        return self.garth.put("connectapi", url).json()
+        try:
+            return self.garth.put("connectapi", url).json()
+        except GarthHTTPError as e:
+            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            if status == 404:
+                raise GarminConnectConnectionError(
+                    f"Cannot remove gear {gearUUID} from activity {activity_id}: gear not found (likely retired/removed)"
+                ) from e
+            raise
 
     def get_user_profile(self) -> dict[str, Any]:
         """Get all users settings."""
