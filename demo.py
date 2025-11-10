@@ -46,6 +46,29 @@ logging.getLogger("garminconnect").setLevel(logging.CRITICAL)
 api: Garmin | None = None
 
 
+def safe_readkey() -> str:
+    """
+    Safe wrapper around readchar.readkey() that handles non-TTY environments.
+
+    This is particularly useful on macOS and in CI/CD environments where stdin
+    might not be a TTY, which would cause readchar to fail with:
+    termios.error: (25, 'Inappropriate ioctl for device')
+
+    Returns:
+        str: A single character input from the user
+    """
+    if not sys.stdin.isatty():
+        print("WARNING: stdin is not a TTY. Falling back to input().")
+        user_input = input("Enter a key (then press Enter): ")
+        return user_input[0] if user_input else ""
+    try:
+        return readchar.readkey()
+    except Exception as e:
+        print(f"readkey() failed: {e}")
+        user_input = input("Enter a key (then press Enter): ")
+        return user_input[0] if user_input else ""
+
+
 class Config:
     """Configuration class for the Garmin Connect API demo."""
 
@@ -3710,7 +3733,7 @@ def main():
             # Display appropriate menu
             if current_category is None:
                 print_main_menu()
-                option = readchar.readkey()
+                option = safe_readkey()
 
                 # Handle main menu options
                 if option == "q":
@@ -3727,7 +3750,7 @@ def main():
             else:
                 # In a category - show category menu
                 print_category_menu(current_category)
-                option = readchar.readkey()
+                option = safe_readkey()
 
                 # Handle category menu options
                 if option == "q":
