@@ -153,6 +153,10 @@ menu_categories = {
                 "desc": f"Get stress data for '{config.today.isoformat()}'",
                 "key": "get_all_day_stress",
             },
+            "9": {
+                "desc": f"Get lifestyle logging data for '{config.today.isoformat()}'",
+                "key": "get_lifestyle_logging_data",
+            },
         },
     },
     "3": {
@@ -3228,6 +3232,12 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 config.today.isoformat(),
                 method_name="get_intensity_minutes_data",
                 api_call_desc=f"api.get_intensity_minutes_data('{config.today.isoformat()}')",
+            ),
+            "get_lifestyle_logging_data": lambda: call_and_display(
+                api.get_lifestyle_logging_data,
+                config.today.isoformat(),
+                method_name="get_lifestyle_logging_data",
+                api_call_desc=f"api.get_lifestyle_logging_data('{config.today.isoformat()}')",
             ),
             # Historical Data & Trends
             "get_daily_steps": lambda: call_and_display(
