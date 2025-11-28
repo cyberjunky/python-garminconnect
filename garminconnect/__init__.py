@@ -5,7 +5,7 @@ import numbers
 import os
 import re
 from collections.abc import Callable
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
 from pathlib import Path
 from typing import Any
@@ -567,7 +567,12 @@ class Garmin:
         return response
 
     def get_daily_steps(self, start: str, end: str) -> list[dict[str, Any]]:
-        """Fetch available steps data 'start' and 'end' format 'YYYY-MM-DD'."""
+        """Fetch available steps data 'start' and 'end' format 'YYYY-MM-DD'.
+
+        Note: The Garmin Connect API has a 28-day limit per request. For date ranges
+        exceeding 28 days, this method automatically splits the range into chunks
+        and makes multiple API calls, then merges the results.
+        """
 
         # Validate inputs
         start = _validate_date_format(start, "start")
@@ -580,10 +585,45 @@ class Garmin:
         if start_date > end_date:
             raise ValueError("start date cannot be after end date")
 
-        url = f"{self.garmin_connect_daily_stats_steps_url}/{start}/{end}"
-        logger.debug("Requesting daily steps data")
+        # Calculate date range (inclusive)
+        days_diff = (end_date - start_date).days + 1
 
-        return self.connectapi(url)
+        # If range is 28 days or less, make single request
+        if days_diff <= 28:
+            url = f"{self.garmin_connect_daily_stats_steps_url}/{start}/{end}"
+            logger.debug("Requesting daily steps data")
+            return self.connectapi(url)
+
+        # For ranges > 28 days, split into chunks
+        logger.debug(
+            f"Date range ({days_diff} days) exceeds 28-day limit, " "chunking requests"
+        )
+        all_results = []
+        current_start = start_date
+
+        while current_start <= end_date:
+            # Calculate chunk end (max 28 days from current_start)
+            chunk_end = min(current_start + timedelta(days=27), end_date)
+            chunk_start_str = current_start.isoformat()
+            chunk_end_str = chunk_end.isoformat()
+
+            url = (
+                f"{self.garmin_connect_daily_stats_steps_url}/"
+                f"{chunk_start_str}/{chunk_end_str}"
+            )
+            logger.debug(
+                f"Requesting daily steps data for chunk: "
+                f"{chunk_start_str} to {chunk_end_str}"
+            )
+
+            chunk_results = self.connectapi(url)
+            if chunk_results:
+                all_results.extend(chunk_results)
+
+            # Move to next chunk
+            current_start = chunk_end + timedelta(days=1)
+
+        return all_results
 
     def get_heart_rates(self, cdate: str) -> dict[str, Any]:
         """Fetch available heart rates data 'cDate' format 'YYYY-MM-DD'.
