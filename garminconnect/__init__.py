@@ -2311,7 +2311,7 @@ class Garmin:
 
         plan_id = _validate_positive_integer(int(plan_id), "plan_id")
 
-        url = f"{self.garmin_connect_training_plan_url}/plans/{plan_id}"
+        url = f"{self.garmin_connect_training_plan_url}/phased/{plan_id}"
         logger.debug("Requesting training plan details for %s", plan_id)
         return self.connectapi(url)
 
