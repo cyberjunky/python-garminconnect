@@ -44,7 +44,7 @@ Make your selection:
 - **Total API Methods**: 100+ unique endpoints (snapshot)
 - **Categories**: 11 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
-- **Daily Health & Activity**: 8 methods (today's health data)
+- **Daily Health & Activity**: 9 methods (today's health data)
 - **Advanced Health Metrics**: 10 methods (fitness metrics, HRV, VO2)
 - **Historical Data & Trends**: 6 methods (date range queries)
 - **Activities & Workouts**: 21 methods (comprehensive activity management)
