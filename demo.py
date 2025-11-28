@@ -1815,11 +1815,14 @@ def get_training_plan_by_id_data(api: Garmin) -> None:
     """Get training plan details by ID (routes FBT_ADAPTIVE plans to the adaptive endpoint)."""
     resp = api.get_training_plans() or {}
     training_plans = resp.get("trainingPlanList") or []
-    if not training_plans:
-        print("ℹ️ No training plans found")
-        return
 
-    user_input = input("Enter training plan ID (press Enter for most recent): ").strip()
+    if not training_plans:
+        print("ℹ️ No training plans found in your list")
+        prompt_text = "Enter training plan ID: "
+    else:
+        prompt_text = "Enter training plan ID (press Enter for most recent): "
+
+    user_input = input(prompt_text).strip()
     selected = None
     if user_input:
         try:
@@ -1847,6 +1850,9 @@ def get_training_plan_by_id_data(api: Garmin) -> None:
             print("❌ Invalid plan ID")
             return
     else:
+        if not training_plans:
+            print("❌ No training plans available and no ID provided")
+            return
         selected = training_plans[-1]
         plan_id = int(selected["trainingPlanId"])
         plan_name = selected.get("name", str(plan_id))
