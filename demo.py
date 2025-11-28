@@ -3709,8 +3709,8 @@ def main():
                         )
 
                     if summary:
-                        steps = summary.get("totalSteps", 0)
-                        calories = summary.get("totalKilocalories", 0)
+                        steps = summary.get("totalSteps") or 0
+                        calories = summary.get("totalKilocalories") or 0
 
                         # Build stats string with hydration if available
                         stats_parts = [f"{steps:,} steps", f"{calories} kcal"]
