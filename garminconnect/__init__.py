@@ -295,6 +295,20 @@ class Garmin:
         """Wrapper for garth connectapi with error handling."""
         try:
             return self.garth.connectapi(path, **kwargs)
+        except AssertionError as e:
+            # Handle Windows-specific OAuth token refresh issue
+            # This can occur when garth tries to refresh tokens during API calls
+            error_msg = str(e).lower()
+            if "oauth" in error_msg and (
+                "oauth1" in error_msg or "oauth2" in error_msg
+            ):
+                logger.error("OAuth token refresh failed during API call.")
+                raise GarminConnectAuthenticationError(
+                    "Token refresh failed. Please re-authenticate. "
+                    f"Original error: {e}"
+                ) from e
+            # Re-raise if it's a different AssertionError
+            raise
         except (HTTPError, GarthHTTPError) as e:
             # For GarthHTTPError, extract status from the wrapped HTTPError
             if isinstance(e, GarthHTTPError):
@@ -369,12 +383,53 @@ class Garmin:
             token1 = None
             token2 = None
 
+            # Try to load tokens from tokenstore if provided
+            tokens_loaded = False
             if tokenstore:
-                if len(tokenstore) > 512:
-                    self.garth.loads(tokenstore)
-                else:
-                    self.garth.load(tokenstore)
-            else:
+                try:
+                    if len(tokenstore) > 512:
+                        # Token data is provided directly as string (base64 encoded)
+                        self.garth.loads(tokenstore)
+                    else:
+                        # Tokenstore is a path - normalize it for cross-platform compatibility
+                        # This fixes Windows path issues where ~ expansion or path separators
+                        # might cause garth to not find all token files correctly
+                        tokenstore_path = Path(tokenstore).expanduser().resolve()
+                        # Convert to string with normalized path separators
+                        normalized_path = str(tokenstore_path)
+                        logger.debug(
+                            f"Loading tokens from normalized path: {normalized_path}"
+                        )
+                        self.garth.load(normalized_path)
+                    tokens_loaded = True
+                except AssertionError as e:
+                    # Handle Windows-specific OAuth token refresh issue
+                    # When garth tries to refresh OAuth2 tokens, it may fail with:
+                    # "AssertionError: OAuth1 token is required for OAuth2 refresh"
+                    # This can occur if token files are incomplete or path resolution failed
+                    error_msg = str(e).lower()
+                    if "oauth" in error_msg and (
+                        "oauth1" in error_msg or "oauth2" in error_msg
+                    ):
+                        logger.warning(
+                            "Token refresh failed (OAuth token mismatch). "
+                            "This may occur on Windows due to path or token file issues. "
+                            "Re-authentication required."
+                        )
+                        # Treat as invalid tokens - require re-authentication
+                        if not self.username or not self.password:
+                            raise GarminConnectAuthenticationError(
+                                "Stored tokens are invalid and credentials are required for re-authentication. "
+                                f"Original error: {e}"
+                            ) from e
+                        # Will fall through to credential-based login below
+                        tokens_loaded = False
+                    else:
+                        # Re-raise if it's a different AssertionError
+                        raise
+
+            # If tokens weren't loaded (or failed to load), use credentials
+            if not tokens_loaded:
                 # Validate credentials before attempting login
                 if not self.username or not self.password:
                     raise GarminConnectAuthenticationError(
