@@ -277,6 +277,10 @@ class Garmin:
 
         self.garmin_connect_training_plan_url = "/trainingplan-service/trainingplan"
 
+        self.garmin_connect_daily_lifestyle_logging_url = (
+            "/lifestylelogging-service/dailyLog"
+        )
+
         self.garth = garth.Client(
             domain="garmin.cn" if is_cn else "garmin.com",
             pool_connections=20,
@@ -1297,6 +1301,15 @@ class Garmin:
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_stress_url}/{cdate}"
         logger.debug("Requesting stress data")
+
+        return self.connectapi(url)
+
+    def get_lifestyle_logging_data(self, cdate: str) -> dict[str, Any]:
+        """Return lifestyle logging data for current user."""
+
+        cdate = _validate_date_format(cdate, "cdate")
+        url = f"{self.garmin_connect_daily_lifestyle_logging_url}/{cdate}"
+        logger.debug("Requesting lifestyle logging data")
 
         return self.connectapi(url)
 
