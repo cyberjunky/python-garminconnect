@@ -301,6 +301,26 @@ menu_categories = {
                 "desc": "Count activities for current user",
                 "key": "count_activities",
             },
+            "v": {
+                "desc": "Upload typed running workout (sample)",
+                "key": "upload_running_workout",
+            },
+            "w": {
+                "desc": "Upload typed cycling workout (sample)",
+                "key": "upload_cycling_workout",
+            },
+            "x": {
+                "desc": "Upload typed swimming workout (sample)",
+                "key": "upload_swimming_workout",
+            },
+            "y": {
+                "desc": "Upload typed walking workout (sample)",
+                "key": "upload_walking_workout",
+            },
+            "z": {
+                "desc": "Upload typed hiking workout (sample)",
+                "key": "upload_hiking_workout",
+            },
         },
     },
     "6": {
@@ -2017,6 +2037,191 @@ def upload_workout_data(api: Garmin) -> None:
             print("💡 Workout data validation failed")
 
 
+def upload_running_workout_data(api: Garmin) -> None:
+    """Upload a typed running workout."""
+    try:
+        import sys
+        from pathlib import Path
+
+        # Add test_data to path for imports
+        test_data_path = Path(__file__).parent / "test_data"
+        if str(test_data_path) not in sys.path:
+            sys.path.insert(0, str(test_data_path))
+
+        from sample_running_workout import create_sample_running_workout
+
+        print("🏃 Creating and uploading running workout...")
+        workout = create_sample_running_workout()
+        print(f"📤 Uploading workout: {workout.workoutName}")
+
+        result = api.upload_running_workout(workout)
+
+        if result:
+            print("✅ Running workout uploaded successfully!")
+            call_and_display(
+                lambda: result,
+                method_name="upload_running_workout",
+                api_call_desc="api.upload_running_workout(workout)",
+            )
+        else:
+            print("❌ Failed to upload running workout")
+    except ImportError as e:
+        print(f"❌ Error: {e}")
+        print(
+            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
+        )
+    except Exception as e:
+        print(f"❌ Error uploading running workout: {e}")
+
+
+def upload_cycling_workout_data(api: Garmin) -> None:
+    """Upload a typed cycling workout."""
+    try:
+        import sys
+        from pathlib import Path
+
+        # Add test_data to path for imports
+        test_data_path = Path(__file__).parent / "test_data"
+        if str(test_data_path) not in sys.path:
+            sys.path.insert(0, str(test_data_path))
+
+        from sample_cycling_workout import create_sample_cycling_workout
+
+        print("🚴 Creating and uploading cycling workout...")
+        workout = create_sample_cycling_workout()
+        print(f"📤 Uploading workout: {workout.workoutName}")
+
+        result = api.upload_cycling_workout(workout)
+
+        if result:
+            print("✅ Cycling workout uploaded successfully!")
+            call_and_display(
+                lambda: result,
+                method_name="upload_cycling_workout",
+                api_call_desc="api.upload_cycling_workout(workout)",
+            )
+        else:
+            print("❌ Failed to upload cycling workout")
+    except ImportError as e:
+        print(f"❌ Error: {e}")
+        print(
+            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
+        )
+    except Exception as e:
+        print(f"❌ Error uploading cycling workout: {e}")
+
+
+def upload_swimming_workout_data(api: Garmin) -> None:
+    """Upload a typed swimming workout."""
+    try:
+        import sys
+        from pathlib import Path
+
+        # Add test_data to path for imports
+        test_data_path = Path(__file__).parent / "test_data"
+        if str(test_data_path) not in sys.path:
+            sys.path.insert(0, str(test_data_path))
+
+        from sample_swimming_workout import create_sample_swimming_workout
+
+        print("🏊 Creating and uploading swimming workout...")
+        workout = create_sample_swimming_workout()
+        print(f"📤 Uploading workout: {workout.workoutName}")
+
+        result = api.upload_swimming_workout(workout)
+
+        if result:
+            print("✅ Swimming workout uploaded successfully!")
+            call_and_display(
+                lambda: result,
+                method_name="upload_swimming_workout",
+                api_call_desc="api.upload_swimming_workout(workout)",
+            )
+        else:
+            print("❌ Failed to upload swimming workout")
+    except ImportError as e:
+        print(f"❌ Error: {e}")
+        print(
+            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
+        )
+    except Exception as e:
+        print(f"❌ Error uploading swimming workout: {e}")
+
+
+def upload_walking_workout_data(api: Garmin) -> None:
+    """Upload a typed walking workout."""
+    try:
+        import sys
+        from pathlib import Path
+
+        # Add test_data to path for imports
+        test_data_path = Path(__file__).parent / "test_data"
+        if str(test_data_path) not in sys.path:
+            sys.path.insert(0, str(test_data_path))
+
+        from sample_walking_workout import create_sample_walking_workout
+
+        print("🚶 Creating and uploading walking workout...")
+        workout = create_sample_walking_workout()
+        print(f"📤 Uploading workout: {workout.workoutName}")
+
+        result = api.upload_walking_workout(workout)
+
+        if result:
+            print("✅ Walking workout uploaded successfully!")
+            call_and_display(
+                lambda: result,
+                method_name="upload_walking_workout",
+                api_call_desc="api.upload_walking_workout(workout)",
+            )
+        else:
+            print("❌ Failed to upload walking workout")
+    except ImportError as e:
+        print(f"❌ Error: {e}")
+        print(
+            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
+        )
+    except Exception as e:
+        print(f"❌ Error uploading walking workout: {e}")
+
+
+def upload_hiking_workout_data(api: Garmin) -> None:
+    """Upload a typed hiking workout."""
+    try:
+        import sys
+        from pathlib import Path
+
+        # Add test_data to path for imports
+        test_data_path = Path(__file__).parent / "test_data"
+        if str(test_data_path) not in sys.path:
+            sys.path.insert(0, str(test_data_path))
+
+        from sample_hiking_workout import create_sample_hiking_workout
+
+        print("🥾 Creating and uploading hiking workout...")
+        workout = create_sample_hiking_workout()
+        print(f"📤 Uploading workout: {workout.workoutName}")
+
+        result = api.upload_hiking_workout(workout)
+
+        if result:
+            print("✅ Hiking workout uploaded successfully!")
+            call_and_display(
+                lambda: result,
+                method_name="upload_hiking_workout",
+                api_call_desc="api.upload_hiking_workout(workout)",
+            )
+        else:
+            print("❌ Failed to upload hiking workout")
+    except ImportError as e:
+        print(f"❌ Error: {e}")
+        print(
+            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
+        )
+    except Exception as e:
+        print(f"❌ Error uploading hiking workout: {e}")
+
+
 def get_scheduled_workout_by_id_data(api: Garmin) -> None:
     """Get scheduled workout by ID."""
     try:
@@ -3337,6 +3542,11 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_workout_by_id": lambda: get_workout_by_id_data(api),
             "download_workout": lambda: download_workout_data(api),
             "upload_workout": lambda: upload_workout_data(api),
+            "upload_running_workout": lambda: upload_running_workout_data(api),
+            "upload_cycling_workout": lambda: upload_cycling_workout_data(api),
+            "upload_swimming_workout": lambda: upload_swimming_workout_data(api),
+            "upload_walking_workout": lambda: upload_walking_workout_data(api),
+            "upload_hiking_workout": lambda: upload_hiking_workout_data(api),
             "get_scheduled_workout_by_id": lambda: get_scheduled_workout_by_id_data(
                 api
             ),
