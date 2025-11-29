@@ -1,6 +1,6 @@
 [project]
 name = "garminconnect"
-version = "0.2.35"
+version = "0.2.36"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
@@ -54,6 +54,9 @@ dev = [
     "ipykernel",
     "pandas",
     "matplotlib",
+]
+workout = [
+    "pydantic>=2.0.0",
 ]
 linting = [
     "black[jupyter]",
