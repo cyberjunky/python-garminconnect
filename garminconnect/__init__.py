@@ -2110,6 +2110,15 @@ class Garmin:
         logger.debug("Requesting HR time-in-zones for activity id %s", activity_id)
 
         return self.connectapi(url)
+    
+    def get_activity_power_in_timezones(self, activity_id: str) -> dict[str, Any]:
+        """Return activity power in timezones."""
+
+        activity_id = str(activity_id)
+        url = f"{self.garmin_connect_activity}/{activity_id}/powerTimeInZones"
+        logger.debug("Requesting Power time-in-zones for activity id %s", activity_id)
+
+        return self.connectapi(url)
 
     def get_activity(self, activity_id: str) -> dict[str, Any]:
         """Return activity summary, including basic splits."""
