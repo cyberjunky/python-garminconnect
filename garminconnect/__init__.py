@@ -2131,7 +2131,7 @@ class Garmin:
 
         activity_id = str(activity_id)
         maxchart = _validate_positive_integer(maxchart, "maxchart")
-        maxpoly = _validate_positive_integer(maxpoly, "maxpoly")
+        maxpoly = _validate_non_negative_integer(maxpoly, "maxpoly")
         params = {"maxChartSize": str(maxchart), "maxPolylineSize": str(maxpoly)}
         url = f"{self.garmin_connect_activity}/{activity_id}/details"
         logger.debug("Requesting details for activity id %s", activity_id)
