@@ -1,6 +1,7 @@
 # Custom
 your_data/
 pdm.lock
+garth/
 
 # Virtual environments
 .venv/
