@@ -46,6 +46,7 @@ warn_unused_ignores = true
 profile = "black"
 line_length = 88
 known_first_party = "garminconnect"
+skip_glob = ["tests/*", "test_data/*"]
 
 [project.optional-dependencies]
 dev = [
@@ -97,6 +98,8 @@ exclude = [
     ".pytest_cache",
     "build",
     "dist",
+    "tests",
+    "test_data",
 ]
 
 [tool.ruff.lint]
