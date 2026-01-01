@@ -47,7 +47,7 @@ Make your selection:
 - **Daily Health & Activity**: 9 methods (today's health data)
 - **Advanced Health Metrics**: 10 methods (fitness metrics, HRV, VO2)
 - **Historical Data & Trends**: 6 methods (date range queries)
-- **Activities & Workouts**: 26 methods (comprehensive activity and workout management)
+- **Activities & Workouts**: 28 methods (comprehensive activity and workout management)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)

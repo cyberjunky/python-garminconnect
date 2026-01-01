@@ -30,7 +30,6 @@ from typing import Any
 
 import readchar
 import requests
-from garth.exc import GarthException, GarthHTTPError
 
 from garminconnect import (
     Garmin,
@@ -38,6 +37,7 @@ from garminconnect import (
     GarminConnectConnectionError,
     GarminConnectTooManyRequestsError,
 )
+from garth.exc import GarthException, GarthHTTPError
 
 # Configure logging to reduce verbose error output from garminconnect library
 # This prevents double error messages for known API issues
@@ -270,34 +270,42 @@ menu_categories = {
                 "key": "get_activity_hr_in_timezones",
             },
             "c": {
+                "desc": "Get activity power zones",
+                "key": "get_activity_power_in_timezones",
+            },
+            "d": {
+                "desc": "Get cycling FTP (Functional Threshold Power)",
+                "key": "get_cycling_ftp",
+            },
+            "e": {
                 "desc": "Get detailed activity information",
                 "key": "get_activity_details",
             },
-            "d": {"desc": "Get activity gear information", "key": "get_activity_gear"},
-            "e": {"desc": "Get single activity data", "key": "get_activity"},
-            "f": {
+            "f": {"desc": "Get activity gear information", "key": "get_activity_gear"},
+            "g": {"desc": "Get single activity data", "key": "get_activity"},
+            "h": {
                 "desc": "Get strength training exercise sets",
                 "key": "get_activity_exercise_sets",
             },
-            "g": {"desc": "Get workout by ID", "key": "get_workout_by_id"},
-            "h": {"desc": "Download workout to .FIT file", "key": "download_workout"},
-            "i": {
+            "i": {"desc": "Get workout by ID", "key": "get_workout_by_id"},
+            "j": {"desc": "Download workout to .FIT file", "key": "download_workout"},
+            "k": {
                 "desc": f"Upload workout from {config.workoutfile}",
                 "key": "upload_workout",
             },
-            "j": {
+            "l": {
                 "desc": f"Get activities by date range '{config.today.isoformat()}'",
                 "key": "get_activities_by_date",
             },
-            "k": {"desc": "Set activity name", "key": "set_activity_name"},
-            "l": {"desc": "Set activity type", "key": "set_activity_type"},
-            "m": {"desc": "Create manual activity", "key": "create_manual_activity"},
-            "n": {"desc": "Delete activity", "key": "delete_activity"},
-            "o": {
+            "m": {"desc": "Set activity name", "key": "set_activity_name"},
+            "n": {"desc": "Set activity type", "key": "set_activity_type"},
+            "o": {"desc": "Create manual activity", "key": "create_manual_activity"},
+            "p": {"desc": "Delete activity", "key": "delete_activity"},
+            "q": {
                 "desc": "Get scheduled workout by ID",
                 "key": "get_scheduled_workout_by_id",
             },
-            "p": {
+            "r": {
                 "desc": "Count activities for current user",
                 "key": "count_activities",
             },
@@ -1744,6 +1752,33 @@ def get_activity_hr_timezones_data(api: Garmin) -> None:
             print("ℹ️ No activities found")
     except Exception as e:
         print(f"❌ Error getting activity HR timezones: {e}")
+
+
+def get_activity_power_timezones_data(api: Garmin) -> None:
+    """Get activity power timezones for the last activity."""
+    try:
+        activities = api.get_activities(0, 1)
+        if activities:
+            activity_id = activities[0]["activityId"]
+            call_and_display(
+                api.get_activity_power_in_timezones,
+                activity_id,
+                method_name="get_activity_power_in_timezones",
+                api_call_desc=f"api.get_activity_power_in_timezones({activity_id})",
+            )
+        else:
+            print("ℹ️ No activities found")
+    except Exception as e:
+        print(f"❌ Error getting activity power timezones: {e}")
+
+
+def get_cycling_ftp_data(api: Garmin) -> None:
+    """Get cycling Functional Threshold Power (FTP) information."""
+    call_and_display(
+        api.get_cycling_ftp,
+        method_name="get_cycling_ftp",
+        api_call_desc="api.get_cycling_ftp()",
+    )
 
 
 def get_activity_details_data(api: Garmin) -> None:
@@ -3535,6 +3570,10 @@ def execute_api_call(api: Garmin, key: str) -> None:
             ),
             "get_activity_weather": lambda: get_activity_weather_data(api),
             "get_activity_hr_in_timezones": lambda: get_activity_hr_timezones_data(api),
+            "get_activity_power_in_timezones": lambda: get_activity_power_timezones_data(
+                api
+            ),
+            "get_cycling_ftp": lambda: get_cycling_ftp_data(api),
             "get_activity_details": lambda: get_activity_details_data(api),
             "get_activity_gear": lambda: get_activity_gear_data(api),
             "get_activity": lambda: get_single_activity_data(api),
