@@ -10,10 +10,11 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Any
 
-import garth
 import requests
-from garth.exc import GarthException, GarthHTTPError
 from requests import HTTPError
+
+import garth
+from garth.exc import GarthException, GarthHTTPError
 
 from .fit import FitEncoderWeight  # type: ignore
 
@@ -537,11 +538,14 @@ class Garmin:
         """Resume login using Garth."""
         result1, result2 = self.garth.resume_login(client_state, mfa_code)
 
-        if self.garth.profile:
-            profile = self.garth.profile
-            if isinstance(profile, dict):
-                self.display_name = profile.get("displayName")
-                self.full_name = profile.get("fullName")
+        if self.garth.oauth1_token and self.garth.oauth2_token:
+            try:
+                profile = self.garth.profile
+                if profile and isinstance(profile, dict):
+                    self.display_name = profile.get("displayName")
+                    self.full_name = profile.get("fullName")
+            except Exception:
+                logger.debug("Profile fetch failed during resume_login, continuing")
 
         settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
         if settings and isinstance(settings, dict) and "userData" in settings:
