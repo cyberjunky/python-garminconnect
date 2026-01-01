@@ -2114,7 +2114,7 @@ class Garmin:
         logger.debug("Requesting HR time-in-zones for activity id %s", activity_id)
 
         return self.connectapi(url)
-    
+
     def get_activity_power_in_timezones(self, activity_id: str) -> dict[str, Any]:
         """Return activity power in timezones."""
 
@@ -2123,7 +2123,7 @@ class Garmin:
         logger.debug("Requesting Power time-in-zones for activity id %s", activity_id)
 
         return self.connectapi(url)
-    
+
     def get_cycling_ftp(
         self,
     ) -> dict[str, Any] | list[dict[str, Any]]:
@@ -2134,7 +2134,6 @@ class Garmin:
         url = f"{self.garmin_connect_biometric_url}/latestFunctionalThresholdPower/CYCLING"
         logger.debug("Requesting latest cycling FTP")
         return self.connectapi(url)
-
 
     def get_activity(self, activity_id: str) -> dict[str, Any]:
         """Return activity summary, including basic splits."""
