@@ -32,14 +32,14 @@ def _calcCRC(crc: int, byte: int) -> int:
     # now compute checksum of upper four bits of byte
     tmp = table[crc & 0xF]
     crc = (crc >> 4) & 0x0FFF
-    crc = crc ^ tmp ^ table[(byte >> 4) & 0xF]
-    return crc
+    return crc ^ tmp ^ table[(byte >> 4) & 0xF]
 
 
 class FitBaseType:
-    """BaseType Definition
+    """BaseType Definition.
 
-    see FIT Protocol Document(Page.20)"""
+    see FIT Protocol Document(Page.20)
+    """
 
     enum = {
         "#": 0,
@@ -176,7 +176,7 @@ class FitBaseType:
 
     @staticmethod
     def pack(basetype: dict[str, Any], value: Any) -> bytes:
-        """function to avoid DeprecationWarning"""
+        """Function to avoid DeprecationWarning."""
         if basetype["#"] in (1, 2, 3, 4, 5, 6, 10, 11, 12):
             value = int(value)
         fmt = FitBaseType.get_format(basetype)
@@ -390,7 +390,7 @@ class FitEncoder(Fit):
         return pack("H", crc)
 
     def finish(self) -> None:
-        """re-weite file-header, then append crc to end of file"""
+        """re-weite file-header, then append crc to end of file."""
         data_size = self.get_size() - self.HEADER_SIZE
         self.write_header(data_size=data_size)
         crc = self.crc()
@@ -408,8 +408,9 @@ class FitEncoder(Fit):
         return self.buf.getvalue()
 
     def timestamp(self, t: datetime | float) -> float:
-        """the timestamp in fit protocol is seconds since
-        UTC 00:00 Dec 31 1989 (631065600)"""
+        """The timestamp in fit protocol is seconds since
+        UTC 00:00 Dec 31 1989 (631065600).
+        """
         if isinstance(t, datetime):
             t = time.mktime(t.timetuple())
         return t - 631065600

@@ -109,7 +109,6 @@ class Garmin:
         return_on_mfa: bool = False,
     ) -> None:
         """Create a new class instance."""
-
         # Validate input types
         if email is not None and not isinstance(email, str):
             raise ValueError("email must be a string or None")
@@ -154,6 +153,15 @@ class Garmin:
         )
         self.garmin_connect_daily_stats_steps_url = (
             "/usersummary-service/stats/steps/daily"
+        )
+        self.garmin_connect_weekly_stats_steps_url = (
+            "/usersummary-service/stats/steps/weekly"
+        )
+        self.garmin_connect_weekly_stats_stress_url = (
+            "/usersummary-service/stats/stress/weekly"
+        )
+        self.garmin_connect_weekly_stats_intensity_minutes_url = (
+            "/usersummary-service/stats/im/weekly"
         )
         self.garmin_connect_personal_record_url = (
             "/personalrecord-service/personalrecord/prs"
@@ -302,10 +310,9 @@ class Garmin:
             if "oauth" in error_msg and (
                 "oauth1" in error_msg or "oauth2" in error_msg
             ):
-                logger.error("OAuth token refresh failed during API call.")
+                logger.exception("OAuth token refresh failed during API call.")
                 raise GarminConnectAuthenticationError(
-                    "Token refresh failed. Please re-authenticate. "
-                    f"Original error: {e}"
+                    f"Token refresh failed. Please re-authenticate. Original error: {e}"
                 ) from e
             # Re-raise if it's a different AssertionError
             raise
@@ -318,24 +325,23 @@ class Garmin:
             else:
                 status = getattr(getattr(e, "response", None), "status_code", None)
 
-            logger.error(
+            logger.exception(
                 "API call failed for path '%s': %s (status=%s)", path, e, status
             )
             if status == 401:
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
                 ) from e
-            elif status == 429:
+            if status == 429:
                 raise GarminConnectTooManyRequestsError(
                     f"Rate limit exceeded: {e}"
                 ) from e
-            elif status and 400 <= status < 500:
+            if status and 400 <= status < 500:
                 # Client errors (400-499) - API endpoint issues, bad parameters, etc.
                 raise GarminConnectConnectionError(
                     f"API client error ({status}): {e}"
                 ) from e
-            else:
-                raise GarminConnectConnectionError(f"HTTP error: {e}") from e
+            raise GarminConnectConnectionError(f"HTTP error: {e}") from e
         except Exception as e:
             logger.exception("Connection error during connectapi path=%s", path)
             raise GarminConnectConnectionError(f"Connection error: {e}") from e
@@ -356,26 +362,25 @@ class Garmin:
             logger.exception("Download failed for path '%s' (status=%s)", path, status)
             if status == 401:
                 raise GarminConnectAuthenticationError(f"Download error: {e}") from e
-            elif status == 429:
+            if status == 429:
                 raise GarminConnectTooManyRequestsError(f"Download error: {e}") from e
-            elif status and 400 <= status < 500:
+            if status and 400 <= status < 500:
                 # Client errors (400-499) - API endpoint issues, bad parameters, etc.
                 raise GarminConnectConnectionError(
                     f"Download client error ({status}): {e}"
                 ) from e
-            else:
-                raise GarminConnectConnectionError(f"Download error: {e}") from e
+            raise GarminConnectConnectionError(f"Download error: {e}") from e
         except Exception as e:
             logger.exception("Download failed for path '%s'", path)
             raise GarminConnectConnectionError(f"Download error: {e}") from e
 
     def login(self, /, tokenstore: str | None = None) -> tuple[str | None, str | None]:
-        """
-        Log in using Garth.
+        """Log in using Garth.
 
         Returns:
             Tuple[str | None, str | None]: (access_token, refresh_token) when using credential flow;
             (None, None) when loading from tokenstore.
+
         """
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
 
@@ -444,13 +449,12 @@ class Garmin:
                     )
                     # In MFA early-return mode, profile/settings are not loaded yet
                     return token1, token2
-                else:
-                    token1, token2 = self.garth.login(
-                        self.username,
-                        self.password,
-                        prompt_mfa=self.prompt_mfa,
-                    )
-                    # Continue to load profile/settings below
+                token1, token2 = self.garth.login(
+                    self.username,
+                    self.password,
+                    prompt_mfa=self.prompt_mfa,
+                )
+                # Continue to load profile/settings below
 
             # Ensure profile is loaded (tokenstore path may not populate it)
             if not getattr(self.garth, "profile", None):
@@ -489,14 +493,14 @@ class Garmin:
 
         except (HTTPError, requests.exceptions.HTTPError, GarthException) as e:
             status = getattr(getattr(e, "response", None), "status_code", None)
-            logger.error("Login failed: %s (status=%s)", e, status)
+            logger.exception("Login failed: %s (status=%s)", e, status)
 
             # Check status code first
             if status == 401:
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
                 ) from e
-            elif status == 429:
+            if status == 429:
                 raise GarminConnectTooManyRequestsError(
                     f"Rate limit exceeded: {e}"
                 ) from e
@@ -554,25 +558,20 @@ class Garmin:
 
     def get_full_name(self) -> str | None:
         """Return full name."""
-
         return self.full_name
 
     def get_unit_system(self) -> str | None:
         """Return unit system."""
-
         return self.unit_system
 
     def get_stats(self, cdate: str) -> dict[str, Any]:
-        """
-        Return user activity summary for 'cdate' format 'YYYY-MM-DD'
+        """Return user activity summary for 'cdate' format 'YYYY-MM-DD'
         (compat for garminconnect).
         """
-
         return self.get_user_summary(cdate)
 
     def get_user_summary(self, cdate: str) -> dict[str, Any]:
         """Return user activity summary for 'cdate' format 'YYYY-MM-DD'."""
-
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
 
@@ -592,7 +591,6 @@ class Garmin:
 
     def get_steps_data(self, cdate: str) -> list[dict[str, Any]]:
         """Fetch available steps data 'cDate' format 'YYYY-MM-DD'."""
-
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
 
@@ -610,7 +608,6 @@ class Garmin:
 
     def get_floors(self, cdate: str) -> dict[str, Any]:
         """Fetch available floors data 'cDate' format 'YYYY-MM-DD'."""
-
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
 
@@ -631,7 +628,6 @@ class Garmin:
         exceeding 28 days, this method automatically splits the range into chunks
         and makes multiple API calls, then merges the results.
         """
-
         # Validate inputs
         start = _validate_date_format(start, "start")
         end = _validate_date_format(end, "end")
@@ -654,7 +650,7 @@ class Garmin:
 
         # For ranges > 28 days, split into chunks
         logger.debug(
-            f"Date range ({days_diff} days) exceeds 28-day limit, " "chunking requests"
+            f"Date range ({days_diff} days) exceeds 28-day limit, chunking requests"
         )
         all_results = []
         current_start = start_date
@@ -683,6 +679,76 @@ class Garmin:
 
         return all_results
 
+    def get_weekly_steps(self, end: str, weeks: int = 52) -> list[dict[str, Any]]:
+        """Fetch weekly steps aggregates.
+
+        Args:
+            end: End date string in format 'YYYY-MM-DD'
+            weeks: Number of weeks to fetch (default 52 = 1 year)
+
+        Returns:
+            List of weekly step aggregates containing:
+            - totalSteps: Total steps for the week
+            - averageSteps: Average daily steps
+            - totalDistance: Total distance in meters
+            - averageDistance: Average daily distance
+            - wellnessDataDaysCount: Days with data
+
+        """
+        end = _validate_date_format(end, "end")
+        weeks = _validate_positive_integer(weeks, "weeks")
+
+        url = f"{self.garmin_connect_weekly_stats_steps_url}/{end}/{weeks}"
+        logger.debug("Requesting weekly steps data for %d weeks ending %s", weeks, end)
+
+        return self.connectapi(url)
+
+    def get_weekly_stress(self, end: str, weeks: int = 52) -> list[dict[str, Any]]:
+        """Fetch weekly stress aggregates.
+
+        Args:
+            end: End date string in format 'YYYY-MM-DD'
+            weeks: Number of weeks to fetch (default 52 = 1 year)
+
+        Returns:
+            List of weekly stress aggregates containing:
+            - value: Overall stress value for the week
+            - calendarDate: Week start date
+
+        """
+        end = _validate_date_format(end, "end")
+        weeks = _validate_positive_integer(weeks, "weeks")
+
+        url = f"{self.garmin_connect_weekly_stats_stress_url}/{end}/{weeks}"
+        logger.debug("Requesting weekly stress data for %d weeks ending %s", weeks, end)
+
+        return self.connectapi(url)
+
+    def get_weekly_intensity_minutes(
+        self, start: str, end: str
+    ) -> list[dict[str, Any]]:
+        """Fetch weekly intensity minutes aggregates.
+
+        Args:
+            start: Start date string in format 'YYYY-MM-DD'
+            end: End date string in format 'YYYY-MM-DD'
+
+        Returns:
+            List of weekly intensity minute aggregates containing:
+            - weeklyGoal: Weekly intensity minutes goal
+            - moderateValue: Moderate intensity minutes
+            - vigorousValue: Vigorous intensity minutes
+            - calendarDate: Week start date
+
+        """
+        start = _validate_date_format(start, "start")
+        end = _validate_date_format(end, "end")
+
+        url = f"{self.garmin_connect_weekly_stats_intensity_minutes_url}/{start}/{end}"
+        logger.debug("Requesting weekly intensity minutes from %s to %s", start, end)
+
+        return self.connectapi(url)
+
     def get_heart_rates(self, cdate: str) -> dict[str, Any]:
         """Fetch available heart rates data 'cDate' format 'YYYY-MM-DD'.
 
@@ -696,8 +762,8 @@ class Garmin:
             ValueError: If cdate format is invalid
             GarminConnectConnectionError: If no data received
             GarminConnectAuthenticationError: If authentication fails
-        """
 
+        """
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
 
@@ -714,7 +780,6 @@ class Garmin:
 
     def get_stats_and_body(self, cdate: str) -> dict[str, Any]:
         """Return activity data and body composition (compat for garminconnect)."""
-
         stats = self.get_stats(cdate)
         body = self.get_body_composition(cdate)
         body_avg = body.get("totalAverage") or {}
@@ -725,11 +790,9 @@ class Garmin:
     def get_body_composition(
         self, startdate: str, enddate: str | None = None
     ) -> dict[str, Any]:
-        """
-        Return available body composition data for 'startdate' format
+        """Return available body composition data for 'startdate' format
         'YYYY-MM-DD' through enddate 'YYYY-MM-DD'.
         """
-
         startdate = _validate_date_format(startdate, "startdate")
         enddate = (
             startdate if enddate is None else _validate_date_format(enddate, "enddate")
@@ -793,8 +856,7 @@ class Garmin:
     def add_weigh_in(
         self, weight: int | float, unitKey: str = "kg", timestamp: str = ""
     ) -> dict[str, Any] | None:
-        """Add a weigh-in (default to kg)"""
-
+        """Add a weigh-in (default to kg)."""
         # Validate inputs
         weight = _validate_positive_number(weight, "weight")
 
@@ -827,8 +889,7 @@ class Garmin:
         dateTimestamp: str = "",
         gmtTimestamp: str = "",
     ) -> dict[str, Any] | None:
-        """Add a weigh-in with explicit timestamps (default to kg)"""
-
+        """Add a weigh-in with explicit timestamps (default to kg)."""
         url = f"{self.garmin_connect_weight_url}/user-weight"
 
         if unitKey not in VALID_WEIGHT_UNITS:
@@ -867,7 +928,6 @@ class Garmin:
 
     def get_weigh_ins(self, startdate: str, enddate: str) -> dict[str, Any]:
         """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
-
         startdate = _validate_date_format(startdate, "startdate")
         enddate = _validate_date_format(enddate, "enddate")
         url = f"{self.garmin_connect_weight_url}/weight/range/{startdate}/{enddate}"
@@ -878,7 +938,6 @@ class Garmin:
 
     def get_daily_weigh_ins(self, cdate: str) -> dict[str, Any]:
         """Get weigh-ins for 'cdate' format 'YYYY-MM-DD'."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_weight_url}/weight/dayview/{cdate}"
         params = {"includeAll": True}
@@ -900,17 +959,15 @@ class Garmin:
         )
 
     def delete_weigh_ins(self, cdate: str, delete_all: bool = False) -> int | None:
-        """
-        Delete weigh-in for 'cdate' format 'YYYY-MM-DD'.
+        """Delete weigh-in for 'cdate' format 'YYYY-MM-DD'.
         Includes option to delete all weigh-ins for that date.
         """
-
         daily_weigh_ins = self.get_daily_weigh_ins(cdate)
         weigh_ins = daily_weigh_ins.get("dateWeightList", [])
         if not weigh_ins or len(weigh_ins) == 0:
             logger.warning(f"No weigh-ins found on {cdate}")
             return None
-        elif len(weigh_ins) > 1:
+        if len(weigh_ins) > 1:
             logger.warning(f"Multiple weigh-ins found for {cdate}")
             if not delete_all:
                 logger.warning(
@@ -926,11 +983,9 @@ class Garmin:
     def get_body_battery(
         self, startdate: str, enddate: str | None = None
     ) -> list[dict[str, Any]]:
+        """Return body battery values by day for 'startdate' format
+        'YYYY-MM-DD' through enddate 'YYYY-MM-DD'.
         """
-        Return body battery values by day for 'startdate' format
-        'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
-        """
-
         startdate = _validate_date_format(startdate, "startdate")
         if enddate is None:
             enddate = startdate
@@ -943,12 +998,10 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_body_battery_events(self, cdate: str) -> list[dict[str, Any]]:
-        """
-        Return body battery events for date 'cdate' format 'YYYY-MM-DD'.
+        """Return body battery events for date 'cdate' format 'YYYY-MM-DD'.
         The return value is a list of dictionaries, where each dictionary contains event data for a specific event.
-        Events can include sleep, recorded activities, auto-detected activities, and naps
+        Events can include sleep, recorded activities, auto-detected activities, and naps.
         """
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_body_battery_events_url}/{cdate}"
         logger.debug("Requesting body battery event data")
@@ -963,10 +1016,7 @@ class Garmin:
         timestamp: str = "",
         notes: str = "",
     ) -> dict[str, Any]:
-        """
-        Add blood pressure measurement
-        """
-
+        """Add blood pressure measurement."""
         url = f"{self.garmin_connect_set_blood_pressure_endpoint}"
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         # Apply timezone offset to get UTC/GMT time
@@ -994,11 +1044,9 @@ class Garmin:
     def get_blood_pressure(
         self, startdate: str, enddate: str | None = None
     ) -> dict[str, Any]:
+        """Returns blood pressure by day for 'startdate' format
+        'YYYY-MM-DD' through enddate 'YYYY-MM-DD'.
         """
-        Returns blood pressure by day for 'startdate' format
-        'YYYY-MM-DD' through enddate 'YYYY-MM-DD'
-        """
-
         startdate = _validate_date_format(startdate, "startdate")
         if enddate is None:
             enddate = startdate
@@ -1024,7 +1072,6 @@ class Garmin:
 
     def get_max_metrics(self, cdate: str) -> dict[str, Any]:
         """Return available max metric data for 'cdate' format 'YYYY-MM-DD'."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_metrics_url}/{cdate}/{cdate}"
         logger.debug("Requesting max metrics")
@@ -1039,15 +1086,13 @@ class Garmin:
         end_date: str | date | None = None,
         aggregation: str = "daily",
     ) -> dict[str, Any]:
-        """
-        Returns Running Lactate Threshold information, including heart rate, power, and speed
+        """Returns Running Lactate Threshold information, including heart rate, power, and speed.
 
         :param bool (Required) - latest: Whether to query for the latest Lactate Threshold info or a range.  False if querying a range
         :param date (Optional) - start_date: The first date in the range to query, format 'YYYY-MM-DD'.  Required if `latest` is False.  Ignored if `latest` is True
         :param date (Optional) - end_date: The last date in the range to query, format 'YYYY-MM-DD'. Defaults to current data. Ignored if `latest` is True
         :param str (Optional) - aggregation: How to aggregate the data. Must be one of `daily`, `weekly`, `monthly`, `yearly`.
         """
-
         if latest:
             speed_and_heart_rate_url = (
                 f"{self.garmin_connect_biometric_url}/latestLactateThreshold"
@@ -1141,9 +1186,8 @@ class Garmin:
         """Add hydration data in ml.  Defaults to current date and current timestamp if left empty
         :param float required - value_in_ml: The number of ml of water you wish to add (positive) or subtract (negative)
         :param timestamp optional - timestamp: The timestamp of the hydration update, format 'YYYY-MM-DDThh:mm:ss.ms' Defaults to current timestamp
-        :param date optional - cdate: The date of the weigh in, format 'YYYY-MM-DD'. Defaults to current date
+        :param date optional - cdate: The date of the weigh in, format 'YYYY-MM-DD'. Defaults to current date.
         """
-
         # Validate inputs
         if not isinstance(value_in_ml, numbers.Real):
             raise ValueError("value_in_ml must be a number")
@@ -1213,7 +1257,6 @@ class Garmin:
 
     def get_hydration_data(self, cdate: str) -> dict[str, Any]:
         """Return available hydration data 'cdate' format 'YYYY-MM-DD'."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_hydration_url}/{cdate}"
         logger.debug("Requesting hydration data")
@@ -1222,7 +1265,6 @@ class Garmin:
 
     def get_respiration_data(self, cdate: str) -> dict[str, Any]:
         """Return available respiration data 'cdate' format 'YYYY-MM-DD'."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_respiration_url}/{cdate}"
         logger.debug("Requesting respiration data")
@@ -1231,7 +1273,6 @@ class Garmin:
 
     def get_spo2_data(self, cdate: str) -> dict[str, Any]:
         """Return available SpO2 data 'cdate' format 'YYYY-MM-DD'."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_spo2_url}/{cdate}"
         logger.debug("Requesting SpO2 data")
@@ -1240,7 +1281,6 @@ class Garmin:
 
     def get_intensity_minutes_data(self, cdate: str) -> dict[str, Any]:
         """Return available Intensity Minutes data 'cdate' format 'YYYY-MM-DD'."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_intensity_minutes}/{cdate}"
         logger.debug("Requesting Intensity Minutes data")
@@ -1249,7 +1289,6 @@ class Garmin:
 
     def get_all_day_stress(self, cdate: str) -> dict[str, Any]:
         """Return available all day stress data 'cdate' format 'YYYY-MM-DD'."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_stress_url}/{cdate}"
         logger.debug("Requesting all day stress data")
@@ -1257,11 +1296,9 @@ class Garmin:
         return self.connectapi(url)
 
     def get_all_day_events(self, cdate: str) -> dict[str, Any]:
+        """Return available daily events data 'cdate' format 'YYYY-MM-DD'.
+        Includes autodetected activities, even if not recorded on the watch.
         """
-        Return available daily events data 'cdate' format 'YYYY-MM-DD'.
-        Includes autodetected activities, even if not recorded on the watch
-        """
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_daily_events_url}?calendarDate={cdate}"
         logger.debug("Requesting all day events data")
@@ -1270,7 +1307,6 @@ class Garmin:
 
     def get_personal_record(self) -> dict[str, Any]:
         """Return personal records for current user."""
-
         url = f"{self.garmin_connect_personal_record_url}/{self.display_name}"
         logger.debug("Requesting personal records for user")
 
@@ -1278,7 +1314,6 @@ class Garmin:
 
     def get_earned_badges(self) -> list[dict[str, Any]]:
         """Return earned badges for current user."""
-
         url = self.garmin_connect_earned_badges_url
         logger.debug("Requesting earned badges for user")
 
@@ -1286,7 +1321,6 @@ class Garmin:
 
     def get_available_badges(self) -> list[dict[str, Any]]:
         """Return available badges for current user."""
-
         url = self.garmin_connect_available_badges_url
         logger.debug("Requesting available badges for user")
 
@@ -1294,7 +1328,6 @@ class Garmin:
 
     def get_in_progress_badges(self) -> list[dict[str, Any]]:
         """Return in progress badges for current user."""
-
         logger.debug("Requesting in progress badges for user")
 
         earned_badges = self.get_earned_badges()
@@ -1326,7 +1359,6 @@ class Garmin:
 
     def get_adhoc_challenges(self, start: int, limit: int) -> dict[str, Any]:
         """Return adhoc challenges for current user."""
-
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_adhoc_challenges_url
@@ -1337,7 +1369,6 @@ class Garmin:
 
     def get_badge_challenges(self, start: int, limit: int) -> dict[str, Any]:
         """Return badge challenges for current user."""
-
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_badge_challenges_url
@@ -1348,7 +1379,6 @@ class Garmin:
 
     def get_available_badge_challenges(self, start: int, limit: int) -> dict[str, Any]:
         """Return available badge challenges."""
-
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_available_badge_challenges_url
@@ -1361,7 +1391,6 @@ class Garmin:
         self, start: int, limit: int
     ) -> dict[str, Any]:
         """Return badge non-completed challenges for current user."""
-
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_non_completed_badge_challenges_url
@@ -1374,7 +1403,6 @@ class Garmin:
         self, start: int, limit: int
     ) -> dict[str, Any]:
         """Return in-progress virtual challenges for current user."""
-
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_inprogress_virtual_challenges_url
@@ -1385,7 +1413,6 @@ class Garmin:
 
     def get_sleep_data(self, cdate: str) -> dict[str, Any]:
         """Return sleep data for current user."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_sleep_url}/{self.display_name}"
         params = {"date": cdate, "nonSleepBufferMinutes": 60}
@@ -1395,7 +1422,6 @@ class Garmin:
 
     def get_stress_data(self, cdate: str) -> dict[str, Any]:
         """Return stress data for current user."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_stress_url}/{cdate}"
         logger.debug("Requesting stress data")
@@ -1404,7 +1430,6 @@ class Garmin:
 
     def get_lifestyle_logging_data(self, cdate: str) -> dict[str, Any]:
         """Return lifestyle logging data for current user."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_lifestyle_logging_url}/{cdate}"
         logger.debug("Requesting lifestyle logging data")
@@ -1413,7 +1438,6 @@ class Garmin:
 
     def get_rhr_day(self, cdate: str) -> dict[str, Any]:
         """Return resting heartrate data for current user."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_rhr_url}/{self.display_name}"
         params = {
@@ -1427,7 +1451,6 @@ class Garmin:
 
     def get_hrv_data(self, cdate: str) -> dict[str, Any] | None:
         """Return Heart Rate Variability (hrv) data for current user."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_hrv_url}/{cdate}"
         logger.debug("Requesting Heart Rate Variability (hrv) data")
@@ -1436,23 +1459,70 @@ class Garmin:
 
     def get_training_readiness(self, cdate: str) -> dict[str, Any]:
         """Return training readiness data for current user."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_training_readiness_url}/{cdate}"
         logger.debug("Requesting training readiness data")
 
         return self.connectapi(url)
 
+    def get_morning_training_readiness(self, cdate: str) -> dict[str, Any] | None:
+        """Return morning training readiness data for current user.
+
+        This returns the Training Readiness score calculated immediately after
+        waking up, which is shown in Garmin's Morning Report feature. It filters
+        for entries with inputContext == 'AFTER_WAKEUP_RESET'.
+
+        Args:
+            cdate: Date string in format 'YYYY-MM-DD'
+
+        Returns:
+            Dictionary containing morning training readiness data, or None if
+            no morning data is available for the specified date.
+
+        Note:
+            Not all devices/firmware versions populate the inputContext field.
+            If inputContext is null for all entries, this method returns the
+            first entry as a fallback (typically the morning reading).
+
+        """
+        data = self.get_training_readiness(cdate)
+
+        if not data:
+            return None
+
+        # If response is a list, search for morning reading
+        if isinstance(data, list):
+            # First try to find entry with AFTER_WAKEUP_RESET context
+            morning_entry = next(
+                (
+                    entry
+                    for entry in data
+                    if entry.get("inputContext") == "AFTER_WAKEUP_RESET"
+                ),
+                None,
+            )
+
+            # If no explicit morning context, return first entry as fallback
+            # (typically the morning reading is first in the list)
+            if morning_entry is None and data:
+                logger.debug(
+                    "No AFTER_WAKEUP_RESET context found, using first entry as fallback"
+                )
+                return data[0]
+
+            return morning_entry
+
+        # If response is a single dict, return it directly
+        return data
+
     def get_endurance_score(
         self, startdate: str, enddate: str | None = None
     ) -> dict[str, Any]:
-        """
-        Return endurance score by day for 'startdate' format 'YYYY-MM-DD'
+        """Return endurance score by day for 'startdate' format 'YYYY-MM-DD'
         through enddate 'YYYY-MM-DD'.
         Using a single day returns the precise values for that day.
         Using a range returns the aggregated weekly values for that week.
         """
-
         startdate = _validate_date_format(startdate, "startdate")
         if enddate is None:
             url = self.garmin_connect_endurance_score_url
@@ -1460,17 +1530,16 @@ class Garmin:
             logger.debug("Requesting endurance score data for a single day")
 
             return self.connectapi(url, params=params)
-        else:
-            url = f"{self.garmin_connect_endurance_score_url}/stats"
-            enddate = _validate_date_format(enddate, "enddate")
-            params = {
-                "startDate": str(startdate),
-                "endDate": str(enddate),
-                "aggregation": "weekly",
-            }
-            logger.debug("Requesting endurance score data for a range of days")
+        url = f"{self.garmin_connect_endurance_score_url}/stats"
+        enddate = _validate_date_format(enddate, "enddate")
+        params = {
+            "startDate": str(startdate),
+            "endDate": str(enddate),
+            "aggregation": "weekly",
+        }
+        logger.debug("Requesting endurance score data for a range of days")
 
-            return self.connectapi(url, params=params)
+        return self.connectapi(url, params=params)
 
     def get_race_predictions(
         self,
@@ -1478,11 +1547,10 @@ class Garmin:
         enddate: str | None = None,
         _type: str | None = None,
     ) -> dict[str, Any]:
-        """
-        Return race predictions for the 5k, 10k, half marathon and marathon.
+        """Return race predictions for the 5k, 10k, half marathon and marathon.
         Accepts either 0 parameters or all three:
         If all parameters are empty, returns the race predictions for the current date
-        Or returns the race predictions for each day or month in the range provided
+        Or returns the race predictions for each day or month in the range provided.
 
         Keyword Arguments:
         'startdate' the date of the earliest race predictions
@@ -1490,8 +1558,8 @@ class Garmin:
         'enddate' the date of the last race predictions
         '_type' either 'daily' (the predictions for each day in the range) or
         'monthly' (the aggregated monthly prediction for each month in the range)
-        """
 
+        """
         valid = {"daily", "monthly", None}
         if _type not in valid:
             raise ValueError(f"results: _type must be one of {valid!r}.")
@@ -1502,7 +1570,7 @@ class Garmin:
             )
             return self.connectapi(url)
 
-        elif _type is not None and startdate is not None and enddate is not None:
+        if _type is not None and startdate is not None and enddate is not None:
             startdate = _validate_date_format(startdate, "startdate")
             enddate = _validate_date_format(enddate, "enddate")
             if (
@@ -1518,12 +1586,10 @@ class Garmin:
             params = {"fromCalendarDate": startdate, "toCalendarDate": enddate}
             return self.connectapi(url, params=params)
 
-        else:
-            raise ValueError("you must either provide all parameters or no parameters")
+        raise ValueError("you must either provide all parameters or no parameters")
 
     def get_training_status(self, cdate: str) -> dict[str, Any]:
         """Return training status data for current user."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_training_status_url}/{cdate}"
         logger.debug("Requesting training status data")
@@ -1532,7 +1598,6 @@ class Garmin:
 
     def get_fitnessage_data(self, cdate: str) -> dict[str, Any]:
         """Return Fitness Age data for current user."""
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_fitnessage}/{cdate}"
         logger.debug("Requesting Fitness Age data")
@@ -1542,11 +1607,9 @@ class Garmin:
     def get_hill_score(
         self, startdate: str, enddate: str | None = None
     ) -> dict[str, Any]:
+        """Return hill score by day from 'startdate' format 'YYYY-MM-DD'
+        to enddate 'YYYY-MM-DD'.
         """
-        Return hill score by day from 'startdate' format 'YYYY-MM-DD'
-        to enddate 'YYYY-MM-DD'
-        """
-
         if enddate is None:
             url = self.garmin_connect_hill_score_url
             startdate = _validate_date_format(startdate, "startdate")
@@ -1555,22 +1618,20 @@ class Garmin:
 
             return self.connectapi(url, params=params)
 
-        else:
-            url = f"{self.garmin_connect_hill_score_url}/stats"
-            startdate = _validate_date_format(startdate, "startdate")
-            enddate = _validate_date_format(enddate, "enddate")
-            params = {
-                "startDate": str(startdate),
-                "endDate": str(enddate),
-                "aggregation": "daily",
-            }
-            logger.debug("Requesting hill score data for a range of days")
+        url = f"{self.garmin_connect_hill_score_url}/stats"
+        startdate = _validate_date_format(startdate, "startdate")
+        enddate = _validate_date_format(enddate, "enddate")
+        params = {
+            "startDate": str(startdate),
+            "endDate": str(enddate),
+            "aggregation": "daily",
+        }
+        logger.debug("Requesting hill score data for a range of days")
 
-            return self.connectapi(url, params=params)
+        return self.connectapi(url, params=params)
 
     def get_devices(self) -> list[dict[str, Any]]:
         """Return available devices for the current user account."""
-
         url = self.garmin_connect_devices_url
         logger.debug("Requesting devices")
 
@@ -1578,7 +1639,6 @@ class Garmin:
 
     def get_device_settings(self, device_id: str) -> dict[str, Any]:
         """Return device settings for device with 'device_id'."""
-
         url = f"{self.garmin_connect_device_url}/device-info/settings/{device_id}"
         logger.debug("Requesting device settings")
 
@@ -1588,7 +1648,6 @@ class Garmin:
         """Return detailed information around primary training devices, included the specified device and the
         priority of all devices.
         """
-
         url = self.garmin_connect_primary_device_url
         logger.debug("Requesting primary training device information")
 
@@ -1597,7 +1656,7 @@ class Garmin:
     def get_device_solar_data(
         self, device_id: str, startdate: str, enddate: str | None = None
     ) -> list[dict[str, Any]]:
-        """Return solar data for compatible device with 'device_id'"""
+        """Return solar data for compatible device with 'device_id'."""
         if enddate is None:
             enddate = startdate
             single_day = True
@@ -1617,7 +1676,6 @@ class Garmin:
 
     def get_device_alarms(self) -> list[Any]:
         """Get list of active alarms from all devices."""
-
         logger.debug("Requesting device alarms")
 
         alarms = []
@@ -1631,7 +1689,6 @@ class Garmin:
 
     def get_device_last_used(self) -> dict[str, Any]:
         """Return device last used."""
-
         url = f"{self.garmin_connect_device_url}/mylastused"
         logger.debug("Requesting device last used")
 
@@ -1639,7 +1696,6 @@ class Garmin:
 
     def count_activities(self) -> int:
         """Return total number of activities for the current user account."""
-
         url = f"{self.garmin_connect_activities_count}"
         logger.debug("Requesting activities count")
 
@@ -1654,14 +1710,12 @@ class Garmin:
         limit: int = 20,
         activitytype: str | None = None,
     ) -> dict[str, Any] | list[Any]:
-        """
-        Return available activities.
+        """Return available activities.
         :param start: Starting activity offset, where 0 means the most recent activity
         :param limit: Number of activities to return
         :param activitytype: (Optional) Filter activities by type
-        :return: List of activities from Garmin
+        :return: List of activities from Garmin.
         """
-
         # Validate inputs
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
@@ -1686,7 +1740,6 @@ class Garmin:
 
     def get_activities_fordate(self, fordate: str) -> dict[str, Any]:
         """Return available activities for date."""
-
         fordate = _validate_date_format(fordate, "fordate")
         url = f"{self.garmin_connect_activity_fordate}/{fordate}"
         logger.debug("Requesting activities for date %s", fordate)
@@ -1695,7 +1748,6 @@ class Garmin:
 
     def set_activity_name(self, activity_id: str, title: str) -> Any:
         """Set name for activity with id."""
-
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {"activityId": activity_id, "activityName": title}
 
@@ -1734,15 +1786,14 @@ class Garmin:
         duration_min: int,
         activity_name: str,
     ) -> Any:
-        """
-        Create a private activity manually with a few basic parameters.
+        """Create a private activity manually with a few basic parameters.
         type_key - Garmin field representing type of activity. See https://connect.garmin.com/modern/main/js/properties/activity_types/activity_types.properties
                     Value to use is the key without 'activity_type_' prefix, e.g. 'resort_skiing'
         start_datetime - timestamp in this pattern "2023-12-02T10:00:00.000"
         time_zone - local timezone of the activity, e.g. 'Europe/Paris'
         distance_km - distance of the activity in kilometers
         duration_min - duration of the activity in minutes
-        activity_name - the title
+        activity_name - the title.
         """
         payload = {
             "activityTypeDTO": {"typeKey": type_key},
@@ -1762,13 +1813,10 @@ class Garmin:
 
     def get_last_activity(self) -> dict[str, Any] | None:
         """Return last activity."""
-
         activities = self.get_activities(0, 1)
         if activities and isinstance(activities, list) and len(activities) > 0:
             return activities[-1]
-        elif (
-            activities and isinstance(activities, dict) and "activityList" in activities
-        ):
+        if activities and isinstance(activities, dict) and "activityList" in activities:
             activity_list = activities["activityList"]
             if activity_list and len(activity_list) > 0:
                 return activity_list[-1]
@@ -1830,8 +1878,7 @@ class Garmin:
             )
 
     def delete_activity(self, activity_id: str) -> Any:
-        """Delete activity with specified id"""
-
+        """Delete activity with specified id."""
         url = f"{self.garmin_connect_delete_activity_url}/{activity_id}"
         logger.debug("Deleting activity with id %s", activity_id)
 
@@ -1849,8 +1896,7 @@ class Garmin:
         activitytype: str | None = None,
         sortorder: str | None = None,
     ) -> list[dict[str, Any]]:
-        """
-        Fetch available activities between specific dates
+        """Fetch available activities between specific dates
         :param startdate: String in the format YYYY-MM-DD
         :param enddate: (Optional) String in the format YYYY-MM-DD
         :param activitytype: (Optional) Type of activity you are searching
@@ -1858,9 +1904,8 @@ class Garmin:
                              multi_sport, fitness_equipment, hiking, walking, other]
         :param sortorder: (Optional) sorting direction. By default, Garmin uses descending order by startLocal field.
                           Use "asc" to get activities from oldest to newest.
-        :return: list of JSON activities
+        :return: list of JSON activities.
         """
-
         activities = []
         start = 0
         limit = 20
@@ -1903,16 +1948,14 @@ class Garmin:
         metric: str = "distance",
         groupbyactivities: bool = True,
     ) -> dict[str, Any]:
-        """
-        Fetch progress summary data between specific dates
+        """Fetch progress summary data between specific dates
         :param startdate: String in the format YYYY-MM-DD
         :param enddate: String in the format YYYY-MM-DD
         :param metric: metric to be calculated in the summary:
             "elevationGain", "duration", "distance", "movingDuration"
         :param groupbyactivities: group the summary by activity type
-        :return: list of JSON activities with their aggregated progress summary
+        :return: list of JSON activities with their aggregated progress summary.
         """
-
         url = self.garmin_connect_fitnessstats
         startdate = _validate_date_format(startdate, "startdate")
         enddate = _validate_date_format(enddate, "enddate")
@@ -1935,25 +1978,23 @@ class Garmin:
         return self.connectapi(url)
 
     def get_goals(
-        self, status: str = "active", start: int = 1, limit: int = 30
+        self, status: str = "active", start: int = 0, limit: int = 30
     ) -> list[dict[str, Any]]:
-        """
-        Fetch all goals based on status
+        """Fetch all goals based on status
         :param status: Status of goals (valid options are "active", "future", or "past")
         :type status: str
         :param start: Initial goal index
         :type start: int
         :param limit: Pagination limit when retrieving goals
         :type limit: int
-        :return: list of goals in JSON format
+        :return: list of goals in JSON format.
         """
-
         goals = []
         url = self.garmin_connect_goals_url
         valid_statuses = {"active", "future", "past"}
         if status not in valid_statuses:
             raise ValueError(f"status must be one of {valid_statuses}")
-        start = _validate_positive_integer(start, "start")
+        start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         params = {
             "status": status,
@@ -2002,8 +2043,7 @@ class Garmin:
 
     def get_gear_defaults(self, userProfileNumber: str) -> dict[str, Any]:
         url = (
-            f"{self.garmin_connect_gear_baseurl}/user/"
-            f"{userProfileNumber}/activityTypes"
+            f"{self.garmin_connect_gear_baseurl}/user/{userProfileNumber}/activityTypes"
         )
         logger.debug("Requesting gear defaults for user %s", userProfileNumber)
         return self.connectapi(url)
@@ -2047,18 +2087,17 @@ class Garmin:
         activity_id: str,
         dl_fmt: ActivityDownloadFormat = ActivityDownloadFormat.TCX,
     ) -> bytes:
-        """
-        Downloads activity in requested format and returns the raw bytes. For
+        """Downloads activity in requested format and returns the raw bytes. For
         "Original" will return the zip file content, up to user to extract it.
         "CSV" will return a csv of the splits.
         """
         activity_id = str(activity_id)
         urls = {
-            Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.garmin_connect_fit_download}/{activity_id}",  # noqa
-            Garmin.ActivityDownloadFormat.TCX: f"{self.garmin_connect_tcx_download}/{activity_id}",  # noqa
-            Garmin.ActivityDownloadFormat.GPX: f"{self.garmin_connect_gpx_download}/{activity_id}",  # noqa
-            Garmin.ActivityDownloadFormat.KML: f"{self.garmin_connect_kml_download}/{activity_id}",  # noqa
-            Garmin.ActivityDownloadFormat.CSV: f"{self.garmin_connect_csv_download}/{activity_id}",  # noqa
+            Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.garmin_connect_fit_download}/{activity_id}",
+            Garmin.ActivityDownloadFormat.TCX: f"{self.garmin_connect_tcx_download}/{activity_id}",
+            Garmin.ActivityDownloadFormat.GPX: f"{self.garmin_connect_gpx_download}/{activity_id}",
+            Garmin.ActivityDownloadFormat.KML: f"{self.garmin_connect_kml_download}/{activity_id}",
+            Garmin.ActivityDownloadFormat.CSV: f"{self.garmin_connect_csv_download}/{activity_id}",
         }
         if dl_fmt not in urls:
             raise ValueError(f"unexpected value {dl_fmt} for dl_fmt")
@@ -2070,7 +2109,6 @@ class Garmin:
 
     def get_activity_splits(self, activity_id: str) -> dict[str, Any]:
         """Return activity splits."""
-
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}/splits"
         logger.debug("Requesting splits for activity id %s", activity_id)
@@ -2079,8 +2117,8 @@ class Garmin:
 
     def get_activity_typed_splits(self, activity_id: str) -> dict[str, Any]:
         """Return typed activity splits. Contains similar info to `get_activity_splits`, but for certain activity types
-        (e.g., Bouldering), this contains more detail."""
-
+        (e.g., Bouldering), this contains more detail.
+        """
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}/typedsplits"
         logger.debug("Requesting typed splits for activity id %s", activity_id)
@@ -2089,7 +2127,6 @@ class Garmin:
 
     def get_activity_split_summaries(self, activity_id: str) -> dict[str, Any]:
         """Return activity split summaries."""
-
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}/split_summaries"
         logger.debug("Requesting split summaries for activity id %s", activity_id)
@@ -2098,7 +2135,6 @@ class Garmin:
 
     def get_activity_weather(self, activity_id: str) -> dict[str, Any]:
         """Return activity weather."""
-
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}/weather"
         logger.debug("Requesting weather for activity id %s", activity_id)
@@ -2107,7 +2143,6 @@ class Garmin:
 
     def get_activity_hr_in_timezones(self, activity_id: str) -> dict[str, Any]:
         """Return activity heartrate in timezones."""
-
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}/hrTimeInZones"
         logger.debug("Requesting HR time-in-zones for activity id %s", activity_id)
@@ -2116,7 +2151,6 @@ class Garmin:
 
     def get_activity_power_in_timezones(self, activity_id: str) -> dict[str, Any]:
         """Return activity power in timezones."""
-
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}/powerTimeInZones"
         logger.debug("Requesting Power time-in-zones for activity id %s", activity_id)
@@ -2126,17 +2160,13 @@ class Garmin:
     def get_cycling_ftp(
         self,
     ) -> dict[str, Any] | list[dict[str, Any]]:
-        """
-        Return cycling Functional Threshold Power (FTP) information.
-        """
-
+        """Return cycling Functional Threshold Power (FTP) information."""
         url = f"{self.garmin_connect_biometric_url}/latestFunctionalThresholdPower/CYCLING"
         logger.debug("Requesting latest cycling FTP")
         return self.connectapi(url)
 
     def get_activity(self, activity_id: str) -> dict[str, Any]:
         """Return activity summary, including basic splits."""
-
         activity_id = str(activity_id)
         url = f"{self.garmin_connect_activity}/{activity_id}"
         logger.debug("Requesting activity summary data for activity id %s", activity_id)
@@ -2147,7 +2177,6 @@ class Garmin:
         self, activity_id: str, maxchart: int = 2000, maxpoly: int = 4000
     ) -> dict[str, Any]:
         """Return activity details."""
-
         activity_id = str(activity_id)
         maxchart = _validate_positive_integer(maxchart, "maxchart")
         maxpoly = _validate_non_negative_integer(maxpoly, "maxpoly")
@@ -2159,7 +2188,6 @@ class Garmin:
 
     def get_activity_exercise_sets(self, activity_id: int | str) -> dict[str, Any]:
         """Return activity exercise sets."""
-
         activity_id = _validate_positive_integer(int(activity_id), "activity_id")
         url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
         logger.debug("Requesting exercise sets for activity id %s", activity_id)
@@ -2168,7 +2196,6 @@ class Garmin:
 
     def get_activity_gear(self, activity_id: int | str) -> dict[str, Any]:
         """Return gears used for activity id."""
-
         activity_id = _validate_positive_integer(int(activity_id), "activity_id")
         params = {
             "activityId": str(activity_id),
@@ -2184,7 +2211,7 @@ class Garmin:
         """Return activities where gear uuid was used.
         :param gearUUID: UUID of the gear to get activities for
         :param limit: Maximum number of activities to return (default: 1000)
-        :return: List of activities where the specified gear was used
+        :return: List of activities where the specified gear was used.
         """
         gearUUID = str(gearUUID)
         limit = _validate_positive_integer(limit, "limit")
@@ -2208,8 +2235,7 @@ class Garmin:
     def add_gear_to_activity(
         self, gearUUID: str, activity_id: int | str
     ) -> dict[str, Any]:
-        """
-        Associates gear with an activity. Requires a gearUUID and an activity_id
+        """Associates gear with an activity. Requires a gearUUID and an activity_id.
 
         Args:
             gearUUID: UID for gear to add to activity. Findable though the get_gear function
@@ -2217,8 +2243,8 @@ class Garmin:
 
         Returns:
             Dictionary containing information for the added gear
-        """
 
+        """
         gearUUID = str(gearUUID)
         activity_id = _validate_positive_integer(int(activity_id), "activity_id")
 
@@ -2240,8 +2266,7 @@ class Garmin:
     def remove_gear_from_activity(
         self, gearUUID: str, activity_id: int | str
     ) -> dict[str, Any]:
-        """
-        Removes gear from an activity. Requires a gearUUID and an activity_id
+        """Removes gear from an activity. Requires a gearUUID and an activity_id.
 
         Args:
             gearUUID: UID for gear to remove from activity. Findable though the get_gear method.
@@ -2249,8 +2274,8 @@ class Garmin:
 
         Returns:
             Dictionary containing information about the removed gear
-        """
 
+        """
         gearUUID = str(gearUUID)
         activity_id = _validate_positive_integer(int(activity_id), "activity_id")
 
@@ -2269,7 +2294,6 @@ class Garmin:
 
     def get_user_profile(self) -> dict[str, Any]:
         """Get all users settings."""
-
         url = self.garmin_connect_user_settings_url
         logger.debug("Requesting user profile.")
 
@@ -2277,18 +2301,15 @@ class Garmin:
 
     def get_userprofile_settings(self) -> dict[str, Any]:
         """Get user settings."""
-
         url = self.garmin_connect_userprofile_settings_url
         logger.debug("Getting userprofile settings")
 
         return self.connectapi(url)
 
     def request_reload(self, cdate: str) -> dict[str, Any]:
-        """
-        Request reload of data for a specific date. This is necessary because
+        """Request reload of data for a specific date. This is necessary because
         Garmin offloads older data.
         """
-
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_request_reload_url}/{cdate}"
         logger.debug("Requesting reload of data for %s.", cdate)
@@ -2297,7 +2318,6 @@ class Garmin:
 
     def get_workouts(self, start: int = 0, limit: int = 100) -> dict[str, Any]:
         """Return workouts starting at offset `start` with at most `limit` results."""
-
         url = f"{self.garmin_workouts}/workouts"
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
@@ -2307,14 +2327,12 @@ class Garmin:
 
     def get_workout_by_id(self, workout_id: int | str) -> dict[str, Any]:
         """Return workout by id."""
-
         workout_id = _validate_positive_integer(int(workout_id), "workout_id")
         url = f"{self.garmin_workouts}/workout/{workout_id}"
         return self.connectapi(url)
 
     def download_workout(self, workout_id: int | str) -> bytes:
         """Download workout by id."""
-
         workout_id = _validate_positive_integer(int(workout_id), "workout_id")
         url = f"{self.garmin_workouts}/workout/FIT/{workout_id}"
         logger.debug("Downloading workout from %s", url)
@@ -2325,7 +2343,6 @@ class Garmin:
         self, workout_json: dict[str, Any] | list[Any] | str
     ) -> dict[str, Any]:
         """Upload workout using json data."""
-
         url = f"{self.garmin_workouts}/workout"
         logger.debug("Uploading workout using %s", url)
 
@@ -2366,6 +2383,7 @@ class Garmin:
                 ]
             )
             api.upload_running_workout(workout)
+
         """
         try:
             from .workout import RunningWorkout
@@ -2403,6 +2421,7 @@ class Garmin:
                 ]
             )
             api.upload_cycling_workout(workout)
+
         """
         try:
             from .workout import CyclingWorkout
@@ -2424,6 +2443,7 @@ class Garmin:
 
         Returns:
             Dictionary containing the uploaded workout data
+
         """
         try:
             from .workout import SwimmingWorkout
@@ -2445,6 +2465,7 @@ class Garmin:
 
         Returns:
             Dictionary containing the uploaded workout data
+
         """
         try:
             from .workout import WalkingWorkout
@@ -2466,6 +2487,7 @@ class Garmin:
 
         Returns:
             Dictionary containing the uploaded workout data
+
         """
         try:
             from .workout import HikingWorkout
@@ -2482,8 +2504,7 @@ class Garmin:
     def get_scheduled_workout_by_id(
         self, scheduled_workout_id: int | str
     ) -> dict[str, Any]:
-        """Return scheduled workout by ID"""
-
+        """Return scheduled workout by ID."""
         scheduled_workout_id = _validate_positive_integer(
             int(scheduled_workout_id), "scheduled_workout_id"
         )
@@ -2493,7 +2514,6 @@ class Garmin:
 
     def get_menstrual_data_for_date(self, fordate: str) -> dict[str, Any]:
         """Return menstrual data for date."""
-
         fordate = _validate_date_format(fordate, "fordate")
         url = f"{self.garmin_connect_menstrual_dayview_url}/{fordate}"
         logger.debug("Requesting menstrual data for date %s", fordate)
@@ -2504,7 +2524,6 @@ class Garmin:
         self, startdate: str, enddate: str
     ) -> dict[str, Any]:
         """Return summaries of cycles that have days between startdate and enddate."""
-
         startdate = _validate_date_format(startdate, "startdate")
         enddate = _validate_date_format(enddate, "enddate")
         url = f"{self.garmin_connect_menstrual_calendar_url}/{startdate}/{enddate}"
@@ -2515,8 +2534,7 @@ class Garmin:
         return self.connectapi(url)
 
     def get_pregnancy_summary(self) -> dict[str, Any]:
-        """Return snapshot of pregnancy data"""
-
+        """Return snapshot of pregnancy data."""
         url = f"{self.garmin_connect_pregnancy_snapshot_url}"
         logger.debug("Requesting pregnancy snapshot data")
 
@@ -2528,10 +2546,11 @@ class Garmin:
         Args:
             query: A GraphQL request body, e.g. {"query": "...", "variables": {...}}
             See example.py for example queries.
+
         Returns:
             Parsed JSON response as a dict.
-        """
 
+        """
         op = (
             (query.get("operationName") or "unnamed")
             if isinstance(query, dict)
@@ -2549,21 +2568,18 @@ class Garmin:
 
     def logout(self) -> None:
         """Log user out of session."""
-
         logger.warning(
             "Deprecated: Alternative is to delete the login tokens to logout."
         )
 
     def get_training_plans(self) -> dict[str, Any]:
         """Return all available training plans."""
-
         url = f"{self.garmin_connect_training_plan_url}/plans"
         logger.debug("Requesting training plans.")
         return self.connectapi(url)
 
     def get_training_plan_by_id(self, plan_id: int | str) -> dict[str, Any]:
         """Return details for a specific training plan."""
-
         plan_id = _validate_positive_integer(int(plan_id), "plan_id")
 
         url = f"{self.garmin_connect_training_plan_url}/phased/{plan_id}"
@@ -2572,7 +2588,6 @@ class Garmin:
 
     def get_adaptive_training_plan_by_id(self, plan_id: int | str) -> dict[str, Any]:
         """Return details for a specific adaptive training plan."""
-
         plan_id = _validate_positive_integer(int(plan_id), "plan_id")
         url = f"{self.garmin_connect_training_plan_url}/fbt-adaptive/{plan_id}"
 
