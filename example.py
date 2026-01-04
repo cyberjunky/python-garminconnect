@@ -238,7 +238,7 @@ def display_daily_stats(api: Garmin):
     today = date.today().isoformat()
 
     # Get user summary (steps, calories, etc.)
-    success, summary, error_msg = safe_api_call(api.get_user_summary, today)
+    success, summary, _error_msg = safe_api_call(api.get_user_summary, today)
     if success and summary:
         steps = summary.get("totalSteps", 0)
         summary.get("totalDistanceMeters", 0) / 1000  # Convert to km
