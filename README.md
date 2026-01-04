@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **100+ API methods** organized into **12 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **105+ API methods** organized into **12 categories** for easy navigation
 
 Note: The demo menu is generated dynamically; exact options may change between releases.
 
@@ -41,12 +41,12 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 100+ unique endpoints (snapshot)
-- **Categories**: 11 organized sections
+- **Total API Methods**: 105+ unique endpoints (snapshot)
+- **Categories**: 12 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 9 methods (today's health data)
-- **Advanced Health Metrics**: 10 methods (fitness metrics, HRV, VO2)
-- **Historical Data & Trends**: 6 methods (date range queries)
+- **Advanced Health Metrics**: 11 methods (fitness metrics, HRV, VO2, training readiness)
+- **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
 - **Activities & Workouts**: 28 methods (comprehensive activity and workout management)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
@@ -346,7 +346,7 @@ print(f"Resting HR: {hr_data.get('restingHeartRate', 'n/a')}")
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 101 API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 105+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 

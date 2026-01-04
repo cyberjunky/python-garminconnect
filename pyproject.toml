@@ -1,6 +1,6 @@
 [project]
 name = "garminconnect"
-version = "0.2.37"
+version = "0.2.38"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
@@ -104,26 +104,74 @@ exclude = [
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-    "ARG", # flake8-unused-arguments
-    "SIM", # flake8-simplify
-    "S",   # flake8-bandit (security)
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "ARG",  # flake8-unused-arguments
+    "SIM",  # flake8-simplify
+    "S",    # flake8-bandit (security)
+    "D",    # pydocstyle (docstring conventions)
+    "PTH",  # flake8-use-pathlib
+    "PL",   # pylint (subset of rules)
+    "RUF",  # ruff-specific rules
+    "TRY",  # tryceratops (exception handling)
+    "PERF", # perflint (performance anti-patterns)
+    "LOG",  # flake8-logging (logging best practices)
+    "G",    # flake8-logging-format
+    "T20",  # flake8-print (no print statements)
+    "PIE",  # flake8-pie (miscellaneous lints)
+    "RET",  # flake8-return (return statement checks)
+    "TCH",  # flake8-type-checking (type checking imports)
+    "ERA",  # eradicate (commented-out code)
 ]
 ignore = [
-    "E501",  # line too long, handled by black
-    "B008",  # do not perform function calls in argument defaults
-    "C901",  # too complex
+    "E501",   # line too long, handled by black
+    "B008",   # do not perform function calls in argument defaults
+    "C901",   # too complex
+    # Docstring rules - relax initially
+    "D100",   # missing docstring in public module
+    "D104",   # missing docstring in public package
+    "D105",   # missing docstring in magic method
+    "D107",   # missing docstring in __init__
+    "D203",   # 1 blank line required before class docstring (conflicts with D211)
+    "D213",   # multi-line docstring summary should start at second line (conflicts with D212)
+    # Pylint rules - API wrapper has complex functions by nature
+    "PLR0913", # too many arguments to function call
+    "PLR2004", # magic value used in comparison
+    "PLR0912", # too many branches (complex API methods)
+    "PLR0915", # too many statements (complex API methods)
+    "PLC0415", # import outside top-level (delayed imports for optional deps)
+    # Exception handling - these patterns are intentional
+    "TRY003", # avoid specifying long messages outside exception class
+    "TRY004", # type-check-without-type-error (used for input validation)
+    "TRY301", # raise-within-try (re-raising with context is intentional)
+    # Logging - f-strings are fine in Python 3.10+
+    "G004",   # logging-f-string (performance not an issue here)
+    # Docstring style - these are stylistic preferences
+    "D205",   # missing-blank-line-after-summary (minor formatting)
+    "D401",   # non-imperative-mood (stylistic)
+    "D102",   # undocumented-public-method (gradual adoption)
+    "D106",   # undocumented-public-nested-class
+    "D417",   # undocumented-param (gradual adoption)
+    # Exception handling edge cases
+    "TRY401", # verbose-log-message (intentional for debugging)
+    "TRY203", # useless-try-except (sometimes needed for clarity)
+    "TRY300", # try-consider-else (style preference)
+    # Commented code - sometimes useful as documentation
+    "ERA001", # commented-out-code (explanatory comments)
 ]
 unfixable = []  # Allow all fixes, including unsafe ones
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["ARG", "S101"]
+"garminconnect/fit.py" = ["D", "RUF012", "PLW2901"]  # FIT protocol utility - stable, minimal docs
+"garminconnect/workout.py" = ["D401"]  # Pydantic models - docstring mood is fine
+"demo.py" = ["T20", "S101", "ERA", "RUF001", "PTH", "PERF401", "PERF203", "PLR0911", "D103"]  # Demo script - various user-facing patterns
+"example.py" = ["S110", "PLR0911", "T20"]  # Example script - simple error handling is intentional
 
 [tool.coverage.run]
 source = ["garminconnect"]
