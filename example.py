@@ -217,14 +217,14 @@ def init_api() -> Garmin | None:
 def display_user_info(api: Garmin):
     """Display basic user information with proper error handling."""
     # Get user's full name
-    success, full_name, error_msg = safe_api_call(api.get_full_name)
+    success, _full_name, _error_msg = safe_api_call(api.get_full_name)
     if success:
         pass
     else:
         pass
 
     # Get user profile number from device info
-    success, device_info, error_msg = safe_api_call(api.get_device_last_used)
+    success, device_info, _error_msg = safe_api_call(api.get_device_last_used)
     if success and device_info and device_info.get("userProfileNumber"):
         device_info.get("userProfileNumber")
     elif not success:
@@ -256,7 +256,7 @@ def display_daily_stats(api: Garmin):
         pass
 
     # Get hydration data
-    success, hydration, error_msg = safe_api_call(api.get_hydration_data, today)
+    success, hydration, _error_msg = safe_api_call(api.get_hydration_data, today)
     if success and hydration and hydration.get("valueInML"):
         hydration_ml = int(hydration.get("valueInML", 0))
         hydration_goal = hydration.get("goalInML", 0)
