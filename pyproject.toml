@@ -6,7 +6,7 @@ authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "garth>=0.5.17,<0.6.0",
+    "garth>=0.5.17,<0.7.0",
 ]
 readme = "README.md"
 license = {text = "MIT"}
@@ -73,7 +73,7 @@ testing = [
     "vcrpy>=7.0.0",
 ]
 example = [
-    "garth>=0.5.17,<0.6.0",
+    "garth>=0.5.17,<0.7.0",
     "requests",
     "readchar",
 ]
