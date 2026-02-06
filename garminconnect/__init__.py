@@ -279,6 +279,16 @@ class Garmin:
 
         self.garmin_workouts_schedule_url = f"{self.garmin_workouts}/schedule"
 
+        self.garmin_nutrition = "/nutrition-service"
+
+        self.garmin_connect_nutrition_daily_food_logs = (
+            f"{self.garmin_nutrition}/food/logs"
+        )
+        self.garmin_connect_nutrition_daily_meals = f"{self.garmin_nutrition}/meals"
+        self.garmin_connect_nutrition_daily_settings = (
+            f"{self.garmin_nutrition}/settings"
+        )
+
         self.garmin_connect_delete_activity_url = "/activity-service/activity"
 
         self.garmin_graphql_endpoint = "graphql-gateway/graphql"
@@ -2592,6 +2602,27 @@ class Garmin:
         url = f"{self.garmin_connect_training_plan_url}/fbt-adaptive/{plan_id}"
 
         logger.debug("Requesting adaptive training plan details for %s", plan_id)
+        return self.connectapi(url)
+
+    def get_nutrition_daily_food_log(self, cdate: str) -> dict[str, Any]:
+        """Return food log summary for 'cdate' format 'YYYY-MM-DD'."""
+        cdate = _validate_date_format(cdate, "cdate")
+        url = f"{self.garmin_connect_nutrition_daily_food_logs}/{cdate}"
+        logger.debug("Requesting nutrition food log data for date %s", cdate)
+        return self.connectapi(url)
+
+    def get_nutrition_daily_meals(self, cdate: str) -> dict[str, Any]:
+        """Return meals summary for 'cdate' format 'YYYY-MM-DD'."""
+        cdate = _validate_date_format(cdate, "cdate")
+        url = f"{self.garmin_connect_nutrition_daily_meals}/{cdate}"
+        logger.debug("Requesting nutrition meals data for date %s", cdate)
+        return self.connectapi(url)
+
+    def get_nutrition_daily_settings(self, cdate: str) -> dict[str, Any]:
+        """Return nutrition settings for 'cdate' format 'YYYY-MM-DD'."""
+        cdate = _validate_date_format(cdate, "cdate")
+        url = f"{self.garmin_connect_nutrition_daily_settings}/{cdate}"
+        logger.debug("Requesting nutrition settings data for date %s", cdate)
         return self.connectapi(url)
 
 
