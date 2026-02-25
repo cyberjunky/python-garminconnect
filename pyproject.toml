@@ -7,6 +7,7 @@ authors = [
 ]
 dependencies = [
     "garth>=0.5.17,<0.6.0",
+    "readchar>=4.2.1",
 ]
 readme = "README.md"
 license = {text = "MIT"}
