@@ -2512,6 +2512,21 @@ class Garmin:
         logger.debug("Requesting scheduled workout by id %d", scheduled_workout_id)
         return self.connectapi(url)
 
+    def schedule_workout(self, workout_id: int | str, date_str: str) -> dict[str, Any]:
+        """Schedule a workout on a specific date in the Garmin calendar.
+
+        Args:
+            workout_id: The workout ID returned after uploading.
+            date_str: Target date in YYYY-MM-DD format.
+
+        """
+        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        date_str = _validate_date_format(date_str, "date_str")
+        url = f"{self.garmin_workouts_schedule_url}/{workout_id}"
+        logger.debug("Scheduling workout %s for %s", workout_id, date_str)
+        payload = {"date": date_str}
+        return self.garth.post("connectapi", url, json=payload, api=True).json()
+
     def get_menstrual_data_for_date(self, fordate: str) -> dict[str, Any]:
         """Return menstrual data for date."""
         fordate = _validate_date_format(fordate, "fordate")
