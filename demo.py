@@ -324,6 +324,10 @@ menu_categories = {
                 "desc": "Count activities for current user",
                 "key": "count_activities",
             },
+            "s": {
+                "desc": "Schedule a workout on a date (interactive)",
+                "key": "scheduled_workout",
+            },
             "v": {
                 "desc": "Upload typed running workout (sample)",
                 "key": "upload_running_workout",
@@ -2268,6 +2272,59 @@ def upload_hiking_workout_data(api: Garmin) -> None:
         print(f"❌ Error uploading hiking workout: {e}")
 
 
+def schedule_workout_data(api: Garmin) -> None:
+    """Schedule a workout on a specific date."""
+    try:
+        workouts = api.get_workouts()
+        if not workouts:
+            print("ℹ️ No workouts found")
+            return
+
+        print("\nAvailable workouts (most recent):")
+        for i, workout in enumerate(workouts[:10]):
+            workout_id = workout.get("workoutId")
+            workout_name = workout.get("workoutName", "Unknown")
+            print(f"  [{i}] {workout_name} (ID: {workout_id})")
+
+        try:
+            index_input = input(
+                f"\nEnter workout index (0-{min(9, len(workouts) - 1)}, or 'q' to cancel): "
+            ).strip()
+
+            if index_input.lower() == "q":
+                print("❌ Cancelled")
+                return
+
+            workout_index = int(index_input)
+            if not (0 <= workout_index < min(10, len(workouts))):
+                print("❌ Invalid index")
+                return
+
+            selected_workout = workouts[workout_index]
+            workout_id = selected_workout["workoutId"]
+            workout_name = selected_workout.get("workoutName", "Unknown")
+
+            date_input = input(
+                f"Enter date to schedule '{workout_name}' (YYYY-MM-DD, default: today): "
+            ).strip()
+            schedule_date = date_input if date_input else config.today.isoformat()
+
+            call_and_display(
+                api.scheduled_workout,
+                workout_id,
+                schedule_date,
+                method_name="scheduled_workout",
+                api_call_desc=f"api.scheduled_workout({workout_id}, '{schedule_date}') - {workout_name}",
+            )
+            print("✅ Workout scheduled successfully!")
+
+        except ValueError:
+            print("❌ Invalid input")
+
+    except Exception as e:
+        print(f"❌ Error scheduling workout: {e}")
+
+
 def get_scheduled_workout_by_id_data(api: Garmin) -> None:
     """Get scheduled workout by ID."""
     try:
@@ -3605,8 +3662,8 @@ def execute_api_call(api: Garmin, key: str) -> None:
             ),
             "get_activity_weather": lambda: get_activity_weather_data(api),
             "get_activity_hr_in_timezones": lambda: get_activity_hr_timezones_data(api),
-            "get_activity_power_in_timezones": lambda: get_activity_power_timezones_data(
-                api
+            "get_activity_power_in_timezones": lambda: (
+                get_activity_power_timezones_data(api)
             ),
             "get_cycling_ftp": lambda: get_cycling_ftp_data(api),
             "get_activity_details": lambda: get_activity_details_data(api),
@@ -3624,6 +3681,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_scheduled_workout_by_id": lambda: get_scheduled_workout_by_id_data(
                 api
             ),
+            "scheduled_workout": lambda: schedule_workout_data(api),
             "count_activities": lambda: call_and_display(
                 api.count_activities,
                 method_name="count_activities",
