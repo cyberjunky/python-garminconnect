@@ -2312,12 +2312,13 @@ def schedule_workout_data(api: Garmin) -> None:
             schedule_date = date_input if date_input else config.today.isoformat()
 
             call_and_display(
-                api.scheduled_workout,
+                api.schedule_workout,
                 workout_id,
                 schedule_date,
                 method_name="scheduled_workout",
                 api_call_desc=f"api.scheduled_workout({workout_id}, '{schedule_date}') - {workout_name}",
             )
+
             print("✅ Workout scheduled successfully!")
 
         except ValueError:

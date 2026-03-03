@@ -2316,7 +2316,7 @@ class Garmin:
 
         return self.garth.post("connectapi", url, api=True).json()
 
-    def get_workouts(self, start: int = 0, limit: int = 100) -> dict[str, Any]:
+    def get_workouts(self, start: int = 0, limit: int = 100) -> list[dict[str, Any]]:
         """Return workouts starting at offset `start` with at most `limit` results."""
         url = f"{self.garmin_workouts}/workouts"
         start = _validate_non_negative_integer(start, "start")
