@@ -1418,7 +1418,7 @@ class Garmin:
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_badge_challenges_url
-        params = {"start": str(start), "limit": str(limit)}
+        params = {"desc": "true", "start": str(start + 1), "limit": str(limit)}
         logger.debug("Requesting badge challenges for user")
 
         return self.connectapi(url, params=params)
@@ -1428,7 +1428,7 @@ class Garmin:
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_available_badge_challenges_url
-        params = {"start": str(start), "limit": str(limit)}
+        params = {"desc": "true", "start": str(start + 1), "limit": str(limit)}
         logger.debug("Requesting available badge challenges")
 
         return self.connectapi(url, params=params)
@@ -1440,7 +1440,7 @@ class Garmin:
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_non_completed_badge_challenges_url
-        params = {"start": str(start), "limit": str(limit)}
+        params = {"desc": "true", "start": str(start + 1), "limit": str(limit)}
         logger.debug("Requesting badge challenges for user")
 
         return self.connectapi(url, params=params)
@@ -1452,7 +1452,7 @@ class Garmin:
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_inprogress_virtual_challenges_url
-        params = {"start": str(start), "limit": str(limit)}
+        params = {"desc": "true", "start": str(start + 1), "limit": str(limit)}
         logger.debug("Requesting in-progress virtual challenges for user")
 
         return self.connectapi(url, params=params)
