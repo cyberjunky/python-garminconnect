@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **126+ API methods** organized into **13 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **127+ API methods** organized into **13 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -40,11 +40,11 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 126+ unique endpoints (snapshot)
+- **Total API Methods**: 127+ unique endpoints (snapshot)
 - **Categories**: 13 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 9 methods (today's health data)
-- **Advanced Health Metrics**: 11 methods (fitness metrics, HRV, VO2, training readiness)
+- **Advanced Health Metrics**: 12 methods (fitness metrics, HRV, VO2, training readiness, running tolerance)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
 - **Activities & Workouts**: 35 methods (comprehensive activity, workout management, typed workout uploads, scheduling, import)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
@@ -385,7 +385,7 @@ client.schedule_workout(result["workoutId"], "2026-03-20")
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 126+ API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 127+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
