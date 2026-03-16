@@ -202,6 +202,10 @@ menu_categories = {
                 "desc": f"Get intensity minutes for '{config.today.isoformat()}'",
                 "key": "get_intensity_minutes_data",
             },
+            "b": {
+                "desc": f"Get running tolerance from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "key": "get_running_tolerance",
+            },
         },
     },
     "4": {
@@ -3640,6 +3644,11 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 api_call_desc=f"api.get_all_day_stress('{config.today.isoformat()}')",
             ),
             # Advanced Health Metrics
+            "get_running_tolerance": lambda: call_and_display(
+                api.get_running_tolerance,
+                config.week_start.isoformat(),
+                config.today.isoformat(),
+            ),
             "get_training_readiness": lambda: call_and_display(
                 api.get_training_readiness,
                 config.today.isoformat(),
