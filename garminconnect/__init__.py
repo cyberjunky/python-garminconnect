@@ -289,6 +289,11 @@ class Garmin:
             f"{self.garmin_nutrition}/settings"
         )
 
+        self.garmin_golf = "/proxy/gcs-golfcommunity/api/v2"
+        self.garmin_golf_scorecard_summary = f"{self.garmin_golf}/scorecard/summary"
+        self.garmin_golf_scorecard_detail = f"{self.garmin_golf}/scorecard/detail"
+        self.garmin_golf_shot = f"{self.garmin_golf}/shot/scorecard"
+
         self.garmin_connect_delete_activity_url = "/activity-service/activity"
 
         self.garmin_graphql_endpoint = "graphql-gateway/graphql"
@@ -354,6 +359,34 @@ class Garmin:
             raise GarminConnectConnectionError(f"HTTP error: {e}") from e
         except Exception as e:
             logger.exception("Connection error during connectapi path=%s", path)
+            raise GarminConnectConnectionError(f"Connection error: {e}") from e
+
+    def connectwebproxy(self, path: str, **kwargs: Any) -> Any:
+        """Wrapper for web proxy requests to connect.garmin.com with error handling."""
+        try:
+            return self.garth.request("GET", "connect", path, **kwargs).json()
+        except GarthHTTPError as e:
+            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            logger.exception(
+                "API call failed for web proxy path '%s' (status=%s)",
+                path,
+                status,
+            )
+            if status == 401:
+                raise GarminConnectAuthenticationError(
+                    f"Web proxy auth error: {e}"
+                ) from e
+            if status == 429:
+                raise GarminConnectTooManyRequestsError(
+                    f"Web proxy rate limit: {e}"
+                ) from e
+            if status and 400 <= status < 500:
+                raise GarminConnectConnectionError(
+                    f"Web proxy client error ({status}): {e}"
+                ) from e
+            raise GarminConnectConnectionError(f"Web proxy error: {e}") from e
+        except Exception as e:
+            logger.exception("Connection error during web proxy path=%s", path)
             raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
     def download(self, path: str, **kwargs: Any) -> Any:
@@ -2639,6 +2672,70 @@ class Garmin:
         url = f"{self.garmin_connect_nutrition_daily_settings}/{cdate}"
         logger.debug("Requesting nutrition settings data for date %s", cdate)
         return self.connectapi(url)
+
+    def get_golf_summary(
+        self, start: int = 0, limit: int = 100
+    ) -> list[dict[str, Any]]:
+        """Return golf scorecard summary.
+
+        Args:
+            start: Starting offset for pagination.
+            limit: Maximum number of results to return.
+
+        Returns:
+            List of golf scorecard summaries.
+
+        """
+        start = _validate_non_negative_integer(start, "start")
+        limit = _validate_positive_integer(limit, "limit")
+        url = f"{self.garmin_golf_scorecard_summary}"
+        params = {"per-page": str(limit), "start": str(start)}
+        logger.debug("Requesting golf summary with limit %d", limit)
+        return self.connectwebproxy(url, params=params)
+
+    def get_golf_scorecard(self, scorecard_id: int | str) -> dict[str, Any]:
+        """Return golf scorecard detail by scorecard ID.
+
+        Args:
+            scorecard_id: The scorecard ID to retrieve.
+
+        Returns:
+            Dictionary containing the golf scorecard detail.
+
+        """
+        scorecard_id = _validate_positive_integer(int(scorecard_id), "scorecard_id")
+        url = f"{self.garmin_golf_scorecard_detail}"
+        params = {
+            "scorecard-ids": str(scorecard_id),
+            "include-longest-shot-distance": "true",
+        }
+        logger.debug("Requesting golf scorecard %d", scorecard_id)
+        return self.connectwebproxy(url, params=params)
+
+    def get_golf_shot_data(
+        self,
+        scorecard_id: int | str,
+        hole_numbers: str = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+    ) -> dict[str, Any]:
+        """Return golf shot data for a scorecard and specific holes.
+
+        Args:
+            scorecard_id: The scorecard ID to get shot data for.
+            hole_numbers: Comma-separated hole numbers (default: all 18).
+
+        Returns:
+            Dictionary containing shot data per hole.
+
+        """
+        scorecard_id = _validate_positive_integer(int(scorecard_id), "scorecard_id")
+        url = f"{self.garmin_golf_shot}/{scorecard_id}/hole"
+        params = {"hole-numbers": hole_numbers}
+        logger.debug(
+            "Requesting golf shot data for scorecard %d, holes %s",
+            scorecard_id,
+            hole_numbers,
+        )
+        return self.connectwebproxy(url, params=params)
 
 
 class GarminConnectConnectionError(Exception):

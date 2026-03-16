@@ -485,6 +485,18 @@ menu_categories = {
                 "desc": "Delete blood pressure entry",
                 "key": "delete_blood_pressure",
             },
+            "a": {
+                "desc": f"Get nutrition daily food log for '{config.today.isoformat()}'",
+                "key": "get_nutrition_daily_food_log",
+            },
+            "b": {
+                "desc": f"Get nutrition daily meals for '{config.today.isoformat()}'",
+                "key": "get_nutrition_daily_meals",
+            },
+            "c": {
+                "desc": f"Get nutrition daily settings for '{config.today.isoformat()}'",
+                "key": "get_nutrition_daily_settings",
+            },
         },
     },
     "a": {
@@ -504,6 +516,17 @@ menu_categories = {
         "options": {
             "1": {"desc": "Get training plans", "key": "get_training_plans"},
             "2": {"desc": "Get training plan by ID", "key": "get_training_plan_by_id"},
+        },
+    },
+    "c": {
+        "name": "⛳ Golf",
+        "options": {
+            "1": {"desc": "Get golf scorecard summary", "key": "get_golf_summary"},
+            "2": {"desc": "Get golf scorecard by ID", "key": "get_golf_scorecard"},
+            "3": {
+                "desc": "Get golf shot data by scorecard ID",
+                "key": "get_golf_shot_data",
+            },
         },
     },
 }
@@ -1881,6 +1904,86 @@ def get_activity_exercise_sets_data(api: Garmin) -> None:
         print("ℹ️ No activity exercise sets available")
 
 
+def get_golf_scorecard_data(api: Garmin) -> None:
+    """Get golf scorecard detail by ID."""
+    try:
+        # First get summary to find valid IDs
+        summary = api.get_golf_summary(limit=20)
+        if not summary:
+            print("❌ No golf scorecards found")
+            return
+
+        scorecards = (
+            summary
+            if isinstance(summary, list)
+            else summary.get("scorecardList", summary.get("items", [summary]))
+        )
+        if isinstance(scorecards, list) and scorecards:
+            print("\n⛳ Recent golf scorecards:")
+            for i, sc in enumerate(scorecards[:10], 1):
+                sc_id = sc.get("scorecardId", sc.get("id", "?"))
+                course = sc.get("courseName", sc.get("golfCourseName", "Unknown"))
+                sc_date = sc.get("startTime", sc.get("date", "?"))
+                print(f"  [{i}] ID={sc_id} - {course} ({sc_date})")
+
+        scorecard_id = input("\nEnter scorecard ID: ").strip()
+        if not scorecard_id:
+            print("❌ No scorecard ID provided")
+            return
+
+        call_and_display(
+            api.get_golf_scorecard,
+            int(scorecard_id),
+            method_name="get_golf_scorecard",
+            api_call_desc=f"api.get_golf_scorecard({scorecard_id})",
+        )
+    except Exception as e:
+        print(f"❌ Error getting golf scorecard: {e}")
+
+
+def get_golf_shot_data_entry(api: Garmin) -> None:
+    """Get golf shot data by scorecard ID."""
+    try:
+        # First get summary to find valid IDs
+        summary = api.get_golf_summary(limit=20)
+        if not summary:
+            print("❌ No golf scorecards found")
+            return
+
+        scorecards = (
+            summary
+            if isinstance(summary, list)
+            else summary.get("scorecardList", summary.get("items", [summary]))
+        )
+        if isinstance(scorecards, list) and scorecards:
+            print("\n⛳ Recent golf scorecards:")
+            for i, sc in enumerate(scorecards[:10], 1):
+                sc_id = sc.get("scorecardId", sc.get("id", "?"))
+                course = sc.get("courseName", sc.get("golfCourseName", "Unknown"))
+                print(f"  [{i}] ID={sc_id} - {course}")
+
+        scorecard_id = input("\nEnter scorecard ID: ").strip()
+        if not scorecard_id:
+            print("❌ No scorecard ID provided")
+            return
+
+        holes = input(
+            "Enter hole numbers (comma-separated, or Enter for all 18): "
+        ).strip()
+        if not holes:
+            holes = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
+
+        call_and_display(
+            api.get_golf_shot_data,
+            int(scorecard_id),
+            hole_numbers=holes,
+            method_name="get_golf_shot_data",
+            api_call_desc=f"api.get_golf_shot_data({scorecard_id}, hole_numbers='{holes}')",
+        )
+    except Exception as e:
+        print(f"❌ Error getting golf shot data: {e}")
+
+
 def get_training_plan_by_id_data(api: Garmin) -> None:
     """Get training plan details by ID (routes FBT_ADAPTIVE plans to the adaptive endpoint)."""
     resp = api.get_training_plans() or {}
@@ -2067,9 +2170,7 @@ def upload_workout_data(api: Garmin) -> None:
 
     except FileNotFoundError:
         print(f"❌ File not found: {config.workoutfile}")
-        print(
-            "ℹ️ Please ensure the workout JSON file exists in the test_data directory"
-        )
+        print("ℹ️ Please ensure the workout JSON file exists in the test_data directory")
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON format in {config.workoutfile}: {e}")
         print("ℹ️ Please check the JSON file format")
@@ -3656,6 +3757,14 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 method_name="get_training_plans",
                 api_call_desc="api.get_training_plans()",
             ),
+            # Golf
+            "get_golf_summary": lambda: call_and_display(
+                api.get_golf_summary,
+                method_name="get_golf_summary",
+                api_call_desc="api.get_golf_summary()",
+            ),
+            "get_golf_scorecard": lambda: get_golf_scorecard_data(api),
+            "get_golf_shot_data": lambda: get_golf_shot_data_entry(api),
             "upload_activity": lambda: upload_activity_file(api),
             "download_activities": lambda: download_activities_by_date(api),
             "get_activity_splits": lambda: get_activity_splits_data(api),
@@ -3881,6 +3990,25 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 config.today.isoformat(),
                 method_name="get_menstrual_calendar_data",
                 api_call_desc=f"api.get_menstrual_calendar_data('{config.week_start.isoformat()}', '{config.today.isoformat()}')",
+            ),
+            # Nutrition
+            "get_nutrition_daily_food_log": lambda: call_and_display(
+                api.get_nutrition_daily_food_log,
+                config.today.isoformat(),
+                method_name="get_nutrition_daily_food_log",
+                api_call_desc=f"api.get_nutrition_daily_food_log('{config.today.isoformat()}')",
+            ),
+            "get_nutrition_daily_meals": lambda: call_and_display(
+                api.get_nutrition_daily_meals,
+                config.today.isoformat(),
+                method_name="get_nutrition_daily_meals",
+                api_call_desc=f"api.get_nutrition_daily_meals('{config.today.isoformat()}')",
+            ),
+            "get_nutrition_daily_settings": lambda: call_and_display(
+                api.get_nutrition_daily_settings,
+                config.today.isoformat(),
+                method_name="get_nutrition_daily_settings",
+                api_call_desc=f"api.get_nutrition_daily_settings('{config.today.isoformat()}')",
             ),
             # Blood Pressure Management
             "delete_blood_pressure": lambda: delete_blood_pressure_data(api),
