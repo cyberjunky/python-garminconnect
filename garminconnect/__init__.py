@@ -1920,6 +1920,102 @@ class Garmin:
                 f"Invalid file format '{file_extension}'. Allowed formats: {allowed_formats}"
             )
 
+    def import_activity(self, activity_path: str) -> dict[str, Any]:
+        """Upload activity as an import (not re-exported to third parties like Strava).
+
+        Uses the Garmin import endpoint with headers matching Garmin Connect
+        Mobile, so imported activities are treated as imports rather than
+        device-synced activities.
+
+        Args:
+            activity_path: Path to the activity file (FIT, TCX, or GPX).
+
+        Returns:
+            Dictionary containing the DetailedImportResult with successes,
+            failures, and activity IDs.
+
+        Raises:
+            FileNotFoundError: If the activity file does not exist.
+            GarminConnectInvalidFileFormatError: If the file format is invalid.
+            GarminConnectConnectionError: If the upload fails.
+
+        """
+        if not activity_path:
+            raise ValueError("activity_path cannot be empty")
+
+        if not isinstance(activity_path, str):
+            raise ValueError("activity_path must be a string")
+
+        p = Path(activity_path)
+        if not p.exists():
+            raise FileNotFoundError(f"File not found: {activity_path}")
+
+        if not p.is_file():
+            raise ValueError(f"path is not a file: {activity_path}")
+
+        file_base_name = p.name
+        if not file_base_name:
+            raise ValueError("invalid file path - no filename found")
+
+        file_parts = file_base_name.split(".")
+        if len(file_parts) < 2:
+            raise GarminConnectInvalidFileFormatError(
+                f"File has no extension: {activity_path}"
+            )
+
+        file_extension = file_parts[-1].lower()
+        if file_extension.upper() not in Garmin.ActivityUploadFormat.__members__:
+            allowed_formats = ", ".join(Garmin.ActivityUploadFormat.__members__.keys())
+            raise GarminConnectInvalidFileFormatError(
+                f"Invalid file format '{file_extension}'. "
+                f"Allowed formats: {allowed_formats}"
+            )
+
+        url = f"{self.garmin_connect_upload}/{file_extension}"
+        headers = {
+            "NK": "NT",
+            "origin": "https://sso.garmin.com",
+            "User-Agent": "GCM-iOS-5.7.2.1",
+        }
+
+        try:
+            with p.open("rb") as file_handle:
+                files = {
+                    "file": (
+                        f'"{file_base_name}"',
+                        file_handle,
+                        "application/octet-stream",
+                    )
+                }
+                logger.debug("Importing activity file %s via %s", file_base_name, url)
+                response = self.garth.post(
+                    "connectapi", url, files=files, headers=headers, api=True
+                )
+                if hasattr(response, "json"):
+                    result: dict[str, Any] = response.json()
+                    return result
+                return {"status": "uploaded", "fileName": file_base_name}
+        except (HTTPError, GarthHTTPError) as e:
+            if isinstance(e, GarthHTTPError):
+                status = getattr(
+                    getattr(e.error, "response", None), "status_code", None
+                )
+            else:
+                status = getattr(getattr(e, "response", None), "status_code", None)
+            if status == 409:
+                logger.info("Activity already exists (duplicate): %s", file_base_name)
+                raise GarminConnectConnectionError(
+                    f"Activity already exists (duplicate): {file_base_name}"
+                ) from e
+            logger.exception(
+                "Import failed for '%s' (status=%s)", activity_path, status
+            )
+            raise GarminConnectConnectionError(f"Import error: {e}") from e
+        except OSError as e:
+            raise GarminConnectConnectionError(
+                f"Failed to read file {activity_path}: {e}"
+            ) from e
+
     def delete_activity(self, activity_id: str) -> Any:
         """Delete activity with specified id."""
         url = f"{self.garmin_connect_delete_activity_url}/{activity_id}"
