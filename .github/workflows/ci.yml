@@ -36,9 +36,9 @@ jobs:
         run: |
           pdm run ruff check .
 
-      - name: Format check with black
+      - name: Format check with ruff
         run: |
-          pdm run black --check --target-version py310 .
+          pdm run ruff format --check .
 
       - name: Type check with mypy
         run: |
