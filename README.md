@@ -11,9 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **125+ API methods** organized into **13 categories** for easy navigation
-
-Note: The demo menu is generated dynamically; exact options may change between releases.
+- **`demo.py`** - Comprehensive demo providing access to **126+ API methods** organized into **13 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -42,13 +40,13 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 125+ unique endpoints (snapshot)
+- **Total API Methods**: 126+ unique endpoints (snapshot)
 - **Categories**: 13 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 9 methods (today's health data)
 - **Advanced Health Metrics**: 11 methods (fitness metrics, HRV, VO2, training readiness)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
-- **Activities & Workouts**: 34 methods (comprehensive activity, workout management, typed workout uploads, scheduling)
+- **Activities & Workouts**: 35 methods (comprehensive activity, workout management, typed workout uploads, scheduling, import)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
@@ -76,7 +74,7 @@ A comprehensive Python3 API wrapper for Garmin Connect, providing access to heal
 This library enables developers to programmatically access Garmin Connect data including:
 
 - **Health Metrics**: Heart rate, sleep, stress, body composition, SpO2, HRV
-- **Activity Data**: Workouts, typed workout uploads (running, cycling, swimming, walking, hiking), workout scheduling, exercises, training status, performance metrics
+- **Activity Data**: Workouts, typed workout uploads (running, cycling, swimming, walking, hiking), workout scheduling, exercises, training status, performance metrics, import-style uploads (no Strava re-export)
 - **Nutrition**: Daily food logs, meals, and nutrition settings
 - **Golf**: Scorecard summaries, scorecard details, shot-by-shot data
 - **Device Information**: Connected devices, settings, alarms, solar data
@@ -387,7 +385,7 @@ client.schedule_workout(result["workoutId"], "2026-03-20")
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 125+ API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 126+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
