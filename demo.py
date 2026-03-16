@@ -88,7 +88,7 @@ class Config:
         # API call settings
         self.default_limit = 100
         self.start = 0
-        self.start_badge = 1  # Badge related calls start counting at 1
+        self.start_badge = 0  # Badge related calls are 0-based (wrapper converts to backend 1-based)
 
         # Activity settings
         self.activitytype = ""  # Possible values: cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other
