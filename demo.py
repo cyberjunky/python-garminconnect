@@ -328,6 +328,10 @@ menu_categories = {
                 "desc": "Schedule a workout on a date (interactive)",
                 "key": "scheduled_workout",
             },
+            "t": {
+                "desc": f"Import activity (no Strava re-export) from {config.activityfile}",
+                "key": "import_activity",
+            },
             "v": {
                 "desc": "Upload typed running workout (sample)",
                 "key": "upload_running_workout",
@@ -1397,6 +1401,49 @@ def get_solar_data(api: Garmin) -> None:
 
     # Display all responses as a group
     call_and_display(group_name="Solar Data Collection", api_responses=api_responses)
+
+
+def import_activity_file(api: Garmin) -> None:
+    """Import activity data from file (not re-exported to Strava)."""
+    import glob
+
+    try:
+        activity_files = glob.glob(config.activityfile)
+        if not activity_files:
+            print("❌ No activity files found in test_data directory.")
+            print("ℹ️ Please add FIT/GPX/TCX files to test_data before importing.")
+            return
+
+        print("Select a file to import (will NOT be re-exported to Strava):")
+        for idx, fname in enumerate(activity_files, 1):
+            print(f"  {idx}. {fname}")
+
+        while True:
+            try:
+                choice = int(input(f"Enter number (1-{len(activity_files)}): "))
+                if 1 <= choice <= len(activity_files):
+                    selected_file = activity_files[choice - 1]
+                    break
+                print("Invalid selection. Try again.")
+            except ValueError:
+                print("Please enter a valid number.")
+
+        print(f"📥 Importing activity from file: {selected_file}")
+
+        call_and_display(
+            api.import_activity,
+            selected_file,
+            method_name="import_activity",
+            api_call_desc=f"api.import_activity({selected_file})",
+        )
+
+    except FileNotFoundError:
+        print(f"❌ File not found: {selected_file}")
+    except Exception as e:
+        if "409" in str(e) or "duplicate" in str(e).lower():
+            print("⚠️ Activity already exists (duplicate)")
+        else:
+            print(f"❌ Import failed: {e}")
 
 
 def upload_activity_file(api: Garmin) -> None:
@@ -3766,6 +3813,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_golf_scorecard": lambda: get_golf_scorecard_data(api),
             "get_golf_shot_data": lambda: get_golf_shot_data_entry(api),
             "upload_activity": lambda: upload_activity_file(api),
+            "import_activity": lambda: import_activity_file(api),
             "download_activities": lambda: download_activities_by_date(api),
             "get_activity_splits": lambda: get_activity_splits_data(api),
             "get_activity_typed_splits": lambda: get_activity_typed_splits_data(api),
