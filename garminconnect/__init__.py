@@ -208,6 +208,9 @@ class Garmin:
         self.garmin_connect_endurance_score_url = (
             "/metrics-service/metrics/endurancescore"
         )
+        self.garmin_connect_running_tolerance_url = (
+            "/metrics-service/metrics/runningtolerance/stats"
+        )
         self.garmin_connect_menstrual_calendar_url = (
             "/periodichealth-service/menstrualcycle/calendar"
         )
@@ -1581,6 +1584,41 @@ class Garmin:
             "aggregation": "weekly",
         }
         logger.debug("Requesting endurance score data for a range of days")
+
+        return self.connectapi(url, params=params)
+
+    def get_running_tolerance(
+        self, startdate: str, enddate: str, aggregation: str = "weekly"
+    ) -> list[dict[str, Any]]:
+        """Return running tolerance data for date range.
+
+        Args:
+            startdate: Start date in 'YYYY-MM-DD' format.
+            enddate: End date in 'YYYY-MM-DD' format.
+            aggregation: 'daily' or 'weekly' (default: 'weekly').
+
+        Returns:
+            List of running tolerance data points.
+
+        """
+        startdate = _validate_date_format(startdate, "startdate")
+        enddate = _validate_date_format(enddate, "enddate")
+        if aggregation not in ("daily", "weekly"):
+            raise ValueError(
+                f"Invalid aggregation '{aggregation}'. Must be 'daily' or 'weekly'."
+            )
+        url = self.garmin_connect_running_tolerance_url
+        params = {
+            "startDate": str(startdate),
+            "endDate": str(enddate),
+            "aggregation": aggregation,
+        }
+        logger.debug(
+            "Requesting running tolerance data (%s) from %s to %s",
+            aggregation,
+            startdate,
+            enddate,
+        )
 
         return self.connectapi(url, params=params)
 
