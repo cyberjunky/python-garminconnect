@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **105+ API methods** organized into **12 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **119+ API methods** organized into **12 categories** for easy navigation
 
 Note: The demo menu is generated dynamically; exact options may change between releases.
 
@@ -41,20 +41,20 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 105+ unique endpoints (snapshot)
+- **Total API Methods**: 119+ unique endpoints (snapshot)
 - **Categories**: 12 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 9 methods (today's health data)
 - **Advanced Health Metrics**: 11 methods (fitness metrics, HRV, VO2, training readiness)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
-- **Activities & Workouts**: 28 methods (comprehensive activity and workout management)
+- **Activities & Workouts**: 34 methods (comprehensive activity, workout management, typed workout uploads, scheduling)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
-- **Gear & Equipment**: 8 methods (gear management, tracking)
+- **Gear & Equipment**: 7 methods (gear management, tracking)
 - **Hydration & Wellness**: 9 methods (hydration, blood pressure, menstrual)
 - **System & Export**: 4 methods (reporting, logout, GraphQL)
-- **Training Plans**: 3 methods
+- **Training Plans**: 2 methods
 
 ### Interactive Features
 
@@ -74,7 +74,7 @@ A comprehensive Python3 API wrapper for Garmin Connect, providing access to heal
 This library enables developers to programmatically access Garmin Connect data including:
 
 - **Health Metrics**: Heart rate, sleep, stress, body composition, SpO2, HRV
-- **Activity Data**: Workouts, scheduled workouts, exercises, training status, performance metrics
+- **Activity Data**: Workouts, typed workout uploads (running, cycling, swimming, walking, hiking), workout scheduling, exercises, training status, performance metrics
 - **Device Information**: Connected devices, settings, alarms, solar data
 - **Goals & Achievements**: Personal records, badges, challenges, race predictions
 - **Historical Data**: Trends, progress tracking, date range queries
@@ -344,9 +344,46 @@ hr_data = client.get_heart_rates(_today)
 print(f"Resting HR: {hr_data.get('restingHeartRate', 'n/a')}")
 ```
 
+### Typed Workouts (Pydantic Models)
+
+The library includes optional typed workout models for creating type-safe workout definitions:
+
+```bash
+pip install garminconnect[workout]
+```
+
+```python
+from garminconnect.workout import (
+    RunningWorkout, WorkoutSegment,
+    create_warmup_step, create_interval_step, create_cooldown_step,
+    create_repeat_group,
+)
+
+# Create a structured running workout
+workout = RunningWorkout(
+    workoutName="Easy Run",
+    estimatedDurationInSecs=1800,
+    workoutSegments=[
+        WorkoutSegment(
+            segmentOrder=1,
+            sportType={"sportTypeId": 1, "sportTypeKey": "running"},
+            workoutSteps=[create_warmup_step(300.0)]
+        )
+    ]
+)
+
+# Upload and optionally schedule it
+result = client.upload_running_workout(workout)
+client.schedule_workout(result["workoutId"], "2026-03-20")
+```
+
+**Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
+
+**Helper functions:** `create_warmup_step`, `create_interval_step`, `create_recovery_step`, `create_cooldown_step`, `create_repeat_group`
+
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 105+ API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 119+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
