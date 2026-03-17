@@ -292,7 +292,7 @@ class Garmin:
             f"{self.garmin_nutrition}/settings"
         )
 
-        self.garmin_golf = "/proxy/gcs-golfcommunity/api/v2"
+        self.garmin_golf = "/gcs-golfcommunity/api/v2"
         self.garmin_golf_scorecard_summary = f"{self.garmin_golf}/scorecard/summary"
         self.garmin_golf_scorecard_detail = f"{self.garmin_golf}/scorecard/detail"
         self.garmin_golf_shot = f"{self.garmin_golf}/shot/scorecard"
@@ -539,22 +539,52 @@ class Garmin:
 
         except (HTTPError, requests.exceptions.HTTPError, GarthException) as e:
             status = getattr(getattr(e, "response", None), "status_code", None)
+            error_str = str(e)
+            error_lower = error_str.lower()
             logger.exception("Login failed: %s (status=%s)", e, status)
 
-            # Check status code first
-            if status == 401:
-                raise GarminConnectAuthenticationError(
-                    f"Authentication failed: {e}"
-                ) from e
-            if status == 429:
+            if status == 429 or "429" in error_str:
                 raise GarminConnectTooManyRequestsError(
-                    f"Rate limit exceeded: {e}"
+                    "Too many login attempts. Please wait a few minutes "
+                    "before trying again."
+                ) from e
+
+            # Detect the specific OAuth token exchange failure (preauthorized endpoint)
+            # This 401 means Garmin's SSO issued a ticket but the OAuth service
+            # rejected it — it is NOT a wrong-password error.
+            if "preauthorized" in error_lower or "oauth-service" in error_lower:
+                raise GarminConnectAuthenticationError(
+                    "Garmin SSO token exchange failed (401 on oauth preauthorized). "
+                    "Your credentials were accepted but the OAuth token exchange "
+                    "was rejected. This is usually NOT a password problem. "
+                    "Possible causes:\n"
+                    "  • Garmin Connect servers are temporarily having issues "
+                    "— retry in a few minutes\n"
+                    "  • Too many recent login attempts (rate limiting) "
+                    "— wait 15-30 minutes\n"
+                    "  • Outdated garth library — run: pip install --upgrade garth\n"
+                    "  • Stale stored tokens may have triggered repeated failed "
+                    "refreshes — delete your token store and retry\n"
+                    "  • Regional Garmin server problems — try again later\n"
+                    "  • Account may require attention "
+                    "— check https://sso.garmin.com\n"
+                    f"Original error: {e}"
+                ) from e
+
+            # General 401 — likely wrong credentials
+            if status == 401 or "401" in error_str or "unauthorized" in error_lower:
+                raise GarminConnectAuthenticationError(
+                    "Authentication failed (401 Unauthorized). "
+                    "Possible causes:\n"
+                    "  • Incorrect email or password\n"
+                    "  • Account locked — check https://sso.garmin.com\n"
+                    "  • Garmin SSO service is temporarily unavailable\n"
+                    f"Original error: {e}"
                 ) from e
 
             # If no status code, check error message for authentication indicators
-            error_str = str(e).lower()
-            auth_indicators = ["401", "unauthorized", "authentication failed"]
-            if any(indicator in error_str for indicator in auth_indicators):
+            auth_indicators = ["unauthorized", "authentication failed"]
+            if any(indicator in error_lower for indicator in auth_indicators):
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
                 ) from e
@@ -568,11 +598,22 @@ class Garmin:
             if isinstance(e, GarminConnectAuthenticationError):
                 raise
             # Check if this is an authentication error based on the error message
-            error_str = str(
-                e
-            ).lower()  # Convert to lowercase for case-insensitive matching
+            error_str = str(e)
+            error_lower = error_str.lower()
+
+            # Detect OAuth preauthorized failures bubbling up as generic exceptions
+            if "preauthorized" in error_lower or "oauth-service" in error_lower:
+                raise GarminConnectAuthenticationError(
+                    "Garmin SSO token exchange failed. "
+                    "This is usually a temporary server-side issue, not a "
+                    "credentials problem. Try: waiting a few minutes, "
+                    "updating garth (pip install --upgrade garth), or "
+                    "deleting your stored tokens and retrying.\n"
+                    f"Original error: {e}"
+                ) from e
+
             auth_indicators = ["401", "unauthorized", "authentication", "login failed"]
-            is_auth_error = any(indicator in error_str for indicator in auth_indicators)
+            is_auth_error = any(indicator in error_lower for indicator in auth_indicators)
 
             if is_auth_error:
                 raise GarminConnectAuthenticationError(
@@ -2825,7 +2866,7 @@ class Garmin:
         url = f"{self.garmin_golf_scorecard_summary}"
         params = {"per-page": str(limit), "start": str(start)}
         logger.debug("Requesting golf summary with limit %d", limit)
-        return self.connectwebproxy(url, params=params)
+        return self.connectapi(url, params=params)
 
     def get_golf_scorecard(self, scorecard_id: int | str) -> dict[str, Any]:
         """Return golf scorecard detail by scorecard ID.
@@ -2844,7 +2885,7 @@ class Garmin:
             "include-longest-shot-distance": "true",
         }
         logger.debug("Requesting golf scorecard %d", scorecard_id)
-        return self.connectwebproxy(url, params=params)
+        return self.connectapi(url, params=params)
 
     def get_golf_shot_data(
         self,
@@ -2869,7 +2910,7 @@ class Garmin:
             scorecard_id,
             hole_numbers,
         )
-        return self.connectwebproxy(url, params=params)
+        return self.connectapi(url, params=params)
 
 
 class GarminConnectConnectionError(Exception):
