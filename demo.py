@@ -1120,6 +1120,9 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
                 "Endpoint not found (404) - This feature may have been moved or removed"
             )
             print(f"⚠️ {method_name} failed: {error_msg}")
+        elif status_code == 410 or "410" in error_str:
+            error_msg = "Resource no longer available (410 Gone) - This data does not exist or the endpoint has been retired"
+            print(f"⚠️ {method_name} failed: {error_msg}")
         elif status_code == 429 or "429" in error_str:
             error_msg = (
                 "Rate limit exceeded (429) - Please wait before making more requests"
@@ -1143,7 +1146,18 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
         return False, None, error_msg
 
     except GarminConnectConnectionError as e:
-        error_msg = f"Connection issue: {e}"
+        error_str = str(e)
+        # Extract a clean message by detecting common HTTP status codes
+        if "410" in error_str:
+            error_msg = "Resource no longer available (410 Gone) - This data does not exist or the endpoint has been retired"
+        elif "403" in error_str:
+            error_msg = "Access denied (403 Forbidden) - Your account may not have permission for this feature"
+        elif "404" in error_str:
+            error_msg = (
+                "Endpoint not found (404) - This feature may have been moved or removed"
+            )
+        else:
+            error_msg = f"Connection issue: {e}"
         print(f"⚠️ {method_name} failed: {error_msg}")
         return False, None, error_msg
 
