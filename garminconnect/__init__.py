@@ -613,7 +613,9 @@ class Garmin:
                 ) from e
 
             auth_indicators = ["401", "unauthorized", "authentication", "login failed"]
-            is_auth_error = any(indicator in error_lower for indicator in auth_indicators)
+            is_auth_error = any(
+                indicator in error_lower for indicator in auth_indicators
+            )
 
             if is_auth_error:
                 raise GarminConnectAuthenticationError(
@@ -643,6 +645,22 @@ class Garmin:
 
         return result1, result2
 
+    def _require_display_name(self) -> str:
+        """Return display_name or raise if not set.
+
+        New/empty Garmin profiles may not have a displayName, which
+        would cause 'None' to be interpolated into API URLs and
+        result in 403 Forbidden errors.
+        """
+        if not self.display_name:
+            raise GarminConnectConnectionError(
+                "Display name is not set. This usually means your "
+                "Garmin profile is incomplete (new account with no "
+                "display name configured). Please set a display name "
+                "at https://connect.garmin.com and try again."
+            )
+        return self.display_name
+
     def get_full_name(self) -> str | None:
         """Return full name."""
         return self.full_name
@@ -662,7 +680,7 @@ class Garmin:
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
 
-        url = f"{self.garmin_connect_daily_summary_url}/{self.display_name}"
+        url = f"{self.garmin_connect_daily_summary_url}/{self._require_display_name()}"
         params = {"calendarDate": cdate}
         logger.debug("Requesting user summary")
 
@@ -681,7 +699,7 @@ class Garmin:
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
 
-        url = f"{self.garmin_connect_user_summary_chart}/{self.display_name}"
+        url = f"{self.garmin_connect_user_summary_chart}/{self._require_display_name()}"
         params = {"date": cdate}
         logger.debug("Requesting steps data")
 
@@ -1313,7 +1331,7 @@ class Garmin:
                 cdate = raw_ts.date().isoformat()
                 timestamp = _fmt_ts(raw_ts)
             except ValueError as e:
-                raise ValueError("Invalid timestamp format (expected ISO 8601)") from e
+                raise ValueError("invalid timestamp format (expected ISO 8601)") from e
         else:
             # Both provided - validate consistency and normalize
             cdate = _validate_date_format(cdate, "cdate")
@@ -1526,7 +1544,7 @@ class Garmin:
     def get_rhr_day(self, cdate: str) -> dict[str, Any]:
         """Return resting heartrate data for current user."""
         cdate = _validate_date_format(cdate, "cdate")
-        url = f"{self.garmin_connect_rhr_url}/{self.display_name}"
+        url = f"{self.garmin_connect_rhr_url}/{self._require_display_name()}"
         params = {
             "fromDate": cdate,
             "untilDate": cdate,
@@ -1646,7 +1664,7 @@ class Garmin:
         enddate = _validate_date_format(enddate, "enddate")
         if aggregation not in ("daily", "weekly"):
             raise ValueError(
-                f"Invalid aggregation '{aggregation}'. Must be 'daily' or 'weekly'."
+                f"invalid aggregation '{aggregation}', must be 'daily' or 'weekly'"
             )
         url = self.garmin_connect_running_tolerance_url
         params = {
@@ -1688,7 +1706,8 @@ class Garmin:
 
         if _type is None and startdate is None and enddate is None:
             url = (
-                self.garmin_connect_race_predictor_url + f"/latest/{self.display_name}"
+                self.garmin_connect_race_predictor_url
+                + f"/latest/{self._require_display_name()}"
             )
             return self.connectapi(url)
 
@@ -1700,10 +1719,11 @@ class Garmin:
                 - datetime.strptime(startdate, DATE_FORMAT_STR).date()
             ).days > 366:
                 raise ValueError(
-                    "Startdate cannot be more than one year before enddate"
+                    "startdate cannot be more than one year before enddate"
                 )
             url = (
-                self.garmin_connect_race_predictor_url + f"/{_type}/{self.display_name}"
+                self.garmin_connect_race_predictor_url
+                + f"/{_type}/{self._require_display_name()}"
             )
             params = {"fromCalendarDate": startdate, "toCalendarDate": enddate}
             return self.connectapi(url, params=params)
