@@ -81,7 +81,7 @@ interactions:
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
-    uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/5da0f071-075e-438c-ae63-c3f3eef73b1e?calendarDate=2023-07-01
+    uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/SANITIZED?calendarDate=2023-07-01
   response:
     body:
       string: '{"userProfileId": "SANITIZED", "totalKilocalories": 2202.0, "activeKilocalories":
@@ -261,7 +261,7 @@ interactions:
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
-    uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/5da0f071-075e-438c-ae63-c3f3eef73b1e?calendarDate=2023-07-01
+    uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/SANITIZED?calendarDate=2023-07-01
   response:
     body:
       string: '{"userProfileId": "SANITIZED", "totalKilocalories": 2202.0, "activeKilocalories":
@@ -441,7 +441,7 @@ interactions:
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
-    uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/5da0f071-075e-438c-ae63-c3f3eef73b1e?calendarDate=2023-07-01
+    uri: https://connectapi.garmin.com/usersummary-service/usersummary/daily/SANITIZED?calendarDate=2023-07-01
   response:
     body:
       string: '{"userProfileId": "SANITIZED", "totalKilocalories": 2202.0, "activeKilocalories":
