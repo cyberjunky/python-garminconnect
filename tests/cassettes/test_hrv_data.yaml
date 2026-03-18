@@ -128,6 +128,43 @@ interactions:
       code: 200
       message: OK
 - request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      Cookie:
+      - SANITIZED
+      User-Agent:
+      - GCM-iOS-5.7.2.1
+    method: GET
+    uri: https://connectapi.garmin.com/hrv-service/hrv/2023-07-01
+  response:
+    body:
+      string: '{"hrvSummary": {"calendarDate": "2023-07-01", "weeklyAvg": 42, "lastNight":
+        38, "lastNightAvg": 40, "lastNight5MinHigh": 65, "baseline": {"lowUpper":
+        34, "balancedLow": 39, "balancedUpper": 59, "markerValue": null}, "status":
+        "BALANCED", "feedbackPhrase": "HRV_BALANCED_SLEEP_HISTORY", "startTimestampGMT":
+        null, "endTimestampGMT": null, "startTimestampLocal": null, "endTimestampLocal":
+        null}, "hrv": []}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+    status:
+      code: 200
+      message: OK
+- request:
     body: mfa_token=MFA-43851-i7hWWWBtysft01HGvG7ciXegf07gQEVbRY5N90lCDkPog50CmK-cas
     headers:
       Accept:

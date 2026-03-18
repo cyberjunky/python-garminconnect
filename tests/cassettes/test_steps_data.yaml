@@ -81,7 +81,7 @@ interactions:
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
-    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/5da0f071-075e-438c-ae63-c3f3eef73b1e?date=2023-07-01
+    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/SANITIZED?date=2023-07-01
   response:
     body:
       string: '[{"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
@@ -418,7 +418,7 @@ interactions:
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
-    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/5da0f071-075e-438c-ae63-c3f3eef73b1e?date=2023-07-01
+    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/SANITIZED?date=2023-07-01
   response:
     body:
       string: '[{"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
@@ -755,7 +755,7 @@ interactions:
       User-Agent:
       - GCM-iOS-5.7.2.1
     method: GET
-    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/5da0f071-075e-438c-ae63-c3f3eef73b1e?date=2023-07-01
+    uri: https://connectapi.garmin.com/wellness-service/wellness/dailySummaryChart/SANITIZED?date=2023-07-01
   response:
     body:
       string: '[{"startGMT": "1970-01-01T00:00:00.000", "endGMT": "1970-01-01T00:00:00.000",
