@@ -2235,9 +2235,7 @@ def upload_workout_data(api: Garmin) -> None:
 
     except FileNotFoundError:
         print(f"❌ File not found: {config.workoutfile}")
-        print(
-            "ℹ️ Please ensure the workout JSON file exists in the test_data directory"
-        )
+        print("ℹ️ Please ensure the workout JSON file exists in the test_data directory")
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON format in {config.workoutfile}: {e}")
         print("ℹ️ Please check the JSON file format")
