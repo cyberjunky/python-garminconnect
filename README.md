@@ -321,7 +321,7 @@ git push origin your-branch
 
 ### Jupyter Notebook
 
-Explore the API interactively with our [reference notebook](https://github.com/cyberjunky/python-garminconnect/blob/master/reference.ipynb).
+Explore the API interactively with our [reference notebook](https://github.com/cyberjunky/python-garminconnect/blob/master/docs/reference.ipynb).
 
 ### Python Code Examples
 
