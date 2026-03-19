@@ -155,6 +155,10 @@ def init_api() -> Garmin | None:
         garmin.login(str(tokenstore_path))
         return garmin
 
+    except GarminConnectTooManyRequestsError as err:
+        print(f"\n❌ {err}")
+        sys.exit(1)
+
     except (
         FileNotFoundError,
         GarthHTTPError,
@@ -197,6 +201,10 @@ def init_api() -> Garmin | None:
             # Save tokens for future use
             garmin.garth.dump(str(tokenstore_path))
             return garmin
+
+        except GarminConnectTooManyRequestsError as err:
+            print(f"\n❌ {err}")
+            sys.exit(1)
 
         except GarminConnectAuthenticationError:
             # Continue the loop to retry

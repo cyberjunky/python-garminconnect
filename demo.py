@@ -4146,6 +4146,10 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
         print("Successfully logged in using stored tokens!")
         return garmin
 
+    except GarminConnectTooManyRequestsError as err:
+        print(f"\n❌ {err}")
+        sys.exit(1)
+
     except (
         FileNotFoundError,
         GarthHTTPError,
@@ -4207,8 +4211,12 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
 
             return garmin
 
-        except GarminConnectAuthenticationError:
-            print("❌ Authentication failed:")
+        except GarminConnectTooManyRequestsError as err:
+            print(f"\n❌ {err}")
+            sys.exit(1)
+
+        except GarminConnectAuthenticationError as err:
+            print(f"\n❌ {err}")
             print("💡 Please check your username and password and try again")
             # Clear the provided credentials to force re-entry
             email = None
