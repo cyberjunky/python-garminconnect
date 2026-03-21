@@ -18,7 +18,7 @@ class GarthHTTPError(Exception):
 
     def __init__(self, error: Exception, msg: str = ""):
         self.error = error
-        super().__init__(msg)
+        super().__init__(msg or str(error))
 
 
 class Client:
@@ -137,7 +137,12 @@ class Client:
 
             raise GarthHTTPError(FakeRespRate(), "429 Rate Limit")
 
-        raise GarthHTTPError(Exception(f"Login failed: {res}"))
+        if resp_type == "INVALID_USERNAME_PASSWORD":
+            class FakeRespAuth(Exception):
+                status_code = 401
+            raise GarthHTTPError(FakeRespAuth(), "401 Unauthorized (Invalid Username or Password)")
+
+        raise GarthHTTPError(Exception("Unhandled Garmin Login JSON"), f"Login failed: {res}")
 
     def _complete_mfa(self, mfa_code: str) -> None:
         r = self._mfa_session.post(
