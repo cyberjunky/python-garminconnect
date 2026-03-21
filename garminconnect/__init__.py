@@ -10,13 +10,12 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Any
 
-from .fit import FitEncoderWeight  # type: ignore
-
 import requests
 from requests import HTTPError
 
 from . import client as garth
 from .client import GarthHTTPError
+from .fit import FitEncoderWeight  # type: ignore
 
 GarthException = GarthHTTPError
 

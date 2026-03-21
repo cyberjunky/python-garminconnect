@@ -61,19 +61,22 @@ class Client:
         return_on_mfa: bool = False,
     ) -> tuple[None, None]:
         """Logs into Mobile API to perfectly bypass CF, then trades for Web JWT."""
-        sess: requests.Session = requests.Session(impersonate="chrome131_android")
-        sess.headers = dict({
-            "User-Agent": "com.garmin.android.apps.connectmobile",
-            "Accept": "application/json",
+        sess: requests.Session = requests.Session()
+        sess.headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) "
+                "AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"
+            ),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
-        })
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Site": "none",
+        }
 
         sess.get(
             f"{self._sso}/mobile/sso/en/sign-in",
             params={"clientId": CLIENT_ID},
-            headers={
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-            },
         )
 
         r = sess.post(
@@ -159,11 +162,11 @@ class Client:
 
     def _establish_session(self, ticket: str) -> None:
         self.cs: requests.Session = requests.Session(impersonate="chrome131")
-        self.cs.headers = dict({
+        self.cs.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
-        })
+        }
 
         self.cs.get(SSO_SERVICE_URL, params={"ticket": ticket}, allow_redirects=True)
         r_tok = self.cs.post(
@@ -268,7 +271,7 @@ class Client:
     def request(self, method: str, _domain: str, path: str, **kwargs: Any) -> Any:
         # Legacy garth used this to distinguish API vs WEB
         return self._run_request(method, path, **kwargs)
-        
+
     def post(self, path: str, **kwargs: Any) -> Any:
         return self._run_request("POST", path, **kwargs).json()
 
