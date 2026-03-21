@@ -4,6 +4,7 @@ import logging
 import numbers
 import os
 import re
+import time
 from collections.abc import Callable
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
@@ -422,7 +423,7 @@ class Garmin:
             if tokenstore:
                 try:
                     if len(tokenstore) > 512:
-                        # Token data is provided directly as string (base64 encoded)
+                        # Token data is provided directly as string
                         self.client.loads(tokenstore)
                     else:
                         # Tokenstore is a path - normalize it for cross-platform compatibility
@@ -466,26 +467,45 @@ class Garmin:
                 # Continue to load profile/settings below
 
             # Ensure profile is loaded (tokenstore path may not populate it)
-            try:
-                prof = self.client.connectapi("/userprofile-service/socialProfile")
-            except Exception as e:
-                raise GarminConnectAuthenticationError(
-                    "Failed to retrieve social profile"
-                ) from e
-            if not prof or not isinstance(prof, dict) or "displayName" not in prof:
+            prof = None
+            for attempt in range(3):
+                try:
+                    prof = self.client.connectapi("/userprofile-service/socialProfile")
+                    if prof and isinstance(prof, dict) and "displayName" in prof:
+                        break
+                except Exception as e:
+                    if attempt == 2:
+                        raise GarminConnectAuthenticationError(
+                            "Failed to retrieve social profile"
+                        ) from e
+                    logger.debug("Retrying social profile fetch: %s", e)
+                    time.sleep(1)
+            else:
                 raise GarminConnectAuthenticationError("Invalid profile data found")
 
             self.display_name = prof.get("displayName")
             self.full_name = prof.get("fullName")
 
-            settings = self.client.connectapi(self.garmin_connect_user_settings_url)
-
-            if not settings:
-                raise GarminConnectAuthenticationError(
-                    "Failed to retrieve user settings"
-                )
-
-            if not isinstance(settings, dict) or "userData" not in settings:
+            settings = None
+            for attempt in range(3):
+                try:
+                    settings = self.client.connectapi(
+                        self.garmin_connect_user_settings_url
+                    )
+                    if (
+                        settings
+                        and isinstance(settings, dict)
+                        and "userData" in settings
+                    ):
+                        break
+                except Exception as e:
+                    if attempt == 2:
+                        raise GarminConnectAuthenticationError(
+                            "Failed to retrieve user settings"
+                        ) from e
+                    logger.debug("Retrying user settings fetch: %s", e)
+                    time.sleep(1)
+            else:
                 raise GarminConnectAuthenticationError("Invalid user settings found")
 
             self.unit_system = settings["userData"].get("measurementSystem")
@@ -544,22 +564,39 @@ class Garmin:
         """Resume login interactively."""
         mfa_status, _legacy_token = self.client.resume_login(client_state, mfa_code)
 
-        try:
-            prof = self.client.connectapi("/userprofile-service/socialProfile")
-            if prof and isinstance(prof, dict):
-                self.display_name = prof.get("displayName")
-                self.full_name = prof.get("fullName")
-        except Exception:
-            logger.debug("Profile fetch failed during resume_login, continuing")
+        prof = None
+        for attempt in range(3):
+            try:
+                prof = self.client.connectapi("/userprofile-service/socialProfile")
+                if prof and isinstance(prof, dict) and "displayName" in prof:
+                    self.display_name = prof.get("displayName")
+                    self.full_name = prof.get("fullName")
+                    break
+            except Exception as e:
+                if attempt == 2:
+                    logger.debug("Profile fetch failed during resume_login, continuing")
+                else:
+                    logger.debug("Retrying profile fetch during resume_login: %s", e)
+                    time.sleep(1)
 
-        try:
-            settings = self.client.connectapi(self.garmin_connect_user_settings_url)
-            if settings and isinstance(settings, dict) and "userData" in settings:
-                self.unit_system = settings["userData"].get("measurementSystem")
-        except Exception as e:
-            logger.debug(
-                f"User settings fetch failed during resume_login, continuing: {e}"
-            )
+        settings = None
+        for attempt in range(3):
+            try:
+                settings = self.client.connectapi(self.garmin_connect_user_settings_url)
+                if settings and isinstance(settings, dict) and "userData" in settings:
+                    self.unit_system = settings["userData"].get("measurementSystem")
+                    break
+            except Exception as e:
+                if attempt == 2:
+                    logger.debug(
+                        "User settings fetch failed during resume_login, continuing: %s",
+                        e,
+                    )
+                else:
+                    logger.debug(
+                        "Retrying user settings fetch during resume_login: %s", e
+                    )
+                    time.sleep(1)
 
         return mfa_status, _legacy_token
 
@@ -591,6 +628,8 @@ class Garmin:
         """Return user activity summary for 'cdate' format 'YYYY-MM-DD'
         (compat for garminconnect).
         """
+        # Validate input
+        cdate = _validate_date_format(cdate, "cdate")
         return self.get_user_summary(cdate)
 
     def get_user_summary(self, cdate: str) -> dict[str, Any]:
@@ -803,6 +842,8 @@ class Garmin:
 
     def get_stats_and_body(self, cdate: str) -> dict[str, Any]:
         """Return activity data and body composition (compat for garminconnect)."""
+        # Validate input
+        cdate = _validate_date_format(cdate, "cdate")
         stats = self.get_stats(cdate)
         body = self.get_body_composition(cdate)
         body_avg = body.get("totalAverage") or {}
@@ -1699,6 +1740,7 @@ class Garmin:
 
     def get_device_settings(self, device_id: str) -> dict[str, Any]:
         """Return device settings for device with 'device_id'."""
+        device_id = str(_validate_positive_integer(int(device_id), "device_id"))
         url = f"{self.garmin_connect_device_url}/device-info/settings/{device_id}"
         logger.debug("Requesting device settings")
 
@@ -1725,6 +1767,7 @@ class Garmin:
 
         startdate = _validate_date_format(startdate, "startdate")
         enddate = _validate_date_format(enddate, "enddate")
+        device_id = str(_validate_positive_integer(int(device_id), "device_id"))
         params = {"singleDayView": single_day}
 
         url = f"{self.garmin_connect_solar_url}/{device_id}/{startdate}/{enddate}"
@@ -2033,6 +2076,7 @@ class Garmin:
 
     def delete_activity(self, activity_id: str) -> Any:
         """Delete activity with specified id."""
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_delete_activity_url}/{activity_id}"
         logger.debug("Deleting activity with id %s", activity_id)
 
@@ -2263,7 +2307,7 @@ class Garmin:
 
     def get_activity_splits(self, activity_id: str) -> dict[str, Any]:
         """Return activity splits."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/splits"
         logger.debug("Requesting splits for activity id %s", activity_id)
 
@@ -2273,7 +2317,7 @@ class Garmin:
         """Return typed activity splits. Contains similar info to `get_activity_splits`, but for certain activity types
         (e.g., Bouldering), this contains more detail.
         """
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/typedsplits"
         logger.debug("Requesting typed splits for activity id %s", activity_id)
 
@@ -2281,7 +2325,7 @@ class Garmin:
 
     def get_activity_split_summaries(self, activity_id: str) -> dict[str, Any]:
         """Return activity split summaries."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/split_summaries"
         logger.debug("Requesting split summaries for activity id %s", activity_id)
 
@@ -2289,7 +2333,7 @@ class Garmin:
 
     def get_activity_weather(self, activity_id: str) -> dict[str, Any]:
         """Return activity weather."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/weather"
         logger.debug("Requesting weather for activity id %s", activity_id)
 
@@ -2297,7 +2341,7 @@ class Garmin:
 
     def get_activity_hr_in_timezones(self, activity_id: str) -> dict[str, Any]:
         """Return activity heartrate in timezones."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/hrTimeInZones"
         logger.debug("Requesting HR time-in-zones for activity id %s", activity_id)
 
@@ -2305,7 +2349,7 @@ class Garmin:
 
     def get_activity_power_in_timezones(self, activity_id: str) -> dict[str, Any]:
         """Return activity power in timezones."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/powerTimeInZones"
         logger.debug("Requesting Power time-in-zones for activity id %s", activity_id)
 
@@ -2321,7 +2365,7 @@ class Garmin:
 
     def get_activity(self, activity_id: str) -> dict[str, Any]:
         """Return activity summary, including basic splits."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         logger.debug("Requesting activity summary data for activity id %s", activity_id)
 
@@ -2331,7 +2375,7 @@ class Garmin:
         self, activity_id: str, maxchart: int = 2000, maxpoly: int = 4000
     ) -> dict[str, Any]:
         """Return activity details."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         maxchart = _validate_positive_integer(maxchart, "maxchart")
         maxpoly = _validate_non_negative_integer(maxpoly, "maxpoly")
         params = {"maxChartSize": str(maxchart), "maxPolylineSize": str(maxpoly)}
@@ -2342,7 +2386,7 @@ class Garmin:
 
     def get_activity_exercise_sets(self, activity_id: int | str) -> dict[str, Any]:
         """Return activity exercise sets."""
-        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
         logger.debug("Requesting exercise sets for activity id %s", activity_id)
 
@@ -2350,7 +2394,7 @@ class Garmin:
 
     def get_activity_gear(self, activity_id: int | str) -> dict[str, Any]:
         """Return gears used for activity id."""
-        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         params = {
             "activityId": str(activity_id),
         }
@@ -2400,7 +2444,7 @@ class Garmin:
 
         """
         gearUUID = str(gearUUID)
-        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
 
         url = (
             f"{self.garmin_connect_gear_baseurl}/link/{gearUUID}/activity/{activity_id}"
@@ -2431,7 +2475,7 @@ class Garmin:
 
         """
         gearUUID = str(gearUUID)
-        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
 
         url = f"{self.garmin_connect_gear_baseurl}/unlink/{gearUUID}/activity/{activity_id}"
         logger.debug("Unlinking gear %s from activity %s", gearUUID, activity_id)

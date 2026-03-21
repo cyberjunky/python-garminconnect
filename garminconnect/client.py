@@ -255,7 +255,7 @@ class Client:
     def dump(self, path: str) -> None:
         """Write tokens safely natively to disk format."""
         p = Path(path).expanduser()
-        if p.is_dir():
+        if p.is_dir() or not p.name.endswith(".json"):
             p = p / "garmin_tokens.json"
 
         # Ensure parent directories exist
@@ -266,7 +266,7 @@ class Client:
         try:
             self._tokenstore_path = path
             p = Path(path).expanduser()
-            if p.is_dir():
+            if p.is_dir() or not p.name.endswith(".json"):
                 p = p / "garmin_tokens.json"
             self.loads(p.read_text())
         except Exception as e:
