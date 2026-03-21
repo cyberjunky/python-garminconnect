@@ -2,6 +2,8 @@
 your_data/
 pdm.lock
 garth/
+get_*
+test_*
 
 # Virtual environments
 .venv/
