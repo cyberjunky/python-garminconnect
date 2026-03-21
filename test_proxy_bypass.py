@@ -1,62 +1,64 @@
 #!/usr/bin/env python3
-# ruff: noqa: T201, S310, S105, S112, S110, TRY002, D103, PTH110, D415, D400, C418, PLW2901
 """Garmin 429 IP Bypass via Free HTTPS Proxy.
 Use this script if your home IP is aggressively rate-limited (429) by Garmin.
 It securely tunnels the initial authentication handshake through a random HTTPS proxy.
 """
+# ruff: noqa: T201, S310, S105, S112, S110, TRY002, D103, PTH110, D415, D400
 
+import contextlib
 import getpass
 import logging
 import os
 import random
 import traceback
 import urllib.request
+from typing import Optional
 
-from curl_cffi import requests
+import requests
 
 from garminconnect.client import CLIENT_ID, SSO_SERVICE_URL, Client, GarthHTTPError
 
 _LOGGER = logging.getLogger(__name__)
 
 # Token storage file
-TOKEN_FILE = ".garmin_tokens.json"
+TOKEN_FILE = "~/.garminconnect/.garmin_tokens.json"
 
+SESSION_UA = "GCM-iOS-5.22.1.4"
+SSO_PAGE_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) "
+        "AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"
+    ),
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Site": "none",
+}
 
 def proxy_login(auth_obj: Client, email: str, password: str) -> bool:
-    """1. Fetch free anonymous HTTPS proxies"""
     try:
         url = "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt"
         proxies_list = (
             urllib.request.urlopen(url).read().decode("utf-8").strip().split("\n")
         )
-        # Shuffle to pick random proxies instead of hitting the first ones!
         random.shuffle(proxies_list)
     except Exception:
         return False
 
-    # 2. Iterate until we find one that Cloudflare and Garmin likes
-    sess = requests.Session(impersonate="chrome131_android", timeout=10)
-    sess.headers = dict(
-        {
-            "User-Agent": "com.garmin.android.apps.connectmobile",
-            "Accept": "application/json",
-            "Accept-Language": "en-US,en;q=0.9",
-        }
-    )
-
+    sess = requests.Session()
     print(f"Testing {len(proxies_list)} proxies to bypass Garmin's rate limits...")
+    
     for proxy in proxies_list[:50]:
         proxy = proxy.strip()
         px = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
         try:
-            # We are sending HTTPS traffic through the proxy, so it's perfectly end-to-end encrypted.
             r_get = sess.get(
                 "https://sso.garmin.com/mobile/sso/en/sign-in",
                 params={"clientId": CLIENT_ID},
-                headers={
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-                },
+                headers=SSO_PAGE_HEADERS,
                 proxies=px,
+                timeout=10
             )
             if r_get.status_code != 200:
                 continue
@@ -70,7 +72,9 @@ def proxy_login(auth_obj: Client, email: str, password: str) -> bool:
                     "rememberMe": False,
                     "captchaToken": "",
                 },
+                headers=SSO_PAGE_HEADERS,
                 proxies=px,
+                timeout=10
             )
 
             try:
@@ -96,7 +100,7 @@ def proxy_login(auth_obj: Client, email: str, password: str) -> bool:
             if resp_type == "SUCCESSFUL":
                 print(f"Proxy {proxy} successfully logged in!")
                 ticket = res["serviceTicketId"]
-                auth_obj._establish_session(ticket)
+                auth_obj._establish_session(ticket) # Doesn't use proxy for API tokens natively!
                 return True
 
         except Exception as e:
@@ -107,8 +111,6 @@ def proxy_login(auth_obj: Client, email: str, password: str) -> bool:
     print("Failed to find any working proxy that allows Garmin logins.")
     return False
 
-
-# We monkey-patch the complete_mfa to ALSO use the proxy securely
 def proxy_mfa(auth_obj: Client, code: str) -> None:
     r = auth_obj._mfa_session.post(
         "https://sso.garmin.com/mobile/api/mfa/verifyCode",
@@ -121,11 +123,12 @@ def proxy_mfa(auth_obj: Client, code: str) -> None:
             "mfaSetup": False,
         },
         proxies=getattr(auth_obj, "_mfa_proxy", None),
+        headers=SSO_PAGE_HEADERS,
+        timeout=10
     )
     res = r.json()
     if res.get("responseStatus", {}).get("type") == "SUCCESSFUL":
         ticket = res["serviceTicketId"]
-        # Establish session completely bypasses Proxy and returns to your main clean IP
         auth_obj._establish_session(ticket)
         return
     raise GarthHTTPError(Exception(f"MFA Verification failed via proxy: {res}"))
@@ -143,16 +146,15 @@ def main():
     auth = Client()
 
     # Check if existing session on disk works
-    if os.path.exists(TOKEN_FILE):
-        try:
-            auth.load(TOKEN_FILE)
-            if auth.is_authenticated:
-                print("Already logged in via existing .garmin_tokens.json file.")
-                return
-        except Exception:
-            pass
+    try:
+        auth.load("~/.garminconnect")
+        if auth.is_authenticated:
+            print("Already logged in via existing ~/.garminconnect file.")
+            return
+    except Exception:
+        pass
 
-    print("Attempting proxy login execution...")
+    print("Attempting proxy login execution to fetch fresh session cookies...")
     try:
         if proxy_login(auth, email, password):
             print("Successfully established proxy login bypass!")
@@ -168,9 +170,9 @@ def main():
             return
 
     if auth.is_authenticated:
-        auth.dump(TOKEN_FILE)
-        print(f"Success! Session safely persisted to {TOKEN_FILE}")
-        print("You can now securely use python-garminconnect demo.py normally.")
+        auth.dump("~/.garminconnect")
+        print(f"Success! Session safely persisted to ~/.garminconnect")
+        print("You can now securely run ./demo.py using identically native requests!")
 
 
 if __name__ == "__main__":

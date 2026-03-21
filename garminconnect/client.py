@@ -61,10 +61,12 @@ class Client:
         return_on_mfa: bool = False,
     ) -> tuple[None, None]:
         """Logs into Mobile API to perfectly bypass CF, then trades for Web JWT."""
+        import random
+        ios_version = f"17_{random.randint(0, 9)}"
         sess: requests.Session = requests.Session()
         sess.headers = {
             "User-Agent": (
-                "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) "
+                f"Mozilla/5.0 (iPhone; CPU iPhone OS {ios_version} like Mac OS X) "
                 "AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"
             ),
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
