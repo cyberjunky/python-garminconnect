@@ -28,13 +28,14 @@ from getpass import getpass
 from pathlib import Path
 
 import requests
-from garth.exc import GarthException, GarthHTTPError
 
 from garminconnect import (
     Garmin,
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
     GarminConnectTooManyRequestsError,
+    GarthException,
+    GarthHTTPError,
 )
 
 # Suppress garminconnect library logging to avoid tracebacks in normal operation
