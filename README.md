@@ -180,27 +180,15 @@ Run these commands before submitting PRs to ensure code quality standards.
 
 ## 🔐 Authentication
 
-The library uses the same OAuth authentication as the official Garmin Connect app via [Garth](https://github.com/matin/garth).
+The library uses a modern TLS-fingerprinting JWT authentication engine powered by `curl_cffi` to natively bypass Cloudflare's WAF mechanism and securely interface directly with Garmin's React `/gc-api/`.
 
 **Key Features:**
-- Login credentials valid for one year (no repeated logins)
-- Secure OAuth token storage
-- Same authentication flow as official app
-
-**Advanced Configuration:**
-```python
-# Optional: Custom OAuth consumer (before login)
-import os
-import garth
-garth.sso.OAUTH_CONSUMER = {
-    'key': os.getenv('GARTH_OAUTH_KEY', '<YOUR_KEY>'),
-    'secret': os.getenv('GARTH_OAUTH_SECRET', '<YOUR_SECRET>'),
-}
-# Note: Set these env vars securely; placeholders are non-sensitive.
-```
+- Seamlessly bypasses aggressive Cloudflare rate-limiting and blocks
+- Retains token credentials securely using modern HTTP-only structured cookies
+- Completely drop-in compatible mapping over legacy `garth` integrations
 
 **Token Storage:**
-Tokens are automatically saved to `~/.garminconnect` directory for persistent authentication.
+Tokens are automatically saved to `~/.garminconnect` directory (`.garmin_tokens.json`) for persistent authentication.
 For security, ensure restrictive permissions:
 
 ```bash
