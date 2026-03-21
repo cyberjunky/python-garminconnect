@@ -35,7 +35,6 @@ def proxy_login(auth_obj: Client, email: str, password: str) -> bool:
         return False
 
     # 2. Iterate until we find one that Cloudflare and Garmin likes
-    working_proxy = None
     sess = requests.Session(impersonate="chrome131_android", timeout=10)
     sess.headers = dict(
         {
@@ -51,8 +50,7 @@ def proxy_login(auth_obj: Client, email: str, password: str) -> bool:
         px = {"http": f"http://{proxy}", "https": f"http://{proxy}"}
         try:
             # We are sending HTTPS traffic through the proxy, so it's perfectly end-to-end encrypted.
-            # The proxy provider physically cannot read your password.
-            r = sess.get(
+            r_get = sess.get(
                 "https://sso.garmin.com/mobile/sso/en/sign-in",
                 params={"clientId": CLIENT_ID},
                 headers={
@@ -60,53 +58,53 @@ def proxy_login(auth_obj: Client, email: str, password: str) -> bool:
                 },
                 proxies=px,
             )
-            if r.status_code == 200:
-                working_proxy = px
-                print(f"Proxy {proxy} is working!")
-                break
-        except Exception:
+            if r_get.status_code != 200:
+                continue
+
+            r = sess.post(
+                "https://sso.garmin.com/mobile/api/login",
+                params={"clientId": CLIENT_ID, "locale": "en-US", "service": SSO_SERVICE_URL},
+                json={
+                    "username": email,
+                    "password": password,
+                    "rememberMe": False,
+                    "captchaToken": "",
+                },
+                proxies=px,
+            )
+
+            try:
+                res = r.json()
+            except Exception:
+                continue
+
+            resp_type = res.get("responseStatus", {}).get("type")
+
+            if resp_type == "MFA_REQUIRED":
+                print(f"Proxy {proxy} works and requires MFA!")
+                auth_obj._mfa_method = res.get("customerMfaInfo", {}).get(
+                    "mfaLastMethodUsed", "email"
+                )
+                auth_obj._mfa_session = sess
+                auth_obj._mfa_proxy = px  # Save proxy for MFA stage
+                raise Exception("mfa_required")
+
+            if "status-code" in res.get("error", {}) and res["error"]["status-code"] == "429":
+                print(f"Proxy {proxy} blocked by Garmin (429 Rate Limit). Trying next...")
+                continue
+
+            if resp_type == "SUCCESSFUL":
+                print(f"Proxy {proxy} successfully logged in!")
+                ticket = res["serviceTicketId"]
+                auth_obj._establish_session(ticket)
+                return True
+
+        except Exception as e:
+            if str(e) == "mfa_required":
+                raise
             continue
 
-    if not working_proxy:
-        print("Failed to find a working proxy.")
-        return False
-
-    r = sess.post(
-        "https://sso.garmin.com/mobile/api/login",
-        params={"clientId": CLIENT_ID, "locale": "en-US", "service": SSO_SERVICE_URL},
-        json={
-            "username": email,
-            "password": password,
-            "rememberMe": False,
-            "captchaToken": "",
-        },
-        proxies=working_proxy,
-    )
-
-    try:
-        res = r.json()
-    except Exception:
-        return False
-
-    resp_type = res.get("responseStatus", {}).get("type")
-
-    if resp_type == "MFA_REQUIRED":
-        auth_obj._mfa_method = res.get("customerMfaInfo", {}).get(
-            "mfaLastMethodUsed", "email"
-        )
-        auth_obj._mfa_session = sess
-        auth_obj._mfa_proxy = working_proxy  # Save proxy for MFA stage
-        raise Exception("mfa_required")
-
-    if "status-code" in res.get("error", {}) and res["error"]["status-code"] == "429":
-        print("Proxy failed: 429 Rate Limit from Garmin.")
-        return False
-
-    if resp_type == "SUCCESSFUL":
-        ticket = res["serviceTicketId"]
-        auth_obj._establish_session(ticket)
-        return True
-
+    print("Failed to find any working proxy that allows Garmin logins.")
     return False
 
 
