@@ -308,8 +308,12 @@ class Client:
     def _run_request(self, method: str, path: str, **kwargs: Any) -> Any:
         # Trap legacy deprecated endpoints that were removed from the React /gc-api/ interface entirely natively
         # Redirect legacy deprecated profile endpoint to the active modern equivalent directly natively!
-        if "userprofile/profile" in path:
+        if "/userprofile-service/userprofile/socialProfile" in path:
+            path = path.replace("/userprofile-service/userprofile/socialProfile", "/userprofile-service/socialProfile")
+        elif "userprofile/profile" in path:
             path = path.replace("userprofile/profile", "socialProfile")
+        elif "/userprofile-service/userprofile" in path:
+            path = path.replace("/userprofile-service/userprofile", "/userprofile-service/socialProfile")
 
         if "userprofile/user-settings" in path:
 
