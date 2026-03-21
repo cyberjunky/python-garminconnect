@@ -236,9 +236,19 @@ class Client:
             data["cookies"] = {c.name: c.value for c in self.cs.cookies.jar}
         return json.dumps(data)
 
+    def dump(self, path: str) -> None:
+        """Write tokens safely natively to disk format."""
+        p = Path(path).expanduser()
+        if p.is_dir():
+            p = p / ".garmin_tokens.json"
+
+        # Ensure parent directories exist
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(self.dumps())
+
     def load(self, path: str) -> None:
         try:
-            p = Path(path)
+            p = Path(path).expanduser()
             if p.is_dir():
                 p = p / ".garmin_tokens.json"
             self.loads(p.read_text())
