@@ -208,10 +208,6 @@ class Client:
 
         self.cs.cookies.set("JWT_WEB", self.jwt_web, domain=f".{self.domain}", path="/")
 
-        # Emulate older OAuth storage
-        self.oauth1_token = self.jwt_web
-        self.oauth2_token = self.csrf_token
-
     def _refresh_session(self) -> None:
         """Silently grab fresh JWT behind the scenes."""
         if not self.is_authenticated:
@@ -287,10 +283,6 @@ class Client:
             for k, v in raw_cookies.items():
                 self.cs.cookies.set(k, v, domain=f".{self.domain}", path="/")
 
-            # Allow fallback backwards compatibility where Home Assistant uses OAuth structures
-            self.oauth1_token = self.jwt_web
-            self.oauth2_token = self.csrf_token
-
             if not self.is_authenticated:
                 raise GarminConnectAuthenticationError("Missing tokens from dict load")
         except Exception as e:
@@ -328,6 +320,7 @@ class Client:
         return resp
 
     def resume_login(self, client_state: Any, mfa_code: str) -> tuple[str | None, Any]:
+        _ = client_state
         self._complete_mfa(mfa_code)
         return None, None
 
