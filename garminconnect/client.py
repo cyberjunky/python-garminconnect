@@ -112,7 +112,7 @@ class Client:
             self._mfa_session = sess
 
             if return_on_mfa:
-                raise GarthHTTPError(Exception("mfa_required"))
+                return "needs_mfa", None
 
             if prompt_mfa:
                 mfa_code = prompt_mfa()
