@@ -6,7 +6,7 @@ authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "curl_cffi>=0.7.4",
+    "requests",
 ]
 readme = "README.md"
 license = {text = "MIT"}
@@ -73,7 +73,6 @@ testing = [
     "vcrpy>=7.0.0",
 ]
 example = [
-    "curl_cffi>=0.7.4",
     "requests",
     "readchar",
 ]

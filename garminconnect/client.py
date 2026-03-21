@@ -5,7 +5,7 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from curl_cffi import requests
+import requests
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class Client:
         self.profile: dict | None = None
 
         # Impersonate Android Chrome for mobile API, Desktop Chrome for Web API
-        self.cs: requests.Session = requests.Session(impersonate="chrome131")
+        self.cs: requests.Session = requests.Session()
 
     @property
     def is_authenticated(self) -> bool:
@@ -161,7 +161,7 @@ class Client:
         raise GarthHTTPError(Exception(f"MFA Verification failed: {res}"))
 
     def _establish_session(self, ticket: str) -> None:
-        self.cs: requests.Session = requests.Session(impersonate="chrome131")
+        self.cs: requests.Session = requests.Session()
         self.cs.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
