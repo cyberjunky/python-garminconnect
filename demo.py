@@ -77,9 +77,6 @@ class Config:
         self.email = os.getenv("EMAIL")
         self.password = os.getenv("PASSWORD")
         self.tokenstore = os.getenv("GARMINTOKENS") or "~/.garminconnect"
-        self.tokenstore_base64 = (
-            os.getenv("GARMINTOKENS_BASE64") or "~/.garminconnect_base64"
-        )
 
         # Date settings
         self.today = datetime.date.today()
