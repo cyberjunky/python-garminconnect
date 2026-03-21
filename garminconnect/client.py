@@ -339,10 +339,7 @@ class Client:
         return self._run_request("GET", path, **kwargs).content
 
     def _run_request(self, method: str, path: str, **kwargs: Any) -> Any:
-        # Redirect all modern/proxy traffic directly into gc-api natively!
-        if path.startswith("/modern/proxy"):
-            path = path.replace("/modern/proxy", "/gc-api", 1)
-        elif not path.startswith("/gc-api"):
+        if not path.startswith("/gc-api"):
             path = f"/gc-api{path if path.startswith('/') else '/' + path}"
 
         url = f"{self._connect}{path}"
