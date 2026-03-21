@@ -12,7 +12,7 @@ This example demonstrates the basic usage of python-garminconnect:
 For a comprehensive demo of all available API calls, see demo.py
 
 Dependencies:
-pip3 install garth requests
+pip3 install requests
 
 Environment Variables (optional):
 export EMAIL=<your garmin email address>
@@ -34,8 +34,6 @@ from garminconnect import (
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
     GarminConnectTooManyRequestsError,
-    GarthException,
-    GarthHTTPError,
 )
 
 # Suppress garminconnect library logging to avoid tracebacks in normal operation
@@ -52,7 +50,7 @@ def safe_api_call(api_method, *args, **kwargs):
         result = api_method(*args, **kwargs)
         return True, result, None
 
-    except GarthHTTPError as e:
+    except Exception as e:
         # Handle specific HTTP errors gracefully
         error_str = str(e)
         status_code = getattr(getattr(e, "response", None), "status_code", None)
@@ -117,7 +115,7 @@ def safe_api_call(api_method, *args, **kwargs):
     except GarminConnectTooManyRequestsError as e:
         return False, None, f"Rate limit exceeded: {e}"
 
-    except Exception as e:
+    except Exception as e:  # noqa: B025
         return False, None, f"Unexpected error: {e}"
 
 
@@ -162,7 +160,6 @@ def init_api() -> Garmin | None:
 
     except (
         FileNotFoundError,
-        GarthHTTPError,
         GarminConnectAuthenticationError,
         GarminConnectConnectionError,
     ):
@@ -185,9 +182,9 @@ def init_api() -> Garmin | None:
                 try:
                     garmin.resume_login(result2, mfa_code)
 
-                except GarthHTTPError as garth_error:
+                except Exception as mfa_error:
                     # Handle specific HTTP errors from MFA
-                    error_str = str(garth_error)
+                    error_str = str(mfa_error)
                     if "429" in error_str and "Too Many Requests" in error_str:
                         sys.exit(1)
                     elif "401" in error_str or "403" in error_str:
@@ -196,11 +193,10 @@ def init_api() -> Garmin | None:
                         # Other HTTP errors - don't retry
                         sys.exit(1)
 
-                except GarthException:
                     continue
 
             # Save tokens for future use
-            garmin.garth.dump(str(tokenstore_path))
+            garmin.client.dump(str(tokenstore_path))
             return garmin
 
         except GarminConnectTooManyRequestsError as err:
@@ -213,7 +209,6 @@ def init_api() -> Garmin | None:
 
         except (
             FileNotFoundError,
-            GarthHTTPError,
             GarminConnectConnectionError,
             requests.exceptions.HTTPError,
         ):

@@ -180,15 +180,13 @@ Run these commands before submitting PRs to ensure code quality standards.
 
 ## 🔐 Authentication
 
-The library uses a modern TLS-fingerprinting JWT authentication engine powered by `curl_cffi` to natively bypass Cloudflare's WAF mechanism and securely interface directly with Garmin's React `/gc-api/`.
+The library uses a modern JWT authentication engine to securely interface directly with Garmin's React `/gc-api/`.
 
 **Key Features:**
-- Seamlessly bypasses aggressive Cloudflare rate-limiting and blocks
 - Retains token credentials securely using modern HTTP-only structured cookies
-- Completely drop-in compatible mapping over legacy `garth` integrations
 
 **Token Storage:**
-Tokens are automatically saved to `~/.garminconnect` directory (`.garmin_tokens.json`) for persistent authentication.
+Tokens are automatically saved to `~/.garminconnect` directory (`garmin_tokens.json`) for persistent authentication.
 For security, ensure restrictive permissions:
 
 ```bash

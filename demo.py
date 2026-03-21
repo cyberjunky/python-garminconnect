@@ -8,7 +8,7 @@ and error handling patterns for python-garminconnect.
 For a simple getting-started example, see example.py
 
 Dependencies:
-pip3 install garth requests readchar
+pip3 install requests readchar
 
 Environment Variables (optional):
 export EMAIL=<your garmin email address>
@@ -35,8 +35,6 @@ from garminconnect import (
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
     GarminConnectTooManyRequestsError,
-    GarthException,
-    GarthHTTPError,
 )
 
 # Configure logging to reduce verbose error output from garminconnect library
@@ -1092,7 +1090,7 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
         result = api_method(*args, **kwargs)
         return True, result, None
 
-    except GarthHTTPError as e:
+    except GarminConnectConnectionError as e:
         # Handle specific HTTP errors more gracefully
         error_str = str(e)
 
@@ -1143,7 +1141,7 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
         print(f"⚠️ {method_name} failed: {error_msg}")
         return False, None, error_msg
 
-    except GarminConnectConnectionError as e:
+    except GarminConnectConnectionError as e:  # noqa: B025
         error_str = str(e)
         # Extract a clean message by detecting common HTTP status codes
         if "410" in error_str:
@@ -3423,16 +3421,16 @@ def get_virtual_challenges_data(api: Garmin) -> None:
     # that don't have virtual challenges enabled, so handle it quietly
     try:
         challenges = api.get_inprogress_virtual_challenges(
-            config.start, config.default_limit
+            config.start_badge, config.default_limit
         )
         if challenges:
             print("✅ Virtual challenges data retrieved successfully")
             call_and_display(
                 api.get_inprogress_virtual_challenges,
-                config.start,
+                config.start_badge,
                 config.default_limit,
                 method_name="get_inprogress_virtual_challenges",
-                api_call_desc=f"api.get_inprogress_virtual_challenges({config.start}, {config.default_limit})",
+                api_call_desc=f"api.get_inprogress_virtual_challenges({config.start_badge}, {config.default_limit})",
             )
             return
         print("ℹ️ No in-progress virtual challenges found")
@@ -4150,7 +4148,6 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
 
     except (
         FileNotFoundError,
-        GarthHTTPError,
         GarminConnectAuthenticationError,
         GarminConnectConnectionError,
     ):
@@ -4180,31 +4177,24 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
                     garmin.resume_login(result2, mfa_code)
                     print("✅ MFA authentication successful!")
 
-                except GarthHTTPError as garth_error:
-                    # Handle specific HTTP errors from MFA
-                    error_str = str(garth_error)
+                except GarminConnectTooManyRequestsError:
+                    print("❌ Too many MFA attempts")
+                    print("💡 Please wait 30 minutes before trying again")
+                    sys.exit(1)
+                except GarminConnectAuthenticationError as mfa_error:
+                    # Handle specific errors from MFA
+                    error_str = str(mfa_error)
                     print(f"🔍 Debug: MFA error details: {error_str}")
-
-                    if "429" in error_str and "Too Many Requests" in error_str:
-                        print("❌ Too many MFA attempts")
-                        print("💡 Please wait 30 minutes before trying again")
-                        sys.exit(1)
-                    elif "401" in error_str or "403" in error_str:
+                    if "401" in error_str or "403" in error_str:
                         print("❌ Invalid MFA code")
                         print("💡 Please verify your MFA code and try again")
                         continue
-                    else:
-                        # Other HTTP errors - don't retry
-                        print(f"❌ MFA authentication failed: {garth_error}")
-                        sys.exit(1)
-
-                except GarthException as garth_error:
-                    print(f"❌ MFA authentication failed: {garth_error}")
-                    print("💡 Please verify your MFA code and try again")
-                    continue
+                    # Other HTTP errors - don't retry
+                    print(f"❌ MFA authentication failed: {mfa_error}")
+                    sys.exit(1)
 
             # Save tokens for future use
-            garmin.garth.dump(config.tokenstore)
+            garmin.client.dump(config.tokenstore)
             print(f"Login successful! Tokens saved to: {config.tokenstore}")
 
             return garmin
@@ -4223,8 +4213,6 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
 
         except (
             FileNotFoundError,
-            GarthHTTPError,
-            GarthException,
             GarminConnectConnectionError,
             requests.exceptions.HTTPError,
         ) as err:

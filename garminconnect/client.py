@@ -1,4 +1,4 @@
-"""State-of-the-art authentication engine bypassing Cloudflare and mimicking garth's legacy API."""
+"""State-of-the-art authentication engine for Garmin Connect."""
 
 import json
 import logging
@@ -13,18 +13,17 @@ CLIENT_ID = "GarminConnect"
 SSO_SERVICE_URL = "https://connect.garmin.com/app/"
 
 
-class GarthHTTPError(Exception):
-    """Exception to proxy legacy garth errors natively."""
-
-    def __init__(self, error: Exception, msg: str = ""):
-        self.error = error
-        super().__init__(msg or str(error))
+from .exceptions import (  # noqa: E402
+    GarminConnectAuthenticationError,
+    GarminConnectConnectionError,
+    GarminConnectTooManyRequestsError,
+)
 
 
 class Client:
-    """A drop-in replacement for garth.Client natively powered by JWT_WEB and curl_cffi."""
+    """A client to communicate with Garmin Connect."""
 
-    def __init__(self, domain: str = "garmin.com", **_kwargs: Any) -> None:
+    def __init__(self, domain: str = "garmin.com", **kwargs: Any) -> None:
         self.domain = domain
         self._sso = f"https://sso.{domain}"
         self._connect = f"https://connect.{domain}"
@@ -35,8 +34,18 @@ class Client:
         # Garth backward compatibility properties
         self.profile: dict | None = None
 
-        # Impersonate Android Chrome for mobile API, Desktop Chrome for Web API
         self.cs: requests.Session = requests.Session()
+        pool_connections = kwargs.get("pool_connections", 20)
+        pool_maxsize = kwargs.get("pool_maxsize", 20)
+
+        adapter = requests.adapters.HTTPAdapter(
+            pool_connections=pool_connections,
+            pool_maxsize=pool_maxsize,
+        )
+        self.cs.mount("https://", adapter)
+        self.cs.mount("http://", adapter)
+
+        self._tokenstore_path: str | None = None
 
     @property
     def is_authenticated(self) -> bool:
@@ -44,10 +53,10 @@ class Client:
 
     def get_api_headers(self) -> dict[str, str]:
         if not self.is_authenticated:
-            raise GarthHTTPError(Exception("Not authenticated"))
+            raise GarminConnectAuthenticationError("Not authenticated")
         return {
             "Accept": "application/json",
-            "connect-csrf-token": self.csrf_token,
+            "connect-csrf-token": str(self.csrf_token),
             "Origin": self._connect,
             "Referer": f"{self._connect}/modern/",
             "DI-Backend": f"connectapi.{self.domain}",
@@ -59,10 +68,11 @@ class Client:
         password: str,
         prompt_mfa: Any = None,
         return_on_mfa: bool = False,
-    ) -> tuple[None, None]:
+    ) -> tuple[str | None, Any]:
         """Logs into Mobile API to perfectly bypass CF, then trades for Web JWT."""
         import random
-        ios_version = f"17_{random.randint(0, 9)}"
+
+        ios_version = f"17_{random.randint(0, 9)}"  # noqa: S311
         sess: requests.Session = requests.Session()
         sess.headers = {
             "User-Agent": (
@@ -99,8 +109,8 @@ class Client:
         try:
             res = r.json()
         except Exception as err:
-            raise GarthHTTPError(
-                err, f"Login failed (Not JSON): HTTP {r.status_code}"
+            raise GarminConnectConnectionError(
+                f"Login failed (Not JSON): HTTP {r.status_code}"
             ) from err
 
         resp_type = res.get("responseStatus", {}).get("type")
@@ -112,14 +122,14 @@ class Client:
             self._mfa_session = sess
 
             if return_on_mfa:
-                return "needs_mfa", None
+                return "needs_mfa", self._mfa_session
 
             if prompt_mfa:
                 mfa_code = prompt_mfa()
                 self._complete_mfa(mfa_code)
                 return None, None
-            raise GarthHTTPError(
-                Exception("MFA Required but no prompt_mfa mechanism supplied")
+            raise GarminConnectAuthenticationError(
+                "MFA Required but no prompt_mfa mechanism supplied"
             )
 
         if resp_type == "SUCCESSFUL":
@@ -131,18 +141,16 @@ class Client:
             "status-code" in res.get("error", {})
             and res["error"]["status-code"] == "429"
         ):
-            # Pass up as a fake 429 response so the caller triggers TooManyRequests error
-            class FakeRespRate(Exception):
-                status_code = 429
-
-            raise GarthHTTPError(FakeRespRate(), "429 Rate Limit")
+            raise GarminConnectTooManyRequestsError("429 Rate Limit")
 
         if resp_type == "INVALID_USERNAME_PASSWORD":
-            class FakeRespAuth(Exception):
-                status_code = 401
-            raise GarthHTTPError(FakeRespAuth(), "401 Unauthorized (Invalid Username or Password)")
+            raise GarminConnectAuthenticationError(
+                "401 Unauthorized (Invalid Username or Password)"
+            )
 
-        raise GarthHTTPError(Exception("Unhandled Garmin Login JSON"), f"Login failed: {res}")
+        raise GarminConnectAuthenticationError(
+            f"Unhandled Garmin Login JSON, Login failed: {res}"
+        )
 
     def _complete_mfa(self, mfa_code: str) -> None:
         r = self._mfa_session.post(
@@ -165,10 +173,11 @@ class Client:
             ticket = res["serviceTicketId"]
             self._establish_session(ticket)
             return
-        raise GarthHTTPError(Exception(f"MFA Verification failed: {res}"))
+        raise GarminConnectAuthenticationError(f"MFA Verification failed: {res}")
 
     def _establish_session(self, ticket: str) -> None:
-        self.cs: requests.Session = requests.Session()
+        if not hasattr(self, "cs") or self.cs is None:
+            self.cs = requests.Session()
         self.cs.headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
@@ -186,19 +195,15 @@ class Client:
         )
 
         if r_tok.status_code not in (200, 201):
-
-            class FakeRespToken(Exception):
-                status_code = r_tok.status_code
-
-            raise GarthHTTPError(FakeRespToken(), "Failed JWT extraction")
+            raise GarminConnectConnectionError("Failed JWT extraction")
 
         jwt_data = r_tok.json()
         self.jwt_web = jwt_data.get("encryptedToken")
         self.csrf_token = jwt_data.get("csrfToken")
 
         if not self.jwt_web or not self.csrf_token:
-            raise GarthHTTPError(
-                Exception("Missing required JWT or CSRF tokens in response payload.")
+            raise GarminConnectAuthenticationError(
+                "Missing required JWT or CSRF tokens in response payload."
             )
 
         self.cs.cookies.set("JWT_WEB", self.jwt_web, domain=f".{self.domain}", path="/")
@@ -229,6 +234,16 @@ class Client:
                 self.cs.cookies.set(
                     "JWT_WEB", self.jwt_web, domain=f".{self.domain}", path="/"
                 )
+                if self._tokenstore_path:
+                    try:
+                        self.dump(self._tokenstore_path)
+                        _LOGGER.debug(
+                            f"Seamlessly auto-saved refreshed API tokens proactively to {self._tokenstore_path}"
+                        )
+                    except Exception as dump_err:
+                        _LOGGER.exception(
+                            f"Proactive refresh auto-saving tokens failed gracefully natively: {dump_err}"
+                        )
         except Exception as err:
             _LOGGER.debug(f"Refresh silently failed: {err}")
 
@@ -237,17 +252,15 @@ class Client:
         data: dict[str, Any] = {
             "jwt_web": self.jwt_web,
             "csrf_token": self.csrf_token,
-            "cookies": getattr(self.cs.cookies, "get_dict", dict)(),
+            "cookies": self.cs.cookies.get_dict(),
         }
-        if not data["cookies"]:
-            data["cookies"] = {c.name: c.value for c in self.cs.cookies.jar}
         return json.dumps(data)
 
     def dump(self, path: str) -> None:
         """Write tokens safely natively to disk format."""
         p = Path(path).expanduser()
         if p.is_dir():
-            p = p / ".garmin_tokens.json"
+            p = p / "garmin_tokens.json"
 
         # Ensure parent directories exist
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -255,12 +268,15 @@ class Client:
 
     def load(self, path: str) -> None:
         try:
+            self._tokenstore_path = path
             p = Path(path).expanduser()
             if p.is_dir():
-                p = p / ".garmin_tokens.json"
+                p = p / "garmin_tokens.json"
             self.loads(p.read_text())
         except Exception as e:
-            raise GarthHTTPError(e, "Token path not loading cleanly") from e
+            raise GarminConnectConnectionError(
+                f"Token path not loading cleanly: {e}"
+            ) from e
 
     def loads(self, tokenstore: str) -> None:
         try:
@@ -276,10 +292,10 @@ class Client:
             self.oauth2_token = self.csrf_token
 
             if not self.is_authenticated:
-                raise GarthHTTPError(Exception("Missing tokens from dict load"))
+                raise GarminConnectAuthenticationError("Missing tokens from dict load")
         except Exception as e:
-            raise GarthHTTPError(
-                e, "Token extraction loads() structurally failed"
+            raise GarminConnectConnectionError(
+                f"Token extraction loads() structurally failed: {e}"
             ) from e
 
     def connectapi(self, path: str, **kwargs: Any) -> Any:
@@ -287,44 +303,42 @@ class Client:
 
     def request(self, method: str, _domain: str, path: str, **kwargs: Any) -> Any:
         # Legacy garth used this to distinguish API vs WEB
+        kwargs.pop("api", None)
         return self._run_request(method, path, **kwargs)
 
-    def post(self, path: str, **kwargs: Any) -> Any:
-        return self._run_request("POST", path, **kwargs).json()
+    def post(self, _domain: str, path: str, **kwargs: Any) -> Any:
+        api = kwargs.pop("api", False)
+        resp = self._run_request("POST", path, **kwargs)
+        if api:
+            return resp.json() if hasattr(resp, "json") else None
+        return resp
 
-    def put(self, path: str, **kwargs: Any) -> Any:
-        return self._run_request("PUT", path, **kwargs).json()
+    def put(self, _domain: str, path: str, **kwargs: Any) -> Any:
+        api = kwargs.pop("api", False)
+        resp = self._run_request("PUT", path, **kwargs)
+        if api:
+            return resp.json() if hasattr(resp, "json") else None
+        return resp
 
-    def delete(self, path: str, **kwargs: Any) -> Any:
-        return self._run_request("DELETE", path, **kwargs).json()
+    def delete(self, _domain: str, path: str, **kwargs: Any) -> Any:
+        api = kwargs.pop("api", False)
+        resp = self._run_request("DELETE", path, **kwargs)
+        if api:
+            return resp.json() if hasattr(resp, "json") else None
+        return resp
 
-    def resume_login(self, client_state: Any, mfa_code: str) -> tuple[None, None]:
+    def resume_login(self, client_state: Any, mfa_code: str) -> tuple[str | None, Any]:
         self._complete_mfa(mfa_code)
         return None, None
 
     def download(self, path: str, **kwargs: Any) -> bytes:
+        if "headers" not in kwargs:
+            kwargs["headers"] = {}
+        # Ensure we politely accept any binary format Garmin transmits
+        kwargs["headers"].update({"Accept": "*/*"})
         return self._run_request("GET", path, **kwargs).content
 
     def _run_request(self, method: str, path: str, **kwargs: Any) -> Any:
-        # Trap legacy deprecated endpoints that were removed from the React /gc-api/ interface entirely natively
-        # Redirect legacy deprecated profile endpoint to the active modern equivalent directly natively!
-        if "/userprofile-service/userprofile/socialProfile" in path:
-            path = path.replace("/userprofile-service/userprofile/socialProfile", "/userprofile-service/socialProfile")
-        elif "userprofile/profile" in path:
-            path = path.replace("userprofile/profile", "socialProfile")
-        elif "/userprofile-service/userprofile" in path:
-            path = path.replace("/userprofile-service/userprofile", "/userprofile-service/socialProfile")
-
-        if "userprofile/user-settings" in path:
-
-            class MockSettings:
-                status_code = 200
-
-                def json(self) -> Any:
-                    return {"userData": {"measurementSystem": "metric"}}
-
-            return MockSettings()
-
         # Redirect all modern/proxy traffic directly into gc-api natively!
         if path.startswith("/modern/proxy"):
             path = path.replace("/modern/proxy", "/gc-api", 1)
@@ -336,7 +350,11 @@ class Client:
         if "timeout" not in kwargs:
             kwargs["timeout"] = 15
 
-        resp = self.cs.request(method, url, headers=self.get_api_headers(), **kwargs)
+        headers = self.get_api_headers()
+        custom_headers = kwargs.pop("headers", {})
+        headers.update(custom_headers)
+
+        resp = self.cs.request(method, url, headers=headers, **kwargs)
 
         # Implement 401 refresh intercept universally
         if resp.status_code == 401:
@@ -352,14 +370,36 @@ class Client:
                 content = b""
 
                 def json(self) -> Any:
-                    return None
+                    return {}
+
+                def __repr__(self) -> str:
+                    return "{}"
+
+                def __str__(self) -> str:
+                    return "{}"
 
             return EmptyJSONResp()
 
         if resp.status_code >= 400:
-            resp.request = (
-                None  # strip mock missing properties for GarthHTTPError compat
-            )
-            raise GarthHTTPError(resp, f"API Error {resp.status_code}")
+            error_msg = f"API Error {resp.status_code}"
+            try:
+                error_data = resp.json()
+                if isinstance(error_data, dict):
+                    msg = (
+                        error_data.get("message")
+                        or error_data.get("content")
+                        or error_data.get("detailedImportResult", {})
+                        .get("failures", [{}])[0]
+                        .get("messages", [""])[0]
+                    )
+                    if msg:
+                        error_msg += f" - {msg}"
+                    else:
+                        error_msg += f" - {error_data}"
+            except Exception:
+                # If it's short, just attach the text
+                if len(resp.text) < 500:
+                    error_msg += f" - {resp.text}"
+            raise GarminConnectConnectionError(error_msg)
 
         return resp
