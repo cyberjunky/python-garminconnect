@@ -70,20 +70,11 @@ class Client:
         return_on_mfa: bool = False,
     ) -> tuple[str | None, Any]:
         """Logs into Mobile API to perfectly bypass CF, then trades for Web JWT."""
-        import random
-
-        ios_version = f"17_{random.randint(0, 9)}"  # noqa: S311
         sess: requests.Session = requests.Session()
         sess.headers = {
-            "User-Agent": (
-                f"Mozilla/5.0 (iPhone; CPU iPhone OS {ios_version} like Mac OS X) "
-                "AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148"
-            ),
+            "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 13; Pixel 6 Build/TQ3A.230901.001) GarminConnect/4.74.1",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
             "Accept-Language": "en-US,en;q=0.9",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Site": "none",
         }
 
         sess.get(
