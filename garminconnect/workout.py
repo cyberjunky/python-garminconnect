@@ -178,6 +178,7 @@ class BaseWorkout(BaseModel):
     estimatedDurationInSecs: int
     workoutSegments: list[WorkoutSegment]
     author: dict[str, Any] = Field(default_factory=dict)
+    description: str | None = None
 
     class Config:
         """Pydantic config."""
