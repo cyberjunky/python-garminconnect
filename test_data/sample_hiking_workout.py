@@ -12,6 +12,7 @@ def create_sample_hiking_workout() -> HikingWorkout:
     """Create a sample hiking workout."""
     return HikingWorkout(
         workoutName="Mountain Hiking Trail",
+        description="A sample hiking workout featuring a mountain trail with warmup and cooldown phases.",
         estimatedDurationInSecs=7200,  # 2 hours
         workoutSegments=[
             WorkoutSegment(
