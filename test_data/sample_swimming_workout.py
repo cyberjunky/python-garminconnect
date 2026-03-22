@@ -15,6 +15,7 @@ def create_sample_swimming_workout() -> SwimmingWorkout:
     """Create a sample swimming workout."""
     return SwimmingWorkout(
         workoutName="Swimming Interval Training",
+        description="A sample swimming interval workout with warmup, multiple intervals with recovery, and cooldown.",
         estimatedDurationInSecs=2400,  # 40 minutes
         workoutSegments=[
             WorkoutSegment(

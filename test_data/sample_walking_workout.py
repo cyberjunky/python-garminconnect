@@ -12,6 +12,7 @@ def create_sample_walking_workout() -> WalkingWorkout:
     """Create a sample walking workout."""
     return WalkingWorkout(
         workoutName="Brisk Walking Session",
+        description="A sample brisk walking workout with continuous pace and warmup/cooldown phases.",
         estimatedDurationInSecs=2700,  # 45 minutes
         workoutSegments=[
             WorkoutSegment(
