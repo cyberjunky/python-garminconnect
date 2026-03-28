@@ -25,15 +25,37 @@ _orig_garth_request = garth.http.Client.request
 
 
 def _fresh_session_request(
-    self: garth.http.Client, method: str, subdomain: str, path: str, /, **kwargs: Any
+    self: garth.http.Client,
+    method: str,
+    subdomain: str,
+    path: str,
+    /,
+    api: bool = False,
+    referrer: str | bool = False,
+    headers: dict | None = None,
+    **kwargs: Any,
 ) -> requests.Response:
-    self.sess = Session()
-    self.sess.headers.update(garth.http.USER_AGENT)
-    self.configure()
-    return _orig_garth_request(self, method, subdomain, path, **kwargs)
+    # Only reset for connectapi calls — SSO login is stateful and depends on
+    # cookies persisting across sequential requests (embed→signin→MFA→ticket).
+    if headers is None:
+        headers = {}
+    if subdomain == "connectapi":
+        self.sess = Session()
+        self.sess.headers.update(garth.http.USER_AGENT)
+        self.configure()
+    return _orig_garth_request(
+        self,
+        method,
+        subdomain,
+        path,
+        api=api,
+        referrer=referrer,
+        headers=headers,
+        **kwargs,
+    )
 
 
-garth.http.Client.request = _fresh_session_request
+garth.http.Client.request = _fresh_session_request  # type: ignore[method-assign]
 
 logger = logging.getLogger(__name__)
 
