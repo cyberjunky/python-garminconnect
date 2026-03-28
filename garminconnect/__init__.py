@@ -11,11 +11,29 @@ from pathlib import Path
 from typing import Any
 
 import garth
+import garth.http
 import requests
 from garth.exc import GarthException, GarthHTTPError
-from requests import HTTPError
+from requests import HTTPError, Session
 
 from .fit import FitEncoderWeight  # type: ignore
+
+# Workaround: reset the requests Session on each garth Client.request call.
+# A stale/corrupted session object causes auth failures for some users.
+# Reported fix by user on garth 0.5.21: https://github.com/cyberjunky/python-garminconnect/issues
+_orig_garth_request = garth.http.Client.request
+
+
+def _fresh_session_request(
+    self: garth.http.Client, method: str, subdomain: str, path: str, /, **kwargs: Any
+) -> requests.Response:
+    self.sess = Session()
+    self.sess.headers.update(garth.http.USER_AGENT)
+    self.configure()
+    return _orig_garth_request(self, method, subdomain, path, **kwargs)
+
+
+garth.http.Client.request = _fresh_session_request
 
 logger = logging.getLogger(__name__)
 
