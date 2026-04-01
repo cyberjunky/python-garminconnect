@@ -1,12 +1,13 @@
 [project]
 name = "garminconnect"
-version = "0.2.41"
+version = "0.3.0"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "garth>=0.7.9",
+    "curl_cffi>=0.6",
+    "requests>=2.28",
 ]
 readme = "README.md"
 license = {text = "MIT"}
@@ -73,8 +74,6 @@ testing = [
     "vcrpy>=7.0.0",
 ]
 example = [
-    "garth>=0.7.9",
-    "requests",
     "readchar",
 ]
 
@@ -171,7 +170,7 @@ unfixable = []  # Allow all fixes, including unsafe ones
 "garminconnect/fit.py" = ["D", "RUF012", "PLW2901"]  # FIT protocol utility - stable, minimal docs
 "garminconnect/workout.py" = ["D401"]  # Pydantic models - docstring mood is fine
 "demo.py" = ["T20", "S101", "ERA", "RUF001", "PTH", "PERF401", "PERF203", "PLR0911", "D103"]  # Demo script - various user-facing patterns
-"example.py" = ["S110", "PLR0911", "T20"]  # Example script - simple error handling is intentional
+"example.py" = ["S110", "PLR0911", "T20", "PERF203"]  # Example script - simple error handling is intentional
 
 [tool.coverage.run]
 source = ["garminconnect"]

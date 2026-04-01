@@ -8,6 +8,13 @@
 
 # Python: Garmin Connect
 
+> **Note:** Garmin has made significant changes to their authentication and API infrastructure.
+> The old `garth`-based OAuth/cookie login no longer works. This library now authenticates
+> using the same mobile SSO flow as the official Garmin Connect Android app, obtaining native
+> DI OAuth Bearer tokens. Saved tokens are stored in a new format (`garmin_tokens.json`) —
+> a fresh login is required after upgrading.
+> All existing API methods remain unchanged — no code changes needed on your end.
+
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
@@ -88,8 +95,7 @@ Compatible with all Garmin Connect accounts. See <https://connect.garmin.com/>
 Install from PyPI:
 
 ```bash
-python3 -m pip install --upgrade pip
-python3 -m pip install garminconnect
+pip install --upgrade garminconnect curl_cffi
 ```
 
 ## Run demo software (recommended)
@@ -180,41 +186,34 @@ Run these commands before submitting PRs to ensure code quality standards.
 
 ## 🔐 Authentication
 
-The library uses the same OAuth authentication as the official Garmin Connect app via [Garth](https://github.com/matin/garth).
+Authentication uses the same mobile SSO flow as the official Garmin Connect Android app.
+No browser is needed.
 
-**Key Features:**
-- Login credentials valid for one year (no repeated logins)
-- Secure OAuth token storage
-- Same authentication flow as official app
+**How it works:**
 
-**Advanced Configuration:**
-```python
-# Optional: Custom OAuth consumer (before login)
-import os
-import garth
-garth.sso.OAUTH_CONSUMER = {
-    'key': os.getenv('GARTH_OAUTH_KEY', '<YOUR_KEY>'),
-    'secret': os.getenv('GARTH_OAUTH_SECRET', '<YOUR_SECRET>'),
-}
-# Note: Set these env vars securely; placeholders are non-sensitive.
-```
+1. **First login**: Authenticates via `sso.garmin.com/mobile/api/login` using the Android
+   app's client ID. If MFA is required, a callback (`prompt_mfa`) prompts for the one-time code.
+2. **Token exchange**: The service ticket is exchanged for DI OAuth Bearer tokens
+   (`access_token` + `refresh_token`) via `diauth.garmin.com`. Tokens are stored at
+   `~/.garminconnect/garmin_tokens.json`.
+3. **Auto-refresh**: Before each API request the library checks whether the DI token is about
+   to expire and refreshes it automatically — no user interaction required.
 
-**Token Storage:**
-Tokens are automatically saved to `~/.garminconnect` directory for persistent authentication.
-For security, ensure restrictive permissions:
+**Session lifetime:**
+- DI tokens auto-refresh indefinitely as long as the refresh token remains valid.
+- A full re-login with credentials (and possibly MFA) is only needed if the refresh token
+  itself expires or is revoked.
 
+**Token storage:**
 ```bash
-chmod 700 ~/.garminconnect
-chmod 600 ~/.garminconnect/* 2>/dev/null || true
+~/.garminconnect/garmin_tokens.json   # saved automatically, mode 0600
 ```
 
 ## 🧪 Testing
 
-Run the test suite to verify functionality:
-
 **Prerequisites:**
 
-Create tokens in ~/.garminconnect by running the example program.
+Run `example.py` once to create saved tokens in `~/.garminconnect`.
 
 ```bash
 # Install development dependencies
@@ -232,13 +231,13 @@ Optional: keep test tokens isolated
 
 ```bash
 export GARMINTOKENS="$(mktemp -d)"
-python3 ./example.py # create fresh tokens for tests
+python3 ./example.py   # create a fresh token file for tests
 pdm run test
 ```
 
-**Note:** Tests automatically use `~/.garminconnect` as the default token file location. You can override this by setting the `GARMINTOKENS` environment variable. Run `example.py` first to generate authentication tokens for testing.
-
-**For Developers:** Tests use VCR cassettes to record/replay HTTP interactions. If tests fail with authentication errors, ensure valid tokens exist in `~/.garminconnect`
+**Note:** Tests use VCR cassettes to record/replay API responses. If tests fail with
+authentication errors, ensure valid tokens exist in `~/.garminconnect` (run
+`example.py` first).
 
 ## 📦 Publishing
 
@@ -326,23 +325,25 @@ Explore the API interactively with our [reference notebook](https://github.com/c
 ### Python Code Examples
 
 ```python
-from garminconnect import Garmin
 import os
+from datetime import date
+from garminconnect import Garmin
 
-# Initialize and login
+# First run: logs in and saves tokens to ~/.garminconnect
+# Subsequent runs: loads saved tokens and auto-refreshes
 client = Garmin(
-    os.getenv("GARMIN_EMAIL", "<YOUR_EMAIL>"),
-    os.getenv("GARMIN_PASSWORD", "<YOUR_PASSWORD>")
+    os.getenv("EMAIL"),
+    os.getenv("PASSWORD"),
+    prompt_mfa=lambda: input("MFA code: "),
 )
-client.login()
+client.login("~/.garminconnect")
 
 # Get today's stats
-from datetime import date
-_today = date.today().strftime('%Y-%m-%d')
-stats = client.get_stats(_today)
+today = date.today().isoformat()
+stats = client.get_stats(today)
 
 # Get heart rate data
-hr_data = client.get_heart_rates(_today)
+hr_data = client.get_heart_rates(today)
 print(f"Resting HR: {hr_data.get('restingHeartRate', 'n/a')}")
 ```
 
