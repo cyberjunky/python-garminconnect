@@ -4,58 +4,18 @@ import logging
 import numbers
 import os
 import re
+import time
 from collections.abc import Callable
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
 from pathlib import Path
 from typing import Any
 
-import garth
-import garth.http
 import requests
-from garth.exc import GarthException, GarthHTTPError
-from requests import HTTPError, Session
+from requests import HTTPError
 
+from . import client
 from .fit import FitEncoderWeight  # type: ignore
-
-# Workaround: reset the requests Session on each garth Client.request call.
-# A stale/corrupted session object causes auth failures for some users.
-# Reported fix by user on garth 0.5.21: https://github.com/cyberjunky/python-garminconnect/issues
-_orig_garth_request = garth.http.Client.request
-
-
-def _fresh_session_request(
-    self: garth.http.Client,
-    method: str,
-    subdomain: str,
-    path: str,
-    /,
-    api: bool = False,
-    referrer: str | bool = False,
-    headers: dict | None = None,
-    **kwargs: Any,
-) -> requests.Response:
-    # Only reset for connectapi calls — SSO login is stateful and depends on
-    # cookies persisting across sequential requests (embed→signin→MFA→ticket).
-    if headers is None:
-        headers = {}
-    if subdomain == "connectapi":
-        self.sess = Session()
-        self.sess.headers.update(garth.http.USER_AGENT)
-        self.configure()
-    return _orig_garth_request(
-        self,
-        method,
-        subdomain,
-        path,
-        api=api,
-        referrer=referrer,
-        headers=headers,
-        **kwargs,
-    )
-
-
-garth.http.Client.request = _fresh_session_request  # type: ignore[method-assign]
 
 logger = logging.getLogger(__name__)
 
@@ -347,7 +307,7 @@ class Garmin:
             "/lifestylelogging-service/dailyLog"
         )
 
-        self.garth = garth.Client(
+        self.client = client.Client(
             domain="garmin.cn" if is_cn else "garmin.com",
             pool_connections=20,
             pool_maxsize=20,
@@ -358,28 +318,14 @@ class Garmin:
         self.unit_system = None
 
     def connectapi(self, path: str, **kwargs: Any) -> Any:
-        """Wrapper for garth connectapi with error handling."""
+        """Wrapper for native connectapi with error handling."""
         try:
-            return self.garth.connectapi(path, **kwargs)
-        except AssertionError as e:
-            # Handle Windows-specific OAuth token refresh issue
-            # This can occur when garth tries to refresh tokens during API calls
-            error_msg = str(e).lower()
-            if "oauth" in error_msg and (
-                "oauth1" in error_msg or "oauth2" in error_msg
-            ):
-                logger.exception("OAuth token refresh failed during API call.")
-                raise GarminConnectAuthenticationError(
-                    f"Token refresh failed. Please re-authenticate. Original error: {e}"
-                ) from e
-            # Re-raise if it's a different AssertionError
-            raise
-        except (HTTPError, GarthHTTPError) as e:
-            # For GarthHTTPError, extract status from the wrapped HTTPError
-            if isinstance(e, GarthHTTPError):
-                status = getattr(
-                    getattr(e.error, "response", None), "status_code", None
-                )
+            return self.client.connectapi(path, **kwargs)
+
+        except (HTTPError, GarminConnectConnectionError) as e:
+            # For GarminConnectConnectionError, extract status from the wrapped HTTPError
+            if isinstance(e, GarminConnectConnectionError):
+                status = getattr(getattr(e, "response", None), "status_code", None)
             else:
                 status = getattr(getattr(e, "response", None), "status_code", None)
 
@@ -407,9 +353,9 @@ class Garmin:
     def connectwebproxy(self, path: str, **kwargs: Any) -> Any:
         """Wrapper for web proxy requests to connect.garmin.com with error handling."""
         try:
-            return self.garth.request("GET", "connect", path, **kwargs).json()
-        except GarthHTTPError as e:
-            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            return self.client.request("GET", "connect", path, **kwargs).json()
+        except GarminConnectConnectionError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
             logger.exception(
                 "API call failed for web proxy path '%s' (status=%s)",
                 path,
@@ -433,15 +379,13 @@ class Garmin:
             raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
     def download(self, path: str, **kwargs: Any) -> Any:
-        """Wrapper for garth download with error handling."""
+        """Wrapper for native download with error handling."""
         try:
-            return self.garth.download(path, **kwargs)
-        except (HTTPError, GarthHTTPError) as e:
-            # For GarthHTTPError, extract status from the wrapped HTTPError
-            if isinstance(e, GarthHTTPError):
-                status = getattr(
-                    getattr(e.error, "response", None), "status_code", None
-                )
+            return self.client.download(path, **kwargs)
+        except (HTTPError, GarminConnectConnectionError) as e:
+            # For GarminConnectConnectionError, extract status from the wrapped HTTPError
+            if isinstance(e, GarminConnectConnectionError):
+                status = getattr(getattr(e, "response", None), "status_code", None)
             else:
                 status = getattr(getattr(e, "response", None), "status_code", None)
 
@@ -461,63 +405,43 @@ class Garmin:
             raise GarminConnectConnectionError(f"Download error: {e}") from e
 
     def login(self, /, tokenstore: str | None = None) -> tuple[str | None, str | None]:
-        """Log in using Garth.
+        """Log in natively.
 
         Returns:
-            Tuple[str | None, str | None]: (access_token, refresh_token) when using credential flow;
-            (None, None) when loading from tokenstore.
+            Tuple[str | None, str | None]: (needs_mfa, None) when MFA is required;
+            (None, None) on clean successful login.
 
         """
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
 
         try:
-            token1 = None
-            token2 = None
+            mfa_status = None
+            _legacy_token = None
 
             # Try to load tokens from tokenstore if provided
             tokens_loaded = False
             if tokenstore:
                 try:
                     if len(tokenstore) > 512:
-                        # Token data is provided directly as string (base64 encoded)
-                        self.garth.loads(tokenstore)
+                        # Token data is provided directly as string
+                        self.client.loads(tokenstore)
                     else:
                         # Tokenstore is a path - normalize it for cross-platform compatibility
                         # This fixes Windows path issues where ~ expansion or path separators
-                        # might cause garth to not find all token files correctly
+                        # might cause token extraction to not find all token files correctly
                         tokenstore_path = Path(tokenstore).expanduser().resolve()
                         # Convert to string with normalized path separators
                         normalized_path = str(tokenstore_path)
                         logger.debug(
                             f"Loading tokens from normalized path: {normalized_path}"
                         )
-                        self.garth.load(normalized_path)
+                        self.client.load(normalized_path)
                     tokens_loaded = True
-                except AssertionError as e:
-                    # Handle Windows-specific OAuth token refresh issue
-                    # When garth tries to refresh OAuth2 tokens, it may fail with:
-                    # "AssertionError: OAuth1 token is required for OAuth2 refresh"
-                    # This can occur if token files are incomplete or path resolution failed
-                    error_msg = str(e).lower()
-                    if "oauth" in error_msg and (
-                        "oauth1" in error_msg or "oauth2" in error_msg
-                    ):
-                        logger.warning(
-                            "Token refresh failed (OAuth token mismatch). "
-                            "This may occur on Windows due to path or token file issues. "
-                            "Re-authentication required."
-                        )
-                        # Treat as invalid tokens - require re-authentication
-                        if not self.username or not self.password:
-                            raise GarminConnectAuthenticationError(
-                                "Stored tokens are invalid and credentials are required for re-authentication. "
-                                f"Original error: {e}"
-                            ) from e
-                        # Will fall through to credential-based login below
-                        tokens_loaded = False
-                    else:
-                        # Re-raise if it's a different AssertionError
-                        raise
+                except Exception as e:
+                    logger.debug(
+                        f"Failed to cleanly load tokens from {tokenstore}: {e}"
+                    )
+                    tokens_loaded = False
 
             # If tokens weren't loaded (or failed to load), use credentials
             if not tokens_loaded:
@@ -528,14 +452,14 @@ class Garmin:
                     )
 
                 if self.return_on_mfa:
-                    token1, token2 = self.garth.login(
+                    mfa_status, _legacy_token = self.client.login(
                         self.username,
                         self.password,
                         return_on_mfa=self.return_on_mfa,
                     )
                     # In MFA early-return mode, profile/settings are not loaded yet
-                    return token1, token2
-                token1, token2 = self.garth.login(
+                    return mfa_status, _legacy_token
+                mfa_status, _legacy_token = self.client.login(
                     self.username,
                     self.password,
                     prompt_mfa=self.prompt_mfa,
@@ -543,44 +467,58 @@ class Garmin:
                 # Continue to load profile/settings below
 
             # Ensure profile is loaded (tokenstore path may not populate it)
-            if not getattr(self.garth, "profile", None):
+            prof = None
+            for attempt in range(3):
                 try:
-                    prof = self.garth.connectapi(
-                        "/userprofile-service/userprofile/profile"
-                    )
+                    prof = self.client.connectapi("/userprofile-service/socialProfile")
+                    if isinstance(prof, dict):
+                        break
                 except Exception as e:
-                    raise GarminConnectAuthenticationError(
-                        "Failed to retrieve profile"
-                    ) from e
-                if not prof or not isinstance(prof, dict) or "displayName" not in prof:
-                    raise GarminConnectAuthenticationError("Invalid profile data found")
-                # Use profile data directly since garth.profile is read-only
-                self.display_name = prof.get("displayName")
-                self.full_name = prof.get("fullName")
+                    if attempt == 2:
+                        raise GarminConnectAuthenticationError(
+                            "Failed to retrieve social profile"
+                        ) from e
+                    logger.debug("Retrying social profile fetch: %s", e)
+                    time.sleep(1)
             else:
-                profile = self.garth.profile
-                if isinstance(profile, dict):
-                    self.display_name = profile.get("displayName")
-                    self.full_name = profile.get("fullName")
+                raise GarminConnectAuthenticationError("Invalid profile data found")
 
-            settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
+            self.display_name = prof.get("displayName", self.username)
+            self.full_name = prof.get("fullName", "")
 
-            if not settings:
-                raise GarminConnectAuthenticationError(
-                    "Failed to retrieve user settings"
-                )
-
-            if not isinstance(settings, dict) or "userData" not in settings:
+            settings = None
+            for attempt in range(3):
+                try:
+                    settings = self.client.connectapi(
+                        self.garmin_connect_user_settings_url
+                    )
+                    if (
+                        settings
+                        and isinstance(settings, dict)
+                        and "userData" in settings
+                    ):
+                        break
+                except Exception as e:
+                    if attempt == 2:
+                        raise GarminConnectAuthenticationError(
+                            "Failed to retrieve user settings"
+                        ) from e
+                    logger.debug("Retrying user settings fetch: %s", e)
+                    time.sleep(1)
+            else:
                 raise GarminConnectAuthenticationError("Invalid user settings found")
 
             self.unit_system = settings["userData"].get("measurementSystem")
 
-            return token1, token2
+            return mfa_status, _legacy_token
 
-        except (HTTPError, requests.exceptions.HTTPError, GarthException) as e:
+        except (
+            HTTPError,
+            requests.exceptions.HTTPError,
+            GarminConnectConnectionError,
+        ) as e:
             status = getattr(getattr(e, "response", None), "status_code", None)
-            error_str = str(e)
-            error_lower = error_str.lower()
+            error_str = str(e).lower()
             logger.exception("Login failed: %s (status=%s)", e, status)
 
             if status == 429 or "429" in error_str:
@@ -589,30 +527,7 @@ class Garmin:
                     "before trying again."
                 ) from e
 
-            # Detect the specific OAuth token exchange failure (preauthorized endpoint)
-            # This 401 means Garmin's SSO issued a ticket but the OAuth service
-            # rejected it — it is NOT a wrong-password error.
-            if "preauthorized" in error_lower or "oauth-service" in error_lower:
-                raise GarminConnectAuthenticationError(
-                    "Garmin SSO token exchange failed (401 on oauth preauthorized). "
-                    "Your credentials were accepted but the OAuth token exchange "
-                    "was rejected. This is usually NOT a password problem. "
-                    "Possible causes:\n"
-                    "  • Garmin Connect servers are temporarily having issues "
-                    "— retry in a few minutes\n"
-                    "  • Too many recent login attempts (rate limiting) "
-                    "— wait 15-30 minutes\n"
-                    "  • Outdated garth library — run: pip install --upgrade garth\n"
-                    "  • Stale stored tokens may have triggered repeated failed "
-                    "refreshes — delete your token store and retry\n"
-                    "  • Regional Garmin server problems — try again later\n"
-                    "  • Account may require attention "
-                    "— check https://sso.garmin.com\n"
-                    f"Original error: {e}"
-                ) from e
-
-            # General 401 — likely wrong credentials
-            if status == 401 or "401" in error_str or "unauthorized" in error_lower:
+            if status == 401 or "401" in error_str or "unauthorized" in error_str:
                 raise GarminConnectAuthenticationError(
                     "Authentication failed (401 Unauthorized). "
                     "Possible causes:\n"
@@ -622,42 +537,21 @@ class Garmin:
                     f"Original error: {e}"
                 ) from e
 
-            # If no status code, check error message for authentication indicators
             auth_indicators = ["unauthorized", "authentication failed"]
-            if any(indicator in error_lower for indicator in auth_indicators):
+            if any(indicator in error_str for indicator in auth_indicators):
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
                 ) from e
 
-            # Default to connection error
             raise GarminConnectConnectionError(f"Login failed: {e}") from e
         except FileNotFoundError:
-            # Let FileNotFoundError pass through - this is expected when no tokens exist
             raise
         except Exception as e:
             if isinstance(e, GarminConnectAuthenticationError):
                 raise
-            # Check if this is an authentication error based on the error message
-            error_str = str(e)
-            error_lower = error_str.lower()
-
-            # Detect OAuth preauthorized failures bubbling up as generic exceptions
-            if "preauthorized" in error_lower or "oauth-service" in error_lower:
-                raise GarminConnectAuthenticationError(
-                    "Garmin SSO token exchange failed. "
-                    "This is usually a temporary server-side issue, not a "
-                    "credentials problem. Try: waiting a few minutes, "
-                    "updating garth (pip install --upgrade garth), or "
-                    "deleting your stored tokens and retrying.\n"
-                    f"Original error: {e}"
-                ) from e
-
+            error_str = str(e).lower()
             auth_indicators = ["401", "unauthorized", "authentication", "login failed"]
-            is_auth_error = any(
-                indicator in error_lower for indicator in auth_indicators
-            )
-
-            if is_auth_error:
+            if any(indicator in error_str for indicator in auth_indicators):
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
                 ) from e
@@ -667,23 +561,44 @@ class Garmin:
     def resume_login(
         self, client_state: dict[str, Any], mfa_code: str
     ) -> tuple[Any, Any]:
-        """Resume login using Garth."""
-        result1, result2 = self.garth.resume_login(client_state, mfa_code)
+        """Resume login interactively."""
+        mfa_status, _legacy_token = self.client.resume_login(client_state, mfa_code)
 
-        if self.garth.oauth1_token and self.garth.oauth2_token:
+        prof = None
+        for attempt in range(3):
             try:
-                profile = self.garth.profile
-                if profile and isinstance(profile, dict):
-                    self.display_name = profile.get("displayName")
-                    self.full_name = profile.get("fullName")
-            except Exception:
-                logger.debug("Profile fetch failed during resume_login, continuing")
+                prof = self.client.connectapi("/userprofile-service/socialProfile")
+                if isinstance(prof, dict):
+                    self.display_name = prof.get("displayName")
+                    self.full_name = prof.get("fullName", "")
+                    break
+            except Exception as e:
+                if attempt == 2:
+                    logger.debug("Profile fetch failed during resume_login, continuing")
+                else:
+                    logger.debug("Retrying profile fetch during resume_login: %s", e)
+                    time.sleep(1)
 
-        settings = self.garth.connectapi(self.garmin_connect_user_settings_url)
-        if settings and isinstance(settings, dict) and "userData" in settings:
-            self.unit_system = settings["userData"]["measurementSystem"]
+        settings = None
+        for attempt in range(3):
+            try:
+                settings = self.client.connectapi(self.garmin_connect_user_settings_url)
+                if settings and isinstance(settings, dict) and "userData" in settings:
+                    self.unit_system = settings["userData"].get("measurementSystem")
+                    break
+            except Exception as e:
+                if attempt == 2:
+                    logger.debug(
+                        "User settings fetch failed during resume_login, continuing: %s",
+                        e,
+                    )
+                else:
+                    logger.debug(
+                        "Retrying user settings fetch during resume_login: %s", e
+                    )
+                    time.sleep(1)
 
-        return result1, result2
+        return mfa_status, _legacy_token
 
     def _require_display_name(self) -> str:
         """Return display_name or raise if not set.
@@ -713,6 +628,8 @@ class Garmin:
         """Return user activity summary for 'cdate' format 'YYYY-MM-DD'
         (compat for garminconnect).
         """
+        # Validate input
+        cdate = _validate_date_format(cdate, "cdate")
         return self.get_user_summary(cdate)
 
     def get_user_summary(self, cdate: str) -> dict[str, Any]:
@@ -925,6 +842,8 @@ class Garmin:
 
     def get_stats_and_body(self, cdate: str) -> dict[str, Any]:
         """Return activity data and body composition (compat for garminconnect)."""
+        # Validate input
+        cdate = _validate_date_format(cdate, "cdate")
         stats = self.get_stats(cdate)
         body = self.get_body_composition(cdate)
         body_avg = body.get("totalAverage") or {}
@@ -996,7 +915,7 @@ class Garmin:
         files = {
             "file": ("body_composition.fit", fitEncoder.getvalue()),
         }
-        return self.garth.post("connectapi", url, files=files, api=True).json()
+        return self.client.post("connectapi", url, files=files, api=True)
 
     def add_weigh_in(
         self, weight: int | float, unitKey: str = "kg", timestamp: str = ""
@@ -1025,7 +944,7 @@ class Garmin:
             "value": weight,
         }
         logger.debug("Adding weigh-in")
-        return _validate_json_exists(self.garth.post("connectapi", url, json=payload))
+        return _validate_json_exists(self.client.post("connectapi", url, json=payload))
 
     def add_weigh_in_with_timestamps(
         self,
@@ -1069,7 +988,7 @@ class Garmin:
         logger.debug("Adding weigh-in with explicit timestamps: %s", payload)
 
         # Make the POST request
-        return _validate_json_exists(self.garth.post("connectapi", url, json=payload))
+        return _validate_json_exists(self.client.post("connectapi", url, json=payload))
 
     def get_weigh_ins(self, startdate: str, enddate: str) -> dict[str, Any]:
         """Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'."""
@@ -1096,7 +1015,7 @@ class Garmin:
         url = f"{self.garmin_connect_weight_url}/weight/{cdate}/byversion/{weight_pk}"
         logger.debug("Deleting weigh-in")
 
-        return self.garth.request(
+        return self.client.request(
             "DELETE",
             "connectapi",
             url,
@@ -1184,7 +1103,7 @@ class Garmin:
                 raise ValueError(f"{name} must be an int in [{lo}, {hi}]")
         logger.debug("Adding blood pressure")
 
-        return self.garth.post("connectapi", url, json=payload).json()
+        return self.client.post("connectapi", url, json=payload).json()
 
     def get_blood_pressure(
         self, startdate: str, enddate: str | None = None
@@ -1208,7 +1127,7 @@ class Garmin:
         url = f"{self.garmin_connect_set_blood_pressure_endpoint}/{cdate}/{version}"
         logger.debug("Deleting blood pressure measurement")
 
-        return self.garth.request(
+        return self.client.request(
             "DELETE",
             "connectapi",
             url,
@@ -1398,7 +1317,7 @@ class Garmin:
         }
 
         logger.debug("Adding hydration data")
-        return self.garth.put("connectapi", url, json=payload).json()
+        return self.client.put("connectapi", url, json=payload).json()
 
     def get_hydration_data(self, cdate: str) -> dict[str, Any]:
         """Return available hydration data 'cdate' format 'YYYY-MM-DD'."""
@@ -1548,7 +1467,7 @@ class Garmin:
         self, start: int, limit: int
     ) -> dict[str, Any]:
         """Return in-progress virtual challenges for current user."""
-        start = _validate_non_negative_integer(start, "start")
+        start = _validate_positive_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_inprogress_virtual_challenges_url
         params = {"start": str(start), "limit": str(limit)}
@@ -1821,6 +1740,7 @@ class Garmin:
 
     def get_device_settings(self, device_id: str) -> dict[str, Any]:
         """Return device settings for device with 'device_id'."""
+        device_id = str(_validate_positive_integer(int(device_id), "device_id"))
         url = f"{self.garmin_connect_device_url}/device-info/settings/{device_id}"
         logger.debug("Requesting device settings")
 
@@ -1847,6 +1767,7 @@ class Garmin:
 
         startdate = _validate_date_format(startdate, "startdate")
         enddate = _validate_date_format(enddate, "enddate")
+        device_id = str(_validate_positive_integer(int(device_id), "device_id"))
         params = {"singleDayView": single_day}
 
         url = f"{self.garmin_connect_solar_url}/{device_id}/{startdate}/{enddate}"
@@ -1933,7 +1854,7 @@ class Garmin:
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {"activityId": activity_id, "activityName": title}
 
-        return self.garth.put("connectapi", url, json=payload, api=True)
+        return self.client.put("connectapi", url, json=payload, api=True)
 
     def set_activity_type(
         self,
@@ -1952,12 +1873,12 @@ class Garmin:
             },
         }
         logger.debug("Changing activity type: %s", payload)
-        return self.garth.put("connectapi", url, json=payload, api=True)
+        return self.client.put("connectapi", url, json=payload, api=True)
 
     def create_manual_activity_from_json(self, payload: dict[str, Any]) -> Any:
         url = f"{self.garmin_connect_activity}"
         logger.debug("Uploading manual activity: %s", str(payload))
-        return self.garth.post("connectapi", url, json=payload, api=True)
+        return self.client.post("connectapi", url, json=payload, api=True)
 
     def create_manual_activity(
         self,
@@ -2048,7 +1969,7 @@ class Garmin:
                 with p.open("rb") as file_handle:
                     files = {"file": (file_base_name, file_handle)}
                     url = self.garmin_connect_upload
-                    return self.garth.post("connectapi", url, files=files, api=True)
+                    return self.client.post("connectapi", url, files=files, api=True)
             except OSError as e:
                 raise GarminConnectConnectionError(
                     f"Failed to read file {activity_path}: {e}"
@@ -2127,18 +2048,16 @@ class Garmin:
                     )
                 }
                 logger.debug("Importing activity file %s via %s", file_base_name, url)
-                response = self.garth.post(
+                response = self.client.post(
                     "connectapi", url, files=files, headers=headers, api=True
                 )
                 if hasattr(response, "json"):
                     result: dict[str, Any] = response.json()
                     return result
                 return {"status": "uploaded", "fileName": file_base_name}
-        except (HTTPError, GarthHTTPError) as e:
-            if isinstance(e, GarthHTTPError):
-                status = getattr(
-                    getattr(e.error, "response", None), "status_code", None
-                )
+        except (HTTPError, GarminConnectConnectionError) as e:
+            if isinstance(e, GarminConnectConnectionError):
+                status = getattr(getattr(e, "response", None), "status_code", None)
             else:
                 status = getattr(getattr(e, "response", None), "status_code", None)
             if status == 409:
@@ -2157,10 +2076,11 @@ class Garmin:
 
     def delete_activity(self, activity_id: str) -> Any:
         """Delete activity with specified id."""
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_delete_activity_url}/{activity_id}"
         logger.debug("Deleting activity with id %s", activity_id)
 
-        return self.garth.request(
+        return self.client.request(
             "DELETE",
             "connectapi",
             url,
@@ -2309,8 +2229,8 @@ class Garmin:
 
         try:
             return self.connectapi(url)
-        except GarthHTTPError as e:
-            status = getattr(getattr(e.error, "response", None), "status_code", None)
+        except GarminConnectConnectionError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
             if status == 404:
                 logger.warning(
                     "Gear stats not found for UUID %s (likely retired/removed gear)",
@@ -2337,9 +2257,9 @@ class Garmin:
         )
 
         try:
-            return self.garth.request(method_override, "connectapi", url, api=True)
-        except GarthHTTPError as e:
-            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            return self.client.request(method_override, "connectapi", url, api=True)
+        except GarminConnectConnectionError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
             if status == 404:
                 raise GarminConnectConnectionError(
                     f"Cannot set gear default for UUID {gearUUID}: gear not found (likely retired/removed)"
@@ -2387,7 +2307,7 @@ class Garmin:
 
     def get_activity_splits(self, activity_id: str) -> dict[str, Any]:
         """Return activity splits."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/splits"
         logger.debug("Requesting splits for activity id %s", activity_id)
 
@@ -2397,7 +2317,7 @@ class Garmin:
         """Return typed activity splits. Contains similar info to `get_activity_splits`, but for certain activity types
         (e.g., Bouldering), this contains more detail.
         """
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/typedsplits"
         logger.debug("Requesting typed splits for activity id %s", activity_id)
 
@@ -2405,7 +2325,7 @@ class Garmin:
 
     def get_activity_split_summaries(self, activity_id: str) -> dict[str, Any]:
         """Return activity split summaries."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/split_summaries"
         logger.debug("Requesting split summaries for activity id %s", activity_id)
 
@@ -2413,7 +2333,7 @@ class Garmin:
 
     def get_activity_weather(self, activity_id: str) -> dict[str, Any]:
         """Return activity weather."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/weather"
         logger.debug("Requesting weather for activity id %s", activity_id)
 
@@ -2421,7 +2341,7 @@ class Garmin:
 
     def get_activity_hr_in_timezones(self, activity_id: str) -> dict[str, Any]:
         """Return activity heartrate in timezones."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/hrTimeInZones"
         logger.debug("Requesting HR time-in-zones for activity id %s", activity_id)
 
@@ -2429,7 +2349,7 @@ class Garmin:
 
     def get_activity_power_in_timezones(self, activity_id: str) -> dict[str, Any]:
         """Return activity power in timezones."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/powerTimeInZones"
         logger.debug("Requesting Power time-in-zones for activity id %s", activity_id)
 
@@ -2445,7 +2365,7 @@ class Garmin:
 
     def get_activity(self, activity_id: str) -> dict[str, Any]:
         """Return activity summary, including basic splits."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         logger.debug("Requesting activity summary data for activity id %s", activity_id)
 
@@ -2455,7 +2375,7 @@ class Garmin:
         self, activity_id: str, maxchart: int = 2000, maxpoly: int = 4000
     ) -> dict[str, Any]:
         """Return activity details."""
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         maxchart = _validate_positive_integer(maxchart, "maxchart")
         maxpoly = _validate_non_negative_integer(maxpoly, "maxpoly")
         params = {"maxChartSize": str(maxchart), "maxPolylineSize": str(maxpoly)}
@@ -2466,7 +2386,7 @@ class Garmin:
 
     def get_activity_exercise_sets(self, activity_id: int | str) -> dict[str, Any]:
         """Return activity exercise sets."""
-        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
         logger.debug("Requesting exercise sets for activity id %s", activity_id)
 
@@ -2474,7 +2394,7 @@ class Garmin:
 
     def get_activity_gear(self, activity_id: int | str) -> dict[str, Any]:
         """Return gears used for activity id."""
-        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         params = {
             "activityId": str(activity_id),
         }
@@ -2500,8 +2420,8 @@ class Garmin:
 
         try:
             return self.connectapi(url)
-        except GarthHTTPError as e:
-            status = getattr(getattr(e.error, "response", None), "status_code", None)
+        except GarminConnectConnectionError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
             if status == 404:
                 logger.warning(
                     "Gear activities not found for UUID %s (likely retired/removed gear)",
@@ -2524,7 +2444,7 @@ class Garmin:
 
         """
         gearUUID = str(gearUUID)
-        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
 
         url = (
             f"{self.garmin_connect_gear_baseurl}/link/{gearUUID}/activity/{activity_id}"
@@ -2532,9 +2452,9 @@ class Garmin:
         logger.debug("Linking gear %s to activity %s", gearUUID, activity_id)
 
         try:
-            return self.garth.put("connectapi", url).json()
-        except GarthHTTPError as e:
-            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            return self.client.put("connectapi", url).json()
+        except GarminConnectConnectionError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
             if status == 404:
                 raise GarminConnectConnectionError(
                     f"Cannot add gear {gearUUID} to activity {activity_id}: gear not found (likely retired/removed)"
@@ -2555,15 +2475,15 @@ class Garmin:
 
         """
         gearUUID = str(gearUUID)
-        activity_id = _validate_positive_integer(int(activity_id), "activity_id")
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
 
         url = f"{self.garmin_connect_gear_baseurl}/unlink/{gearUUID}/activity/{activity_id}"
         logger.debug("Unlinking gear %s from activity %s", gearUUID, activity_id)
 
         try:
-            return self.garth.put("connectapi", url).json()
-        except GarthHTTPError as e:
-            status = getattr(getattr(e.error, "response", None), "status_code", None)
+            return self.client.put("connectapi", url).json()
+        except GarminConnectConnectionError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
             if status == 404:
                 raise GarminConnectConnectionError(
                     f"Cannot remove gear {gearUUID} from activity {activity_id}: gear not found (likely retired/removed)"
@@ -2592,7 +2512,7 @@ class Garmin:
         url = f"{self.garmin_request_reload_url}/{cdate}"
         logger.debug("Requesting reload of data for %s.", cdate)
 
-        return self.garth.post("connectapi", url, api=True).json()
+        return self.client.post("connectapi", url, api=True)
 
     def get_workouts(self, start: int = 0, limit: int = 100) -> list[dict[str, Any]]:
         """Return workouts starting at offset `start` with at most `limit` results."""
@@ -2635,7 +2555,7 @@ class Garmin:
             payload = workout_json
         if not isinstance(payload, dict | list):
             raise ValueError("workout_json must be a JSON object or array")
-        return self.garth.post("connectapi", url, json=payload, api=True).json()
+        return self.client.post("connectapi", url, json=payload, api=True)
 
     def upload_running_workout(self, workout: Any) -> dict[str, Any]:
         """Upload a typed running workout.
@@ -2803,7 +2723,7 @@ class Garmin:
         url = f"{self.garmin_workouts_schedule_url}/{workout_id}"
         logger.debug("Scheduling workout %s for %s", workout_id, date_str)
         payload = {"date": date_str}
-        return self.garth.post("connectapi", url, json=payload, api=True).json()
+        return self.client.post("connectapi", url, json=payload, api=True)
 
     def get_menstrual_data_for_date(self, fordate: str) -> dict[str, Any]:
         """Return menstrual data for date."""
@@ -2855,7 +2775,7 @@ class Garmin:
             else []
         )
         logger.debug("Querying Garmin GraphQL op=%s vars=%s", op, vars_keys)
-        return self.garth.post(
+        return self.client.post(
             "connectapi", self.garmin_graphql_endpoint, json=query
         ).json()
 
@@ -2973,17 +2893,9 @@ class Garmin:
         return self.connectapi(url, params=params)
 
 
-class GarminConnectConnectionError(Exception):
-    """Raised when communication ended in error."""
-
-
-class GarminConnectTooManyRequestsError(Exception):
-    """Raised when rate limit is exceeded."""
-
-
-class GarminConnectAuthenticationError(Exception):
-    """Raised when authentication is failed."""
-
-
-class GarminConnectInvalidFileFormatError(Exception):
-    """Raised when an invalid file format is passed to upload."""
+from .exceptions import (  # noqa: E402
+    GarminConnectAuthenticationError,
+    GarminConnectConnectionError,
+    GarminConnectInvalidFileFormatError,
+    GarminConnectTooManyRequestsError,
+)
