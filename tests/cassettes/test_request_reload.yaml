@@ -17,7 +17,7 @@ interactions:
   response:
     body:
       string: '{"id": 376735957, "profileId": 82413233, "garminGUID": "3c814e7a-0db1-41a4-bdb8-4944db6fb8b3",
-        "displayName": "SANITIZED", "fullName": "SANITIZED", "userName": "ron@cyberjunky.nl",
+        "displayName": "SANITIZED", "fullName": "SANITIZED", "userName": "redacted@example.com",
         "profileImageType": "UPLOADED_PHOTO", "profileImageUrlLarge": "SANITIZED",
         "profileImageUrlMedium": "SANITIZED", "profileImageUrlSmall": "SANITIZED",
         "hasPremiumSocialIcon": false, "location": "Dordrecht", "facebookUrl": "",

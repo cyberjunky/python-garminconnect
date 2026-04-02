@@ -403,4 +403,136 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Accept-Language:
+      - en-US,en;q=0.9
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      User-Agent:
+      - GCM-Android-5.23
+      X-App-Ver:
+      - '10861'
+      X-GCExperience:
+      - GC5
+      X-Garmin-Client-Platform:
+      - Android
+      X-Garmin-Paired-App-Version:
+      - '10861'
+      X-Garmin-User-Agent:
+      - com.garmin.android.apps.connectmobile/5.23; ; Google/sdk_gphone64_arm64/google;
+        Android/33; Dalvik/2.1.0
+      X-Lang:
+      - en
+    method: GET
+    uri: https://connectapi.garmin.com/userprofile-service/socialProfile
+  response:
+    body:
+      string: '{"id": 376735957, "profileId": 82413233, "garminGUID": "3c814e7a-0db1-41a4-bdb8-4944db6fb8b3",
+        "displayName": "SANITIZED", "fullName": "SANITIZED", "userName": "redacted@example.com",
+        "profileImageType": "UPLOADED_PHOTO", "profileImageUrlLarge": "SANITIZED",
+        "profileImageUrlMedium": "SANITIZED", "profileImageUrlSmall": "SANITIZED",
+        "hasPremiumSocialIcon": false, "location": "Dordrecht, South Holland", "facebookUrl":
+        "", "twitterUrl": "", "personalWebsite": "", "motivation": 3, "bio": null,
+        "primaryActivity": "running", "favoriteActivityTypes": ["running", "cycling",
+        "walking", "hiking"], "runningTrainingSpeed": 2.857143, "cyclingTrainingSpeed":
+        0.0, "favoriteCyclingActivityTypes": [], "cyclingClassification": null, "cyclingMaxAvgPower":
+        0.0, "swimmingTrainingSpeed": 0.0, "profileVisibility": "private", "activityStartVisibility":
+        "public", "activityMapVisibility": "public", "courseVisibility": "public",
+        "activityHeartRateVisibility": "public", "activityPowerVisibility": "public",
+        "badgeVisibility": "following", "showAge": true, "showWeight": true, "showHeight":
+        true, "showWeightClass": false, "showAgeRange": false, "showGender": true,
+        "showActivityClass": true, "showVO2Max": true, "showPersonalRecords": true,
+        "showLast12Months": true, "showLifetimeTotals": true, "showUpcomingEvents":
+        true, "showRecentFavorites": true, "showRecentDevice": true, "showRecentGear":
+        false, "showBadges": true, "otherActivity": "", "otherPrimaryActivity": null,
+        "otherMotivation": null, "userRoles": ["SCOPE_OMT_DISCOUNTS_READ", "SCOPE_GARMINPAY_WRITE",
+        "SCOPE_ATP_READ", "SCOPE_GHS_SAMD", "SCOPE_INSIGHTS_READ", "SCOPE_OMT_DISCOUNTS_CREATE",
+        "SCOPE_CIQ_APPSTORE_SERVICES_CREATE", "SCOPE_DI_TOUM_NATIVE_REPORTED_DETAIL_WRITE",
+        "SCOPE_COMMUNITY_COURSE_WRITE", "SCOPE_GCOFFER_WRITE", "SCOPE_DI_API_READ",
+        "SCOPE_DT_CLIENT_ANALYTICS_WRITE", "SCOPE_CIQ_APPSTORE_SERVICES_DELETE", "SCOPE_OMT_SUBSCRIPTION_READ",
+        "SCOPE_CONNECT_READ", "SCOPE_COMMUNITY_COURSE_READ", "SCOPE_GOLF_API_READ",
+        "SCOPE_GHS_UPLOAD", "SCOPE_DIVE_API_READ", "SCOPE_CIQ_APPSTORE_SERVICES_READ",
+        "SCOPE_CIQ_APPSTORE_SERVICES_UPDATE", "SCOPE_CONNECT_WRITE", "SCOPE_CONNECT_MCT_DAILY_LOG_READ",
+        "SCOPE_GARMINPAY_READ", "SCOPE_DI_OAUTH_2_AUTHORIZATION_CODE_CREATE", "SCOPE_GOLF_API_WRITE",
+        "SCOPE_INSIGHTS_WRITE", "SCOPE_PRODUCT_SEARCH_READ", "SCOPE_OMT_CAMPAIGN_READ",
+        "SCOPE_GCOFFER_READ", "SCOPE_ATP_WRITE", "ROLE_CONNECTUSER", "ROLE_FITNESS_USER",
+        "ROLE_WELLNESS_USER", "ROLE_OUTDOOR_USER", "ROLE_GHS_USER", "ROLE_GARMIN_USER"],
+        "nameApproved": true, "userProfileFullName": "Ron", "makeGolfScorecardsPrivate":
+        true, "allowGolfLiveScoring": false, "allowGolfScoringByConnections": true,
+        "userLevel": 4, "userPoint": 148, "levelUpdateDate": "1970-01-01T00:00:00.000",
+        "levelIsViewed": false, "levelPointThreshold": 300, "userPointOffset": 0,
+        "userPro": false}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - application/json
+      Accept-Encoding:
+      - gzip, deflate
+      Accept-Language:
+      - en-US,en;q=0.9
+      Authorization:
+      - Bearer SANITIZED
+      Connection:
+      - keep-alive
+      User-Agent:
+      - GCM-Android-5.23
+      X-App-Ver:
+      - '10861'
+      X-GCExperience:
+      - GC5
+      X-Garmin-Client-Platform:
+      - Android
+      X-Garmin-Paired-App-Version:
+      - '10861'
+      X-Garmin-User-Agent:
+      - com.garmin.android.apps.connectmobile/5.23; ; Google/sdk_gphone64_arm64/google;
+        Android/33; Dalvik/2.1.0
+      X-Lang:
+      - en
+    method: GET
+    uri: https://connectapi.garmin.com/wellness-service/wellness/dailyHeartRate/REDACTED_DISPLAY_NAME?date=2023-07-01
+  response:
+    body:
+      string: '{"userProfilePK": 82413233, "calendarDate": "2023-07-01", "startTimestampGMT":
+        "1970-01-01T00:00:00.000", "endTimestampGMT": "1970-01-01T00:00:00.000", "startTimestampLocal":
+        "1970-01-01T00:00:00.000", "endTimestampLocal": "1970-01-01T00:00:00.000",
+        "maxHeartRate": null, "minHeartRate": null, "restingHeartRate": 52, "lastSevenDaysAvgRestingHeartRate":
+        49, "heartRateValueDescriptors": null, "heartRateValues": null}'
+    headers:
+      Cache-Control:
+      - no-cache, no-store, private
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - _cfuvid=SANITIZED; path=SANITIZED; domain=SANITIZED; HttpOnly; Secure; SameSite=SANITIZED
+    status:
+      code: 200
+      message: OK
 version: 1
