@@ -15,6 +15,7 @@ def create_sample_cycling_workout() -> CyclingWorkout:
     """Create a sample interval cycling workout."""
     return CyclingWorkout(
         workoutName="Cycling Power Intervals",
+        description="A sample cycling power interval workout with warmup, power intervals with recovery, and cooldown.",
         estimatedDurationInSecs=3600,  # 60 minutes
         workoutSegments=[
             WorkoutSegment(
