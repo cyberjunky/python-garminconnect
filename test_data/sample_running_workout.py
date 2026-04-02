@@ -16,6 +16,7 @@ def create_sample_running_workout() -> RunningWorkout:
     return RunningWorkout(
         workoutName="Interval Running Session",
         estimatedDurationInSecs=1800,  # 30 minutes
+        description="A sample interval running workout with warmup, intervals, recovery, and cooldown.",
         workoutSegments=[
             WorkoutSegment(
                 segmentOrder=1,
