@@ -2509,6 +2509,81 @@ def get_scheduled_workout_by_id_data(api: Garmin) -> None:
         print(f"❌ Error getting scheduled workout by ID: {e}")
 
 
+def delete_workout_data(api: Garmin) -> None:
+    """Delete a workout template from the library."""
+    try:
+        workouts = api.get_workouts()
+        if not workouts:
+            print("ℹ️ No workouts found")
+            return
+
+        print("\nAvailable workouts (most recent):")
+        for i, workout in enumerate(workouts[:10]):
+            workout_id = workout.get("workoutId")
+            workout_name = workout.get("workoutName", "Unknown")
+            print(f"  [{i}] {workout_name} (ID: {workout_id})")
+
+        try:
+            index_input = input(
+                f"\nEnter workout index to delete (0-{min(9, len(workouts) - 1)}, or 'q' to cancel): "
+            ).strip()
+
+            if index_input.lower() == "q":
+                print("❌ Cancelled")
+                return
+
+            workout_index = int(index_input)
+            if not (0 <= workout_index < min(10, len(workouts))):
+                print("❌ Invalid index")
+                return
+
+            selected_workout = workouts[workout_index]
+            workout_id = selected_workout["workoutId"]
+            workout_name = selected_workout.get("workoutName", "Unknown")
+
+            confirm = input(
+                f"Delete '{workout_name}' (ID: {workout_id})? (y/N): "
+            ).strip()
+            if confirm.lower() != "y":
+                print("❌ Cancelled")
+                return
+
+            call_and_display(
+                api.delete_workout,
+                workout_id,
+                method_name="delete_workout",
+                api_call_desc=f"api.delete_workout({workout_id}) - {workout_name}",
+            )
+            print("✅ Workout deleted successfully!")
+
+        except ValueError:
+            print("❌ Invalid input")
+
+    except Exception as e:
+        print(f"❌ Error deleting workout: {e}")
+
+
+def unschedule_workout_data(api: Garmin) -> None:
+    """Remove a scheduled workout from the calendar."""
+    try:
+        scheduled_id = input("Enter scheduled workout ID to unschedule: ").strip()
+
+        if not scheduled_id:
+            print("❌ Scheduled workout ID is required")
+            return
+
+        call_and_display(
+            api.unschedule_workout,
+            scheduled_id,
+            method_name="unschedule_workout",
+            api_call_desc=f"api.unschedule_workout({scheduled_id})",
+        )
+        print("✅ Workout unscheduled successfully!")
+
+    except Exception as e:
+        print(f"❌ Error unscheduling workout: {e}")
+
+
 def set_body_composition_data(api: Garmin) -> None:
     """Set body composition data."""
     try:
@@ -3861,6 +3936,8 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 api
             ),
             "scheduled_workout": lambda: schedule_workout_data(api),
+            "delete_workout": lambda: delete_workout_data(api),
+            "unschedule_workout": lambda: unschedule_workout_data(api),
             "count_activities": lambda: call_and_display(
                 api.count_activities,
                 method_name="count_activities",

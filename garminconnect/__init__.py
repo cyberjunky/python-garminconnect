@@ -2540,6 +2540,13 @@ class Garmin:
         url = f"{self.garmin_workouts}/workout/{workout_id}"
         return self.connectapi(url)
 
+    def delete_workout(self, workout_id: int | str) -> Any:
+        """Delete a workout template from the workout library."""
+        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        url = f"{self.garmin_workouts}/workout/{workout_id}"
+        logger.debug("Deleting workout %s", workout_id)
+        return self.client.delete("connectapi", url, api=True)
+
     def download_workout(self, workout_id: int | str) -> bytes:
         """Download workout by id."""
         workout_id = _validate_positive_integer(int(workout_id), "workout_id")
@@ -2735,6 +2742,15 @@ class Garmin:
         logger.debug("Scheduling workout %s for %s", workout_id, date_str)
         payload = {"date": date_str}
         return self.client.post("connectapi", url, json=payload, api=True)
+
+    def unschedule_workout(self, scheduled_workout_id: int | str) -> Any:
+        """Remove a scheduled workout from the calendar without deleting the template."""
+        scheduled_workout_id = _validate_positive_integer(
+            int(scheduled_workout_id), "scheduled_workout_id"
+        )
+        url = f"{self.garmin_workouts_schedule_url}/{scheduled_workout_id}"
+        logger.debug("Unscheduling workout %s", scheduled_workout_id)
+        return self.client.delete("connectapi", url, api=True)
 
     def get_menstrual_data_for_date(self, fordate: str) -> dict[str, Any]:
         """Return menstrual data for date."""
