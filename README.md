@@ -13,12 +13,13 @@
 > using the same mobile SSO flow as the official Garmin Connect Android app, obtaining native
 > DI OAuth Bearer tokens. Saved tokens are stored in a new format (`garmin_tokens.json`) —
 > a fresh login is required after upgrading.
-> All existing API methods remain unchanged — no code changes needed on your end.
+> All existing API methods remain unchanged — no code changes needed on your end,
+> except when you store/handle tokens in your own project.
 
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **127+ API methods** organized into **13 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **130+ API methods** organized into **13 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -47,7 +48,7 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 127+ unique endpoints (snapshot)
+- **Total API Methods**: 130+ unique endpoints (snapshot)
 - **Categories**: 13 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 9 methods (today's health data)
@@ -378,6 +379,10 @@ workout = RunningWorkout(
 # Upload and optionally schedule it
 result = client.upload_running_workout(workout)
 client.schedule_workout(result["workoutId"], "2026-03-20")
+
+# Delete a workout or remove it from the calendar
+client.delete_workout(workout_id)
+client.unschedule_workout(scheduled_workout_id)
 ```
 
 **Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
@@ -386,7 +391,7 @@ client.schedule_workout(result["workoutId"], "2026-03-20")
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 127+ API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 130+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
