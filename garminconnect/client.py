@@ -16,6 +16,13 @@ try:
 except ImportError:
     HAS_CFFI = False
 
+try:
+    from ua_generator import generate as _generate_ua
+
+    HAS_UA_GEN = True
+except ImportError:
+    HAS_UA_GEN = False
+
 from .exceptions import (
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
@@ -31,6 +38,28 @@ MOBILE_SSO_USER_AGENT = (
     "Mozilla/5.0 (Linux; Android 13; sdk_gphone64_arm64 Build/TE1A.220922.025; wv) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/132.0.0.0 Mobile Safari/537.36"
 )
+
+# Web portal constants (desktop browser flow — less likely to be Cloudflare-blocked)
+PORTAL_SSO_CLIENT_ID = "GarminConnect"
+PORTAL_SSO_SERVICE_URL = "https://connect.garmin.com/app"
+DESKTOP_USER_AGENT = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/131.0.0.0 Safari/537.36"
+)
+
+
+def _random_browser_headers() -> dict[str, str]:
+    """Generate a random browser User-Agent + sec-ch-ua headers.
+
+    Falls back to a static desktop Chrome UA if ua_generator is not installed.
+    """
+    if HAS_UA_GEN:
+        ua = _generate_ua()
+        return dict(ua.headers.get())
+    return {"User-Agent": DESKTOP_USER_AGENT}
+
+
 NATIVE_API_USER_AGENT = "GCM-Android-5.23"
 NATIVE_X_GARMIN_USER_AGENT = (
     "com.garmin.android.apps.connectmobile/5.23; ; Google/sdk_gphone64_arm64/google; "
@@ -142,26 +171,311 @@ class Client:
         prompt_mfa: Any = None,
         return_on_mfa: bool = False,
     ) -> tuple[str | None, Any]:
-        """Log in to Garmin Connect."""
-        # Try login with curl_cffi first (TLS impersonation)
+        """Log in to Garmin Connect.
+
+        Tries multiple login strategies in order:
+        1. Portal web flow with curl_cffi (desktop browser TLS + UA)
+        2. Portal web flow with plain requests (desktop browser UA)
+        3. Mobile SSO with curl_cffi (Android WebView TLS)
+        4. Mobile SSO with plain requests (last resort)
+        """
+        strategies: list[tuple[str, Any]] = []
+
+        # Portal web login — uses /portal/api/login with desktop Chrome UA.
+        # This is the endpoint connect.garmin.com itself uses, so Cloudflare
+        # cannot block it without breaking their own website.
         if HAS_CFFI:
+            strategies.append(("portal+cffi", self._portal_web_login_cffi))
+        strategies.append(("portal+requests", self._portal_web_login_requests))
+
+        # Mobile SSO — uses /mobile/api/login with Android WebView UA.
+        if HAS_CFFI:
+            strategies.append(("mobile+cffi", self._portal_login))
+        strategies.append(("mobile+requests", self._mobile_login))
+
+        last_err: Exception | None = None
+        for name, method in strategies:
             try:
-                return self._portal_login(
+                _LOGGER.debug("Trying login strategy: %s", name)
+                return method(
                     email,
                     password,
                     prompt_mfa=prompt_mfa,
                     return_on_mfa=return_on_mfa,
                 )
+            except GarminConnectAuthenticationError:  # noqa: PERF203
+                # Wrong credentials / invalid MFA — no point trying other strategies
+                raise
+            except (
+                GarminConnectTooManyRequestsError,
+                GarminConnectConnectionError,
+            ) as e:
+                # 429 or connection error on this endpoint — try the next one
+                _LOGGER.warning("Login strategy %s failed: %s", name, e)
+                last_err = e
+                continue
             except Exception as e:
-                _LOGGER.warning("curl_cffi login failed (%s), trying plain requests", e)
+                _LOGGER.warning("Login strategy %s failed: %s", name, e)
+                last_err = e
+                continue
 
-        # Fallback: same flow without curl_cffi
-        return self._mobile_login(
-            email,
-            password,
-            prompt_mfa=prompt_mfa,
-            return_on_mfa=return_on_mfa,
+        # All strategies exhausted
+        if isinstance(last_err, GarminConnectTooManyRequestsError):
+            raise last_err
+        raise GarminConnectConnectionError(
+            f"All login strategies failed. Last error: {last_err}"
         )
+
+    # ------------------------------------------------------------------
+    # Portal web login (desktop browser flow)
+    # ------------------------------------------------------------------
+
+    def _portal_web_login_cffi(
+        self,
+        email: str,
+        password: str,
+        prompt_mfa: Any = None,
+        return_on_mfa: bool = False,
+    ) -> tuple[str | None, Any]:
+        """Login via the web portal endpoint using curl_cffi TLS impersonation.
+
+        Tries multiple browser impersonations — Safari's TLS fingerprint
+        is less likely to be blocked by Cloudflare than Chrome's.
+        """
+        impersonations = ["safari", "safari_ios", "chrome120", "edge101", "chrome"]
+        last_err: Exception | None = None
+        for imp in impersonations:
+            try:
+                _LOGGER.debug("Trying portal+cffi with impersonation=%s", imp)
+                sess: Any = cffi_requests.Session(impersonate=imp)  # type: ignore[arg-type]
+                return self._portal_web_login(
+                    sess,
+                    email,
+                    password,
+                    prompt_mfa=prompt_mfa,
+                    return_on_mfa=return_on_mfa,
+                )
+            except GarminConnectAuthenticationError:  # noqa: PERF203
+                raise
+            except Exception as e:
+                _LOGGER.debug("portal+cffi(%s) failed: %s", imp, e)
+                last_err = e
+                continue
+        raise last_err or GarminConnectConnectionError("All cffi impersonations failed")
+
+    def _portal_web_login_requests(
+        self,
+        email: str,
+        password: str,
+        prompt_mfa: Any = None,
+        return_on_mfa: bool = False,
+    ) -> tuple[str | None, Any]:
+        """Login via the web portal endpoint using plain requests + random browser UA."""
+        sess = requests.Session()
+        sess.headers.update(_random_browser_headers())
+        return self._portal_web_login(
+            sess, email, password, prompt_mfa=prompt_mfa, return_on_mfa=return_on_mfa
+        )
+
+    def _portal_web_login(
+        self,
+        sess: Any,
+        email: str,
+        password: str,
+        prompt_mfa: Any = None,
+        return_on_mfa: bool = False,
+    ) -> tuple[str | None, Any]:
+        """Login via /portal/api/login — the web Connect flow.
+
+        This is the same endpoint the Garmin Connect React app uses.
+        Cloudflare cannot block it without breaking the website itself.
+        """
+        signin_url = f"{self._sso}/portal/sso/en-US/sign-in"
+
+        # Generate a consistent random browser identity for this login attempt
+        browser_hdrs = _random_browser_headers()
+
+        # Step 1: GET the sign-in page to establish session cookies
+        get_headers = {
+            **browser_hdrs,
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        }
+        sess.get(
+            signin_url,
+            params={
+                "clientId": PORTAL_SSO_CLIENT_ID,
+                "service": PORTAL_SSO_SERVICE_URL,
+            },
+            headers=get_headers,
+            timeout=30,
+        )
+
+        # Step 2: POST credentials to the portal login API
+        login_url = f"{self._sso}/portal/api/login"
+        login_params = {
+            "clientId": PORTAL_SSO_CLIENT_ID,
+            "locale": "en-US",
+            "service": PORTAL_SSO_SERVICE_URL,
+        }
+        post_headers = {
+            **browser_hdrs,
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Content-Type": "application/json",
+            "Origin": self._sso,
+            "Referer": f"{signin_url}?clientId={PORTAL_SSO_CLIENT_ID}"
+            f"&service={PORTAL_SSO_SERVICE_URL}",
+        }
+
+        r = sess.post(
+            login_url,
+            params=login_params,
+            headers=post_headers,
+            json={
+                "username": email,
+                "password": password,
+                "rememberMe": True,
+                "captchaToken": "",
+            },
+            timeout=30,
+        )
+
+        if r.status_code == 429:
+            raise GarminConnectTooManyRequestsError(
+                "Portal login returned 429. Cloudflare is blocking this request."
+            )
+
+        try:
+            res = r.json()
+        except Exception as err:
+            raise GarminConnectConnectionError(
+                f"Portal login failed (non-JSON): HTTP {r.status_code}"
+            ) from err
+
+        resp_type = res.get("responseStatus", {}).get("type")
+
+        if resp_type == "MFA_REQUIRED":
+            self._mfa_method = res.get("customerMfaInfo", {}).get(
+                "mfaLastMethodUsed", "email"
+            )
+            # Store session + context for MFA completion
+            self._mfa_portal_web_session = sess
+            self._mfa_portal_web_params = login_params
+            self._mfa_portal_web_headers = post_headers
+
+            if return_on_mfa:
+                return "needs_mfa", sess
+
+            if prompt_mfa:
+                mfa_code = prompt_mfa()
+                self._complete_mfa_portal_web(mfa_code)
+                return None, None
+            raise GarminConnectAuthenticationError(
+                "MFA Required but no prompt_mfa mechanism supplied"
+            )
+
+        if resp_type == "SUCCESSFUL":
+            ticket = res["serviceTicketId"]
+            self._establish_session(
+                ticket, sess=sess, service_url=PORTAL_SSO_SERVICE_URL
+            )
+            return None, None
+
+        if resp_type == "INVALID_USERNAME_PASSWORD":
+            raise GarminConnectAuthenticationError(
+                "401 Unauthorized (Invalid Username or Password)"
+            )
+
+        raise GarminConnectConnectionError(f"Portal web login failed: {res}")
+
+    def _complete_mfa_portal_web(self, mfa_code: str) -> None:
+        """Complete MFA via the portal web flow.
+
+        Tries /portal/api/mfa/verifyCode first, then /mobile/api/mfa/verifyCode
+        as fallback (same SSO session cookies work for both).
+        """
+        sess = self._mfa_portal_web_session
+        mfa_json: dict[str, Any] = {
+            "mfaMethod": getattr(self, "_mfa_method", "email"),
+            "mfaVerificationCode": mfa_code,
+            "rememberMyBrowser": True,
+            "reconsentList": [],
+            "mfaSetup": False,
+        }
+
+        # Try both portal and mobile MFA endpoints
+        mfa_endpoints = [
+            (
+                f"{self._sso}/portal/api/mfa/verifyCode",
+                self._mfa_portal_web_params,
+                self._mfa_portal_web_headers,
+            ),
+            (
+                f"{self._sso}/mobile/api/mfa/verifyCode",
+                {
+                    "clientId": MOBILE_SSO_CLIENT_ID,
+                    "locale": "en-US",
+                    "service": MOBILE_SSO_SERVICE_URL,
+                },
+                self._mfa_portal_web_headers,
+            ),
+        ]
+
+        failures: list[str] = []
+        for mfa_url, params, headers in mfa_endpoints:
+            _LOGGER.debug("Trying MFA endpoint: %s", mfa_url)
+            try:
+                r = sess.post(
+                    mfa_url,
+                    params=params,
+                    headers=headers,
+                    json=mfa_json,
+                    timeout=30,
+                )
+            except Exception as e:
+                failures.append(f"{mfa_url}: connection error {e}")
+                continue
+
+            # Check for 429 at HTTP level
+            if r.status_code == 429:
+                failures.append(f"{mfa_url}: HTTP 429")
+                continue
+
+            try:
+                res = r.json()
+            except Exception:
+                body_preview = r.text[:200] if r.text else "(empty)"
+                failures.append(
+                    f"{mfa_url}: HTTP {r.status_code} non-JSON: {body_preview}"
+                )
+                continue
+
+            # Check for 429 inside JSON error body
+            if res.get("error", {}).get("status-code") == "429":
+                failures.append(f"{mfa_url}: 429 in JSON body")
+                continue
+
+            if res.get("responseStatus", {}).get("type") == "SUCCESSFUL":
+                ticket = res["serviceTicketId"]
+                # Use the service_url matching whichever endpoint succeeded
+                svc_url = (
+                    PORTAL_SSO_SERVICE_URL
+                    if "/portal/" in mfa_url
+                    else MOBILE_SSO_SERVICE_URL
+                )
+                self._establish_session(ticket, sess=sess, service_url=svc_url)
+                return
+
+            failures.append(f"{mfa_url}: HTTP {r.status_code} => {res}")
+
+        raise GarminConnectAuthenticationError(
+            f"MFA Verification failed on all endpoints: {'; '.join(failures)}"
+        )
+
+    # ------------------------------------------------------------------
+    # Mobile SSO login (Android app flow)
+    # ------------------------------------------------------------------
 
     def _portal_login(
         self,
@@ -171,7 +485,7 @@ class Client:
         return_on_mfa: bool = False,
     ) -> tuple[str | None, Any]:
         """Login via mobile SSO API using curl_cffi for TLS impersonation."""
-        sess: Any = cffi_requests.Session(impersonate="chrome")
+        sess: Any = cffi_requests.Session(impersonate="safari")
 
         # Step 1: GET mobile sign-in page (sets SESSION cookies)
         signin_url = f"{self._sso}/mobile/sso/en_US/sign-in"
@@ -387,12 +701,14 @@ class Client:
             return
         raise GarminConnectAuthenticationError(f"MFA Verification failed: {res}")
 
-    def _establish_session(self, ticket: str, sess: Any = None) -> None:
+    def _establish_session(
+        self, ticket: str, sess: Any = None, service_url: str | None = None
+    ) -> None:
         """Consume a CAS service ticket — try native DI token exchange first,
         fall back to JWT_WEB cookie auth.
         """
         try:
-            self._exchange_service_ticket(ticket)
+            self._exchange_service_ticket(ticket, service_url=service_url)
             return
         except Exception as e:
             _LOGGER.warning("DI token exchange failed (%s), falling back to JWT_WEB", e)
@@ -420,18 +736,29 @@ class Client:
             )
         self.jwt_web = jwt_web
 
-    def _exchange_service_ticket(self, ticket: str) -> None:
+    def _http_post(self, url: str, **kwargs: Any) -> requests.Response:
+        """POST using curl_cffi if available, else plain requests."""
+        if HAS_CFFI:
+            return cffi_requests.post(url, impersonate="chrome", **kwargs)
+        return requests.post(url, **kwargs)  # noqa: S113
+
+    def _exchange_service_ticket(
+        self, ticket: str, service_url: str | None = None
+    ) -> None:
         """Exchange a CAS service ticket for native DI + IT Bearer tokens.
 
         POST to diauth.garmin.com to get a DI OAuth2 token, then exchange
         for an IT token via services.garmin.com.
         """
+        # service_url must match the one used during SSO login
+        svc_url = service_url or MOBILE_SSO_SERVICE_URL
+
         di_token = None
         di_refresh = None
         di_client_id = None
 
         for client_id in DI_CLIENT_IDS:
-            r = requests.post(
+            r = self._http_post(
                 DI_TOKEN_URL,
                 headers=_native_headers(
                     {
@@ -445,7 +772,7 @@ class Client:
                     "client_id": client_id,
                     "service_ticket": ticket,
                     "grant_type": DI_GRANT_TYPE,
-                    "service_url": MOBILE_SSO_SERVICE_URL,
+                    "service_url": svc_url,
                 },
                 timeout=30,
             )
@@ -483,7 +810,7 @@ class Client:
         # Exchange DI for IT token
         it_candidates = self._it_client_id_candidates(di_client_id or DI_CLIENT_IDS[0])
         for client_id in it_candidates:
-            r = requests.post(
+            r = self._http_post(
                 f"{IT_TOKEN_URL}?grant_type=connect2_exchange",
                 headers=_native_headers(
                     {
@@ -514,7 +841,7 @@ class Client:
         """Refresh the DI Bearer token using the stored refresh token."""
         if not self.di_refresh_token or not self.di_client_id:
             raise GarminConnectAuthenticationError("No DI refresh token available")
-        r = requests.post(
+        r = self._http_post(
             DI_TOKEN_URL,
             headers=_native_headers(
                 {
@@ -735,7 +1062,9 @@ class Client:
         return resp
 
     def resume_login(self, _client_state: Any, mfa_code: str) -> tuple[str | None, Any]:
-        if hasattr(self, "_mfa_cffi_session"):
+        if hasattr(self, "_mfa_portal_web_session"):
+            self._complete_mfa_portal_web(mfa_code)
+        elif hasattr(self, "_mfa_cffi_session"):
             self._complete_mfa_portal(mfa_code)
         else:
             self._complete_mfa(mfa_code)
