@@ -283,6 +283,9 @@ class Garmin:
 
         self.garmin_workouts_schedule_url = f"{self.garmin_workouts}/schedule"
 
+        self.garmin_calendar = "/calendar-service"
+        self.garmin_scheduled_workouts_url = f"{self.garmin_calendar}"
+
         self.garmin_nutrition = "/nutrition-service"
 
         self.garmin_connect_nutrition_daily_food_logs = (
@@ -2723,6 +2726,25 @@ class Garmin:
                 "Pydantic is required for typed workouts. "
                 "Install it with: pip install pydantic or pip install garminconnect[workout]"
             ) from None
+
+    def get_scheduled_workouts_by_year_and_month(
+        self, year: int | str, month: int | str
+    ) -> dict[str, Any]:
+        """Return scheduled workout by year and month."""
+        year = _validate_positive_integer(int(year), "year")
+        if year < 2000:
+            raise ValueError(f"year must be 2000 or later, got: {year}")
+
+        month = _validate_positive_integer(int(month), "month")
+        if month < 1 or month > 12:
+            raise ValueError(f"month must be between 1 and 12, got: {month}")
+
+        # Garmin's API uses 0-indexed months, so we need to subtract 1 from the month value
+        url = f"{self.garmin_scheduled_workouts_url}/year/{year}/month/{month - 1}"
+        logger.debug(
+            "Requesting scheduled workout for year %d and month %d", year, month
+        )
+        return self.connectapi(url)
 
     def get_scheduled_workout_by_id(
         self, scheduled_workout_id: int | str
