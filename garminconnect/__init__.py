@@ -1,5 +1,6 @@
 """Python 3 API wrapper for Garmin Connect."""
 
+import contextlib
 import logging
 import numbers
 import os
@@ -420,6 +421,7 @@ class Garmin:
 
             # Try to load tokens from tokenstore if provided
             tokens_loaded = False
+            tokenstore_path = None
             if tokenstore:
                 try:
                     if len(tokenstore) > 512:
@@ -429,9 +431,8 @@ class Garmin:
                         # Tokenstore is a path - normalize it for cross-platform compatibility
                         # This fixes Windows path issues where ~ expansion or path separators
                         # might cause token extraction to not find all token files correctly
-                        tokenstore_path = Path(tokenstore).expanduser().resolve()
-                        # Convert to string with normalized path separators
-                        normalized_path = str(tokenstore_path)
+                        tokenstore_path = str(Path(tokenstore).expanduser().resolve())
+                        normalized_path = tokenstore_path
                         logger.debug(
                             f"Loading tokens from normalized path: {normalized_path}"
                         )
@@ -470,11 +471,17 @@ class Garmin:
                     )
                     # In MFA early-return mode, profile/settings are not loaded yet
                     return mfa_status, _legacy_token
+                if tokenstore_path is not None:
+                    self.client._tokenstore_path = tokenstore_path
                 mfa_status, _legacy_token = self.client.login(
                     self.username,
                     self.password,
                     prompt_mfa=self.prompt_mfa,
                 )
+                # Persist tokens so next run restores without re-login/MFA
+                if tokenstore_path is not None:
+                    with contextlib.suppress(Exception):
+                        self.client.dump(tokenstore_path)
                 # Continue to load profile/settings below
 
             # Ensure profile is loaded (tokenstore path may not populate it)
