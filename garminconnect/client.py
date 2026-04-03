@@ -66,7 +66,6 @@ NATIVE_X_GARMIN_USER_AGENT = (
     "Android/33; Dalvik/2.1.0"
 )
 DI_TOKEN_URL = "https://diauth.garmin.com/di-oauth2-service/oauth/token"  # noqa: S105
-IT_TOKEN_URL = "https://services.garmin.com/api/oauth/token"  # noqa: S105
 DI_GRANT_TYPE = (
     "https://connectapi.garmin.com/di-oauth2-service/oauth/grant/service_ticket"
 )
@@ -74,11 +73,6 @@ DI_CLIENT_IDS = (
     "GARMIN_CONNECT_MOBILE_ANDROID_DI_2025Q2",
     "GARMIN_CONNECT_MOBILE_ANDROID_DI_2024Q4",
     "GARMIN_CONNECT_MOBILE_ANDROID_DI",
-)
-IT_CLIENT_IDS = (
-    "GARMIN_CONNECT_MOBILE_ANDROID_2025Q2",
-    "GARMIN_CONNECT_MOBILE_ANDROID_2024Q4",
-    "GARMIN_CONNECT_MOBILE_ANDROID",
 )
 
 
@@ -115,9 +109,6 @@ class Client:
         self.di_token: str | None = None
         self.di_refresh_token: str | None = None
         self.di_client_id: str | None = None
-        self.it_token: str | None = None
-        self.it_refresh_token: str | None = None
-        self.it_client_id: str | None = None
 
         # JWT_WEB cookie auth (fallback when DI token is unavailable)
         self.jwt_web: str | None = None
@@ -807,36 +798,6 @@ class Client:
         self.di_refresh_token = di_refresh
         self.di_client_id = di_client_id
 
-        # Exchange DI for IT token
-        it_candidates = self._it_client_id_candidates(di_client_id or DI_CLIENT_IDS[0])
-        for client_id in it_candidates:
-            r = self._http_post(
-                f"{IT_TOKEN_URL}?grant_type=connect2_exchange",
-                headers=_native_headers(
-                    {
-                        "Accept": "application/json,text/plain,*/*",
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    }
-                ),
-                data={
-                    "client_id": client_id,
-                    "connect_access_token": di_token,
-                },
-                timeout=30,
-            )
-            if not r.ok:
-                _LOGGER.debug("IT exchange failed for %s: %s", client_id, r.status_code)
-                continue
-            try:
-                data = r.json()
-                self.it_token = data["access_token"]
-                self.it_refresh_token = data.get("refresh_token")
-                self.it_client_id = client_id
-                break
-            except Exception as e:
-                _LOGGER.debug("IT token parse failed for %s: %s", client_id, e)
-                continue
-
     def _refresh_di_token(self) -> None:
         """Refresh the DI Bearer token using the stored refresh token."""
         if not self.di_refresh_token or not self.di_client_id:
@@ -880,20 +841,6 @@ class Client:
             return str(value) if value else None
         except Exception:
             return None
-
-    def _it_client_id_candidates(self, di_client_id: str) -> tuple[str, ...]:
-        derived = (
-            di_client_id.replace("_DI_", "_")
-            if "_DI_" in di_client_id
-            else (
-                di_client_id[:-3] if di_client_id.endswith("_DI") else IT_CLIENT_IDS[0]
-            )
-        )
-        seen: list[str] = []
-        for v in [self.it_client_id, derived, *IT_CLIENT_IDS]:
-            if v and v not in seen:
-                seen.append(v)
-        return tuple(seen)
 
     def _token_expires_soon(self) -> bool:
         token = self.di_token or self.jwt_web
@@ -972,13 +919,6 @@ class Client:
             "di_token": self.di_token,
             "di_refresh_token": self.di_refresh_token,
             "di_client_id": self.di_client_id,
-            "it_token": self.it_token,
-            "it_refresh_token": self.it_refresh_token,
-            "it_client_id": self.it_client_id,
-            # JWT_WEB fields
-            "jwt_web": self.jwt_web,
-            "csrf_token": self.csrf_token,
-            "cookies": {c.name: c.value for c in self.cs.cookies.jar},
         }
         return json.dumps(data)
 
@@ -1008,24 +948,6 @@ class Client:
             self.di_token = data.get("di_token")
             self.di_refresh_token = data.get("di_refresh_token")
             self.di_client_id = data.get("di_client_id")
-            self.it_token = data.get("it_token")
-            self.it_refresh_token = data.get("it_refresh_token")
-            self.it_client_id = data.get("it_client_id")
-            self.jwt_web = data.get("jwt_web")
-            self.csrf_token = data.get("csrf_token")
-
-            # Restore cookies if no DI token
-            if not self.di_token:
-                sso_cookies = {"CASTGC", "CASRMC", "CASMFA", "SESSION", "__VCAP_ID__"}
-                connect_cookies = {"JWT_WEB", "session", "__cflb"}
-                for k, v in data.get("cookies", {}).items():
-                    if k in sso_cookies:
-                        self.cs.cookies.set(k, v, domain=f"sso.{self.domain}")
-                    elif k in connect_cookies:
-                        self.cs.cookies.set(k, v, domain=f".connect.{self.domain}")
-                    else:
-                        self.cs.cookies.set(k, v, domain=f".{self.domain}")
-
             if not self.is_authenticated:
                 raise GarminConnectAuthenticationError("Missing tokens from dict load")
         except Exception as e:
