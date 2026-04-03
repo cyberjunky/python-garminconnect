@@ -2733,7 +2733,7 @@ class Garmin:
         """Return scheduled workout by year and month."""
         year = _validate_positive_integer(int(year), "year")
         if year < 2000:
-            raise ValueError(f"year must be after 2000, got: {year}")
+            raise ValueError(f"year must be 2000 or later, got: {year}")
 
         month = _validate_positive_integer(int(month), "month")
         if month < 1 or month > 12:
