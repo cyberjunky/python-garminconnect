@@ -727,7 +727,7 @@ class Client:
             )
         self.jwt_web = jwt_web
 
-    def _http_post(self, url: str, **kwargs: Any) -> requests.Response:
+    def _http_post(self, url: str, **kwargs: Any) -> Any:
         """POST using curl_cffi if available, else plain requests."""
         if HAS_CFFI:
             return cffi_requests.post(url, impersonate="chrome", **kwargs)
