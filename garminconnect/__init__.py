@@ -470,11 +470,15 @@ class Garmin:
                     )
                     # In MFA early-return mode, profile/settings are not loaded yet
                     return mfa_status, _legacy_token
+                self.client._tokenstore_path = tokenstore_path
                 mfa_status, _legacy_token = self.client.login(
                     self.username,
                     self.password,
                     prompt_mfa=self.prompt_mfa,
                 )
+                # Persist tokens so next run restores without re-login/MFA
+                if tokenstore:
+                    self.client.dump(tokenstore_path)
                 # Continue to load profile/settings below
 
             # Ensure profile is loaded (tokenstore path may not populate it)
