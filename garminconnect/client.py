@@ -1149,6 +1149,9 @@ class Client:
             self._establish_session(
                 ticket, sess=self._widget_session, service_url=sso_embed
             )
+            del self._widget_session
+            del self._widget_signin_params
+            del self._widget_last_resp
         elif hasattr(self, "_mfa_portal_web_session"):
             self._complete_mfa_portal_web(mfa_code)
         elif hasattr(self, "_mfa_cffi_session"):
