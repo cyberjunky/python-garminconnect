@@ -267,7 +267,15 @@ class Client:
         }
 
         # Step 1: GET /sso/embed to establish session cookies
-        sess.get(sso_embed, params=embed_params)
+        r = sess.get(sso_embed, params=embed_params)
+        if r.status_code == 429:
+            raise GarminConnectTooManyRequestsError(
+                "Widget login returned 429 on embed page"
+            )
+        if not r.ok:
+            raise GarminConnectConnectionError(
+                f"Widget login: embed page returned HTTP {r.status_code}"
+            )
 
         # Step 2: GET /sso/signin to obtain CSRF token
         r = sess.get(
@@ -275,6 +283,10 @@ class Client:
             params=signin_params,
             headers={"Referer": sso_embed},
         )
+        if r.status_code == 429:
+            raise GarminConnectTooManyRequestsError(
+                "Widget login returned 429 on sign-in page"
+            )
         csrf_match = self._CSRF_RE.search(r.text)
         if not csrf_match:
             raise GarminConnectConnectionError(
@@ -292,6 +304,7 @@ class Client:
                 "embed": "true",
                 "_csrf": csrf_match.group(1),
             },
+            timeout=30,
         )
 
         if r.status_code == 429:
@@ -359,6 +372,7 @@ class Client:
                 "_csrf": csrf_match.group(1),
                 "fromPage": "setupEnterMfaCode",
             },
+            timeout=30,
         )
 
         title_match = self._TITLE_RE.search(r.text)
