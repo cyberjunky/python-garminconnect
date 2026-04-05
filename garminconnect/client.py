@@ -1,4 +1,6 @@
 """Authentication engine for Garmin Connect."""
+import random
+from time import sleep
 
 import base64
 import contextlib
@@ -301,6 +303,7 @@ class Client:
             headers=get_headers,
             timeout=30,
         )
+        sleep(random.uniform(30, 45))
 
         # Step 2: POST credentials to the portal login API
         login_url = f"{self._sso}/portal/api/login"
