@@ -330,12 +330,25 @@ class Client:
                 self._establish_session(
                     ticket, sess=sess, service_url=sso_embed
                 )
+                del self._widget_session
+                del self._widget_signin_params
+                del self._widget_last_resp
                 return None, None
             raise GarminConnectAuthenticationError(
                 "MFA Required but no prompt_mfa mechanism supplied"
             )
 
         if title != "Success":
+            # Detect credential failures to prevent falling through
+            # to other strategies with bad credentials
+            title_lower = title.lower()
+            if any(
+                hint in title_lower
+                for hint in ("locked", "invalid", "error", "incorrect")
+            ):
+                raise GarminConnectAuthenticationError(
+                    f"Widget login: authentication failed ('{title}')"
+                )
             raise GarminConnectConnectionError(
                 f"Widget login: unexpected title '{title}'"
             )
@@ -374,6 +387,15 @@ class Client:
             },
             timeout=30,
         )
+
+        if r.status_code == 429:
+            raise GarminConnectTooManyRequestsError(
+                "Widget MFA returned 429"
+            )
+        if not r.ok:
+            raise GarminConnectConnectionError(
+                f"Widget MFA: verify endpoint returned HTTP {r.status_code}"
+            )
 
         title_match = self._TITLE_RE.search(r.text)
         title = title_match.group(1) if title_match else ""
