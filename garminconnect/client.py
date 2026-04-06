@@ -172,6 +172,16 @@ class Client:
         4. Mobile SSO with curl_cffi (Android WebView TLS)
         5. Mobile SSO with plain requests (last resort)
         """
+        # Clear any leftover widget MFA state from a prior abandoned attempt
+        # so resume_login() does not incorrectly route to the widget path.
+        for attr in (
+            "_widget_session",
+            "_widget_signin_params",
+            "_widget_last_resp",
+        ):
+            if hasattr(self, attr):
+                delattr(self, attr)
+
         strategies: list[tuple[str, Any]] = []
 
         # SSO embed widget — uses /sso/embed + /sso/signin HTML form flow.
@@ -310,6 +320,10 @@ class Client:
         if r.status_code == 429:
             raise GarminConnectTooManyRequestsError(
                 "Widget login returned 429"
+            )
+        if not r.ok:
+            raise GarminConnectConnectionError(
+                f"Widget login: credential POST returned HTTP {r.status_code}"
             )
 
         title_match = self._TITLE_RE.search(r.text)
