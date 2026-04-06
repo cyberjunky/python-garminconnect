@@ -533,6 +533,15 @@ menu_categories = {
             },
         },
     },
+    "d": {
+        "name": "📅 Calendar",
+        "options": {
+            "1": {
+                "desc": f"Get calendar items for '{config.month_start.month}/{config.month_start.year}'",
+                "key": "get_calendar_data",
+            }
+        },
+    },
 }
 
 current_category = None
@@ -4174,6 +4183,13 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "disconnect": lambda: disconnect_api(api),
             # GraphQL Queries
             "query_garmin_graphql": lambda: query_garmin_graphql_data(api),
+            "get_calendar_data": lambda: call_and_display(
+                api.get_calendar_data,
+                config.month_start.year,
+                config.month_start.month,
+                method_name="get_calendar_data",
+                api_call_desc=f"api.get_calendar_data({config.today.year},{config.today.month})",
+            ),
         }
 
         if key in api_methods:
