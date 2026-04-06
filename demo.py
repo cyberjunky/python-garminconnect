@@ -4188,7 +4188,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 config.month_start.year,
                 config.month_start.month,
                 method_name="get_calendar_data",
-                api_call_desc=f"api.get_calendar_data({config.today.year},{config.today.month})",
+                api_call_desc=f"api.get_calendar_data({config.month_start.year}, {config.month_start.month})",
             ),
         }
 

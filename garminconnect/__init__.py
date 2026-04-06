@@ -2938,8 +2938,13 @@ class Garmin:
         :type year: int
         :param month: month to retrieve
         :type month: int
-        :return: list of calendar items in JSON format.
+        :return: dictionary containing metadata and a list of the calendar items.
         """
+        year = _validate_positive_integer(year, "year")
+        month = _validate_positive_integer(month, "month")
+        if month < 1 or month > 12:
+            raise ValueError(f"month must be between 1 and 12, got: {month}")
+
         url = f"{self.garmin_connect_calendar}/year/{year}/month/{month}"
         logger.debug("Requesting calendar items.")
         return self.connectapi(url)
