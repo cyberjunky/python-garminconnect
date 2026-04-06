@@ -108,6 +108,7 @@ class Garmin:
         is_cn: bool = False,
         prompt_mfa: Callable[[], str] | None = None,
         return_on_mfa: bool = False,
+        proxy_url: str | None = None,
     ) -> None:
         """Create a new class instance."""
         # Validate input types
@@ -312,6 +313,7 @@ class Garmin:
             domain="garmin.cn" if is_cn else "garmin.com",
             pool_connections=20,
             pool_maxsize=20,
+            proxy_url=proxy_url,
         )
 
         self.display_name = None

@@ -123,6 +123,10 @@ class Client:
         self.jwt_web: str | None = None
         self.csrf_token: str | None = None
 
+        # Browser proxy — when set, API calls are routed through an
+        # external browser-based proxy (the garmin-givemydata add-on)
+        self.proxy_url: str | None = kwargs.get("proxy_url")
+
         # curl_cffi session for login flows
         self.cs: Any = None
         if HAS_CFFI:
@@ -268,9 +272,7 @@ class Client:
             result = gc.login(return_on_mfa=return_on_mfa)
         except Exception as e:
             gc.close()
-            raise GarminConnectConnectionError(
-                f"Browser login failed: {e}"
-            ) from e
+            raise GarminConnectConnectionError(f"Browser login failed: {e}") from e
 
         if result == "needs_mfa":
             # Keep browser alive — caller will use resume_login()
@@ -1144,6 +1146,10 @@ class Client:
         return sess
 
     def _run_request(self, method: str, path: str, **kwargs: Any) -> Any:
+        # Route through browser proxy if configured
+        if self.proxy_url:
+            return self._run_proxy_request(method, path, **kwargs)
+
         if self.is_authenticated and self._token_expires_soon():
             self._refresh_session()
 
@@ -1196,6 +1202,72 @@ class Client:
                         error_msg += f" - {msg}"
                     else:
                         error_msg += f" - {error_data}"
+            except Exception:
+                if len(resp.text) < 500:
+                    error_msg += f" - {resp.text}"
+            raise GarminConnectConnectionError(error_msg)
+
+        return resp
+
+    def _run_proxy_request(self, method: str, path: str, **kwargs: Any) -> Any:
+        """Route an API request through the browser-based add-on proxy.
+
+        The add-on's /api/fetch endpoint executes the request via the
+        browser's JavaScript fetch() context, bypassing Cloudflare.
+        """
+        clean_path = path.lstrip("/")
+        browser_path = f"/gc-api/{clean_path}"
+
+        _LOGGER.debug("Proxy request: %s %s → %s", method, path, browser_path)
+
+        try:
+            resp = requests.post(
+                f"{self.proxy_url}/api/fetch",
+                json={"path": browser_path, "method": method},
+                timeout=kwargs.get("timeout", 30),
+            )
+        except Exception as e:
+            raise GarminConnectConnectionError(
+                f"Browser proxy request failed: {e}"
+            ) from e
+
+        if resp.status_code == 401:
+            raise GarminConnectAuthenticationError(
+                "Browser session expired — re-authentication required"
+            )
+
+        if resp.status_code == 502:
+            error = "Browser proxy error"
+            with contextlib.suppress(Exception):
+                error = resp.json().get("error", error)
+            raise GarminConnectConnectionError(error)
+
+        # Treat the upstream status code the same as a direct response
+        if resp.status_code == 204:
+
+            class EmptyProxyResp:
+                status_code = 204
+                content = b""
+
+                def json(self_) -> Any:
+                    return {}
+
+                def __repr__(self_) -> str:
+                    return "{}"
+
+                def __str__(self_) -> str:
+                    return "{}"
+
+            return EmptyProxyResp()
+
+        if resp.status_code >= 400:
+            error_msg = f"API Error {resp.status_code}"
+            try:
+                error_data = resp.json()
+                if isinstance(error_data, dict):
+                    msg = error_data.get("message") or error_data.get("content")
+                    if msg:
+                        error_msg += f" - {msg}"
             except Exception:
                 if len(resp.text) < 500:
                     error_msg += f" - {resp.text}"
