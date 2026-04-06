@@ -424,8 +424,8 @@ class Garmin:
             tokenstore_path = None
             if tokenstore:
                 try:
-                    if len(tokenstore) > 512:
-                        # Token data is provided directly as string
+                    if tokenstore.lstrip().startswith("{"):
+                        # Token data is provided directly as a JSON string
                         self.client.loads(tokenstore)
                     else:
                         # Tokenstore is a path - normalize it for cross-platform compatibility
