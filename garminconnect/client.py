@@ -922,6 +922,8 @@ class Client:
             "di_token": self.di_token,
             "di_refresh_token": self.di_refresh_token,
             "di_client_id": self.di_client_id,
+            "jwt_web": self.jwt_web,
+            "csrf_token": self.csrf_token,
         }
         return json.dumps(data)
 
@@ -951,12 +953,35 @@ class Client:
             self.di_token = data.get("di_token")
             self.di_refresh_token = data.get("di_refresh_token")
             self.di_client_id = data.get("di_client_id")
+            if data.get("jwt_web"):
+                self.jwt_web = data["jwt_web"]
+            if data.get("csrf_token"):
+                self.csrf_token = data["csrf_token"]
             if not self.is_authenticated:
                 raise GarminConnectAuthenticationError("Missing tokens from dict load")
         except Exception as e:
             raise GarminConnectConnectionError(
                 f"Token extraction loads() structurally failed: {e}"
             ) from e
+
+    def load_givemydata_session(self, session_json: str) -> None:
+        """Import auth from a garmin-givemydata session JSON string.
+
+        Extracts the JWT_WEB cookie from the garmin-givemydata
+        garmin_session.json format and sets it as the active auth token.
+        """
+        data = json.loads(session_json)
+        cookies = data.get("cookies", [])
+        jwt_web = None
+        for cookie in cookies:
+            if cookie.get("name") == "JWT_WEB":
+                jwt_web = cookie["value"]
+                break
+        if not jwt_web:
+            raise GarminConnectAuthenticationError(
+                "No JWT_WEB cookie found in garmin-givemydata session"
+            )
+        self.jwt_web = jwt_web
 
     def connectapi(self, path: str, **kwargs: Any) -> Any:
         return self._run_request("GET", path, **kwargs).json()
