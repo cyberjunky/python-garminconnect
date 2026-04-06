@@ -1,12 +1,12 @@
 """Authentication engine for Garmin Connect."""
-import random
-from time import sleep
 
 import base64
 import contextlib
 import json
 import logging
+import random
 from pathlib import Path
+from time import sleep
 from typing import Any
 
 import requests
@@ -24,6 +24,13 @@ try:
     HAS_UA_GEN = True
 except ImportError:
     HAS_UA_GEN = False
+
+try:
+    from garmin_client import GarminClient as _BrowserClient
+
+    HAS_BROWSER = True
+except ImportError:
+    HAS_BROWSER = False
 
 from .exceptions import (
     GarminConnectAuthenticationError,
@@ -130,6 +137,9 @@ class Client:
 
         self._tokenstore_path: str | None = None
 
+        # Browser-based auth state (garmin-givemydata integration)
+        self._browser_client: Any = None
+
     @property
     def is_authenticated(self) -> bool:
         return bool(self.di_token or self.jwt_web)
@@ -167,12 +177,18 @@ class Client:
         """Log in to Garmin Connect.
 
         Tries multiple login strategies in order:
+        0. Browser automation via garmin-givemydata (if installed)
         1. Portal web flow with curl_cffi (desktop browser TLS + UA)
         2. Portal web flow with plain requests (desktop browser UA)
         3. Mobile SSO with curl_cffi (Android WebView TLS)
         4. Mobile SSO with plain requests (last resort)
         """
         strategies: list[tuple[str, Any]] = []
+
+        # Browser-based login via garmin-givemydata's SeleniumBase UC Chrome.
+        # This is the most reliable strategy — a real browser bypasses Cloudflare.
+        if HAS_BROWSER:
+            strategies.append(("browser+selenium", self._browser_login))
 
         # Portal web login — uses /portal/api/login with desktop Chrome UA.
         # This is the endpoint connect.garmin.com itself uses, so Cloudflare
@@ -218,6 +234,67 @@ class Client:
         raise GarminConnectConnectionError(
             f"All login strategies failed. Last error: {last_err}"
         )
+
+    # ------------------------------------------------------------------
+    # Browser-based login (garmin-givemydata SeleniumBase UC Chrome)
+    # ------------------------------------------------------------------
+
+    def _browser_login(
+        self,
+        email: str,
+        password: str,
+        prompt_mfa: Any = None,  # noqa: ARG002
+        return_on_mfa: bool = False,
+    ) -> tuple[str | None, Any]:
+        """Login using a real Chrome browser via garmin-givemydata.
+
+        Launches headless Chrome with SeleniumBase UC mode, fills the SSO
+        form, and extracts JWT_WEB + CSRF tokens on success.  Falls through
+        to HTTP strategies if Chrome is unavailable or the browser login fails.
+        """
+        try:
+            gc = _BrowserClient(
+                email=email,
+                password=password,
+                headless=True,
+                install_signal_handlers=False,
+            )
+        except Exception as e:
+            raise GarminConnectConnectionError(
+                f"Failed to create browser client: {e}"
+            ) from e
+
+        try:
+            result = gc.login(return_on_mfa=return_on_mfa)
+        except Exception as e:
+            gc.close()
+            raise GarminConnectConnectionError(
+                f"Browser login failed: {e}"
+            ) from e
+
+        if result == "needs_mfa":
+            # Keep browser alive — caller will use resume_login()
+            self._browser_client = gc
+            return ("needs_mfa", None)
+
+        if not result:
+            gc.close()
+            raise GarminConnectConnectionError("Browser-based login failed")
+
+        # Extract tokens from the browser session
+        tokens = gc.get_auth_tokens()
+        gc.close()
+
+        self.jwt_web = tokens.get("jwt_web")
+        self.csrf_token = tokens.get("csrf_token")
+
+        if not self.jwt_web:
+            raise GarminConnectConnectionError(
+                "No JWT_WEB token obtained from browser login"
+            )
+
+        _LOGGER.info("Browser login successful — JWT_WEB obtained")
+        return (None, None)
 
     # ------------------------------------------------------------------
     # Portal web login (desktop browser flow)
@@ -1012,6 +1089,39 @@ class Client:
         return resp
 
     def resume_login(self, _client_state: Any, mfa_code: str) -> tuple[str | None, Any]:
+        # Browser-based MFA completion (garmin-givemydata)
+        if self._browser_client is not None:
+            gc = self._browser_client
+            self._browser_client = None
+            try:
+                result = gc.submit_mfa(mfa_code)
+                if not result:
+                    gc.close()
+                    raise GarminConnectAuthenticationError(
+                        "Browser MFA verification failed"
+                    )
+                tokens = gc.get_auth_tokens()
+                gc.close()
+                self.jwt_web = tokens.get("jwt_web")
+                self.csrf_token = tokens.get("csrf_token")
+                if not self.jwt_web:
+                    raise GarminConnectAuthenticationError(
+                        "No JWT_WEB token obtained after browser MFA"
+                    )
+                _LOGGER.info("Browser MFA successful — JWT_WEB obtained")
+                return None, None
+            except (
+                GarminConnectAuthenticationError,
+                GarminConnectConnectionError,
+            ):
+                raise
+            except Exception as e:
+                gc.close()
+                raise GarminConnectAuthenticationError(
+                    f"Browser MFA failed: {e}"
+                ) from e
+
+        # HTTP-based MFA completion
         if hasattr(self, "_mfa_portal_web_session"):
             self._complete_mfa_portal_web(mfa_code)
         elif hasattr(self, "_mfa_cffi_session"):
