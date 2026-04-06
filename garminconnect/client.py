@@ -127,6 +127,7 @@ class Client:
         # Browser proxy — when set, API calls are routed through an
         # external browser-based proxy (the garmin-givemydata add-on)
         self.proxy_url: str | None = kwargs.get("proxy_url")
+        self.proxy_email: str | None = kwargs.get("proxy_email")
 
         # curl_cffi session for login flows
         self.cs: Any = None
@@ -1226,10 +1227,14 @@ class Client:
 
         _LOGGER.debug("Proxy request: %s %s → %s", method, path, browser_path)
 
+        fetch_body: dict[str, str] = {"path": browser_path, "method": method}
+        if self.proxy_email:
+            fetch_body["email"] = self.proxy_email
+
         try:
             resp = requests.post(
                 f"{self.proxy_url}/api/fetch",
-                json={"path": browser_path, "method": method},
+                json=fetch_body,
                 timeout=kwargs.get("timeout", 30),
             )
         except Exception as e:

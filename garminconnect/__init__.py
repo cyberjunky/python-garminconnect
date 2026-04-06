@@ -109,6 +109,7 @@ class Garmin:
         prompt_mfa: Callable[[], str] | None = None,
         return_on_mfa: bool = False,
         proxy_url: str | None = None,
+        proxy_email: str | None = None,
     ) -> None:
         """Create a new class instance."""
         # Validate input types
@@ -314,6 +315,7 @@ class Garmin:
             pool_connections=20,
             pool_maxsize=20,
             proxy_url=proxy_url,
+            proxy_email=proxy_email,
         )
 
         self.display_name = None
