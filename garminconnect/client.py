@@ -8,6 +8,7 @@ import random
 from pathlib import Path
 from time import sleep
 from typing import Any
+from urllib.parse import urlencode
 
 import requests
 
@@ -1217,6 +1218,11 @@ class Client:
         """
         clean_path = path.lstrip("/")
         browser_path = f"/gc-api/{clean_path}"
+
+        # Append query parameters to the browser path if present
+        params = kwargs.get("params")
+        if params:
+            browser_path += f"?{urlencode(params)}"
 
         _LOGGER.debug("Proxy request: %s %s → %s", method, path, browser_path)
 
