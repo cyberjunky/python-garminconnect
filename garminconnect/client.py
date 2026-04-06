@@ -238,7 +238,7 @@ class Client:
         for imp in impersonations:
             try:
                 _LOGGER.debug("Trying portal+cffi with impersonation=%s", imp)
-                sess: Any = cffi_requests.Session(impersonate=imp)  # type: ignore[arg-type]
+                sess: Any = cffi_requests.Session(impersonate=imp)
                 return self._portal_web_login(
                     sess,
                     email,

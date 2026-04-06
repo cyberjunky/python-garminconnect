@@ -308,6 +308,8 @@ class Garmin:
             "/lifestylelogging-service/dailyLog"
         )
 
+        self.garmin_connect_calendar = "/calendar-service"
+
         self.client = client.Client(
             domain="garmin.cn" if is_cn else "garmin.com",
             pool_connections=20,
@@ -2925,6 +2927,22 @@ class Garmin:
             hole_numbers,
         )
         return self.connectapi(url, params=params)
+
+    def get_calendar_data(
+        self,
+        year: int,
+        month: int,
+    ) -> dict[str, Any]:
+        """Fetch calendar items for year and month.
+        :param year: year to retrieve items for
+        :type year: int
+        :param month: month to retrieve
+        :type month: int
+        :return: list of calendar items in JSON format.
+        """
+        url = f"{self.garmin_connect_calendar}/year/{year}/month/{month}"
+        logger.debug("Requesting calendar items.")
+        return self.connectapi(url)
 
 
 from .exceptions import (  # noqa: E402
