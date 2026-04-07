@@ -108,8 +108,6 @@ class Garmin:
         is_cn: bool = False,
         prompt_mfa: Callable[[], str] | None = None,
         return_on_mfa: bool = False,
-        proxy_url: str | None = None,
-        proxy_email: str | None = None,
     ) -> None:
         """Create a new class instance."""
         # Validate input types
@@ -314,8 +312,6 @@ class Garmin:
             domain="garmin.cn" if is_cn else "garmin.com",
             pool_connections=20,
             pool_maxsize=20,
-            proxy_url=proxy_url,
-            proxy_email=proxy_email,
         )
 
         self.display_name = None
@@ -428,8 +424,8 @@ class Garmin:
             tokenstore_path = None
             if tokenstore:
                 try:
-                    if tokenstore.lstrip().startswith("{"):
-                        # Token data is provided directly as a JSON string
+                    if len(tokenstore) > 512:
+                        # Token data is provided directly as string
                         self.client.loads(tokenstore)
                     else:
                         # Tokenstore is a path - normalize it for cross-platform compatibility
