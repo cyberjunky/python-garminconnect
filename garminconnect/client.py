@@ -4,7 +4,9 @@ import base64
 import contextlib
 import json
 import logging
+import random
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -510,6 +512,14 @@ class Client:
             headers=get_headers,
             timeout=30,
         )
+
+        # Garmin's Cloudflare WAF rate-limits requests that go directly from
+        # the SSO page GET to the login POST without intervening activity.
+        # A random 30-45s delay mimics natural browser behavior and
+        # consistently avoids the 429 block. (Adapted from upstream PR #346.)
+        delay_s = random.uniform(30, 45)
+        _LOGGER.debug("Portal login: sleeping %.1fs before credential POST", delay_s)
+        time.sleep(delay_s)
 
         # Step 2: POST credentials to the portal login API
         login_url = f"{self._sso}/portal/api/login"
