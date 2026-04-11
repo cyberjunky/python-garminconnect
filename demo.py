@@ -334,7 +334,7 @@ menu_categories = {
             },
             "u": {
                 "desc": "Get scheduled workouts by year and month",
-                "key": "get_scheduled_workouts_by_year_and_month",
+                "key": "get_scheduled_workouts",
             },
             "v": {
                 "desc": "Upload typed running workout (sample)",
@@ -2494,7 +2494,7 @@ def schedule_workout_data(api: Garmin) -> None:
         print(f"❌ Error scheduling workout: {e}")
 
 
-def get_scheduled_workouts_by_year_and_month(api: Garmin) -> None:
+def get_scheduled_workouts(api: Garmin) -> None:
     """Get scheduled workout by year and month."""
     try:
         year_input = input("Enter year (YYYY): ").strip()
@@ -2508,11 +2508,11 @@ def get_scheduled_workouts_by_year_and_month(api: Garmin) -> None:
         month = int(month_input)
 
         call_and_display(
-            api.get_scheduled_workouts_by_year_and_month,
+            api.get_scheduled_workouts,
             year,
             month,
-            method_name="get_scheduled_workouts_by_year_and_month",
-            api_call_desc=f"api.get_scheduled_workouts_by_year_and_month({year}, {month})",
+            method_name="get_scheduled_workouts",
+            api_call_desc=f"api.get_scheduled_workouts({year}, {month})",
         )
     except Exception as e:
         print(f"❌ Error getting scheduled workouts by year and month: {e}")
@@ -3963,9 +3963,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_scheduled_workout_by_id": lambda: get_scheduled_workout_by_id_data(
                 api
             ),
-            "get_scheduled_workouts_by_year_and_month": lambda: get_scheduled_workouts_by_year_and_month(
-                api
-            ),
+            "get_scheduled_workouts": lambda: get_scheduled_workouts(api),
             "scheduled_workout": lambda: schedule_workout_data(api),
             "delete_workout": lambda: delete_workout_data(api),
             "unschedule_workout": lambda: unschedule_workout_data(api),

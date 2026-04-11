@@ -2727,7 +2727,7 @@ class Garmin:
                 "Install it with: pip install pydantic or pip install garminconnect[workout]"
             ) from None
 
-    def get_scheduled_workouts_by_year_and_month(
+    def get_scheduled_workouts(
         self, year: int | str, month: int | str
     ) -> dict[str, Any]:
         """Return scheduled workout by year and month."""
