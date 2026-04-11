@@ -48,13 +48,13 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 130+ unique endpoints (snapshot)
+- **Total API Methods**: 131+ unique endpoints (snapshot)
 - **Categories**: 13 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 9 methods (today's health data)
 - **Advanced Health Metrics**: 12 methods (fitness metrics, HRV, VO2, training readiness, running tolerance)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
-- **Activities & Workouts**: 35 methods (comprehensive activity, workout management, typed workout uploads, scheduling, import)
+- **Activities & Workouts**: 36 methods (comprehensive activity, workout management, typed workout uploads, scheduling, import)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
