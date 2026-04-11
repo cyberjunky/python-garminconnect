@@ -332,6 +332,10 @@ menu_categories = {
                 "desc": f"Import activity (no Strava re-export) from {config.activityfile}",
                 "key": "import_activity",
             },
+            "u": {
+                "desc": "Get scheduled workouts by year and month",
+                "key": "get_scheduled_workouts_by_year_and_month",
+            },
             "v": {
                 "desc": "Upload typed running workout (sample)",
                 "key": "upload_running_workout",
@@ -2490,6 +2494,30 @@ def schedule_workout_data(api: Garmin) -> None:
         print(f"❌ Error scheduling workout: {e}")
 
 
+def get_scheduled_workouts_by_year_and_month(api: Garmin) -> None:
+    """Get scheduled workout by year and month."""
+    try:
+        year_input = input("Enter year (YYYY): ").strip()
+        month_input = input("Enter month (1-12): ").strip()
+
+        if not year_input or not month_input:
+            print("❌ Year and month are required")
+            return
+
+        year = int(year_input)
+        month = int(month_input)
+
+        call_and_display(
+            api.get_scheduled_workouts_by_year_and_month,
+            year,
+            month,
+            method_name="get_scheduled_workouts_by_year_and_month",
+            api_call_desc=f"api.get_scheduled_workouts_by_year_and_month({year}, {month})",
+        )
+    except Exception as e:
+        print(f"❌ Error getting scheduled workouts by year and month: {e}")
+
+
 def get_scheduled_workout_by_id_data(api: Garmin) -> None:
     """Get scheduled workout by ID."""
     try:
@@ -3933,6 +3961,9 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "upload_walking_workout": lambda: upload_walking_workout_data(api),
             "upload_hiking_workout": lambda: upload_hiking_workout_data(api),
             "get_scheduled_workout_by_id": lambda: get_scheduled_workout_by_id_data(
+                api
+            ),
+            "get_scheduled_workouts_by_year_and_month": lambda: get_scheduled_workouts_by_year_and_month(
                 api
             ),
             "scheduled_workout": lambda: schedule_workout_data(api),
