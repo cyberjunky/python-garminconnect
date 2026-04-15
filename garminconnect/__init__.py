@@ -1,6 +1,7 @@
 """Python 3 API wrapper for Garmin Connect."""
 
 import contextlib
+import functools
 import logging
 import numbers
 import os
@@ -96,6 +97,53 @@ def _validate_json_exists(response: requests.Response) -> dict[str, Any] | None:
     if response.status_code == 204:
         return None
     return response.json()
+
+
+def _handle_api_errors(label: str) -> Callable:
+    """Decorator: wrap a Garmin API method with uniform error handling and
+    exception mapping.
+
+    The wrapped method is expected to take ``path`` as its first positional
+    argument after ``self``. On failure, HTTP status is extracted from the
+    exception (if available) and mapped to a domain-specific exception:
+
+    - 401 -> GarminConnectAuthenticationError
+    - 429 -> GarminConnectTooManyRequestsError
+    - 400-499 -> GarminConnectConnectionError (client error)
+    - other -> GarminConnectConnectionError (HTTP error)
+    - anything else -> GarminConnectConnectionError (connection error)
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(self: "Garmin", path: str, *args: Any, **kwargs: Any) -> Any:
+            try:
+                return func(self, path, *args, **kwargs)
+            except (HTTPError, GarminConnectConnectionError) as e:
+                status = getattr(getattr(e, "response", None), "status_code", None)
+                logger.exception(
+                    "%s failed for path '%s' (status=%s)", label, path, status
+                )
+                if status == 401:
+                    raise GarminConnectAuthenticationError(
+                        f"Authentication failed: {e}"
+                    ) from e
+                if status == 429:
+                    raise GarminConnectTooManyRequestsError(
+                        f"Rate limit exceeded: {e}"
+                    ) from e
+                if status and 400 <= status < 500:
+                    raise GarminConnectConnectionError(
+                        f"{label} client error ({status}): {e}"
+                    ) from e
+                raise GarminConnectConnectionError(f"{label} HTTP error: {e}") from e
+            except Exception as e:
+                logger.exception("Connection error during %s path=%s", label, path)
+                raise GarminConnectConnectionError(f"Connection error: {e}") from e
+
+        return wrapper
+
+    return decorator
 
 
 class Garmin:
@@ -321,92 +369,20 @@ class Garmin:
         self.full_name = None
         self.unit_system = None
 
+    @_handle_api_errors("API call")
     def connectapi(self, path: str, **kwargs: Any) -> Any:
         """Wrapper for native connectapi with error handling."""
-        try:
-            return self.client.connectapi(path, **kwargs)
+        return self.client.connectapi(path, **kwargs)
 
-        except (HTTPError, GarminConnectConnectionError) as e:
-            # For GarminConnectConnectionError, extract status from the wrapped HTTPError
-            if isinstance(e, GarminConnectConnectionError):
-                status = getattr(getattr(e, "response", None), "status_code", None)
-            else:
-                status = getattr(getattr(e, "response", None), "status_code", None)
-
-            logger.exception(
-                "API call failed for path '%s': %s (status=%s)", path, e, status
-            )
-            if status == 401:
-                raise GarminConnectAuthenticationError(
-                    f"Authentication failed: {e}"
-                ) from e
-            if status == 429:
-                raise GarminConnectTooManyRequestsError(
-                    f"Rate limit exceeded: {e}"
-                ) from e
-            if status and 400 <= status < 500:
-                # Client errors (400-499) - API endpoint issues, bad parameters, etc.
-                raise GarminConnectConnectionError(
-                    f"API client error ({status}): {e}"
-                ) from e
-            raise GarminConnectConnectionError(f"HTTP error: {e}") from e
-        except Exception as e:
-            logger.exception("Connection error during connectapi path=%s", path)
-            raise GarminConnectConnectionError(f"Connection error: {e}") from e
-
+    @_handle_api_errors("Web proxy call")
     def connectwebproxy(self, path: str, **kwargs: Any) -> Any:
         """Wrapper for web proxy requests to connect.garmin.com with error handling."""
-        try:
-            return self.client.request("GET", "connect", path, **kwargs).json()
-        except GarminConnectConnectionError as e:
-            status = getattr(getattr(e, "response", None), "status_code", None)
-            logger.exception(
-                "API call failed for web proxy path '%s' (status=%s)",
-                path,
-                status,
-            )
-            if status == 401:
-                raise GarminConnectAuthenticationError(
-                    f"Web proxy auth error: {e}"
-                ) from e
-            if status == 429:
-                raise GarminConnectTooManyRequestsError(
-                    f"Web proxy rate limit: {e}"
-                ) from e
-            if status and 400 <= status < 500:
-                raise GarminConnectConnectionError(
-                    f"Web proxy client error ({status}): {e}"
-                ) from e
-            raise GarminConnectConnectionError(f"Web proxy error: {e}") from e
-        except Exception as e:
-            logger.exception("Connection error during web proxy path=%s", path)
-            raise GarminConnectConnectionError(f"Connection error: {e}") from e
+        return self.client.request("GET", "connect", path, **kwargs).json()
 
+    @_handle_api_errors("Download")
     def download(self, path: str, **kwargs: Any) -> Any:
         """Wrapper for native download with error handling."""
-        try:
-            return self.client.download(path, **kwargs)
-        except (HTTPError, GarminConnectConnectionError) as e:
-            # For GarminConnectConnectionError, extract status from the wrapped HTTPError
-            if isinstance(e, GarminConnectConnectionError):
-                status = getattr(getattr(e, "response", None), "status_code", None)
-            else:
-                status = getattr(getattr(e, "response", None), "status_code", None)
-
-            logger.exception("Download failed for path '%s' (status=%s)", path, status)
-            if status == 401:
-                raise GarminConnectAuthenticationError(f"Download error: {e}") from e
-            if status == 429:
-                raise GarminConnectTooManyRequestsError(f"Download error: {e}") from e
-            if status and 400 <= status < 500:
-                # Client errors (400-499) - API endpoint issues, bad parameters, etc.
-                raise GarminConnectConnectionError(
-                    f"Download client error ({status}): {e}"
-                ) from e
-            raise GarminConnectConnectionError(f"Download error: {e}") from e
-        except Exception as e:
-            logger.exception("Download failed for path '%s'", path)
-            raise GarminConnectConnectionError(f"Download error: {e}") from e
+        return self.client.download(path, **kwargs)
 
     def login(self, /, tokenstore: str | None = None) -> tuple[str | None, str | None]:
         """Log in natively.
