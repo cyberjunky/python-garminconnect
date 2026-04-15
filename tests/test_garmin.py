@@ -1,6 +1,11 @@
 import pytest
 
 import garminconnect
+from garminconnect import (
+    GarminConnectAuthenticationError,
+    GarminConnectConnectionError,
+    GarminConnectTooManyRequestsError,
+)
 
 DATE = "2023-07-01"
 
@@ -190,3 +195,169 @@ def test_request_reload(garmin: garminconnect.Garmin) -> None:
     # Get steps data after reload - should still be accessible
     final_steps = sum(steps["steps"] for steps in garmin.get_steps_data(cdate))
     assert final_steps >= 0  # Steps data should be non-negative
+
+
+# ---------------------------------------------------------------------------
+# Retry / backoff tests (no network, no VCR cassettes).
+# ---------------------------------------------------------------------------
+
+
+def _fast_garmin(**kwargs: object) -> garminconnect.Garmin:
+    """Build a Garmin instance with near-zero retry waits for fast tests."""
+    return garminconnect.Garmin(
+        "email@example.org",
+        "password",
+        retry_min_wait=0.0,
+        retry_max_wait=0.01,
+        **kwargs,  # type: ignore[arg-type]
+    )
+
+
+def test_connectapi_retries_on_503_then_succeeds(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+    """503 -> 503 -> 200: connectapi should eventually return the good payload."""
+    g = _fast_garmin(max_retries=3)
+    good_payload = {"calendarDate": "2023-07-01", "totalSteps": 12345}
+
+    inner = mocker.patch.object(
+        g.client,
+        "connectapi",
+        side_effect=[
+            GarminConnectConnectionError("API Error 503 - Service Unavailable"),
+            GarminConnectConnectionError("API Error 503 - Service Unavailable"),
+            good_payload,
+        ],
+    )
+
+    result = g.connectapi("/usersummary-service/usersummary/daily/2023-07-01")
+    assert result == good_payload
+    assert inner.call_count == 3
+
+
+def test_connectapi_does_not_retry_on_404(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+    """4xx failures must fail fast — one call only, no retries."""
+    g = _fast_garmin(max_retries=3)
+
+    inner = mocker.patch.object(
+        g.client,
+        "connectapi",
+        side_effect=GarminConnectConnectionError("API Error 404 - Not Found"),
+    )
+
+    with pytest.raises(GarminConnectConnectionError):
+        g.connectapi("/does/not/exist")
+
+    assert inner.call_count == 1
+
+
+def test_connectapi_does_not_retry_on_401(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+    """401 auth errors must fail fast — user has to re-login."""
+    g = _fast_garmin(max_retries=3)
+
+    inner = mocker.patch.object(
+        g.client,
+        "connectapi",
+        side_effect=GarminConnectConnectionError("API Error 401 - Unauthorized"),
+    )
+
+    with pytest.raises(GarminConnectAuthenticationError):
+        g.connectapi("/userprofile-service/userprofile/settings")
+
+    assert inner.call_count == 1
+
+
+def test_connectapi_does_not_retry_on_429(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+    """429 rate-limit errors are already a signal to back off — don't retry."""
+    g = _fast_garmin(max_retries=3)
+
+    inner = mocker.patch.object(
+        g.client,
+        "connectapi",
+        side_effect=GarminConnectConnectionError("API Error 429 - Too Many Requests"),
+    )
+
+    with pytest.raises(GarminConnectTooManyRequestsError):
+        g.connectapi("/usersummary-service/usersummary/daily/2023-07-01")
+
+    assert inner.call_count == 1
+
+
+def test_connectapi_exhausts_retries_and_reraises(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+    """After max_retries transient failures, the final 5xx error is re-raised."""
+    g = _fast_garmin(max_retries=2)
+
+    inner = mocker.patch.object(
+        g.client,
+        "connectapi",
+        side_effect=GarminConnectConnectionError("API Error 502 - Bad Gateway"),
+    )
+
+    with pytest.raises(GarminConnectConnectionError):
+        g.connectapi("/usersummary-service/usersummary/daily/2023-07-01")
+
+    # 1 initial attempt + 2 retries == 3 total calls
+    assert inner.call_count == 3
+
+
+def test_connectapi_retries_disabled(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+    """max_retries=0 should disable retries entirely."""
+    g = _fast_garmin(max_retries=0)
+
+    inner = mocker.patch.object(
+        g.client,
+        "connectapi",
+        side_effect=GarminConnectConnectionError("API Error 503 - Service Unavailable"),
+    )
+
+    with pytest.raises(GarminConnectConnectionError):
+        g.connectapi("/usersummary-service/usersummary/daily/2023-07-01")
+
+    assert inner.call_count == 1
+
+
+def test_download_retries_on_5xx(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+    """The download method should use the same retry wrapper."""
+    g = _fast_garmin(max_retries=3)
+    blob = b"fit-file-bytes"
+
+    inner = mocker.patch.object(
+        g.client,
+        "download",
+        side_effect=[
+            GarminConnectConnectionError("API Error 500 - Internal Server Error"),
+            blob,
+        ],
+    )
+
+    result = g.download("/download-service/files/activity/12345")
+    assert result == blob
+    assert inner.call_count == 2
+
+
+def test_connectwebproxy_retries_on_5xx(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+    """The connectwebproxy method should also be retried on 5xx."""
+    g = _fast_garmin(max_retries=3)
+
+    class _Resp:
+        def json(self) -> dict[str, int]:
+            return {"ok": 1}
+
+    inner = mocker.patch.object(
+        g.client,
+        "request",
+        side_effect=[
+            GarminConnectConnectionError("API Error 503 - Service Unavailable"),
+            _Resp(),
+        ],
+    )
+
+    result = g.connectwebproxy("/proxy/path")
+    assert result == {"ok": 1}
+    assert inner.call_count == 2
+
+
+def test_retry_invalid_max_retries() -> None:
+    """max_retries must be a non-negative int."""
+    with pytest.raises(ValueError, match="max_retries"):
+        garminconnect.Garmin("e@x.y", "p", max_retries=-1)
+    with pytest.raises(ValueError, match="max_retries"):
+        garminconnect.Garmin("e@x.y", "p", max_retries="3")  # type: ignore[arg-type]
