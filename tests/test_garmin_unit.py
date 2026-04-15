@@ -69,7 +69,7 @@ class TestDateValidation:
     )
     def test_rejects_malformed_date_string(
         self, garmin: garminconnect.Garmin, method_name: str
-    ) -> None:
+    ):
         method = getattr(garmin, method_name)
         with pytest.raises(ValueError, match="YYYY-MM-DD"):
             method("not-a-date")
@@ -87,14 +87,14 @@ class TestDateValidation:
     )
     def test_rejects_non_string_date(
         self, garmin: garminconnect.Garmin, method_name: str
-    ) -> None:
+    ):
         method = getattr(garmin, method_name)
         with pytest.raises(ValueError, match="must be a string"):
             method(20260315)
 
     def test_rejects_impossible_calendar_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         # Format matches YYYY-MM-DD regex but Feb 30 is not a real date.
         with pytest.raises(ValueError, match="invalid cdate"):
             garmin.get_hrv_data("2026-02-30")
@@ -110,7 +110,7 @@ class TestUrlConstruction:
 
     def test_get_hrv_data_builds_url_with_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         payload = {"hrvSummary": {"weeklyAvg": 42}}
         with patch.object(garmin, "connectapi", return_value=payload) as mock:
             result = garmin.get_hrv_data("2026-03-15")
@@ -122,7 +122,7 @@ class TestUrlConstruction:
 
     def test_get_training_readiness_builds_url_with_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         payload = [{"score": 88, "inputContext": "AFTER_WAKEUP_RESET"}]
         with patch.object(garmin, "connectapi", return_value=payload) as mock:
             result = garmin.get_training_readiness("2026-03-15")
@@ -133,7 +133,7 @@ class TestUrlConstruction:
 
     def test_get_stress_data_builds_url_with_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"avgStress": 25}) as mock:
             garmin.get_stress_data("2026-03-15")
 
@@ -142,7 +142,7 @@ class TestUrlConstruction:
 
     def test_get_max_metrics_repeats_date_in_path(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         # get_max_metrics uses the same date twice: /{cdate}/{cdate}
         with patch.object(garmin, "connectapi", return_value={"vo2Max": 55}) as mock:
             garmin.get_max_metrics("2026-03-15")
@@ -152,7 +152,7 @@ class TestUrlConstruction:
 
     def test_get_fitnessage_data_builds_url_with_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"chronologicalAge": 30}) as mock:
             garmin.get_fitnessage_data("2026-03-15")
 
@@ -161,7 +161,7 @@ class TestUrlConstruction:
 
     def test_get_training_status_builds_url_with_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"status": "productive"}) as mock:
             garmin.get_training_status("2026-03-15")
 
@@ -172,7 +172,7 @@ class TestUrlConstruction:
 
     def test_get_respiration_data_builds_url_with_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"avgSleepRespirationValue": 13.5}) as mock:
             garmin.get_respiration_data("2026-03-15")
 
@@ -181,7 +181,7 @@ class TestUrlConstruction:
 
     def test_get_spo2_data_builds_url_with_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"averageSpO2": 96}) as mock:
             garmin.get_spo2_data("2026-03-15")
 
@@ -190,7 +190,7 @@ class TestUrlConstruction:
 
     def test_get_intensity_minutes_builds_url_with_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"weeklyGoal": 150}) as mock:
             garmin.get_intensity_minutes_data("2026-03-15")
 
@@ -199,7 +199,7 @@ class TestUrlConstruction:
 
     def test_get_user_summary_uses_display_name_and_calendar_date(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         payload = {"totalKilocalories": 2500, "activeKilocalories": 600}
         with patch.object(garmin, "connectapi", return_value=payload) as mock:
             result = garmin.get_user_summary("2026-03-15")
@@ -212,7 +212,7 @@ class TestUrlConstruction:
 
     def test_get_personal_record_uses_display_name(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value=[{"id": 1}]) as mock:
             garmin.get_personal_record()
 
@@ -221,7 +221,7 @@ class TestUrlConstruction:
 
     def test_get_device_settings_builds_url_with_device_id(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"alarms": []}) as mock:
             garmin.get_device_settings("3271234567")
 
@@ -230,7 +230,7 @@ class TestUrlConstruction:
 
     def test_get_gear_builds_url_with_profile_number(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value=[{"gearId": 1}]) as mock:
             garmin.get_gear("98765")
 
@@ -240,7 +240,7 @@ class TestUrlConstruction:
 
     def test_get_weigh_ins_builds_url_with_date_range(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"dailyWeightSummaries": []}) as mock:
             garmin.get_weigh_ins("2026-01-01", "2026-01-31")
 
@@ -250,7 +250,7 @@ class TestUrlConstruction:
 
     def test_get_weekly_steps_builds_url_with_end_and_weeks(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value=[{"totalSteps": 50000}]) as mock:
             garmin.get_weekly_steps("2026-03-15", weeks=12)
 
@@ -268,13 +268,13 @@ class TestParameterLimits:
 
     def test_get_activities_rejects_limit_above_max(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="limit cannot exceed"):
             garmin.get_activities(start=0, limit=garminconnect.MAX_ACTIVITY_LIMIT + 1)
 
     def test_get_activities_accepts_limit_at_max(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value=[]) as mock:
             garmin.get_activities(start=0, limit=garminconnect.MAX_ACTIVITY_LIMIT)
 
@@ -286,19 +286,19 @@ class TestParameterLimits:
 
     def test_get_activities_rejects_negative_start(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="non-negative"):
             garmin.get_activities(start=-1, limit=10)
 
     def test_get_activities_rejects_zero_limit(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="positive integer"):
             garmin.get_activities(start=0, limit=0)
 
     def test_get_activities_passes_activitytype(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value=[]) as mock:
             garmin.get_activities(start=0, limit=5, activitytype="running")
 
@@ -307,7 +307,7 @@ class TestParameterLimits:
 
     def test_get_activities_returns_empty_list_when_api_returns_none(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value=None):
             result = garmin.get_activities(start=0, limit=5)
 
@@ -315,38 +315,38 @@ class TestParameterLimits:
 
     def test_add_hydration_data_rejects_excessive_amount(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="unreasonably high"):
             garmin.add_hydration_data(garminconnect.MAX_HYDRATION_ML + 1)
 
     def test_add_hydration_data_rejects_non_number(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="must be a number"):
             garmin.add_hydration_data("500")  # type: ignore[arg-type]
 
     def test_add_hydration_data_rejects_excessive_negative_amount(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         # Negative amounts (subtractions) are allowed but still bounded by abs().
         with pytest.raises(ValueError, match="unreasonably high"):
             garmin.add_hydration_data(-(garminconnect.MAX_HYDRATION_ML + 1))
 
     def test_get_adhoc_challenges_rejects_negative_start(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="non-negative"):
             garmin.get_adhoc_challenges(start=-1, limit=5)
 
     def test_get_adhoc_challenges_rejects_zero_limit(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="positive integer"):
             garmin.get_adhoc_challenges(start=0, limit=0)
 
     def test_get_adhoc_challenges_passes_params_as_strings(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"challenges": []}) as mock:
             garmin.get_adhoc_challenges(start=0, limit=10)
 
@@ -355,7 +355,7 @@ class TestParameterLimits:
 
     def test_get_weekly_steps_rejects_non_positive_weeks(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="positive integer"):
             garmin.get_weekly_steps("2026-03-15", weeks=0)
 
@@ -370,14 +370,14 @@ class TestResponseHandling:
 
     def test_get_hrv_data_returns_none_on_204(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         # Garmin returns 204 No Content when there is no HRV data for a date.
         with patch.object(garmin, "connectapi", return_value=None):
             assert garmin.get_hrv_data("2026-03-15") is None
 
     def test_get_devices_returns_list_unchanged(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         payload = [
             {"deviceId": 1, "displayName": "Fenix"},
             {"deviceId": 2, "displayName": "Edge"},
@@ -390,7 +390,7 @@ class TestResponseHandling:
 
     def test_get_earned_badges_passes_through(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         payload = [{"badgeId": 100, "badgeName": "5K"}]
         with patch.object(garmin, "connectapi", return_value=payload) as mock:
             result = garmin.get_earned_badges()
@@ -400,7 +400,7 @@ class TestResponseHandling:
 
     def test_get_available_badges_sets_exclusive_badge_flag(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value=[]) as mock:
             garmin.get_available_badges()
 
@@ -410,7 +410,7 @@ class TestResponseHandling:
 
     def test_get_morning_training_readiness_picks_after_wakeup_entry(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         payload = [
             {"inputContext": "MANUAL", "score": 50},
             {"inputContext": "AFTER_WAKEUP_RESET", "score": 85},
@@ -423,7 +423,7 @@ class TestResponseHandling:
 
     def test_get_morning_training_readiness_falls_back_to_first_entry(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         payload = [
             {"inputContext": None, "score": 75},
             {"inputContext": None, "score": 70},
@@ -435,7 +435,7 @@ class TestResponseHandling:
 
     def test_get_morning_training_readiness_returns_none_for_empty_data(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "get_training_readiness", return_value=None):
             assert garmin.get_morning_training_readiness("2026-03-15") is None
 
@@ -444,14 +444,14 @@ class TestResponseHandling:
 
     def test_get_morning_training_readiness_passes_through_dict(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         payload = {"score": 90, "inputContext": "AFTER_WAKEUP_RESET"}
         with patch.object(garmin, "get_training_readiness", return_value=payload):
             assert garmin.get_morning_training_readiness("2026-03-15") == payload
 
     def test_get_user_summary_raises_when_response_empty(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value=None):
             with pytest.raises(
                 garminconnect.GarminConnectConnectionError,
@@ -461,7 +461,7 @@ class TestResponseHandling:
 
     def test_get_user_summary_raises_on_privacy_protected(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(
             garmin, "connectapi", return_value={"privacyProtected": True}
         ):
@@ -473,7 +473,7 @@ class TestResponseHandling:
 
     def test_get_body_composition_single_day_uses_start_as_end(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with patch.object(garmin, "connectapi", return_value={"totalAverage": {}}) as mock:
             garmin.get_body_composition("2026-03-15")
 
@@ -482,13 +482,13 @@ class TestResponseHandling:
 
     def test_get_body_composition_rejects_start_after_end(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="startdate cannot be after enddate"):
             garmin.get_body_composition("2026-03-31", "2026-03-01")
 
     def test_get_activities_by_date_validates_both_dates(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         with pytest.raises(ValueError, match="YYYY-MM-DD"):
             garmin.get_activities_by_date("2026-03-01", "not-a-date")
 
@@ -497,7 +497,7 @@ class TestResponseHandling:
 
     def test_get_activities_by_date_paginates_until_empty(
         self, garmin: garminconnect.Garmin
-    ) -> None:
+    ):
         # Simulate two non-empty pages followed by an empty page.
         pages = [
             [{"activityId": i} for i in range(20)],
