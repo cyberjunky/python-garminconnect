@@ -134,13 +134,32 @@ def _extract_status_code(exc: BaseException) -> int | None:
     return None
 
 
+def _has_network_cause(exc: BaseException) -> bool:
+    """Return True if the exception's cause chain includes a raw network error.
+
+    Walks ``__cause__`` / ``__context__`` looking for ``requests.ConnectionError``
+    or ``requests.Timeout``. Used to decide whether a status-less
+    ``GarminConnectConnectionError`` is actually a transient network failure
+    (retry) or a deterministic logic / decode error (do not retry).
+    """
+    seen: set[int] = set()
+    cur: BaseException | None = exc
+    while cur is not None and id(cur) not in seen:
+        seen.add(id(cur))
+        if isinstance(cur, (requests.ConnectionError, requests.Timeout)):
+            return True
+        cur = cur.__cause__ or cur.__context__
+    return False
+
+
 def _is_retryable_error(exc: BaseException) -> bool:
     """Return True for transient errors worth retrying.
 
     Retries:
     - ``GarminConnectConnectionError`` with a 5xx status (server errors).
-    - ``GarminConnectConnectionError`` with no detectable status (network /
-      connection failures where the request never got a response).
+    - ``GarminConnectConnectionError`` whose cause chain contains a raw
+      ``requests.ConnectionError`` or ``requests.Timeout`` (true network
+      failures where the request never got a response).
     - Raw ``requests`` network errors (connection / timeout) from lower
       layers that escape without being wrapped.
 
@@ -148,6 +167,9 @@ def _is_retryable_error(exc: BaseException) -> bool:
     - ``GarminConnectAuthenticationError`` (401 — user must re-login).
     - ``GarminConnectTooManyRequestsError`` (429 — caller should back off).
     - Any error with a 4xx status code.
+    - Status-less ``GarminConnectConnectionError`` with no network cause
+      (e.g. JSON decode errors, ``AttributeError``, programming bugs).
+      Retrying these would be pointless and waste time.
     """
     # Never retry auth failures or rate-limit errors.
     if isinstance(
@@ -158,8 +180,10 @@ def _is_retryable_error(exc: BaseException) -> bool:
     if isinstance(exc, GarminConnectConnectionError):
         status = _extract_status_code(exc)
         if status is None:
-            # Network error / no response — treat as transient.
-            return True
+            # Only retry when we can confirm the underlying cause was an
+            # actual network failure — not a deterministic error wrapped in
+            # a generic GarminConnectConnectionError.
+            return _has_network_cause(exc)
         return 500 <= status < 600
 
     # Raw network errors from requests that somehow escaped the wrappers.
@@ -451,17 +475,19 @@ class Garmin:
         )
 
     def _connectapi_once(self, path: str, **kwargs: Any) -> Any:
-        """Single (non-retried) connectapi call with error translation."""
+        """Single (non-retried) connectapi call with error translation.
+
+        On auth (401) and rate-limit (429) we translate to the dedicated
+        exception types. All other ``GarminConnectConnectionError`` instances
+        are re-raised unchanged so callers (e.g. ``get_gear_stats``) can still
+        read ``.response.status_code`` and any other attributes attached by
+        the lower-level client.
+        """
         try:
             return self.client.connectapi(path, **kwargs)
 
-        except (HTTPError, GarminConnectConnectionError) as e:
-            # For GarminConnectConnectionError, extract status from the wrapped HTTPError
-            if isinstance(e, GarminConnectConnectionError):
-                status = _extract_status_code(e)
-            else:
-                status = getattr(getattr(e, "response", None), "status_code", None)
-
+        except GarminConnectConnectionError as e:
+            status = _extract_status_code(e)
             logger.exception(
                 "API call failed for path '%s': %s (status=%s)", path, e, status
             )
@@ -473,19 +499,28 @@ class Garmin:
                 raise GarminConnectTooManyRequestsError(
                     f"Rate limit exceeded: {e}"
                 ) from e
-            if status and 400 <= status < 500:
-                # Client errors (400-499) - API endpoint issues, bad parameters, etc.
-                new_exc = GarminConnectConnectionError(
-                    f"API client error ({status}): {e}"
-                )
-                new_exc.status_code = status  # type: ignore[attr-defined]
-                raise new_exc from e
+            # Re-raise original so .response / existing attributes survive.
+            raise
+        except HTTPError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            logger.exception(
+                "API call failed for path '%s': %s (status=%s)", path, e, status
+            )
+            if status == 401:
+                raise GarminConnectAuthenticationError(
+                    f"Authentication failed: {e}"
+                ) from e
+            if status == 429:
+                raise GarminConnectTooManyRequestsError(
+                    f"Rate limit exceeded: {e}"
+                ) from e
             new_exc = GarminConnectConnectionError(f"HTTP error: {e}")
-            if status is not None:
-                new_exc.status_code = status  # type: ignore[attr-defined]
+            # Preserve response so callers can still introspect .response.status_code.
+            if getattr(e, "response", None) is not None:
+                new_exc.response = e.response  # type: ignore[attr-defined]
             raise new_exc from e
-        except Exception as e:
-            logger.exception("Connection error during connectapi path=%s", path)
+        except (requests.ConnectionError, requests.Timeout) as e:
+            logger.exception("Network error during connectapi path=%s", path)
             raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
     def connectwebproxy(self, path: str, **kwargs: Any) -> Any:
@@ -497,7 +532,12 @@ class Garmin:
         )
 
     def _connectwebproxy_once(self, path: str, **kwargs: Any) -> Any:
-        """Single (non-retried) web proxy call with error translation."""
+        """Single (non-retried) web proxy call with error translation.
+
+        Translates auth (401) / rate-limit (429) to the dedicated exception
+        types. Other ``GarminConnectConnectionError`` instances propagate
+        unchanged so ``.response`` and any attached attributes survive.
+        """
         try:
             return self.client.request("GET", "connect", path, **kwargs).json()
         except GarminConnectConnectionError as e:
@@ -515,18 +555,10 @@ class Garmin:
                 raise GarminConnectTooManyRequestsError(
                     f"Web proxy rate limit: {e}"
                 ) from e
-            if status and 400 <= status < 500:
-                new_exc = GarminConnectConnectionError(
-                    f"Web proxy client error ({status}): {e}"
-                )
-                new_exc.status_code = status  # type: ignore[attr-defined]
-                raise new_exc from e
-            new_exc = GarminConnectConnectionError(f"Web proxy error: {e}")
-            if status is not None:
-                new_exc.status_code = status  # type: ignore[attr-defined]
-            raise new_exc from e
-        except Exception as e:
-            logger.exception("Connection error during web proxy path=%s", path)
+            # Re-raise original so .response / attributes survive.
+            raise
+        except (requests.ConnectionError, requests.Timeout) as e:
+            logger.exception("Network error during web proxy path=%s", path)
             raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
     def download(self, path: str, **kwargs: Any) -> Any:
@@ -536,34 +568,37 @@ class Garmin:
         )
 
     def _download_once(self, path: str, **kwargs: Any) -> Any:
-        """Single (non-retried) download call with error translation."""
+        """Single (non-retried) download call with error translation.
+
+        Translates auth (401) / rate-limit (429) to the dedicated exception
+        types. Other ``GarminConnectConnectionError`` instances propagate
+        unchanged so callers retain access to ``.response`` and any attached
+        attributes.
+        """
         try:
             return self.client.download(path, **kwargs)
-        except (HTTPError, GarminConnectConnectionError) as e:
-            # For GarminConnectConnectionError, extract status from the wrapped HTTPError
-            if isinstance(e, GarminConnectConnectionError):
-                status = _extract_status_code(e)
-            else:
-                status = getattr(getattr(e, "response", None), "status_code", None)
-
+        except GarminConnectConnectionError as e:
+            status = _extract_status_code(e)
             logger.exception("Download failed for path '%s' (status=%s)", path, status)
             if status == 401:
                 raise GarminConnectAuthenticationError(f"Download error: {e}") from e
             if status == 429:
                 raise GarminConnectTooManyRequestsError(f"Download error: {e}") from e
-            if status and 400 <= status < 500:
-                # Client errors (400-499) - API endpoint issues, bad parameters, etc.
-                new_exc = GarminConnectConnectionError(
-                    f"Download client error ({status}): {e}"
-                )
-                new_exc.status_code = status  # type: ignore[attr-defined]
-                raise new_exc from e
+            # Re-raise original so .response / attributes survive.
+            raise
+        except HTTPError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            logger.exception("Download failed for path '%s' (status=%s)", path, status)
+            if status == 401:
+                raise GarminConnectAuthenticationError(f"Download error: {e}") from e
+            if status == 429:
+                raise GarminConnectTooManyRequestsError(f"Download error: {e}") from e
             new_exc = GarminConnectConnectionError(f"Download error: {e}")
-            if status is not None:
-                new_exc.status_code = status  # type: ignore[attr-defined]
+            if getattr(e, "response", None) is not None:
+                new_exc.response = e.response  # type: ignore[attr-defined]
             raise new_exc from e
-        except Exception as e:
-            logger.exception("Download failed for path '%s'", path)
+        except (requests.ConnectionError, requests.Timeout) as e:
+            logger.exception("Network error during download path=%s", path)
             raise GarminConnectConnectionError(f"Download error: {e}") from e
 
     def login(self, /, tokenstore: str | None = None) -> tuple[str | None, str | None]:

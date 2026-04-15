@@ -1,4 +1,5 @@
 import pytest
+import requests
 
 import garminconnect
 from garminconnect import (
@@ -202,18 +203,18 @@ def test_request_reload(garmin: garminconnect.Garmin) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _fast_garmin(**kwargs: object) -> garminconnect.Garmin:
+def _fast_garmin(**kwargs):
     """Build a Garmin instance with near-zero retry waits for fast tests."""
     return garminconnect.Garmin(
         "email@example.org",
         "password",
         retry_min_wait=0.0,
         retry_max_wait=0.01,
-        **kwargs,  # type: ignore[arg-type]
+        **kwargs,
     )
 
 
-def test_connectapi_retries_on_503_then_succeeds(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+def test_connectapi_retries_on_503_then_succeeds(mocker):
     """503 -> 503 -> 200: connectapi should eventually return the good payload."""
     g = _fast_garmin(max_retries=3)
     good_payload = {"calendarDate": "2023-07-01", "totalSteps": 12345}
@@ -233,7 +234,7 @@ def test_connectapi_retries_on_503_then_succeeds(mocker: "pytest_mock.MockerFixt
     assert inner.call_count == 3
 
 
-def test_connectapi_does_not_retry_on_404(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+def test_connectapi_does_not_retry_on_404(mocker):
     """4xx failures must fail fast — one call only, no retries."""
     g = _fast_garmin(max_retries=3)
 
@@ -249,7 +250,7 @@ def test_connectapi_does_not_retry_on_404(mocker: "pytest_mock.MockerFixture") -
     assert inner.call_count == 1
 
 
-def test_connectapi_does_not_retry_on_401(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+def test_connectapi_does_not_retry_on_401(mocker):
     """401 auth errors must fail fast — user has to re-login."""
     g = _fast_garmin(max_retries=3)
 
@@ -265,7 +266,7 @@ def test_connectapi_does_not_retry_on_401(mocker: "pytest_mock.MockerFixture") -
     assert inner.call_count == 1
 
 
-def test_connectapi_does_not_retry_on_429(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+def test_connectapi_does_not_retry_on_429(mocker):
     """429 rate-limit errors are already a signal to back off — don't retry."""
     g = _fast_garmin(max_retries=3)
 
@@ -281,7 +282,7 @@ def test_connectapi_does_not_retry_on_429(mocker: "pytest_mock.MockerFixture") -
     assert inner.call_count == 1
 
 
-def test_connectapi_exhausts_retries_and_reraises(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+def test_connectapi_exhausts_retries_and_reraises(mocker):
     """After max_retries transient failures, the final 5xx error is re-raised."""
     g = _fast_garmin(max_retries=2)
 
@@ -298,7 +299,7 @@ def test_connectapi_exhausts_retries_and_reraises(mocker: "pytest_mock.MockerFix
     assert inner.call_count == 3
 
 
-def test_connectapi_retries_disabled(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+def test_connectapi_retries_disabled(mocker):
     """max_retries=0 should disable retries entirely."""
     g = _fast_garmin(max_retries=0)
 
@@ -314,7 +315,7 @@ def test_connectapi_retries_disabled(mocker: "pytest_mock.MockerFixture") -> Non
     assert inner.call_count == 1
 
 
-def test_download_retries_on_5xx(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+def test_download_retries_on_5xx(mocker):
     """The download method should use the same retry wrapper."""
     g = _fast_garmin(max_retries=3)
     blob = b"fit-file-bytes"
@@ -333,12 +334,12 @@ def test_download_retries_on_5xx(mocker: "pytest_mock.MockerFixture") -> None:  
     assert inner.call_count == 2
 
 
-def test_connectwebproxy_retries_on_5xx(mocker: "pytest_mock.MockerFixture") -> None:  # noqa: F821
+def test_connectwebproxy_retries_on_5xx(mocker):
     """The connectwebproxy method should also be retried on 5xx."""
     g = _fast_garmin(max_retries=3)
 
     class _Resp:
-        def json(self) -> dict[str, int]:
+        def json(self):
             return {"ok": 1}
 
     inner = mocker.patch.object(
@@ -355,9 +356,116 @@ def test_connectwebproxy_retries_on_5xx(mocker: "pytest_mock.MockerFixture") -> 
     assert inner.call_count == 2
 
 
-def test_retry_invalid_max_retries() -> None:
+def test_retry_invalid_max_retries():
     """max_retries must be a non-negative int."""
     with pytest.raises(ValueError, match="max_retries"):
         garminconnect.Garmin("e@x.y", "p", max_retries=-1)
     with pytest.raises(ValueError, match="max_retries"):
         garminconnect.Garmin("e@x.y", "p", max_retries="3")  # type: ignore[arg-type]
+
+
+def test_connectapi_retries_on_raw_requests_connection_error(mocker):
+    """Raw requests.ConnectionError from lower layers should trigger retry."""
+    g = _fast_garmin(max_retries=3)
+    good_payload = {"ok": True}
+
+    inner = mocker.patch.object(
+        g.client,
+        "connectapi",
+        side_effect=[
+            requests.ConnectionError("DNS resolution failed"),
+            good_payload,
+        ],
+    )
+
+    result = g.connectapi("/some/path")
+    assert result == good_payload
+    assert inner.call_count == 2
+
+
+def test_connectapi_retries_on_raw_requests_timeout(mocker):
+    """Raw requests.Timeout from lower layers should trigger retry."""
+    g = _fast_garmin(max_retries=3)
+    good_payload = {"ok": True}
+
+    inner = mocker.patch.object(
+        g.client,
+        "connectapi",
+        side_effect=[
+            requests.Timeout("read timed out"),
+            good_payload,
+        ],
+    )
+
+    result = g.connectapi("/some/path")
+    assert result == good_payload
+    assert inner.call_count == 2
+
+
+def test_download_retries_on_raw_requests_connection_error(mocker):
+    """download() should retry raw requests.ConnectionError too."""
+    g = _fast_garmin(max_retries=3)
+
+    inner = mocker.patch.object(
+        g.client,
+        "download",
+        side_effect=[
+            requests.ConnectionError("connection reset"),
+            b"bytes",
+        ],
+    )
+
+    assert g.download("/download/path") == b"bytes"
+    assert inner.call_count == 2
+
+
+def test_connectapi_does_not_retry_statusless_without_network_cause(mocker):
+    """Status-less GarminConnectConnectionError without a network cause
+    (e.g. JSON decode error, AttributeError wrapped downstream) must NOT
+    be retried — it's a deterministic failure, retrying wastes time."""
+    g = _fast_garmin(max_retries=3)
+
+    # A fresh GarminConnectConnectionError with no status in the message
+    # and no __cause__ — represents a programming / decode bug.
+    inner = mocker.patch.object(
+        g.client,
+        "connectapi",
+        side_effect=GarminConnectConnectionError("Unexpected payload shape"),
+    )
+
+    with pytest.raises(GarminConnectConnectionError):
+        g.connectapi("/some/path")
+
+    assert inner.call_count == 1
+
+
+def test_get_gear_stats_404_returns_empty_dict(mocker):
+    """get_gear_stats() relies on being able to read e.response.status_code
+    after a 404 — our retry wrapper must not strip that attribute."""
+    g = _fast_garmin(max_retries=0)
+
+    # Fabricate a GarminConnectConnectionError that carries a .response
+    # attribute — simulating what a lower layer might attach.
+    resp = mocker.Mock()
+    resp.status_code = 404
+    err = GarminConnectConnectionError("API Error 404 - Not Found")
+    err.response = resp  # type: ignore[attr-defined]
+
+    mocker.patch.object(g.client, "connectapi", side_effect=err)
+
+    # Should swallow the 404 and return {} rather than propagating.
+    assert g.get_gear_stats("gear-uuid-abc") == {}
+
+
+def test_get_gear_activities_404_returns_empty_list(mocker):
+    """get_gear_activities() must also retain e.response.status_code access."""
+    g = _fast_garmin(max_retries=0)
+
+    resp = mocker.Mock()
+    resp.status_code = 404
+    err = GarminConnectConnectionError("API Error 404 - Not Found")
+    err.response = resp  # type: ignore[attr-defined]
+
+    mocker.patch.object(g.client, "connectapi", side_effect=err)
+
+    assert g.get_gear_activities("gear-uuid-abc") == []
