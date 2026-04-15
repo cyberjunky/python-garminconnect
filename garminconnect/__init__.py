@@ -11,7 +11,7 @@ from collections.abc import Callable
 from datetime import date, datetime, timedelta, timezone
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any
+from typing import Any, ParamSpec, TypeVar
 
 import requests
 from requests import HTTPError
@@ -20,6 +20,11 @@ from . import client
 from .fit import FitEncoderWeight  # type: ignore
 
 logger = logging.getLogger(__name__)
+
+# Generic params for the ``_handle_api_errors`` decorator so wrapped methods
+# keep their exact signature (args, kwargs, return) for type-checkers.
+P = ParamSpec("P")
+R = TypeVar("R")
 
 # Constants for validation
 MAX_ACTIVITY_LIMIT = 1000
@@ -99,26 +104,44 @@ def _validate_json_exists(response: requests.Response) -> dict[str, Any] | None:
     return response.json()
 
 
-def _handle_api_errors(label: str) -> Callable:
+def _handle_api_errors(label: str) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Decorator: wrap a Garmin API method with uniform error handling and
     exception mapping.
 
     The wrapped method is expected to take ``path`` as its first positional
-    argument after ``self``. On failure, HTTP status is extracted from the
-    exception (if available) and mapped to a domain-specific exception:
+    argument after ``self``. Domain-specific Garmin exceptions raised by the
+    underlying client (``GarminConnectAuthenticationError``,
+    ``GarminConnectTooManyRequestsError``) propagate unchanged so their
+    specific type is preserved. For ``HTTPError``/``GarminConnectConnectionError``
+    the HTTP status (if available on ``e.response``) is extracted and mapped:
 
     - 401 -> GarminConnectAuthenticationError
     - 429 -> GarminConnectTooManyRequestsError
     - 400-499 -> GarminConnectConnectionError (client error)
     - other -> GarminConnectConnectionError (HTTP error)
-    - anything else -> GarminConnectConnectionError (connection error)
+
+    Any other unexpected exception is wrapped as ``GarminConnectConnectionError``.
     """
 
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @functools.wraps(func)
-        def wrapper(self: "Garmin", path: str, *args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            # ``path`` is the first positional arg after ``self``; used only
+            # for logging. Fall back gracefully if a caller passes it as a
+            # keyword argument or omits it.
+            path = args[1] if len(args) > 1 else kwargs.get("path", "<unknown>")
             try:
-                return func(self, path, *args, **kwargs)
+                return func(*args, **kwargs)
+            except (
+                GarminConnectAuthenticationError,
+                GarminConnectTooManyRequestsError,
+            ):
+                # Already domain-specific — let them propagate unchanged so
+                # callers can distinguish 401/429 from generic connection
+                # errors. (These are raised directly by client._run_request
+                # and the login flow, and are NOT subclasses of HTTPError or
+                # GarminConnectConnectionError.)
+                raise
             except (HTTPError, GarminConnectConnectionError) as e:
                 status = getattr(getattr(e, "response", None), "status_code", None)
                 logger.exception(
