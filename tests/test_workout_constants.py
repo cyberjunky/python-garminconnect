@@ -3,7 +3,15 @@
 Prevents silent drift of constant values (see issue #333).
 """
 
-from garminconnect.workout import ConditionType, SportType, StepType, TargetType
+from garminconnect.workout import (
+    ConditionType,
+    SportType,
+    StepType,
+    SwimmingWorkout,
+    TargetType,
+    WorkoutSegment,
+    create_warmup_step,
+)
 
 
 def test_target_type_ids() -> None:
@@ -47,3 +55,21 @@ def test_sport_type_ids() -> None:
     assert SportType.FITNESS_EQUIPMENT == 6
     assert SportType.HIKING == 7
     assert SportType.OTHER == 8
+
+
+def test_swimming_workout_uses_expected_sport_type_id() -> None:
+    """Ensure typed swimming workouts upload as sportTypeKey=swimming."""
+    workout = SwimmingWorkout(
+        workoutName="Regression Swim",
+        estimatedDurationInSecs=300,
+        workoutSegments=[
+            WorkoutSegment(
+                segmentOrder=1,
+                sportType={"sportTypeId": 4, "sportTypeKey": "swimming"},
+                workoutSteps=[create_warmup_step(300.0)],
+            )
+        ],
+    )
+    payload = workout.to_dict()
+    assert payload["sportType"]["sportTypeId"] == 4
+    assert payload["sportType"]["sportTypeKey"] == "swimming"
