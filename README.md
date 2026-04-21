@@ -8,14 +8,6 @@
 
 # Python: Garmin Connect
 
-> **Note:** Garmin has made significant changes to their authentication and API infrastructure.
-> The old `garth`-based OAuth/cookie login no longer works. This library now authenticates
-> using the same mobile SSO flow as the official Garmin Connect Android app, obtaining native
-> DI OAuth Bearer tokens. Saved tokens are stored in a new format (`garmin_tokens.json`) —
-> a fresh login is required after upgrading.
-> All existing API methods remain unchanged — no code changes needed on your end,
-> except when you store/handle tokens in your own project.
-
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
@@ -101,89 +93,53 @@ pip install --upgrade garminconnect curl_cffi
 
 ## Run demo software (recommended)
 
+Clone the repo, then:
+
 ```bash
 python3 -m venv .venv --copies
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install pdm
-pdm install --group :example
+pip install -e ".[example]"
 
-# Run the simple example
-python3 ./example.py
-
-# Run the comprehensive demo
-python3 ./demo.py
+python3 ./example.py   # simple getting-started example
+python3 ./demo.py      # comprehensive demo (130+ API methods)
 ```
-
 
 ## 🛠️ Development
 
-Set up a development environment for contributing:
+This project uses [PDM](https://pdm.fming.dev/) for dependency management and task automation.
 
-> **Note**: This project uses [PDM](https://pdm.fming.dev/) for modern Python dependency management and task automation. All development tasks are configured as PDM scripts in `pyproject.toml`. The Python interpreter is automatically configured to use `.venv/bin/python` when you create the virtual environment.
-
-**Environment Setup:**
-
-> **⚠️ Important**: On externally-managed Python environments (like Debian/Ubuntu), you must create a virtual environment before installing PDM to avoid system package conflicts.
+> **⚠️ Important**: Create a virtual environment first on externally-managed Python installs (Debian/Ubuntu) to avoid system package conflicts.
 
 ```bash
-# 1. Create and activate a virtual environment
 python3 -m venv .venv --copies
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# 2. Install PDM (Python Dependency Manager)
 pip install pdm
-
-# 3. Install all development dependencies
-pdm install --group :all
-
-# 4. Install optional tools for enhanced development experience
-pip install "black[jupyter]" codespell pre-commit
-
-# 5. Setup pre-commit hooks (optional)
-pre-commit install --install-hooks
+python -m pdm install --group :all
+pre-commit install --install-hooks  # optional but recommended
 ```
 
-**Alternative for System-wide PDM Installation:**
-```bash
-# Install PDM via pipx (recommended for system-wide tools)
-python3 -m pip install --user pipx
-pipx install pdm
+> **Note**: Using `python -m pdm` instead of `pdm` avoids PATH issues on some
+> Windows setups where `pip install pdm` places the `pdm` executable outside
+> the directories on `PATH`. Once `pdm install` has run, subsequent `pdm run ...`
+> commands work normally because the venv's `Scripts/` directory is on `PATH`
+> while the venv is active.
 
-# Then proceed with project setup
-pdm install --group :all
-```
+**Development commands:**
 
-**Available Development Commands:**
 ```bash
 pdm run format      # Auto-format code (isort, black, ruff --fix)
 pdm run lint        # Check code quality (isort, ruff, black, mypy)
-pdm run codespell   # Check spelling errors (install codespell if needed)
+pdm run codespell   # Check spelling
 pdm run test        # Run test suite
 pdm run testcov     # Run tests with coverage report
-pdm run all         # Run all checks
-pdm run clean      # Clean build artifacts and cache files
-pdm run build      # Build package for distribution
-pdm run publish    # Build and publish to PyPI
+pdm run all         # Run all checks (lint + codespell + pre-commit + test)
+pdm run clean       # Clean build artifacts and cache files
+pdm run build       # Build package for distribution
+pdm run publish     # Build and publish to PyPI
+pdm run --list      # Show all available commands
 ```
 
-**View all available commands:**
-```bash
-pdm run --list     # Display all available PDM scripts
-```
-
-**Code Quality Workflow:**
-```bash
-# Before making changes
-pdm run lint       # Check current code quality
-
-# After making changes
-pdm run format     # Auto-format your code
-pdm run lint       # Verify code quality
-pdm run codespell  # Check spelling
-pdm run test       # Run tests to ensure nothing broke
-```
-
-Run these commands before submitting PRs to ensure code quality standards.
+Run `pdm run format && pdm run lint && pdm run test` before submitting PRs.
 
 ## 🔐 Authentication
 
@@ -212,16 +168,7 @@ No browser is needed.
 
 ## 🧪 Testing
 
-**Prerequisites:**
-
-Run `example.py` once to create saved tokens in `~/.garminconnect`.
-
-```bash
-# Install development dependencies
-pdm install --group :all
-```
-
-**Run Tests:**
+Run `example.py` once first to create saved tokens in `~/.garminconnect`, then:
 
 ```bash
 pdm run test        # Run all tests
@@ -292,32 +239,11 @@ We welcome contributions! Here's how you can help:
 - **Testing**: Help test new features and report compatibility issues
 - **Documentation**: Improve examples, add use cases, fix typos
 
-**Before Contributing:**
-1. Set up development environment (`pdm install --group :all`)
-2. Execute code quality checks (`pdm run format && pdm run lint`)
-3. Test your changes (`pdm run test`)
+**Before contributing:**
+1. Set up your dev environment (see [Development](#️-development) above)
+2. Format and lint: `pdm run format && pdm run lint`
+3. Run tests: `pdm run test`
 4. Follow existing code style and patterns
-
-**Development Workflow:**
-```bash
-# 1. Setup environment (with virtual environment)
-python3 -m venv .venv --copies
-source .venv/bin/activate
-pip install pdm
-pdm install --group :all
-
-# 2. Make your changes
-# ... edit code ...
-
-# 3. Quality checks
-pdm run format     # Auto-format code
-pdm run lint       # Check code quality
-pdm run test       # Run tests
-
-# 4. Submit PR
-git commit -m "Your changes"
-git push origin your-branch
-```
 
 ### Jupyter Notebook
 
