@@ -1701,12 +1701,11 @@ def add_weigh_in_data(api: Garmin) -> None:
 
         # Add a weigh-in with timestamps for yesterday
         import datetime
-        from datetime import timezone
 
         yesterday = config.today - datetime.timedelta(days=1)  # Get yesterday's date
         weigh_in_date = datetime.datetime.strptime(yesterday.isoformat(), "%Y-%m-%d")
         local_timestamp = weigh_in_date.strftime("%Y-%m-%dT%H:%M:%S")
-        gmt_timestamp = weigh_in_date.astimezone(timezone.utc).strftime(
+        gmt_timestamp = weigh_in_date.astimezone(datetime.UTC).strftime(
             "%Y-%m-%dT%H:%M:%S"
         )
 
