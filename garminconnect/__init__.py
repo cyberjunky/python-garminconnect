@@ -9,7 +9,7 @@ import random
 import re
 import time
 from collections.abc import Callable
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 from enum import Enum, auto
 from pathlib import Path
 from typing import Any
@@ -175,10 +175,11 @@ def _handle_api_errors(
     preserving the original ``.response`` where available so callers can still
     introspect the underlying response.
 
-    Retries are opt-in via ``self.retry_attempts`` (default ``0`` = disabled).
-    When enabled, only 5xx server errors and raw connection / timeout failures
-    are retried, with exponential backoff plus jitter between ``retry_min_wait``
-    and ``retry_max_wait`` seconds. 401 / 429 / 4xx always fail fast.
+    Retries are controlled by ``self.retry_attempts`` (default ``3``; set to
+    ``0`` to disable). When enabled, only 5xx server errors and raw connection
+    / timeout failures are retried, with exponential backoff plus jitter
+    between ``retry_min_wait`` and ``retry_max_wait`` seconds. 401 / 429 / 4xx
+    always fail fast.
     """
 
     def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -189,7 +190,7 @@ def _handle_api_errors(
             for attempt in range(attempts + 1):
                 try:
                     return func(self, *args, **kwargs)
-                except (  # noqa: PERF203  retry requires per-attempt try/except
+                except (
                     GarminConnectAuthenticationError,
                     GarminConnectTooManyRequestsError,
                 ):
@@ -275,16 +276,16 @@ class Garmin:
         is_cn: bool = False,
         prompt_mfa: Callable[[], str] | None = None,
         return_on_mfa: bool = False,
-        retry_attempts: int = 0,
+        retry_attempts: int = 3,
         retry_min_wait: float = 1.0,
         retry_max_wait: float = 10.0,
     ) -> None:
         """Create a new class instance.
 
         :param retry_attempts: Retries for transient 5xx / network errors on
-            ``connectapi``, ``connectwebproxy`` and ``download``. ``0``
-            (default) disables retries — 401, 429 and 4xx always fail fast
-            either way.
+            ``connectapi``, ``connectwebproxy`` and ``download``. Defaults to
+            ``3``; set to ``0`` to disable. 401, 429 and 4xx always fail fast
+            regardless.
         :param retry_min_wait: Initial backoff in seconds; grows exponentially
             with jitter between attempts.
         :param retry_max_wait: Upper bound on the backoff in seconds.
@@ -1070,7 +1071,7 @@ class Garmin:
             raise ValueError(f"invalid timestamp format: {e}") from e
 
         # Apply timezone offset to get UTC/GMT time
-        dtGMT = dt.astimezone(timezone.utc)
+        dtGMT = dt.astimezone(UTC)
         payload = {
             "dateTimestamp": _fmt_ts(dt),
             "gmtTimestamp": _fmt_ts(dtGMT),
@@ -1103,10 +1104,10 @@ class Garmin:
             g = datetime.fromisoformat(gmtTimestamp)
             # Assume provided GMT is UTC if naive; otherwise convert to UTC
             if g.tzinfo is None:
-                g = g.replace(tzinfo=timezone.utc)
-            dtGMT = g.astimezone(timezone.utc)
+                g = g.replace(tzinfo=UTC)
+            dtGMT = g.astimezone(UTC)
         else:
-            dtGMT = dt.astimezone(timezone.utc)
+            dtGMT = dt.astimezone(UTC)
 
         # Validate weight for consistency with add_weigh_in
         weight = _validate_positive_number(weight, "weight")
@@ -1219,7 +1220,7 @@ class Garmin:
         url = f"{self.garmin_connect_set_blood_pressure_endpoint}"
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         # Apply timezone offset to get UTC/GMT time
-        dtGMT = dt.astimezone(timezone.utc)
+        dtGMT = dt.astimezone(UTC)
         payload = {
             "measurementTimestampLocal": _fmt_ts(dt),
             "measurementTimestampGMT": _fmt_ts(dtGMT),

@@ -169,7 +169,7 @@ ignore = [
 unfixable = []  # Allow all fixes, including unsafe ones
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["ARG", "S101"]
+"tests/*" = ["ARG", "S101", "D103"]
 "garminconnect/fit.py" = ["D", "RUF012", "PLW2901"]  # FIT protocol utility - stable, minimal docs
 "garminconnect/workout.py" = ["D401"]  # Pydantic models - docstring mood is fine
 "demo.py" = ["T20", "S101", "ERA", "RUF001", "PTH", "PERF401", "PERF203", "PLR0911", "D103"]  # Demo script - various user-facing patterns
