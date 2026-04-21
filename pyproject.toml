@@ -1,6 +1,6 @@
 [project]
 name = "garminconnect"
-version = "0.3.2"
+version = "0.3.3"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
@@ -25,7 +25,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 keywords=["garmin connect", "api", "garmin"]
-requires-python=">=3.10"
+requires-python=">=3.12"
 [project.urls]
 "Homepage" = "https://github.com/cyberjunky/python-garminconnect"
 "Issues" = "https://github.com/cyberjunky/python-garminconnect/issues"
@@ -67,6 +67,8 @@ linting = [
     "mypy",
     "isort",
     "types-requests",
+    "pre-commit",
+    "codespell",
 ]
 testing = [
     "coverage",
