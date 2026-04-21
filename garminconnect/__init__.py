@@ -504,9 +504,9 @@ class Garmin:
             pool_maxsize=20,
         )
 
-        self.display_name = None
-        self.full_name = None
-        self.unit_system = None
+        self.display_name: str | None = None
+        self.full_name: str | None = None
+        self.unit_system: str | None = None
 
     @_handle_api_errors("API call")
     def connectapi(self, path: str, **kwargs: Any) -> Any:
