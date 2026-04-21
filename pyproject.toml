@@ -77,6 +77,9 @@ dev = [
 workout = [
     "pydantic>=2.0.0",
 ]
+typed = [
+    "pydantic>=2.0.0",
+]
 linting = [
     "black[jupyter]",
     "ruff",
