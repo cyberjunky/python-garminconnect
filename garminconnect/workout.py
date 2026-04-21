@@ -11,13 +11,14 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
-    from pydantic import BaseModel, Field
+    from pydantic import BaseModel, ConfigDict, Field
 else:
     try:
-        from pydantic import BaseModel, Field
+        from pydantic import BaseModel, ConfigDict, Field
     except ImportError:
         # Fallback if pydantic is not installed
         BaseModel = object  # type: ignore[assignment,misc]
+        ConfigDict = dict  # type: ignore[assignment,misc]
 
         def Field(*_args: Any, **_kwargs: Any) -> Any:  # type: ignore[misc]
             """Placeholder Field function when pydantic is not installed."""
@@ -127,10 +128,7 @@ class ExecutableStep(BaseModel):
     equipmentType: dict[str, Any] | None = None
     childStepId: int | None = None
 
-    class Config:
-        """Pydantic config."""
-
-        extra = "allow"  # Allow extra fields for flexibility
+    model_config = ConfigDict(extra="allow")
 
 
 class RepeatGroup(BaseModel):
@@ -146,10 +144,7 @@ class RepeatGroup(BaseModel):
     childStepId: int | None = None
     smartRepeat: bool = False
 
-    class Config:
-        """Pydantic config."""
-
-        extra = "allow"  # Allow extra fields for flexibility
+    model_config = ConfigDict(extra="allow")
 
 
 # Update forward reference (only if pydantic is available)
@@ -164,10 +159,7 @@ class WorkoutSegment(BaseModel):
     sportType: dict[str, Any]
     workoutSteps: list[ExecutableStep | RepeatGroup]
 
-    class Config:
-        """Pydantic config."""
-
-        extra = "allow"  # Allow extra fields for flexibility
+    model_config = ConfigDict(extra="allow")
 
 
 class BaseWorkout(BaseModel):
@@ -180,10 +172,7 @@ class BaseWorkout(BaseModel):
     author: dict[str, Any] = Field(default_factory=dict)
     description: str | None = None
 
-    class Config:
-        """Pydantic config."""
-
-        extra = "allow"  # Allow extra fields for flexibility
+    model_config = ConfigDict(extra="allow")
 
     def to_dict(self) -> dict[str, Any]:
         """Convert workout to dictionary for API upload."""
