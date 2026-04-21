@@ -37,6 +37,7 @@ def _client_error(status: int) -> GarminConnectConnectionError:
 
 @pytest.fixture
 def garmin():
+    """Garmin instance with a stubbed client and near-zero retry backoff."""
     g = Garmin(retry_attempts=0, retry_min_wait=0.001, retry_max_wait=0.002)
     g.client = type("C", (), {})()
     return g
@@ -47,7 +48,7 @@ def garmin():
 
 def test_extract_status_from_attribute():
     e = ValueError("x")
-    e.status_code = 418  # type: ignore[attr-defined]
+    e.status_code = 418
     assert _extract_status_code(e) == 418
 
 
@@ -107,6 +108,15 @@ def test_has_network_cause_none_for_plain():
 # ----- decorator: error translation on connectapi -----
 
 
+def _stub(obj, name, fn, monkeypatch):
+    """Attach ``fn`` as attribute ``name`` on ``obj`` for the test's lifetime.
+
+    ``raising=False`` lets us set attributes that don't exist yet on the
+    empty stub client from the ``garmin`` fixture.
+    """
+    monkeypatch.setattr(obj, name, fn, raising=False)
+
+
 @pytest.mark.parametrize(
     ("status", "expected"),
     [
@@ -116,114 +126,112 @@ def test_has_network_cause_none_for_plain():
         (404, GarminConnectConnectionError),
     ],
 )
-def test_fast_fail_status(
-    garmin: Garmin, status: int, expected: type[Exception]
-) -> None:
+def test_fast_fail_status(garmin, monkeypatch, status, expected):
     calls = {"n": 0}
 
-    def fake(path: str, **kw: object) -> None:
+    def fake(path, **kw):
         calls["n"] += 1
         raise _http_error(status)
 
-    garmin.client.connectapi = fake  # type: ignore[attr-defined]
+    _stub(garmin.client, "connectapi", fake, monkeypatch)
     garmin.retry_attempts = 2  # retries enabled, but must NOT fire for 401/429/4xx
     with pytest.raises(expected):
         garmin.connectapi("/x")
     assert calls["n"] == 1
 
 
-def test_503_retry_exhaustion(garmin: Garmin) -> None:
+def test_503_retry_exhaustion(garmin, monkeypatch):
     calls = {"n": 0}
 
-    def fake(path: str, **kw: object) -> None:
+    def fake(path, **kw):
         calls["n"] += 1
         raise _http_error(503)
 
-    garmin.client.connectapi = fake  # type: ignore[attr-defined]
+    _stub(garmin.client, "connectapi", fake, monkeypatch)
     garmin.retry_attempts = 2
     with pytest.raises(GarminConnectConnectionError):
         garmin.connectapi("/x")
     assert calls["n"] == 3  # initial + 2 retries
 
 
-def test_flaky_recovers_after_retry(garmin: Garmin) -> None:
+def test_flaky_recovers_after_retry(garmin, monkeypatch):
     calls = {"n": 0}
 
-    def fake(path: str, **kw: object) -> dict[str, bool]:
+    def fake(path, **kw):
         calls["n"] += 1
         if calls["n"] < 2:
             raise _http_error(503)
         return {"ok": True}
 
-    garmin.client.connectapi = fake  # type: ignore[attr-defined]
+    _stub(garmin.client, "connectapi", fake, monkeypatch)
     garmin.retry_attempts = 3
     assert garmin.connectapi("/x") == {"ok": True}
     assert calls["n"] == 2
 
 
-def test_connection_error_retries_and_exhausts(garmin: Garmin) -> None:
+def test_connection_error_retries_and_exhausts(garmin, monkeypatch):
     calls = {"n": 0}
 
-    def fake(path: str, **kw: object) -> None:
+    def fake(path, **kw):
         calls["n"] += 1
         raise requests.ConnectionError("boom")
 
-    garmin.client.connectapi = fake  # type: ignore[attr-defined]
+    _stub(garmin.client, "connectapi", fake, monkeypatch)
     garmin.retry_attempts = 2
     with pytest.raises(GarminConnectConnectionError):
         garmin.connectapi("/x")
     assert calls["n"] == 3
 
 
-def test_retry_attempts_zero_disables_retry(garmin: Garmin) -> None:
+def test_retry_attempts_zero_disables_retry(garmin, monkeypatch):
     """``retry_attempts=0`` fails fast even on transient 5xx."""
     garmin.retry_attempts = 0
     calls = {"n": 0}
 
-    def fake(path: str, **kw: object) -> None:
+    def fake(path, **kw):
         calls["n"] += 1
         raise _http_error(503)
 
-    garmin.client.connectapi = fake  # type: ignore[attr-defined]
+    _stub(garmin.client, "connectapi", fake, monkeypatch)
     with pytest.raises(GarminConnectConnectionError):
         garmin.connectapi("/x")
     assert calls["n"] == 1
 
 
-def test_response_attr_preserved_on_client_error(garmin: Garmin) -> None:
+def test_response_attr_preserved_on_client_error(garmin, monkeypatch):
     """Callers like get_gear_stats rely on .response.status_code."""
     garmin.retry_attempts = 0
 
-    def fake(path: str, **kw: object) -> None:
+    def fake(path, **kw):
         raise _http_error(400)
 
-    garmin.client.connectapi = fake  # type: ignore[attr-defined]
+    _stub(garmin.client, "connectapi", fake, monkeypatch)
     with pytest.raises(GarminConnectConnectionError) as exc:
         garmin.connectapi("/x")
-    assert exc.value.response.status_code == 400  # type: ignore[attr-defined]
+    assert exc.value.response.status_code == 400
 
 
 # ----- decorator applies uniformly to connectwebproxy and download -----
 
 
-def test_connectwebproxy_translates(garmin: Garmin) -> None:
+def test_connectwebproxy_translates(garmin, monkeypatch):
     garmin.retry_attempts = 0
 
-    def fake(method: str, host: str, path: str, **kw: object) -> None:
+    def fake(method, host, path, **kw):
         raise _http_error(401)
 
-    garmin.client.request = fake  # type: ignore[attr-defined]
+    _stub(garmin.client, "request", fake, monkeypatch)
     with pytest.raises(GarminConnectAuthenticationError):
         garmin.connectwebproxy("/x")
 
 
-def test_download_translates(garmin: Garmin) -> None:
+def test_download_translates(garmin, monkeypatch):
     garmin.retry_attempts = 0
 
-    def fake(path: str, **kw: object) -> None:
+    def fake(path, **kw):
         raise _http_error(429)
 
-    garmin.client.download = fake  # type: ignore[attr-defined]
+    _stub(garmin.client, "download", fake, monkeypatch)
     with pytest.raises(GarminConnectTooManyRequestsError):
         garmin.download("/x")
 
@@ -238,10 +246,10 @@ def test_retry_attempts_rejects_negative():
 
 def test_retry_attempts_rejects_non_int():
     with pytest.raises(ValueError):
-        Garmin(retry_attempts="3")  # type: ignore[arg-type]
+        Garmin(retry_attempts="3")
 
 
 def test_retry_attempts_rejects_bool():
     """Reject bool — it is a subclass of int in Python."""
     with pytest.raises(ValueError):
-        Garmin(retry_attempts=True)  # type: ignore[arg-type]
+        Garmin(retry_attempts=True)

@@ -44,6 +44,22 @@ python_version = "3.12"
 disallow_untyped_defs = true
 warn_unused_ignores = true
 
+[[tool.mypy.overrides]]
+# Tests deliberately omit return-type annotations (per repo convention
+# established by PR #351) and stub out client methods via monkeypatch /
+# direct attribute assignment, which mypy can't reason about. We list
+# each test module explicitly because ``tests/`` has no __init__.py and
+# mypy's glob patterns are unreliable for non-package directories.
+module = [
+    "test_garmin",
+    "test_garmin_unit",
+    "test_retry_decorator",
+    "test_workout_constants",
+    "conftest",
+]
+disallow_untyped_defs = false
+warn_unused_ignores = false
+
 [tool.isort]
 profile = "black"
 line_length = 88
