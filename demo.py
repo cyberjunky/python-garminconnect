@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import sys
+import time
 from contextlib import suppress
 from datetime import timedelta
 from getpass import getpass
@@ -37,9 +38,33 @@ from garminconnect import (
     GarminConnectTooManyRequestsError,
 )
 
-# Configure logging to reduce verbose error output from garminconnect library
-# This prevents double error messages for known API issues
-logging.getLogger("garminconnect").setLevel(logging.CRITICAL)
+# Debug mode: enable with --debug / -d CLI flag or DEMO_DEBUG=1 env var.
+# When active, shows timestamped DEBUG logs from garminconnect and the
+# underlying HTTP stack (urllib3 / requests) so you can see where delays come
+# from. Also consumes the flag from sys.argv so downstream code doesn't see it.
+_DEBUG = bool(os.getenv("DEMO_DEBUG")) or any(a in sys.argv for a in ("-d", "--debug"))
+for _flag in ("-d", "--debug"):
+    while _flag in sys.argv:
+        sys.argv.remove(_flag)
+
+if _DEBUG:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format="%(asctime)s.%(msecs)03d %(levelname)s %(name)s: %(message)s",
+        datefmt="%H:%M:%S",
+    )
+    for _name in (
+        "garminconnect",
+        "urllib3",
+        "urllib3.connectionpool",
+        "requests",
+    ):
+        logging.getLogger(_name).setLevel(logging.DEBUG)
+else:
+    # Quiet known-noisy library errors to avoid double error messages
+    logging.getLogger("garminconnect").setLevel(logging.CRITICAL)
+
+_LOGGER = logging.getLogger("demo")
 
 api: Garmin | None = None
 
@@ -1090,11 +1115,20 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
     if method_name is None:
         method_name = getattr(api_method, "__name__", str(api_method))
 
+    t0 = time.perf_counter()
     try:
         result = api_method(*args, **kwargs)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        _LOGGER.debug("api.%s OK in %.1f ms", method_name, elapsed_ms)
         return True, result, None
 
     except GarminConnectConnectionError as e:
+        _LOGGER.debug(
+            "api.%s FAIL in %.1f ms: %s",
+            method_name,
+            (time.perf_counter() - t0) * 1000,
+            e,
+        )
         # Handle specific HTTP errors more gracefully
         error_str = str(e)
 
@@ -1141,11 +1175,23 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
         return False, None, error_msg
 
     except GarminConnectAuthenticationError as e:
+        _LOGGER.debug(
+            "api.%s FAIL in %.1f ms: %s",
+            method_name,
+            (time.perf_counter() - t0) * 1000,
+            e,
+        )
         error_msg = f"Authentication issue: {e}"
         print(f"⚠️ {method_name} failed: {error_msg}")
         return False, None, error_msg
 
     except GarminConnectConnectionError as e:  # noqa: B025
+        _LOGGER.debug(
+            "api.%s FAIL in %.1f ms: %s",
+            method_name,
+            (time.perf_counter() - t0) * 1000,
+            e,
+        )
         error_str = str(e)
         # Extract a clean message by detecting common HTTP status codes
         if "410" in error_str:
@@ -1162,6 +1208,12 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
         return False, None, error_msg
 
     except Exception as e:
+        _LOGGER.debug(
+            "api.%s FAIL in %.1f ms: %s",
+            method_name,
+            (time.perf_counter() - t0) * 1000,
+            e,
+        )
         error_msg = f"Unexpected error: {e}"
         print(f"⚠️ {method_name} failed: {error_msg}")
         return False, None, error_msg
