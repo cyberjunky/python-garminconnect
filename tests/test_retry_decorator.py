@@ -95,7 +95,7 @@ def test_has_network_cause_walks_context():
         try:
             raise requests.ConnectionError("net")
         except requests.ConnectionError:
-            raise GarminConnectConnectionError("wrapped")
+            raise GarminConnectConnectionError("wrapped")  # noqa: B904  test __context__ chain
     except GarminConnectConnectionError as e:
         assert _has_network_cause(e) is True
 
@@ -175,8 +175,8 @@ def test_connection_error_retries_and_exhausts(garmin: Garmin) -> None:
     assert calls["n"] == 3
 
 
-def test_default_retry_attempts_is_zero(garmin: Garmin) -> None:
-    """Opt-in: retry_attempts defaults to 0 — 503 fails fast."""
+def test_retry_attempts_zero_disables_retry(garmin: Garmin) -> None:
+    """``retry_attempts=0`` fails fast even on transient 5xx."""
     garmin.retry_attempts = 0
     calls = {"n": 0}
 
@@ -242,6 +242,6 @@ def test_retry_attempts_rejects_non_int():
 
 
 def test_retry_attempts_rejects_bool():
-    """bool is a subclass of int in Python — reject explicitly."""
+    """Reject bool — it is a subclass of int in Python."""
     with pytest.raises(ValueError):
         Garmin(retry_attempts=True)  # type: ignore[arg-type]
