@@ -249,7 +249,7 @@ class Client:
                 run()
                 # Strategy succeeded — login complete
                 return None, None
-            except GarminConnectAuthenticationError:  # noqa: PERF203
+            except GarminConnectAuthenticationError:
                 # Wrong credentials — stop immediately, no point trying further
                 raise
             except _MFARequired:
@@ -301,7 +301,7 @@ class Client:
                 sess: Any = cffi_requests.Session(impersonate=imp)  # type: ignore[arg-type]
                 self._do_mobile_login(sess, email, password)
                 return
-            except (GarminConnectAuthenticationError, _MFARequired):  # noqa: PERF203
+            except (GarminConnectAuthenticationError, _MFARequired):
                 raise
             except GarminConnectTooManyRequestsError as e:
                 _LOGGER.debug("mobile+cffi(%s) 429: %s", imp, e)
@@ -576,7 +576,7 @@ class Client:
                 sess: Any = cffi_requests.Session(impersonate=imp)  # type: ignore[arg-type]
                 self._do_portal_web_login(sess, email, password)
                 return
-            except (GarminConnectAuthenticationError, _MFARequired):  # noqa: PERF203
+            except (GarminConnectAuthenticationError, _MFARequired):
                 raise
             except GarminConnectTooManyRequestsError as e:
                 _LOGGER.debug("portal+cffi(%s) 429: %s", imp, e)
