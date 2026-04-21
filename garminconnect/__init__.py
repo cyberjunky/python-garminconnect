@@ -14,9 +14,22 @@ from typing import Any
 
 import requests
 from requests import HTTPError
+from tenacity import (
+    Retrying,
+    before_sleep_log,
+    retry_if_exception,
+    stop_after_attempt,
+    wait_exponential_jitter,
+)
 
 from . import client
 from .fit import FitEncoderWeight  # type: ignore
+
+# Regex used to extract an HTTP status code from the client's error messages.
+# The underlying client raises GarminConnectConnectionError with a message of
+# the form "API Error {status} - {detail}", so we parse it to decide whether
+# a failure is retryable (5xx) or not (4xx, auth, etc.).
+_STATUS_CODE_RE = re.compile(r"(?:API Error|Error|HTTP)\s*(\d{3})")
 
 logger = logging.getLogger(__name__)
 
@@ -98,6 +111,85 @@ def _validate_json_exists(response: requests.Response) -> dict[str, Any] | None:
     return response.json()
 
 
+def _extract_status_code(exc: BaseException) -> int | None:
+    """Best-effort extraction of an HTTP status code from an exception.
+
+    Checks a ``status_code`` attribute, then a ``response.status_code``
+    attribute, and finally parses common status-code patterns out of the
+    exception message (the client raises ``GarminConnectConnectionError``
+    with messages like ``"API Error 503 - ..."``).
+    """
+    status = getattr(exc, "status_code", None)
+    if isinstance(status, int):
+        return status
+
+    resp = getattr(exc, "response", None)
+    status = getattr(resp, "status_code", None)
+    if isinstance(status, int):
+        return status
+
+    match = _STATUS_CODE_RE.search(str(exc))
+    if match:
+        return int(match.group(1))
+    return None
+
+
+def _has_network_cause(exc: BaseException) -> bool:
+    """Return True if the exception's cause chain includes a raw network error.
+
+    Walks ``__cause__`` / ``__context__`` looking for ``requests.ConnectionError``
+    or ``requests.Timeout``. Used to decide whether a status-less
+    ``GarminConnectConnectionError`` is actually a transient network failure
+    (retry) or a deterministic logic / decode error (do not retry).
+    """
+    seen: set[int] = set()
+    cur: BaseException | None = exc
+    while cur is not None and id(cur) not in seen:
+        seen.add(id(cur))
+        if isinstance(cur, (requests.ConnectionError, requests.Timeout)):
+            return True
+        cur = cur.__cause__ or cur.__context__
+    return False
+
+
+def _is_retryable_error(exc: BaseException) -> bool:
+    """Return True for transient errors worth retrying.
+
+    Retries:
+    - ``GarminConnectConnectionError`` with a 5xx status (server errors).
+    - ``GarminConnectConnectionError`` whose cause chain contains a raw
+      ``requests.ConnectionError`` or ``requests.Timeout`` (true network
+      failures where the request never got a response).
+    - Raw ``requests`` network errors (connection / timeout) from lower
+      layers that escape without being wrapped.
+
+    Does NOT retry:
+    - ``GarminConnectAuthenticationError`` (401 — user must re-login).
+    - ``GarminConnectTooManyRequestsError`` (429 — caller should back off).
+    - Any error with a 4xx status code.
+    - Status-less ``GarminConnectConnectionError`` with no network cause
+      (e.g. JSON decode errors, ``AttributeError``, programming bugs).
+      Retrying these would be pointless and waste time.
+    """
+    # Never retry auth failures or rate-limit errors.
+    if isinstance(
+        exc, (GarminConnectAuthenticationError, GarminConnectTooManyRequestsError)
+    ):
+        return False
+
+    if isinstance(exc, GarminConnectConnectionError):
+        status = _extract_status_code(exc)
+        if status is None:
+            # Only retry when we can confirm the underlying cause was an
+            # actual network failure — not a deterministic error wrapped in
+            # a generic GarminConnectConnectionError.
+            return _has_network_cause(exc)
+        return 500 <= status < 600
+
+    # Raw network errors from requests that somehow escaped the wrappers.
+    return isinstance(exc, (requests.ConnectionError, requests.Timeout))
+
+
 class Garmin:
     """Class for fetching data from Garmin Connect."""
 
@@ -108,8 +200,20 @@ class Garmin:
         is_cn: bool = False,
         prompt_mfa: Callable[[], str] | None = None,
         return_on_mfa: bool = False,
+        max_retries: int = 3,
+        retry_min_wait: float = 1.0,
+        retry_max_wait: float = 10.0,
     ) -> None:
-        """Create a new class instance."""
+        """Create a new class instance.
+
+        :param max_retries: Number of retries for transient network / 5xx
+            errors on ``connectapi``, ``connectwebproxy`` and ``download``.
+            Set to ``0`` to disable retries entirely. Defaults to ``3``.
+        :param retry_min_wait: Initial backoff in seconds between retries
+            (exponential with jitter). Defaults to ``1.0``.
+        :param retry_max_wait: Upper bound on the backoff in seconds between
+            retries. Defaults to ``10.0``.
+        """
         # Validate input types
         if email is not None and not isinstance(email, str):
             raise ValueError("email must be a string or None")
@@ -119,12 +223,29 @@ class Garmin:
             raise ValueError("is_cn must be a boolean")
         if not isinstance(return_on_mfa, bool):
             raise ValueError("return_on_mfa must be a boolean")
+        if isinstance(max_retries, bool) or not isinstance(max_retries, int):
+            raise ValueError("max_retries must be an integer")
+        if max_retries < 0:
+            raise ValueError("max_retries must be non-negative")
+        if isinstance(retry_min_wait, bool) or not isinstance(
+            retry_min_wait, (int, float)
+        ):
+            raise ValueError("retry_min_wait must be a number")
+        if isinstance(retry_max_wait, bool) or not isinstance(
+            retry_max_wait, (int, float)
+        ):
+            raise ValueError("retry_max_wait must be a number")
+        if retry_min_wait < 0 or retry_max_wait < 0:
+            raise ValueError("retry waits must be non-negative")
 
         self.username = email
         self.password = password
         self.is_cn = is_cn
         self.prompt_mfa = prompt_mfa
         self.return_on_mfa = return_on_mfa
+        self.max_retries = max_retries
+        self.retry_min_wait = float(retry_min_wait)
+        self.retry_max_wait = float(retry_max_wait)
 
         self.garmin_connect_user_settings_url = (
             "/userprofile-service/userprofile/user-settings"
@@ -321,18 +442,52 @@ class Garmin:
         self.full_name = None
         self.unit_system = None
 
+    def _retry_wrapper(self, func: Callable[[], Any], op: str, path: str) -> Any:
+        """Invoke ``func`` with exponential-backoff retries for transient errors.
+
+        Retries only when ``_is_retryable_error`` returns True (5xx server
+        errors and bare network failures). 4xx, auth and rate-limit errors
+        propagate immediately. Uses ``reraise=True`` so the original
+        exception is preserved for callers.
+        """
+        if self.max_retries <= 0:
+            return func()
+
+        retrying = Retrying(
+            stop=stop_after_attempt(self.max_retries + 1),
+            wait=wait_exponential_jitter(
+                initial=self.retry_min_wait, max=self.retry_max_wait
+            ),
+            retry=retry_if_exception(_is_retryable_error),
+            before_sleep=before_sleep_log(logger, logging.WARNING),
+            reraise=True,
+        )
+        for attempt in retrying:
+            with attempt:
+                return func()
+        # Unreachable — Retrying either returns a value or reraises.
+        raise RuntimeError(f"{op} {path}: retry loop exited without a result")
+
     def connectapi(self, path: str, **kwargs: Any) -> Any:
-        """Wrapper for native connectapi with error handling."""
+        """Wrapper for native connectapi with error handling and retries."""
+        return self._retry_wrapper(
+            lambda: self._connectapi_once(path, **kwargs), "connectapi", path
+        )
+
+    def _connectapi_once(self, path: str, **kwargs: Any) -> Any:
+        """Single (non-retried) connectapi call with error translation.
+
+        On auth (401) and rate-limit (429) we translate to the dedicated
+        exception types. All other ``GarminConnectConnectionError`` instances
+        are re-raised unchanged so callers (e.g. ``get_gear_stats``) can still
+        read ``.response.status_code`` and any other attributes attached by
+        the lower-level client.
+        """
         try:
             return self.client.connectapi(path, **kwargs)
 
-        except (HTTPError, GarminConnectConnectionError) as e:
-            # For GarminConnectConnectionError, extract status from the wrapped HTTPError
-            if isinstance(e, GarminConnectConnectionError):
-                status = getattr(getattr(e, "response", None), "status_code", None)
-            else:
-                status = getattr(getattr(e, "response", None), "status_code", None)
-
+        except GarminConnectConnectionError as e:
+            status = _extract_status_code(e)
             logger.exception(
                 "API call failed for path '%s': %s (status=%s)", path, e, status
             )
@@ -344,22 +499,49 @@ class Garmin:
                 raise GarminConnectTooManyRequestsError(
                     f"Rate limit exceeded: {e}"
                 ) from e
-            if status and 400 <= status < 500:
-                # Client errors (400-499) - API endpoint issues, bad parameters, etc.
-                raise GarminConnectConnectionError(
-                    f"API client error ({status}): {e}"
+            # Re-raise original so .response / existing attributes survive.
+            raise
+        except HTTPError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            logger.exception(
+                "API call failed for path '%s': %s (status=%s)", path, e, status
+            )
+            if status == 401:
+                raise GarminConnectAuthenticationError(
+                    f"Authentication failed: {e}"
                 ) from e
-            raise GarminConnectConnectionError(f"HTTP error: {e}") from e
-        except Exception as e:
-            logger.exception("Connection error during connectapi path=%s", path)
+            if status == 429:
+                raise GarminConnectTooManyRequestsError(
+                    f"Rate limit exceeded: {e}"
+                ) from e
+            new_exc = GarminConnectConnectionError(f"HTTP error: {e}")
+            # Preserve response so callers can still introspect .response.status_code.
+            if getattr(e, "response", None) is not None:
+                new_exc.response = e.response  # type: ignore[attr-defined]
+            raise new_exc from e
+        except (requests.ConnectionError, requests.Timeout) as e:
+            logger.exception("Network error during connectapi path=%s", path)
             raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
     def connectwebproxy(self, path: str, **kwargs: Any) -> Any:
-        """Wrapper for web proxy requests to connect.garmin.com with error handling."""
+        """Wrapper for web proxy requests with error handling and retries."""
+        return self._retry_wrapper(
+            lambda: self._connectwebproxy_once(path, **kwargs),
+            "connectwebproxy",
+            path,
+        )
+
+    def _connectwebproxy_once(self, path: str, **kwargs: Any) -> Any:
+        """Single (non-retried) web proxy call with error translation.
+
+        Translates auth (401) / rate-limit (429) to the dedicated exception
+        types. Other ``GarminConnectConnectionError`` instances propagate
+        unchanged so ``.response`` and any attached attributes survive.
+        """
         try:
             return self.client.request("GET", "connect", path, **kwargs).json()
         except GarminConnectConnectionError as e:
-            status = getattr(getattr(e, "response", None), "status_code", None)
+            status = _extract_status_code(e)
             logger.exception(
                 "API call failed for web proxy path '%s' (status=%s)",
                 path,
@@ -373,39 +555,50 @@ class Garmin:
                 raise GarminConnectTooManyRequestsError(
                     f"Web proxy rate limit: {e}"
                 ) from e
-            if status and 400 <= status < 500:
-                raise GarminConnectConnectionError(
-                    f"Web proxy client error ({status}): {e}"
-                ) from e
-            raise GarminConnectConnectionError(f"Web proxy error: {e}") from e
-        except Exception as e:
-            logger.exception("Connection error during web proxy path=%s", path)
+            # Re-raise original so .response / attributes survive.
+            raise
+        except (requests.ConnectionError, requests.Timeout) as e:
+            logger.exception("Network error during web proxy path=%s", path)
             raise GarminConnectConnectionError(f"Connection error: {e}") from e
 
     def download(self, path: str, **kwargs: Any) -> Any:
-        """Wrapper for native download with error handling."""
+        """Wrapper for native download with error handling and retries."""
+        return self._retry_wrapper(
+            lambda: self._download_once(path, **kwargs), "download", path
+        )
+
+    def _download_once(self, path: str, **kwargs: Any) -> Any:
+        """Single (non-retried) download call with error translation.
+
+        Translates auth (401) / rate-limit (429) to the dedicated exception
+        types. Other ``GarminConnectConnectionError`` instances propagate
+        unchanged so callers retain access to ``.response`` and any attached
+        attributes.
+        """
         try:
             return self.client.download(path, **kwargs)
-        except (HTTPError, GarminConnectConnectionError) as e:
-            # For GarminConnectConnectionError, extract status from the wrapped HTTPError
-            if isinstance(e, GarminConnectConnectionError):
-                status = getattr(getattr(e, "response", None), "status_code", None)
-            else:
-                status = getattr(getattr(e, "response", None), "status_code", None)
-
+        except GarminConnectConnectionError as e:
+            status = _extract_status_code(e)
             logger.exception("Download failed for path '%s' (status=%s)", path, status)
             if status == 401:
                 raise GarminConnectAuthenticationError(f"Download error: {e}") from e
             if status == 429:
                 raise GarminConnectTooManyRequestsError(f"Download error: {e}") from e
-            if status and 400 <= status < 500:
-                # Client errors (400-499) - API endpoint issues, bad parameters, etc.
-                raise GarminConnectConnectionError(
-                    f"Download client error ({status}): {e}"
-                ) from e
-            raise GarminConnectConnectionError(f"Download error: {e}") from e
-        except Exception as e:
-            logger.exception("Download failed for path '%s'", path)
+            # Re-raise original so .response / attributes survive.
+            raise
+        except HTTPError as e:
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            logger.exception("Download failed for path '%s' (status=%s)", path, status)
+            if status == 401:
+                raise GarminConnectAuthenticationError(f"Download error: {e}") from e
+            if status == 429:
+                raise GarminConnectTooManyRequestsError(f"Download error: {e}") from e
+            new_exc = GarminConnectConnectionError(f"Download error: {e}")
+            if getattr(e, "response", None) is not None:
+                new_exc.response = e.response  # type: ignore[attr-defined]
+            raise new_exc from e
+        except (requests.ConnectionError, requests.Timeout) as e:
+            logger.exception("Network error during download path=%s", path)
             raise GarminConnectConnectionError(f"Download error: {e}") from e
 
     def login(self, /, tokenstore: str | None = None) -> tuple[str | None, str | None]:
