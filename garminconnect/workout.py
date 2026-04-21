@@ -219,7 +219,9 @@ class SwimmingWorkout(BaseWorkout):
 
     sportType: dict[str, Any] = Field(
         default_factory=lambda: {
-            "sportTypeId": SportType.SWIMMING,
+            # Garmin workout-service expects swimming sportTypeId=4.
+            # Using 3 gets normalized to sportTypeKey="other" on upload.
+            "sportTypeId": 4,
             "sportTypeKey": "swimming",
             "displayOrder": 3,
         }
