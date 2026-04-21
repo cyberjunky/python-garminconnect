@@ -10,6 +10,7 @@ Strategy chain (each strategy is tried in order; only auth errors stop the chain
 
 import base64
 import contextlib
+import http.cookiejar
 import json
 import logging
 import random
@@ -174,6 +175,24 @@ class Client:
             pool_maxsize=kwargs.get("pool_maxsize", 20),
         )
         self.cs.mount("https://", adapter)
+
+        # Dedicated keep-alive session for API calls. Kept separate from
+        # self.cs so auth cookies (JWT_WEB jar, CAS TGT) don't leak into API
+        # requests — API auth travels in headers per-call via get_api_headers.
+        # Reusing one session lets urllib3 pool TCP/TLS across calls instead
+        # of doing a fresh handshake every request (~1 s saved per call).
+        self._api_session: requests.Session = requests.Session()
+        # Reject all cookies so server-set cookies can't accumulate in the jar
+        # and collide with the explicit Cookie header used on the JWT_WEB path.
+        # Matches the old fresh-session-per-call guarantee: empty cookie state.
+        self._api_session.cookies.set_policy(
+            http.cookiejar.DefaultCookiePolicy(allowed_domains=[])
+        )
+        api_adapter = requests.adapters.HTTPAdapter(
+            pool_connections=kwargs.get("pool_connections", 20),
+            pool_maxsize=kwargs.get("pool_maxsize", 20),
+        )
+        self._api_session.mount("https://", api_adapter)
 
         self._tokenstore_path: str | None = None
 
@@ -1126,13 +1145,6 @@ class Client:
         kwargs["headers"].update({"Accept": "*/*"})
         return self._run_request("GET", path, **kwargs).content
 
-    def _fresh_api_session(self) -> requests.Session:
-        """Create a fresh plain requests.Session for each API call."""
-        sess = requests.Session()
-        adapter = requests.adapters.HTTPAdapter(pool_connections=20, pool_maxsize=20)
-        sess.mount("https://", adapter)
-        return sess
-
     def _run_request(self, method: str, path: str, **kwargs: Any) -> Any:
         if self.is_authenticated and self._token_expires_soon():
             self._refresh_session()
@@ -1146,7 +1158,7 @@ class Client:
         custom_headers = kwargs.pop("headers", {})
         headers.update(custom_headers)
 
-        sess = self._fresh_api_session()
+        sess = self._api_session
         resp = sess.request(method, url, headers=headers, **kwargs)
 
         if resp.status_code == 401:
