@@ -12,7 +12,10 @@ from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .typed import TypedGarmin
 
 import requests
 from requests import HTTPError
@@ -507,6 +510,30 @@ class Garmin:
         self.display_name: str | None = None
         self.full_name: str | None = None
         self.unit_system: str | None = None
+
+    @functools.cached_property
+    def typed(self) -> "TypedGarmin":
+        """Return a typed namespace that wraps selected endpoints with Pydantic models.
+
+        Example::
+
+            g = Garmin(email, password)
+            g.login()
+            stats = g.typed.get_stats("2026-04-21")  # DailyStats
+
+        Requires the optional ``typed`` extra::
+
+            pip install 'garminconnect[typed]'
+
+        See :mod:`garminconnect.typed` for the list of wrapped endpoints and
+        response models. **Experimental** — shapes may change between minor
+        releases.
+        """
+        # Lazy import so pydantic stays an optional dep. The typed module
+        # raises a clear ImportError on its own if pydantic is missing.
+        from .typed import TypedGarmin
+
+        return TypedGarmin(self)
 
     @_handle_api_errors("API call")
     def connectapi(self, path: str, **kwargs: Any) -> Any:
