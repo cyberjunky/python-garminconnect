@@ -158,6 +158,10 @@ class Client:
         self._connectapi = f"https://connectapi.{domain}"
         # Portal service URL is domain-aware for CN support
         self._portal_service_url = f"https://connect.{domain}/app"
+        # DI auth host is domain-aware too — CN users live on diauth.garmin.cn
+        # and don't exist in the .com user database. Without this, token refresh
+        # for CN accounts fails with 400 invalid_grant.
+        self._di_token_url = f"https://diauth.{domain}/di-oauth2-service/oauth/token"
 
         # Native Bearer tokens (primary auth)
         self.di_token: str | None = None
@@ -901,7 +905,7 @@ class Client:
 
         for client_id in DI_CLIENT_IDS:
             r = self._http_post(
-                DI_TOKEN_URL,
+                self._di_token_url,
                 headers=_native_headers(
                     {
                         "Authorization": _build_basic_auth(client_id),
@@ -954,7 +958,7 @@ class Client:
         if not self.di_refresh_token or not self.di_client_id:
             raise GarminConnectAuthenticationError("No DI refresh token available")
         r = self._http_post(
-            DI_TOKEN_URL,
+            self._di_token_url,
             headers=_native_headers(
                 {
                     "Authorization": _build_basic_auth(self.di_client_id),
