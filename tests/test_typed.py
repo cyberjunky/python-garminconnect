@@ -209,7 +209,7 @@ def test_typed_is_cached(garmin: garminconnect.Garmin) -> None:
 
 
 def test_get_stats_returns_daily_stats(garmin: garminconnect.Garmin) -> None:
-    garmin.get_stats = MagicMock(return_value=SAMPLE_DAILY_STATS)
+    garmin.get_stats = MagicMock(return_value=SAMPLE_DAILY_STATS)  # type: ignore[method-assign]
 
     stats = garmin.typed.get_stats("2026-04-21")
 
@@ -223,7 +223,7 @@ def test_get_stats_returns_daily_stats(garmin: garminconnect.Garmin) -> None:
 
 def test_get_user_summary_returns_daily_stats(garmin: garminconnect.Garmin) -> None:
     """``get_user_summary`` uses the same ``DailyStats`` model."""
-    garmin.get_user_summary = MagicMock(return_value=SAMPLE_DAILY_STATS)
+    garmin.get_user_summary = MagicMock(return_value=SAMPLE_DAILY_STATS)  # type: ignore[method-assign]
 
     stats = garmin.typed.get_user_summary("2026-04-21")
 
@@ -233,7 +233,7 @@ def test_get_user_summary_returns_daily_stats(garmin: garminconnect.Garmin) -> N
 
 
 def test_get_sleep_data_returns_nested_dto(garmin: garminconnect.Garmin) -> None:
-    garmin.get_sleep_data = MagicMock(return_value=SAMPLE_SLEEP_DATA)
+    garmin.get_sleep_data = MagicMock(return_value=SAMPLE_SLEEP_DATA)  # type: ignore[method-assign]
 
     sleep = garmin.typed.get_sleep_data("2026-04-21")
 
@@ -249,7 +249,7 @@ def test_get_sleep_data_returns_nested_dto(garmin: garminconnect.Garmin) -> None
 
 
 def test_get_hrv_data_returns_hrv_model(garmin: garminconnect.Garmin) -> None:
-    garmin.get_hrv_data = MagicMock(return_value=SAMPLE_HRV_DATA)
+    garmin.get_hrv_data = MagicMock(return_value=SAMPLE_HRV_DATA)  # type: ignore[method-assign]
 
     hrv = garmin.typed.get_hrv_data("2026-04-21")
 
@@ -263,13 +263,13 @@ def test_get_hrv_data_returns_hrv_model(garmin: garminconnect.Garmin) -> None:
 
 def test_get_hrv_data_passes_through_none(garmin: garminconnect.Garmin) -> None:
     """``get_hrv_data`` may legitimately return ``None`` — the wrapper keeps that."""
-    garmin.get_hrv_data = MagicMock(return_value=None)
+    garmin.get_hrv_data = MagicMock(return_value=None)  # type: ignore[method-assign]
 
     assert garmin.typed.get_hrv_data("2026-04-21") is None
 
 
 def test_get_body_battery_returns_list(garmin: garminconnect.Garmin) -> None:
-    garmin.get_body_battery = MagicMock(return_value=SAMPLE_BODY_BATTERY)
+    garmin.get_body_battery = MagicMock(return_value=SAMPLE_BODY_BATTERY)  # type: ignore[method-assign]
 
     entries = garmin.typed.get_body_battery("2026-04-21", "2026-04-21")
 
@@ -284,14 +284,14 @@ def test_get_body_battery_returns_list(garmin: garminconnect.Garmin) -> None:
 
 def test_get_body_battery_non_list_returns_empty(garmin: garminconnect.Garmin) -> None:
     """Defensive: if Garmin returns something unexpected, return ``[]``."""
-    garmin.get_body_battery = MagicMock(return_value=None)
+    garmin.get_body_battery = MagicMock(return_value=None)  # type: ignore[method-assign]
 
     assert garmin.typed.get_body_battery("2026-04-21") == []
 
 
 def test_get_training_readiness_returns_list(garmin: garminconnect.Garmin) -> None:
     """Garmin returns a list of snapshots even though the raw method is typed as dict."""
-    garmin.get_training_readiness = MagicMock(return_value=SAMPLE_TRAINING_READINESS)
+    garmin.get_training_readiness = MagicMock(return_value=SAMPLE_TRAINING_READINESS)  # type: ignore[method-assign]
 
     readings = garmin.typed.get_training_readiness("2026-04-21")
 
@@ -308,13 +308,13 @@ def test_get_training_readiness_returns_list(garmin: garminconnect.Garmin) -> No
 def test_get_training_readiness_non_list_returns_empty(
     garmin: garminconnect.Garmin,
 ) -> None:
-    garmin.get_training_readiness = MagicMock(return_value={})
+    garmin.get_training_readiness = MagicMock(return_value={})  # type: ignore[method-assign]
 
     assert garmin.typed.get_training_readiness("2026-04-21") == []
 
 
 def test_get_activities_by_date_returns_list(garmin: garminconnect.Garmin) -> None:
-    garmin.get_activities_by_date = MagicMock(return_value=SAMPLE_ACTIVITY)
+    garmin.get_activities_by_date = MagicMock(return_value=SAMPLE_ACTIVITY)  # type: ignore[method-assign]
 
     activities = garmin.typed.get_activities_by_date("2026-04-21", "2026-04-21")
 
@@ -332,7 +332,7 @@ def test_get_activities_by_date_forwards_optional_args(
     garmin: garminconnect.Garmin,
 ) -> None:
     """Activity filters pass through to the underlying method unchanged."""
-    garmin.get_activities_by_date = MagicMock(return_value=[])
+    garmin.get_activities_by_date = MagicMock(return_value=[])  # type: ignore[method-assign]
 
     garmin.typed.get_activities_by_date(
         "2026-01-01", "2026-04-21", activitytype="running", sortorder="asc"
@@ -351,7 +351,7 @@ def test_get_activities_by_date_forwards_optional_args(
 def test_extra_fields_are_tolerated(garmin: garminconnect.Garmin) -> None:
     """Garmin can (and does) add fields; they must not break validation."""
     payload = {**SAMPLE_DAILY_STATS, "brandNewFieldFromGarmin2030": "hello"}
-    garmin.get_stats = MagicMock(return_value=payload)
+    garmin.get_stats = MagicMock(return_value=payload)  # type: ignore[method-assign]
 
     stats = garmin.typed.get_stats("2026-04-21")
 
@@ -362,7 +362,7 @@ def test_extra_fields_are_tolerated(garmin: garminconnect.Garmin) -> None:
 
 def test_missing_fields_default_to_none(garmin: garminconnect.Garmin) -> None:
     """An almost-empty response must still validate."""
-    garmin.get_stats = MagicMock(return_value={"userProfileId": 1})
+    garmin.get_stats = MagicMock(return_value={"userProfileId": 1})  # type: ignore[method-assign]
 
     stats = garmin.typed.get_stats("2026-04-21")
 
@@ -380,7 +380,7 @@ def test_validation_error_preserves_raw(garmin: garminconnect.Garmin) -> None:
     """Structural failures raise a typed error with ``.raw`` set."""
     # A list where a dict is expected — structural mismatch
     bad_payload = ["not", "a", "dict"]
-    garmin.get_stats = MagicMock(return_value=bad_payload)
+    garmin.get_stats = MagicMock(return_value=bad_payload)  # type: ignore[method-assign]
 
     with pytest.raises(GarminConnectResponseValidationError) as excinfo:
         garmin.typed.get_stats("2026-04-21")
