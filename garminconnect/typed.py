@@ -538,17 +538,21 @@ class TypedGarmin:
     def get_training_readiness(self, cdate: str) -> list[TrainingReadiness]:
         """Return training readiness snapshots for ``cdate``.
 
-        Despite the underlying ``Garmin.get_training_readiness`` returning
-        ``dict[str, Any]`` in its type annotation, the live endpoint returns a
-        list of snapshots; this wrapper reflects the real shape.
+        The underlying endpoint may return either a list of snapshots or a
+        single snapshot object depending on account/firmware behavior. This
+        wrapper normalizes both shapes to ``list[TrainingReadiness]``.
         """
         raw = self._garmin.get_training_readiness(cdate)
-        if not isinstance(raw, list):
-            return []
-        return [
-            self._validate(TrainingReadiness, item, "get_training_readiness")
-            for item in raw
-        ]
+        if isinstance(raw, list):
+            return [
+                self._validate(TrainingReadiness, item, "get_training_readiness")
+                for item in raw
+            ]
+        if isinstance(raw, dict):
+            return [
+                self._validate(TrainingReadiness, raw, "get_training_readiness")
+            ]
+        return []
 
     # -- Activities ----------------------------------------------------------
 
