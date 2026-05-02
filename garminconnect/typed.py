@@ -549,9 +549,7 @@ class TypedGarmin:
                 for item in raw
             ]
         if isinstance(raw, dict):
-            return [
-                self._validate(TrainingReadiness, raw, "get_training_readiness")
-            ]
+            return [self._validate(TrainingReadiness, raw, "get_training_readiness")]
         return []
 
     # -- Activities ----------------------------------------------------------

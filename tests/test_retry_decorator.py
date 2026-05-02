@@ -26,8 +26,7 @@ from garminconnect.exceptions import (
 def _http_error(status: int) -> HTTPError:
     resp = Response()
     resp.status_code = status
-    exc = HTTPError(f"HTTP {status}")
-    exc.response = resp
+    exc = HTTPError(f"HTTP {status}", response=resp)
     return exc
 
 
