@@ -252,16 +252,22 @@ class Client:
             (None, None) on success; ("needs_mfa", None) when return_on_mfa=True.
 
         """
-        strategies: list[tuple[str, Any]] = [
-            ("mobile+cffi", lambda: self._mobile_login_cffi(email, password)),
-            ("mobile+requests", lambda: self._mobile_login_requests(email, password)),
+        # Mobile login strategies require mobile.integration.garmin.com which
+        # only exists for garmin.com domain. Skip them for other domains (e.g. garmin.cn).
+        strategies: list[tuple[str, Any]] = []
+        if self.domain == "garmin.com":
+            strategies.extend([
+                ("mobile+cffi", lambda: self._mobile_login_cffi(email, password)),
+                ("mobile+requests", lambda: self._mobile_login_requests(email, password)),
+            ])
+        strategies.extend([
             ("widget+cffi", lambda: self._widget_web_login(email, password)),
             ("portal+cffi", lambda: self._portal_web_login_cffi(email, password)),
             (
                 "portal+requests",
                 lambda: self._portal_web_login_requests(email, password),
             ),
-        ]
+        ])
 
         last_err: Exception | None = None
         rate_limited_count = 0
