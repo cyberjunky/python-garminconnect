@@ -486,10 +486,11 @@ class Garmin:
             f"{self.garmin_nutrition}/settings"
         )
 
-        self.garmin_golf = "/gcs-golfcommunity/api/v2"
+        self.garmin_ = "/gcs-golfcommunity/api/v2"
         self.garmin_golf_scorecard_summary = f"{self.garmin_golf}/scorecard/summary"
         self.garmin_golf_scorecard_detail = f"{self.garmin_golf}/scorecard/detail"
         self.garmin_golf_shot = f"{self.garmin_golf}/shot/scorecard"
+        self.garmin_golf_club_stats = f"{self.garmin_}/club/player"
 
         self.garmin_connect_delete_activity_url = "/activity-service/activity"
 
@@ -3089,6 +3090,26 @@ class Garmin:
             hole_numbers,
         )
         return self.connectapi(url, params=params)
+        
+    def get_golf_club_stats( 
+        self,
+        limit: int = 1000
+    ) -> dict[str, Any]:
+        """Return golf scorecard summary.
+        Args:
+            limit: Maximum number of results to return.
+
+        Returns:
+            Dictionary containing club list and distance data.
+
+        """
+        url = f"{self.garmin_golf_club_stats}"
+        params = {"per-page": str(limit), "include-stats": "true"}
+        logger.debug(
+            "Requesting golf club data for"
+        )
+        return self.connectapi(url, params=params)
+    
 
 
 from .exceptions import (  # noqa: E402
