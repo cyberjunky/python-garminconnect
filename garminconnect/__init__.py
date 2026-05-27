@@ -2555,6 +2555,24 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def set_activity_exercise_sets(
+        self, activity_id: int | str, payload: dict[str, Any]
+    ) -> Any:
+        """Replace exercise sets for activity with id.
+
+        `payload` is the full body sent to the server, in the same shape as the
+        response from `get_activity_exercise_sets`. Replace-all semantics — the
+        existing `exerciseSets` array is overwritten. Garmin validates the
+        `exercises[].category` (parent) and `exercises[].name` (sub-category)
+        against its FIT enum and returns 400 "Invalid Sub-Category Passed" for
+        unknown values; `name=None` is always accepted under a known parent.
+        """
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
+        logger.debug("Replacing exercise sets for activity id %s", activity_id)
+
+        return self.client.put("connectapi", url, json=payload, api=True)
+
     def get_activity_gear(self, activity_id: int | str) -> dict[str, Any]:
         """Return gears used for activity id."""
         activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
