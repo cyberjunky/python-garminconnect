@@ -398,6 +398,12 @@ class Client:
                 "Mobile login returned 429 — IP rate limited by Garmin"
             )
 
+        if r.status_code == 403:
+            raise GarminConnectConnectionError(
+                "Mobile login: HTTP 403 (Cloudflare bot challenge) — "
+                "falling through to next strategy"
+            )
+
         try:
             res = r.json()
         except Exception as err:
@@ -729,6 +735,12 @@ class Client:
         if r.status_code == 429:
             raise GarminConnectTooManyRequestsError(
                 "Portal login POST returned 429 — Cloudflare blocking this request."
+            )
+
+        if r.status_code == 403:
+            raise GarminConnectConnectionError(
+                "Portal login: HTTP 403 (Cloudflare bot challenge) — "
+                "falling through to next strategy"
             )
 
         try:
