@@ -159,7 +159,9 @@ class Client:
         # Portal service URL is domain-aware for CN support
         # Mobile service URLs are domain-aware for CN support
         self._ios_service_url = f"https://mobile.integration.{domain}/gcm/ios"
-        self._mobile_sso_service_url = f"https://mobile.integration.{domain}/gcm/android"
+        self._mobile_sso_service_url = (
+            f"https://mobile.integration.{domain}/gcm/android"
+        )
         self._portal_service_url = f"https://connect.{domain}/app"
         # DI auth host is domain-aware too — CN users live on diauth.garmin.cn
         # and don't exist in the .com user database. Without this, token refresh
@@ -409,7 +411,9 @@ class Client:
 
         if resp_type == "SUCCESSFUL":
             ticket = res["serviceTicketId"]
-            self._establish_session(ticket, sess=sess, service_url=self._ios_service_url)
+            self._establish_session(
+                ticket, sess=sess, service_url=self._ios_service_url
+            )
             return
 
         if resp_type == "INVALID_USERNAME_PASSWORD":
@@ -443,10 +447,13 @@ class Client:
             "embedWidget": "true",
             "gauthHost": sso_base,
         }
+        # Use the iOS mobile service URL as the SSO service so the CAS ticket
+        # is issued for mobile.integration.garmin.com.  Since ~2026-06-01
+        # Garmin's API tier rejects DI tokens whose audience is sso/embed.
         signin_params = {
             **embed_params,
             "gauthHost": sso_embed,
-            "service": sso_embed,
+            "service": self._ios_service_url,
             "source": sso_embed,
             "redirectAfterAccountLoginUrl": sso_embed,
             "redirectAfterAccountCreationUrl": sso_embed,
@@ -545,12 +552,14 @@ class Client:
                 f"Widget login: unexpected title '{title}'"
             )
 
-        # Step 4: Extract service ticket
-        ticket_match = re.search(r'embed\?ticket=([^"]+)"', r.text)
+        # Step 4: Extract service ticket — ticket may appear under any service URL
+        ticket_match = re.search(r'\?ticket=(ST-[^"&\s]+)', r.text)
         if not ticket_match:
             raise GarminConnectConnectionError("Widget login: missing service ticket")
 
-        self._establish_session(ticket_match.group(1), sess=sess, service_url=sso_embed)
+        self._establish_session(
+            ticket_match.group(1), sess=sess, service_url=self._ios_service_url
+        )
 
     def _complete_mfa_widget(self, mfa_code: str) -> None:
         """Complete MFA for widget flow."""
@@ -585,14 +594,14 @@ class Client:
         if title != "Success":
             raise GarminConnectAuthenticationError(f"Widget MFA failed: {title}")
 
-        ticket_match = re.search(r'embed\?ticket=([^"]+)"', r.text)
+        ticket_match = re.search(r'\?ticket=(ST-[^"&\s]+)', r.text)
         if not ticket_match:
             raise GarminConnectAuthenticationError("Widget MFA: missing service ticket")
 
         self._establish_session(
             ticket_match.group(1),
             sess=sess,
-            service_url=f"{self._sso}/sso/embed",
+            service_url=self._ios_service_url,
         )
 
     # ------------------------------------------------------------------ #
