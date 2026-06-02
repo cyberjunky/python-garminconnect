@@ -204,6 +204,10 @@ class Client:
         self._api_session.mount("https://", api_adapter)
 
         self._tokenstore_path: str | None = None
+        # Set of strategy names to skip during login, e.g. {"mobile+cffi"}.
+        # Valid names: mobile+cffi, mobile+requests, widget+cffi,
+        #              portal+cffi, portal+requests
+        self.skip_strategies: set[str] = set()
 
     @property
     def is_authenticated(self) -> bool:
@@ -267,6 +271,11 @@ class Client:
                 lambda: self._portal_web_login_requests(email, password),
             ),
         ]
+        if self.skip_strategies:
+            strategies = [
+                (n, fn) for n, fn in strategies if n not in self.skip_strategies
+            ]
+            _LOGGER.debug("Skipping login strategies: %s", self.skip_strategies)
 
         last_err: Exception | None = None
         rate_limited_count = 0
