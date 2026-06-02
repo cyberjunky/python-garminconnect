@@ -1684,7 +1684,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_training_readiness(self, cdate: str) -> dict[str, Any]:
+    def get_training_readiness(self, cdate: str) -> list[dict[str, Any]]:
         """Return training readiness data for current user."""
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_training_readiness_url}/{cdate}"
@@ -1717,30 +1717,22 @@ class Garmin:
         if not data:
             return None
 
-        # If response is a list, search for morning reading
-        if isinstance(data, list):
-            # First try to find entry with AFTER_WAKEUP_RESET context
-            morning_entry = next(
-                (
-                    entry
-                    for entry in data
-                    if entry.get("inputContext") == "AFTER_WAKEUP_RESET"
-                ),
-                None,
+        morning_entry = next(
+            (
+                entry
+                for entry in data
+                if entry.get("inputContext") == "AFTER_WAKEUP_RESET"
+            ),
+            None,
+        )
+
+        if morning_entry is None:
+            logger.debug(
+                "No AFTER_WAKEUP_RESET context found, using first entry as fallback"
             )
+            return data[0]
 
-            # If no explicit morning context, return first entry as fallback
-            # (typically the morning reading is first in the list)
-            if morning_entry is None and data:
-                logger.debug(
-                    "No AFTER_WAKEUP_RESET context found, using first entry as fallback"
-                )
-                return data[0]
-
-            return morning_entry
-
-        # If response is a single dict, return it directly
-        return data
+        return morning_entry
 
     def get_endurance_score(
         self, startdate: str, enddate: str | None = None
