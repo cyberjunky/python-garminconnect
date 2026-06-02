@@ -434,6 +434,12 @@ class Client:
         if res.get("error", {}).get("status-code") == "429":
             raise GarminConnectTooManyRequestsError("Mobile login: 429 in JSON body")
 
+        if resp_type == "CAPTCHA_REQUIRED":
+            raise GarminConnectConnectionError(
+                "Mobile login: CAPTCHA required (bot challenge) — "
+                "falling through to next strategy"
+            )
+
         raise GarminConnectConnectionError(f"Mobile login failed: {res}")
 
     # ------------------------------------------------------------------ #
@@ -760,6 +766,12 @@ class Client:
         # Check for 429 buried inside JSON error body
         if res.get("error", {}).get("status-code") == "429":
             raise GarminConnectTooManyRequestsError("Portal login: 429 in JSON body")
+
+        if resp_type == "CAPTCHA_REQUIRED":
+            raise GarminConnectConnectionError(
+                "Portal login: CAPTCHA required (bot challenge) — "
+                "falling through to next strategy"
+            )
 
         raise GarminConnectConnectionError(f"Portal web login failed: {res}")
 
