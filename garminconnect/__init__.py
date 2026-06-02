@@ -2038,6 +2038,13 @@ class Garmin:
         logger.debug("Changing activity type: %s", payload)
         return self.client.put("connectapi", url, json=payload, api=True)
 
+    def set_activity_description(self, activity_id: str, description: str) -> Any:
+        """Set description for activity with id."""
+        url = f"{self.garmin_connect_activity}/{activity_id}"
+        payload = {"activityId": activity_id, "description": description}
+
+        return self.client.put("connectapi", url, json=payload, api=True)
+
     def create_manual_activity_from_json(self, payload: dict[str, Any]) -> Any:
         url = f"{self.garmin_connect_activity}"
         logger.debug("Uploading manual activity: %s", str(payload))
