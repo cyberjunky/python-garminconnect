@@ -520,6 +520,18 @@ class Client:
                 f"Widget authentication failed: '{title}'"
             )
 
+        # Child/family accounts are restricted from web SSO — log clearly and
+        # fall through so the remaining strategies still get a chance.
+        if "unable to sign in" in title_lower or "unable to login" in title_lower:
+            _LOGGER.warning(
+                "Widget login: '%s' — account may be a Garmin child/family account "
+                "restricted from web SSO; child accounts are not supported.",
+                title,
+            )
+            raise GarminConnectConnectionError(
+                f"Widget login: account restricted '{title}'"
+            )
+
         if "MFA" in title:
             self._mfa_session = sess
             self._mfa_login_params = signin_params
