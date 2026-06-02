@@ -157,6 +157,9 @@ class Client:
         self._connect = f"https://connect.{domain}"
         self._connectapi = f"https://connectapi.{domain}"
         # Portal service URL is domain-aware for CN support
+        # Mobile service URLs are domain-aware for CN support
+        self._ios_service_url = f"https://mobile.integration.{domain}/gcm/ios"
+        self._mobile_sso_service_url = f"https://mobile.integration.{domain}/gcm/android"
         self._portal_service_url = f"https://connect.{domain}/app"
         # DI auth host is domain-aware too — CN users live on diauth.garmin.cn
         # and don't exist in the .com user database. Without this, token refresh
@@ -357,7 +360,7 @@ class Client:
         login_params = {
             "clientId": IOS_SSO_CLIENT_ID,
             "locale": "en-US",
-            "service": IOS_SERVICE_URL,
+            "service": self._ios_service_url,
         }
         login_headers = {
             "User-Agent": IOS_LOGIN_UA,
@@ -400,13 +403,13 @@ class Client:
             self._mfa_session = sess
             self._mfa_login_params = login_params
             self._mfa_post_headers = login_headers
-            self._mfa_service_url = IOS_SERVICE_URL
+            self._mfa_service_url = self._ios_service_url
             self._mfa_flow = "ios"
             raise _MFARequired()
 
         if resp_type == "SUCCESSFUL":
             ticket = res["serviceTicketId"]
-            self._establish_session(ticket, sess=sess, service_url=IOS_SERVICE_URL)
+            self._establish_session(ticket, sess=sess, service_url=self._ios_service_url)
             return
 
         if resp_type == "INVALID_USERNAME_PASSWORD":
@@ -785,7 +788,7 @@ class Client:
             alt_params = {
                 "clientId": IOS_SSO_CLIENT_ID,
                 "locale": "en-US",
-                "service": IOS_SERVICE_URL,
+                "service": self._ios_service_url,
             }
         mfa_endpoints.append((alt_endpoint, alt_params, self._mfa_post_headers))
 
@@ -825,7 +828,7 @@ class Client:
             if res.get("responseStatus", {}).get("type") == "SUCCESSFUL":
                 ticket = res["serviceTicketId"]
                 svc_url = (
-                    IOS_SERVICE_URL
+                    self._ios_service_url
                     if flow == "ios"
                     else getattr(self, "_mfa_service_url", self._portal_service_url)
                 )
@@ -862,7 +865,7 @@ class Client:
         if sess is not None:
             self.cs = sess
 
-        svc = service_url or IOS_SERVICE_URL
+        svc = service_url or self._ios_service_url
         self.cs.get(
             svc,
             params={"ticket": ticket},
@@ -897,7 +900,7 @@ class Client:
         for an IT token via services.garmin.com.
         """
         # service_url must match the one used during SSO login
-        svc_url = service_url or MOBILE_SSO_SERVICE_URL
+        svc_url = service_url or self._mobile_sso_service_url
 
         di_token = None
         di_refresh = None
@@ -1037,7 +1040,7 @@ class Client:
                 f"{self._sso}/mobile/sso/en_US/sign-in",
                 params={
                     "clientId": MOBILE_SSO_CLIENT_ID,
-                    "service": MOBILE_SSO_SERVICE_URL,
+                    "service": self._mobile_sso_service_url,
                 },
                 allow_redirects=True,
                 timeout=15,
