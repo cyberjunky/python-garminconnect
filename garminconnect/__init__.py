@@ -709,9 +709,9 @@ class Garmin:
             raise GarminConnectConnectionError(f"Login failed: {e}") from e
         except FileNotFoundError:
             raise
+        except (GarminConnectTooManyRequestsError, GarminConnectAuthenticationError):
+            raise
         except Exception as e:
-            if isinstance(e, GarminConnectAuthenticationError):
-                raise
             error_str = str(e).lower()
             auth_indicators = ["401", "unauthorized", "authentication", "login failed"]
             if any(indicator in error_str for indicator in auth_indicators):
