@@ -682,7 +682,9 @@ class Garmin:
         ) as e:
             status = getattr(getattr(e, "response", None), "status_code", None)
             error_str = str(e).lower()
-            logger.exception("Login failed: %s (status=%s)", e, status)
+            # Re-raised below with a clean message; avoid logging a full
+            # traceback for expected failures (rate limits, bot challenges).
+            logger.debug("Login failed: %s (status=%s)", e, status)
 
             if status == 429 or "429" in error_str:
                 raise GarminConnectTooManyRequestsError(
@@ -718,7 +720,7 @@ class Garmin:
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
                 ) from e
-            logger.exception("Login failed")
+            logger.debug("Login failed: %s", e)
             raise GarminConnectConnectionError(f"Login failed: {e}") from e
 
     def resume_login(
