@@ -456,13 +456,10 @@ class Client:
             "embedWidget": "true",
             "gauthHost": sso_base,
         }
-        # Use the iOS mobile service URL as the SSO service so the CAS ticket
-        # is issued for mobile.integration.garmin.com.  Since ~2026-06-01
-        # Garmin's API tier rejects DI tokens whose audience is sso/embed.
         signin_params = {
             **embed_params,
             "gauthHost": sso_embed,
-            "service": self._ios_service_url,
+            "service": sso_embed,
             "source": sso_embed,
             "redirectAfterAccountLoginUrl": sso_embed,
             "redirectAfterAccountCreationUrl": sso_embed,
@@ -566,9 +563,7 @@ class Client:
         if not ticket_match:
             raise GarminConnectConnectionError("Widget login: missing service ticket")
 
-        self._establish_session(
-            ticket_match.group(1), sess=sess, service_url=self._ios_service_url
-        )
+        self._establish_session(ticket_match.group(1), sess=sess, service_url=sso_embed)
 
     def _complete_mfa_widget(self, mfa_code: str) -> None:
         """Complete MFA for widget flow."""
@@ -610,7 +605,7 @@ class Client:
         self._establish_session(
             ticket_match.group(1),
             sess=sess,
-            service_url=self._ios_service_url,
+            service_url=f"{self._sso}/sso/embed",
         )
 
     # ------------------------------------------------------------------ #
