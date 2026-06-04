@@ -40,20 +40,20 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 131+ unique endpoints (snapshot)
+- **Total API Methods**: 134+ unique endpoints (snapshot)
 - **Categories**: 13 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 9 methods (today's health data)
 - **Advanced Health Metrics**: 12 methods (fitness metrics, HRV, VO2, training readiness, running tolerance)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
-- **Activities & Workouts**: 36 methods (comprehensive activity, workout management, typed workout uploads, scheduling, import)
+- **Activities & Workouts**: 38 methods (comprehensive activity, workout management, typed workout uploads, scheduling, import, edit description / exercise sets)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
 - **Gear & Equipment**: 7 methods (gear management, tracking)
 - **Hydration & Wellness**: 12 methods (hydration, nutrition, blood pressure, menstrual)
 - **System & Export**: 4 methods (reporting, logout, GraphQL)
-- **Training Plans**: 2 methods
+- **Training Plans**: 3 methods (plans, plan by ID, adaptive plan by ID)
 - **Golf**: 3 methods (scorecard summary, scorecard detail, shot data)
 
 ### Interactive Features
@@ -164,6 +164,29 @@ No browser is needed.
 **Token storage:**
 ```bash
 ~/.garminconnect/garmin_tokens.json   # saved automatically, mode 0600
+```
+
+**Resilient login (multi-strategy + token validation):**
+
+`login()` tries several authentication strategies in order (mobile, SSO widget,
+web portal — each with and without TLS impersonation) and only declares success
+when the resulting token is actually accepted by the API. If a strategy obtains
+a token the API later rejects (a region/account-specific condition — see
+[#369](https://github.com/cyberjunky/python-garminconnect/issues/369)), the
+library transparently falls through to the next strategy. Set
+`Garmin(..., verify_login=False)` to restore the legacy "first token wins"
+behavior.
+
+**Cached-token gotcha & self-healing:** when a `tokenstore` is supplied,
+`login()` loads those tokens *before* the strategy chain and short-circuits if
+they load — so stale/poisoned cached tokens used to fail every run. The library
+now detects this: if cached tokens are rejected by the API, it discards them and
+performs a fresh credential login automatically. To force a clean slate yourself
+(e.g. between a failed resume and a retry), call:
+
+```python
+g.logout()            # clears in-memory auth + cached tokens (uses GARMINTOKENS)
+g.logout(tokenstore)  # or pass an explicit path
 ```
 
 ## 🧪 Testing
