@@ -13,6 +13,7 @@ import contextlib
 import http.cookiejar
 import json
 import logging
+import os
 import random
 import re
 import time
@@ -1191,12 +1192,33 @@ class Client:
         return json.dumps(data)
 
     def dump(self, path: str) -> None:
-        """Write tokens safely to disk."""
+        """Write tokens safely to disk with owner-only permissions.
+
+        The token file contains the DI refresh token, which grants persistent
+        account access. It is written as 0o600 inside a 0o700 directory so a
+        permissive process umask can't leave it world-readable on a shared host
+        (GHSA-wjhr-76vg-2hvc).
+        """
         p = Path(path).expanduser()
         if p.is_dir() or not p.name.endswith(".json"):
             p = p / "garmin_tokens.json"
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(self.dumps())
+        p.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        # mkdir's mode is subject to umask and a no-op if the dir already
+        # exists; chmod enforces 0o700 unconditionally.
+        with contextlib.suppress(OSError):
+            p.parent.chmod(0o700)
+        # Open with O_CREAT mode 0o600 (and O_NOFOLLOW where available so a
+        # pre-planted symlink can't redirect the write) instead of write_text,
+        # which would create the file under the umask first.
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+        if hasattr(os, "O_NOFOLLOW"):
+            flags |= os.O_NOFOLLOW
+        fd = os.open(p, flags, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as token_file:
+            token_file.write(self.dumps())
+        # Enforce 0o600 even if the file pre-existed with looser permissions.
+        with contextlib.suppress(OSError):
+            p.chmod(0o600)
 
     def load(self, path: str) -> None:
         try:
