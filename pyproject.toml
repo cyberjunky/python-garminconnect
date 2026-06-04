@@ -1,6 +1,6 @@
 [project]
 name = "garminconnect"
-version = "0.3.5"
+version = "0.3.6"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
@@ -55,6 +55,7 @@ module = [
     "test_garmin_unit",
     "test_retry_decorator",
     "test_workout_constants",
+    "test_login_recovery",
     "conftest",
 ]
 disallow_untyped_defs = false
