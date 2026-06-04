@@ -543,6 +543,9 @@ class TypedGarmin:
         wrapper normalizes both shapes to ``list[TrainingReadiness]``.
         """
         raw = self._garmin.get_training_readiness(cdate)
+        if not raw:
+            # Empty list / empty dict / None — no snapshots available.
+            return []
         if isinstance(raw, list):
             return [
                 self._validate(TrainingReadiness, item, "get_training_readiness")

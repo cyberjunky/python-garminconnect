@@ -208,10 +208,49 @@ class Client:
         # Valid names: mobile+cffi, mobile+requests, widget+cffi,
         #              portal+cffi, portal+requests
         self.skip_strategies: set[str] = set()
+        # When True (default), each login strategy's token is validated against
+        # the API tier before the chain accepts it; a token the API rejects
+        # (401/403) is discarded and the next strategy is tried. Set False to
+        # restore the legacy "first token wins" behavior.
+        self.verify_login: bool = kwargs.get("verify_login", True)
 
     @property
     def is_authenticated(self) -> bool:
         return bool(self.di_token or self.jwt_web)
+
+    def _clear_auth_state(self) -> None:
+        """Wipe all in-memory auth tokens so the next login starts clean."""
+        self.di_token = None
+        self.di_refresh_token = None
+        self.di_client_id = None
+        self.jwt_web = None
+        self.csrf_token = None
+
+    def _verify_token(self) -> bool:
+        """Check that the current token is actually accepted by the API tier.
+
+        A strategy can obtain a DI token from the auth host (HTTP 200) that the
+        API tier (connectapi) then rejects with 401 "Token is not active" —
+        this is account/region dependent (see issue #369). We confirm the token
+        works with one lightweight authenticated call.
+
+        Returns True if accepted, or if the check is inconclusive. Only a
+        definitive auth rejection (401/403) returns False, so a transient
+        network error or 5xx never blocks an otherwise-working login.
+        """
+        try:
+            self.connectapi("/userprofile-service/socialProfile")
+            return True
+        except GarminConnectConnectionError as e:
+            msg = str(e)
+            if "401" in msg or "403" in msg:
+                _LOGGER.warning("Token rejected by API tier: %s", msg)
+                return False
+            _LOGGER.debug("Token validation inconclusive (kept): %s", msg)
+            return True
+        except Exception as e:
+            _LOGGER.debug("Token validation inconclusive (kept): %s", e)
+            return True
 
     def get_api_headers(self) -> dict[str, str]:
         if not self.is_authenticated:
@@ -284,7 +323,18 @@ class Client:
             try:
                 _LOGGER.debug("Trying login strategy: %s", name)
                 run()
-                # Strategy succeeded — login complete
+                # Strategy got a token — make sure the API tier accepts it
+                # before declaring success (else fall through to the next).
+                if self.verify_login and not self._verify_token():
+                    _LOGGER.warning(
+                        "%s obtained a token the API rejected; trying next strategy",
+                        name,
+                    )
+                    self._clear_auth_state()
+                    last_err = GarminConnectConnectionError(
+                        f"{name}: token rejected by API tier"
+                    )
+                    continue
                 return None, None
             except GarminConnectAuthenticationError:
                 # Wrong credentials — stop immediately, no point trying further
@@ -296,6 +346,17 @@ class Client:
                 if prompt_mfa:
                     mfa_code = prompt_mfa()
                     self._complete_mfa(mfa_code)
+                    if self.verify_login and not self._verify_token():
+                        _LOGGER.warning(
+                            "%s obtained a token the API rejected after MFA; "
+                            "trying next strategy",
+                            name,
+                        )
+                        self._clear_auth_state()
+                        last_err = GarminConnectConnectionError(
+                            f"{name}: token rejected by API tier"
+                        )
+                        continue
                     return None, None
                 raise GarminConnectAuthenticationError(  # noqa: B904
                     "MFA Required but no prompt_mfa mechanism supplied"
