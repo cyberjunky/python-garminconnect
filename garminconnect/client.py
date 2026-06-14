@@ -619,7 +619,13 @@ class Client:
                 f"Widget login: account restricted '{title}'"
             )
 
-        if "MFA" in title:
+        # MFA challenge. The page title depends on the MFA method: authenticator
+        # (TOTP) apps return "Enter MFA code for login", while email one-time
+        # codes return "GARMIN Authentication Application". Both are completed
+        # through the same verifyMFA endpoint, so detect either. Email MFA is
+        # mandatory on ECG-capable devices (e.g. Venu 4, Fenix 8), and the
+        # previous literal "MFA"-only check locked those accounts out entirely.
+        if "mfa" in title_lower or "authentication application" in title_lower:
             self._mfa_session = sess
             self._mfa_login_params = signin_params
             self._mfa_post_headers = {"Referer": r.url}
