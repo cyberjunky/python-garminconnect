@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Garmin Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body { font-family: -apple-system, Arial, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 2rem; }
+  h1 { font-weight: 600; }
+  .cards { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
+  .card { background: #1e293b; border-radius: 12px; padding: 1.2rem 1.5rem; min-width: 150px; }
+  .card .value { font-size: 1.8rem; font-weight: 700; }
+  .card .label { font-size: 0.85rem; color: #94a3b8; }
+  .charts { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+  .chart-box { background: #1e293b; border-radius: 12px; padding: 1rem; flex: 1; min-width: 320px; }
+  table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 12px; overflow: hidden; }
+  th, td { padding: 0.6rem 1rem; text-align: left; border-bottom: 1px solid #334155; font-size: 0.9rem; }
+  th { color: #94a3b8; font-weight: 500; }
+</style>
+</head>
+<body>
+  <h1>Garmin Dashboard — {{ today }}</h1>
+
+  <div class="cards">
+    <div class="card"><div class="value">{{ summary.totalSteps or 0 }}</div><div class="label">Pas aujourd'hui</div></div>
+    <div class="card"><div class="value">{{ summary.restingHeartRate or '–' }}</div><div class="label">FC repos (bpm)</div></div>
+    <div class="card"><div class="value">{{ summary.averageStressLevel or '–' }}</div><div class="label">Stress moyen</div></div>
+    <div class="card"><div class="value">{{ "%.0f"|format(summary.totalKilocalories or 0) }}</div><div class="label">Calories</div></div>
+  </div>
+
+  <div class="charts">
+    <div class="chart-box"><canvas id="stepsChart"></canvas></div>
+    <div class="chart-box"><canvas id="sleepChart"></canvas></div>
+    <div class="chart-box"><canvas id="hrChart"></canvas></div>
+  </div>
+
+  <h2>Activités récentes</h2>
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Nom</th><th>Type</th><th>Distance (km)</th><th>Durée (min)</th><th>FC moy.</th><th>Calories</th></tr>
+    </thead>
+    <tbody>
+      {% for a in activities %}
+      <tr>
+        <td>{{ a.date }}</td>
+        <td>{{ a.name }}</td>
+        <td>{{ a.type }}</td>
+        <td>{{ a.distance_km }}</td>
+        <td>{{ a.duration_min }}</td>
+        <td>{{ a.avg_hr or '–' }}</td>
+        <td>{{ a.calories or '–' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>
+    const history = {{ history | tojson }};
+    const labels = history.map(h => h.date.slice(5));
+
+    new Chart(document.getElementById('stepsChart'), {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Pas', data: history.map(h => h.steps), backgroundColor: '#38bdf8' }] },
+      options: { plugins: { title: { display: true, text: 'Pas / jour', color: '#e2e8f0' }, legend: { display: false } },
+                 scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+    });
+
+    new Chart(document.getElementById('sleepChart'), {
+      type: 'line',
+      data: { labels, datasets: [{ label: 'Sommeil (h)', data: history.map(h => h.sleep_hours), borderColor: '#a78bfa', tension: 0.3 }] },
+      options: { plugins: { title: { display: true, text: 'Sommeil / jour', color: '#e2e8f0' }, legend: { display: false } },
+                 scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+    });
+
+    new Chart(document.getElementById('hrChart'), {
+      type: 'line',
+      data: { labels, datasets: [{ label: 'FC repos', data: history.map(h => h.resting_hr), borderColor: '#f87171', tension: 0.3 }] },
+      options: { plugins: { title: { display: true, text: 'FC repos / jour', color: '#e2e8f0' }, legend: { display: false } },
+                 scales: { x: { ticks: { color: '#94a3b8' } }, y: { ticks: { color: '#94a3b8' } } } }
+    });
+  </script>
+</body>
+</html>
