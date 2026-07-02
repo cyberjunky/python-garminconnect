@@ -308,7 +308,8 @@ pip install garminconnect[workout]
 ```python
 from garminconnect.workout import (
     RunningWorkout, WorkoutSegment,
-    create_warmup_step, create_interval_step, create_cooldown_step,
+    create_warmup_step, create_interval_step, create_distance_interval_step,
+    create_cooldown_step,
     create_repeat_group,
 )
 
@@ -336,7 +337,9 @@ client.unschedule_workout(scheduled_workout_id)
 
 **Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
 
-**Helper functions:** `create_warmup_step`, `create_interval_step`, `create_recovery_step`, `create_cooldown_step`, `create_repeat_group`
+**Helper functions:** `create_warmup_step`, `create_interval_step`, `create_distance_interval_step`, `create_recovery_step`, `create_cooldown_step`, `create_repeat_group`
+
+Use `create_distance_interval_step(600.0, step_order=1)` for interval steps that should end after a distance in meters instead of after a duration.
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
