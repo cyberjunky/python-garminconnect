@@ -88,8 +88,9 @@ def test_mfa_titles_trigger_mfa(title):
 def test_unexpected_title_still_errors():
     """A genuinely unknown page must NOT be misread as an MFA challenge."""
     c = client_mod.Client()
-    with _widget_session(_page("Some Unrelated Page")), pytest.raises(
-        GarminConnectConnectionError, match="unexpected title"
+    with (
+        _widget_session(_page("Some Unrelated Page")),
+        pytest.raises(GarminConnectConnectionError, match="unexpected title"),
     ):
         c._widget_web_login("e@x.com", "pw")
 

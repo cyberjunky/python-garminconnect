@@ -334,6 +334,35 @@ def create_interval_step(
     )
 
 
+def create_distance_interval_step(
+    distance_meters: float,
+    step_order: int,
+    target_type: dict[str, Any] | None = None,
+) -> ExecutableStep:
+    """Create an interval step that ends after a distance in meters."""
+    return ExecutableStep(
+        stepOrder=step_order,
+        stepType={
+            "stepTypeId": StepType.INTERVAL,
+            "stepTypeKey": "interval",
+            "displayOrder": 3,
+        },
+        endCondition={
+            "conditionTypeId": ConditionType.DISTANCE,
+            "conditionTypeKey": "distance",
+            "displayOrder": 3,
+            "displayable": True,
+        },
+        endConditionValue=distance_meters,
+        targetType=target_type
+        or {
+            "workoutTargetTypeId": TargetType.NO_TARGET,
+            "workoutTargetTypeKey": "no.target",
+            "displayOrder": 1,
+        },
+    )
+
+
 def create_recovery_step(
     duration_seconds: float,
     step_order: int,

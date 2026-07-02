@@ -16,7 +16,6 @@ from garminconnect.exceptions import (
     GarminConnectConnectionError,
 )
 
-
 # ----- _verify_token -----
 
 
@@ -178,7 +177,9 @@ def test_poisoned_cached_tokens_trigger_fresh_login():
         def fake_load_profile():
             load_calls["n"] += 1
             if load_calls["n"] == 1:
-                raise GarminConnectAuthenticationError("Failed to retrieve social profile")
+                raise GarminConnectAuthenticationError(
+                    "Failed to retrieve social profile"
+                )
             # second call (after fresh login) succeeds
             return None
 

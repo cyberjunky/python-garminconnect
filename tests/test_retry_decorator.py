@@ -95,7 +95,9 @@ def test_has_network_cause_walks_context():
         try:
             raise requests.ConnectionError("net")
         except requests.ConnectionError:
-            raise GarminConnectConnectionError("wrapped")  # noqa: B904  test __context__ chain
+            raise GarminConnectConnectionError(
+                "wrapped"
+            )  # noqa: B904  test __context__ chain
     except GarminConnectConnectionError as e:
         assert _has_network_cause(e) is True
 
