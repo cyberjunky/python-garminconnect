@@ -10,6 +10,7 @@ from garminconnect.workout import (
     SwimmingWorkout,
     TargetType,
     WorkoutSegment,
+    create_distance_interval_step,
     create_warmup_step,
 )
 
@@ -52,6 +53,19 @@ def test_condition_type_ids() -> None:
     assert ConditionType.FIXED_REST == 8
     assert ConditionType.FIXED_REPETITION == 9
     assert ConditionType.REPS == 10
+
+
+def test_distance_interval_step_uses_distance_condition() -> None:
+    """Ensure distance interval steps use Garmin's distance end condition."""
+    step = create_distance_interval_step(600.0, step_order=1)
+
+    assert step.endCondition == {
+        "conditionTypeId": ConditionType.DISTANCE,
+        "conditionTypeKey": "distance",
+        "displayOrder": 3,
+        "displayable": True,
+    }
+    assert step.endConditionValue == 600.0
 
 
 def test_sport_type_ids() -> None:
