@@ -22,7 +22,6 @@ import pytest
 
 import garminconnect
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -92,9 +91,7 @@ class TestDateValidation:
         with pytest.raises(ValueError, match="must be a string"):
             method(20260315)
 
-    def test_rejects_impossible_calendar_date(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_rejects_impossible_calendar_date(self, garmin: garminconnect.Garmin):
         # Format matches YYYY-MM-DD regex but Feb 30 is not a real date.
         with pytest.raises(ValueError, match="invalid cdate"):
             garmin.get_hrv_data("2026-02-30")
@@ -108,9 +105,7 @@ class TestDateValidation:
 class TestUrlConstruction:
     """Verify path / query params are threaded through to connectapi correctly."""
 
-    def test_get_hrv_data_builds_url_with_date(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_hrv_data_builds_url_with_date(self, garmin: garminconnect.Garmin):
         payload = {"hrvSummary": {"weeklyAvg": 42}}
         with patch.object(garmin, "connectapi", return_value=payload) as mock:
             result = garmin.get_hrv_data("2026-03-15")
@@ -131,29 +126,29 @@ class TestUrlConstruction:
         assert "/metrics-service/metrics/trainingreadiness/2026-03-15" in url
         assert result == payload
 
-    def test_get_stress_data_builds_url_with_date(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_stress_data_builds_url_with_date(self, garmin: garminconnect.Garmin):
         with patch.object(garmin, "connectapi", return_value={"avgStress": 25}) as mock:
             garmin.get_stress_data("2026-03-15")
 
         url = mock.call_args[0][0]
         assert url.endswith("/wellness-service/wellness/dailyStress/2026-03-15")
 
-    def test_get_max_metrics_repeats_date_in_path(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_max_metrics_repeats_date_in_path(self, garmin: garminconnect.Garmin):
         # get_max_metrics uses the same date twice: /{cdate}/{cdate}
         with patch.object(garmin, "connectapi", return_value={"vo2Max": 55}) as mock:
             garmin.get_max_metrics("2026-03-15")
 
         url = mock.call_args[0][0]
-        assert url.endswith("/metrics-service/metrics/maxmet/daily/2026-03-15/2026-03-15")
+        assert url.endswith(
+            "/metrics-service/metrics/maxmet/daily/2026-03-15/2026-03-15"
+        )
 
     def test_get_fitnessage_data_builds_url_with_date(
         self, garmin: garminconnect.Garmin
     ):
-        with patch.object(garmin, "connectapi", return_value={"chronologicalAge": 30}) as mock:
+        with patch.object(
+            garmin, "connectapi", return_value={"chronologicalAge": 30}
+        ) as mock:
             garmin.get_fitnessage_data("2026-03-15")
 
         url = mock.call_args[0][0]
@@ -162,7 +157,9 @@ class TestUrlConstruction:
     def test_get_training_status_builds_url_with_date(
         self, garmin: garminconnect.Garmin
     ):
-        with patch.object(garmin, "connectapi", return_value={"status": "productive"}) as mock:
+        with patch.object(
+            garmin, "connectapi", return_value={"status": "productive"}
+        ) as mock:
             garmin.get_training_status("2026-03-15")
 
         url = mock.call_args[0][0]
@@ -173,16 +170,18 @@ class TestUrlConstruction:
     def test_get_respiration_data_builds_url_with_date(
         self, garmin: garminconnect.Garmin
     ):
-        with patch.object(garmin, "connectapi", return_value={"avgSleepRespirationValue": 13.5}) as mock:
+        with patch.object(
+            garmin, "connectapi", return_value={"avgSleepRespirationValue": 13.5}
+        ) as mock:
             garmin.get_respiration_data("2026-03-15")
 
         url = mock.call_args[0][0]
         assert url.endswith("/wellness-service/wellness/daily/respiration/2026-03-15")
 
-    def test_get_spo2_data_builds_url_with_date(
-        self, garmin: garminconnect.Garmin
-    ):
-        with patch.object(garmin, "connectapi", return_value={"averageSpO2": 96}) as mock:
+    def test_get_spo2_data_builds_url_with_date(self, garmin: garminconnect.Garmin):
+        with patch.object(
+            garmin, "connectapi", return_value={"averageSpO2": 96}
+        ) as mock:
             garmin.get_spo2_data("2026-03-15")
 
         url = mock.call_args[0][0]
@@ -191,7 +190,9 @@ class TestUrlConstruction:
     def test_get_intensity_minutes_builds_url_with_date(
         self, garmin: garminconnect.Garmin
     ):
-        with patch.object(garmin, "connectapi", return_value={"weeklyGoal": 150}) as mock:
+        with patch.object(
+            garmin, "connectapi", return_value={"weeklyGoal": 150}
+        ) as mock:
             garmin.get_intensity_minutes_data("2026-03-15")
 
         url = mock.call_args[0][0]
@@ -206,18 +207,20 @@ class TestUrlConstruction:
 
         url = mock.call_args[0][0]
         params = mock.call_args.kwargs["params"]
-        assert url.endswith(f"/usersummary-service/usersummary/daily/{garmin.display_name}")
+        assert url.endswith(
+            f"/usersummary-service/usersummary/daily/{garmin.display_name}"
+        )
         assert params == {"calendarDate": "2026-03-15"}
         assert result == payload
 
-    def test_get_personal_record_uses_display_name(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_personal_record_uses_display_name(self, garmin: garminconnect.Garmin):
         with patch.object(garmin, "connectapi", return_value=[{"id": 1}]) as mock:
             garmin.get_personal_record()
 
         url = mock.call_args[0][0]
-        assert url.endswith(f"/personalrecord-service/personalrecord/prs/{garmin.display_name}")
+        assert url.endswith(
+            f"/personalrecord-service/personalrecord/prs/{garmin.display_name}"
+        )
 
     def test_get_device_settings_builds_url_with_device_id(
         self, garmin: garminconnect.Garmin
@@ -226,7 +229,9 @@ class TestUrlConstruction:
             garmin.get_device_settings("3271234567")
 
         url = mock.call_args[0][0]
-        assert url.endswith("/device-service/deviceservice/device-info/settings/3271234567")
+        assert url.endswith(
+            "/device-service/deviceservice/device-info/settings/3271234567"
+        )
 
     def test_get_gear_builds_url_with_profile_number(
         self, garmin: garminconnect.Garmin
@@ -241,7 +246,9 @@ class TestUrlConstruction:
     def test_get_weigh_ins_builds_url_with_date_range(
         self, garmin: garminconnect.Garmin
     ):
-        with patch.object(garmin, "connectapi", return_value={"dailyWeightSummaries": []}) as mock:
+        with patch.object(
+            garmin, "connectapi", return_value={"dailyWeightSummaries": []}
+        ) as mock:
             garmin.get_weigh_ins("2026-01-01", "2026-01-31")
 
         url = mock.call_args[0][0]
@@ -251,7 +258,9 @@ class TestUrlConstruction:
     def test_get_weekly_steps_builds_url_with_end_and_weeks(
         self, garmin: garminconnect.Garmin
     ):
-        with patch.object(garmin, "connectapi", return_value=[{"totalSteps": 50000}]) as mock:
+        with patch.object(
+            garmin, "connectapi", return_value=[{"totalSteps": 50000}]
+        ) as mock:
             garmin.get_weekly_steps("2026-03-15", weeks=12)
 
         url = mock.call_args[0][0]
@@ -266,15 +275,11 @@ class TestUrlConstruction:
 class TestParameterLimits:
     """Enforce MAX_ACTIVITY_LIMIT, MAX_HYDRATION_ML, and related bounds."""
 
-    def test_get_activities_rejects_limit_above_max(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_activities_rejects_limit_above_max(self, garmin: garminconnect.Garmin):
         with pytest.raises(ValueError, match="limit cannot exceed"):
             garmin.get_activities(start=0, limit=garminconnect.MAX_ACTIVITY_LIMIT + 1)
 
-    def test_get_activities_accepts_limit_at_max(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_activities_accepts_limit_at_max(self, garmin: garminconnect.Garmin):
         with patch.object(garmin, "connectapi", return_value=[]) as mock:
             garmin.get_activities(start=0, limit=garminconnect.MAX_ACTIVITY_LIMIT)
 
@@ -284,21 +289,15 @@ class TestParameterLimits:
         assert params["limit"] == str(garminconnect.MAX_ACTIVITY_LIMIT)
         assert params["start"] == "0"
 
-    def test_get_activities_rejects_negative_start(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_activities_rejects_negative_start(self, garmin: garminconnect.Garmin):
         with pytest.raises(ValueError, match="non-negative"):
             garmin.get_activities(start=-1, limit=10)
 
-    def test_get_activities_rejects_zero_limit(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_activities_rejects_zero_limit(self, garmin: garminconnect.Garmin):
         with pytest.raises(ValueError, match="positive integer"):
             garmin.get_activities(start=0, limit=0)
 
-    def test_get_activities_passes_activitytype(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_activities_passes_activitytype(self, garmin: garminconnect.Garmin):
         with patch.object(garmin, "connectapi", return_value=[]) as mock:
             garmin.get_activities(start=0, limit=5, activitytype="running")
 
@@ -319,9 +318,7 @@ class TestParameterLimits:
         with pytest.raises(ValueError, match="unreasonably high"):
             garmin.add_hydration_data(garminconnect.MAX_HYDRATION_ML + 1)
 
-    def test_add_hydration_data_rejects_non_number(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_add_hydration_data_rejects_non_number(self, garmin: garminconnect.Garmin):
         with pytest.raises(ValueError, match="must be a number"):
             garmin.add_hydration_data("500")  # type: ignore[arg-type]
 
@@ -347,7 +344,9 @@ class TestParameterLimits:
     def test_get_adhoc_challenges_passes_params_as_strings(
         self, garmin: garminconnect.Garmin
     ):
-        with patch.object(garmin, "connectapi", return_value={"challenges": []}) as mock:
+        with patch.object(
+            garmin, "connectapi", return_value={"challenges": []}
+        ) as mock:
             garmin.get_adhoc_challenges(start=0, limit=10)
 
         params = mock.call_args.kwargs["params"]
@@ -368,16 +367,12 @@ class TestParameterLimits:
 class TestResponseHandling:
     """Verify methods return payloads unchanged or transform them correctly."""
 
-    def test_get_hrv_data_returns_none_on_204(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_hrv_data_returns_none_on_204(self, garmin: garminconnect.Garmin):
         # Garmin returns 204 No Content when there is no HRV data for a date.
         with patch.object(garmin, "connectapi", return_value=None):
             assert garmin.get_hrv_data("2026-03-15") is None
 
-    def test_get_devices_returns_list_unchanged(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_devices_returns_list_unchanged(self, garmin: garminconnect.Garmin):
         payload = [
             {"deviceId": 1, "displayName": "Fenix"},
             {"deviceId": 2, "displayName": "Edge"},
@@ -388,9 +383,7 @@ class TestResponseHandling:
         mock.assert_called_once_with("/device-service/deviceregistration/devices")
         assert result == payload
 
-    def test_get_earned_badges_passes_through(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_get_earned_badges_passes_through(self, garmin: garminconnect.Garmin):
         payload = [{"badgeId": 100, "badgeName": "5K"}]
         with patch.object(garmin, "connectapi", return_value=payload) as mock:
             result = garmin.get_earned_badges()
@@ -474,7 +467,9 @@ class TestResponseHandling:
     def test_get_body_composition_single_day_uses_start_as_end(
         self, garmin: garminconnect.Garmin
     ):
-        with patch.object(garmin, "connectapi", return_value={"totalAverage": {}}) as mock:
+        with patch.object(
+            garmin, "connectapi", return_value={"totalAverage": {}}
+        ) as mock:
             garmin.get_body_composition("2026-03-15")
 
         params = mock.call_args.kwargs["params"]
