@@ -87,7 +87,7 @@ jobs:
 
       - name: Security check with bandit
         run: |
-          bandit -r garminconnect demo.py example.py test_strategy.py -ll
+          pdm run bandit -r garminconnect demo.py example.py test_strategy.py -ll
 
       - name: Dependency vulnerability audit
         run: |
