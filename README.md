@@ -166,6 +166,11 @@ No browser is needed.
 ~/.garminconnect/garmin_tokens.json   # saved automatically, mode 0600
 ```
 
+The containing directory is restricted to mode `0700`. Treat the token file
+like a password: the refresh token can provide persistent account access. Avoid
+putting a Garmin password in shell history or a long-lived environment variable;
+prefer `getpass()` or another interactive secret prompt.
+
 **Resilient login (multi-strategy + token validation):**
 
 `login()` tries several authentication strategies in order (mobile, SSO widget,
@@ -189,26 +194,49 @@ g.logout()            # clears in-memory auth + cached tokens (uses GARMINTOKENS
 g.logout(tokenstore)  # or pass an explicit path
 ```
 
+`logout()` removes only the local `garmin_tokens.json` file and preserves its
+directory and unrelated files. It does **not** revoke a token that has already
+been issued by Garmin. Revoke account access from Garmin's account/security
+settings if a token may have been copied or exposed.
+
+### What running it locally does
+
+This is an unofficial client for Garmin's web services; it does not pair with
+the Garmin Connect phone app or connect directly to a watch. When you call
+`login()`, your credentials and MFA code are sent over HTTPS to Garmin's login
+service. The library receives an access/refresh token pair and, when a token
+store is supplied, caches it locally for later sessions. Subsequent API methods
+send that token to Garmin and can read or change the same account data that the
+selected method targets.
+
+The library does not automatically download an entire account. The demo writes
+responses, activity downloads, and health reports only when you select those
+actions. Demo exports are stored under `your_data/` with owner-only directory
+and file permissions. Run the project in a dedicated virtual environment, read
+the method you plan to call, and start with read-only methods. Upload, edit,
+delete, schedule, hydration, and weigh-in methods can change Garmin account data.
+
 ## 🧪 Testing
 
-Run `example.py` once first to create saved tokens in `~/.garminconnect`, then:
+The default suite is credential-free and excludes live-account integration tests:
 
 ```bash
 pdm run test        # Run all tests
 pdm run testcov     # Run tests with coverage report
 ```
 
-Optional: keep test tokens isolated
+To explicitly run live integration tests, use a test account if possible. This
+can create local VCR recordings and includes methods that may mutate the account:
 
 ```bash
-export GARMINTOKENS="$(mktemp -d)"
-python3 ./example.py   # create a fresh token file for tests
-pdm run test
+export GARMIN_EMAIL="you@example.com"
+read -s GARMIN_PASSWORD && export GARMIN_PASSWORD
+pdm run pytest -m integration --vcr-record=once
+unset GARMIN_PASSWORD
 ```
 
-**Note:** Tests use VCR cassettes to record/replay API responses. If tests fail with
-authentication errors, ensure valid tokens exist in `~/.garminconnect` (run
-`example.py` first).
+VCR recordings are ignored by Git because Garmin responses contain sensitive
+health, activity, location, and account data. Do not commit them.
 
 ## 📦 Publishing
 
@@ -276,6 +304,7 @@ Explore the API interactively with our [reference notebook](https://github.com/c
 
 ```python
 import os
+from getpass import getpass
 from datetime import date
 from garminconnect import Garmin
 
@@ -283,7 +312,7 @@ from garminconnect import Garmin
 # Subsequent runs: loads saved tokens and auto-refreshes
 client = Garmin(
     os.getenv("EMAIL"),
-    os.getenv("PASSWORD"),
+    getpass("Garmin password: "),
     prompt_mfa=lambda: input("MFA code: "),
 )
 client.login("~/.garminconnect")

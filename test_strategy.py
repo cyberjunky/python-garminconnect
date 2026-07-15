@@ -23,7 +23,6 @@ All output (console + debug logs) is also written to strategy_<name>.log.
 
 import logging
 import os
-import shutil
 import sys
 from datetime import datetime
 from getpass import getpass
@@ -63,7 +62,11 @@ def _setup_logging(strategy: str) -> Path:
     slug = strategy.replace("+", "_")
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_path = Path(f"strategy_{slug}_{ts}.log")
-    log_file = log_path.open("w", buffering=1)
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fd = os.open(log_path, flags, 0o600)
+    log_file = os.fdopen(fd, "w", buffering=1)
 
     sys.stdout = _Tee(sys.__stdout__, log_file)  # type: ignore[assignment]
     sys.stderr = _Tee(sys.__stderr__, log_file)  # type: ignore[assignment]
@@ -106,15 +109,12 @@ def get_tokenstore() -> str:
 
 
 def clear_tokens(tokenstore: str) -> None:
-    p = Path(tokenstore).expanduser()
-    if not p.exists():
-        print(f"No token store at {p} (will do a fresh login anyway)")
-    elif p.is_dir():
-        shutil.rmtree(p)
-        print(f"Deleted directory {p}")
-    else:
-        p.unlink()
-        print(f"Deleted {p}")
+    token_file = garminconnect.client.token_file_path(tokenstore)
+    if not token_file.exists():
+        print(f"No token file at {token_file} (will do a fresh login anyway)")
+        return
+    garminconnect.Garmin().logout(tokenstore)
+    print(f"Deleted {token_file}")
 
 
 def run(strategy: str) -> None:

@@ -1,16 +1,58 @@
 import json
 import os
 import re
+from pathlib import Path
 from typing import Any
 
 import pytest
+
+
+SENSITIVE_FIELDS = {
+    "access_token",
+    "activityId",
+    "consumer_key",
+    "consumer_secret",
+    "di_refresh_token",
+    "di_token",
+    "displayName",
+    "emailAddress",
+    "fullName",
+    "garminGUID",
+    "jti",
+    "locationName",
+    "mfa_token",
+    "oauth_token",
+    "oauth_token_secret",
+    "ownerId",
+    "ownerDisplayName",
+    "ownerFullName",
+    "password",
+    "profileId",
+    "profileImageUrlLarge",
+    "profileImageUrlMedium",
+    "profileImageUrlSmall",
+    "refresh_token",
+    "token",
+    "userId",
+    "userName",
+    "userProfileFullName",
+    "userProfileId",
+}
+LOCATION_FIELDS = {
+    "endLatitude",
+    "endLongitude",
+    "latitude",
+    "longitude",
+    "startLatitude",
+    "startLongitude",
+}
 
 
 @pytest.fixture
 def vcr(vcr: Any) -> Any:
     # Set default GARMINTOKENS path if not already set
     if "GARMINTOKENS" not in os.environ:
-        os.environ["GARMINTOKENS"] = os.path.expanduser("~/.garminconnect")
+        os.environ["GARMINTOKENS"] = str(Path("~/.garminconnect").expanduser())
     return vcr
 
 
@@ -59,6 +101,35 @@ def sanitize_request(request: Any) -> Any:
     return request
 
 
+def sanitize_json(value: Any) -> Any:
+    """Recursively remove identifiers and precise locations from JSON."""
+    if isinstance(value, list):
+        return [sanitize_json(item) for item in value]
+    if not isinstance(value, dict):
+        return value
+
+    profile_object = any(
+        key in value for key in ("profileId", "garminGUID", "userProfileId")
+    )
+    sanitized = {}
+    for key, item in value.items():
+        normalized_key = key.casefold()
+        if (
+            key in SENSITIVE_FIELDS
+            or (key == "id" and profile_object)
+            or "profileimage" in normalized_key
+            or normalized_key.endswith(("email", "guid"))
+        ):
+            sanitized[key] = "SANITIZED"
+        elif key in LOCATION_FIELDS or normalized_key.endswith(
+            ("latitude", "longitude")
+        ):
+            sanitized[key] = None
+        else:
+            sanitized[key] = sanitize_json(item)
+    return sanitized
+
+
 def sanitize_response(response: Any) -> Any:
     # First scrub dates to normalize timestamps
     response = scrub_dates(response)
@@ -99,43 +170,19 @@ def sanitize_response(response: Any) -> Any:
     ]
     for pattern in patterns:
         body = re.sub(pattern, pattern.split("=")[0] + "=SANITIZED", body)
+    body_was_bytes = isinstance(response["body"]["string"], bytes)
     try:
         body_json = json.loads(body)
     except json.JSONDecodeError:
         pass
     else:
-        # Sanitize auth/token fields
-        for field in [
-            "access_token",
-            "refresh_token",
-            "jti",
-            "consumer_key",
-            "consumer_secret",
-        ]:
-            if field in body_json:
-                body_json[field] = "SANITIZED"
+        body = json.dumps(sanitize_json(body_json))
 
-        # Sanitize personal identifying information
-        for field in [
-            "displayName",
-            "fullName",
-            "profileImageUrlLarge",
-            "profileImageUrlMedium",
-            "profileImageUrlSmall",
-            "userProfileId",
-            "emailAddress",
-        ]:
-            if field in body_json:
-                body_json[field] = "SANITIZED"
-
-        body = json.dumps(body_json)
-
-        if "body" in response and "string" in response["body"]:
-            if isinstance(response["body"]["string"], bytes):
-                response["body"]["string"] = body.encode("utf8")
-            else:
-                response["body"]["string"] = body
-        return response
+    if body_was_bytes:
+        response["body"]["string"] = body.encode("utf8")
+    else:
+        response["body"]["string"] = body
+    return response
 
 
 @pytest.fixture(scope="session")

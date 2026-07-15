@@ -119,16 +119,42 @@ def test_verify_login_false_accepts_first_token():
 # ----- logout() -----
 
 
+def test_http_post_uses_default_timeout():
+    c = client_mod.Client()
+    with (
+        patch.object(client_mod, "HAS_CFFI", False),
+        patch.object(client_mod.requests, "post") as post,
+    ):
+        c._http_post("https://example.invalid/token")
+
+    post.assert_called_once_with("https://example.invalid/token", timeout=30)
+
+
 def test_logout_clears_state_and_tokens(tmp_path):
     tokenfile = tmp_path / "garmin_tokens.json"
     tokenfile.write_text("{}")
+    unrelated_file = tmp_path / "keep-me.txt"
+    unrelated_file.write_text("important")
     g = garminconnect.Garmin("e@x.com", "pw")
     g.client.di_token = "tok"
 
     g.logout(str(tmp_path))
 
     assert g.client.di_token is None
-    assert not tmp_path.exists()
+    assert tmp_path.exists()
+    assert not tokenfile.exists()
+    assert unrelated_file.read_text() == "important"
+
+
+def test_logout_removes_explicit_token_file_only(tmp_path):
+    tokenfile = tmp_path / "tokens.json"
+    tokenfile.write_text("{}")
+    g = garminconnect.Garmin("e@x.com", "pw")
+
+    g.logout(str(tokenfile))
+
+    assert not tokenfile.exists()
+    assert tmp_path.exists()
 
 
 def test_logout_no_tokenstore_is_safe():

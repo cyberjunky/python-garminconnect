@@ -1,5 +1,6 @@
 # Custom
 your_data/
+tests/cassettes/
 pdm.lock
 .claude/
 
