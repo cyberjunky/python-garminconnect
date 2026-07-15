@@ -152,7 +152,7 @@ class Config:
         # Export settings
         self.export_dir = Path("your_data")
         self.export_dir.mkdir(mode=0o700, exist_ok=True)
-        with suppress(OSError):
+        if os.name != "nt":
             self.export_dir.chmod(0o700)
 
 

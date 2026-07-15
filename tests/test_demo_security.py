@@ -58,3 +58,16 @@ def test_config_tightens_export_directory_permissions(tmp_path, monkeypatch):
     config = demo.Config()
 
     assert stat.S_IMODE(config.export_dir.stat().st_mode) == 0o700
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="POSIX file modes only")
+def test_config_fails_closed_when_permissions_cannot_be_enforced(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    def deny_chmod(_path, _mode):
+        raise PermissionError("chmod denied")
+
+    monkeypatch.setattr(Path, "chmod", deny_chmod)
+
+    with pytest.raises(PermissionError, match="chmod denied"):
+        demo.Config()

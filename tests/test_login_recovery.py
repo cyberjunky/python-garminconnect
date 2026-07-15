@@ -146,8 +146,9 @@ def test_logout_clears_state_and_tokens(tmp_path):
     assert unrelated_file.read_text() == "important"
 
 
-def test_logout_removes_explicit_token_file_only(tmp_path):
-    tokenfile = tmp_path / "tokens.json"
+@pytest.mark.parametrize("filename", ["tokens.json", "tokens.JSON"])
+def test_logout_removes_explicit_token_file_only(tmp_path, filename):
+    tokenfile = tmp_path / filename
     tokenfile.write_text("{}")
     g = garminconnect.Garmin("e@x.com", "pw")
 
