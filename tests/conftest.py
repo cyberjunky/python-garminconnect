@@ -49,10 +49,10 @@ LOCATION_FIELDS = {
 
 
 @pytest.fixture
-def vcr(vcr: Any) -> Any:
+def vcr(vcr: Any, monkeypatch: pytest.MonkeyPatch) -> Any:
     # Set default GARMINTOKENS path if not already set
     if "GARMINTOKENS" not in os.environ:
-        os.environ["GARMINTOKENS"] = str(Path("~/.garminconnect").expanduser())
+        monkeypatch.setenv("GARMINTOKENS", str(Path("~/.garminconnect").expanduser()))
     return vcr
 
 
