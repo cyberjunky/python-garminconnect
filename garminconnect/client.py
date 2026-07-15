@@ -48,7 +48,7 @@ _LOGGER = logging.getLogger(__name__)
 def token_file_path(path: str) -> Path:
     """Return the token file represented by a directory or JSON path."""
     token_path = Path(path).expanduser()
-    if token_path.is_dir() or not token_path.name.endswith(".json"):
+    if token_path.is_dir() or token_path.suffix.casefold() != ".json":
         return token_path / "garmin_tokens.json"
     return token_path
 
