@@ -17,9 +17,11 @@ export GARMINTOKENS=<path to token storage>
 """
 
 import datetime
+import html
 import json
 import logging
 import os
+import re
 import sys
 import time
 from contextlib import suppress
@@ -37,6 +39,7 @@ from garminconnect import (
     GarminConnectConnectionError,
     GarminConnectTooManyRequestsError,
 )
+from garminconnect.client import token_file_path
 
 # Debug mode: enable with --debug / -d CLI flag or DEMO_DEBUG=1 env var.
 # When active, shows timestamped DEBUG logs from garminconnect and the
@@ -67,6 +70,36 @@ else:
 _LOGGER = logging.getLogger("demo")
 
 api: Garmin | None = None
+
+
+def _open_private(path: str | Path, mode: str, encoding: str | None = None):
+    """Open a new or existing export file with owner-only permissions."""
+    if mode not in {"w", "wb"}:
+        raise ValueError(f"Unsupported private file mode: {mode}")
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    fd = os.open(Path(path), flags, 0o600)
+    try:
+        if hasattr(os, "fchmod"):
+            os.fchmod(fd, 0o600)
+        if "b" in mode:
+            return os.fdopen(fd, mode)
+        return os.fdopen(fd, mode, encoding=encoding or "utf-8")
+    except Exception:
+        os.close(fd)
+        raise
+
+
+def _html(value: Any) -> str:
+    """Escape data returned by Garmin before inserting it into HTML."""
+    return html.escape(str(value), quote=True)
+
+
+def _safe_filename_component(value: Any) -> str:
+    """Convert account-provided text into a single safe filename component."""
+    component = re.sub(r"[^\w .-]", "_", str(value), flags=re.UNICODE).strip(" .")
+    return component[:120] or "export"
 
 
 def safe_readkey() -> str:
@@ -118,7 +151,9 @@ class Config:
 
         # Export settings
         self.export_dir = Path("your_data")
-        self.export_dir.mkdir(exist_ok=True)
+        self.export_dir.mkdir(mode=0o700, exist_ok=True)
+        with suppress(OSError):
+            self.export_dir.chmod(0o700)
 
 
 # Initialize configuration
@@ -627,8 +662,8 @@ class DataExporter:
     @staticmethod
     def save_json(data: Any, filename: str, pretty: bool = True) -> str:
         """Save data as JSON file."""
-        filepath = config.export_dir / f"{filename}.json"
-        with open(filepath, "w", encoding="utf-8") as f:
+        filepath = config.export_dir / f"{_safe_filename_component(filename)}.json"
+        with _open_private(filepath, "w", encoding="utf-8") as f:
             if pretty:
                 json.dump(data, f, indent=4, default=str, ensure_ascii=False)
             else:
@@ -733,7 +768,7 @@ class DataExporter:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garmin Health Report - {user_name}</title>
+    <title>Garmin Health Report - {_html(user_name)}</title>
     <style>
         body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -846,12 +881,12 @@ class DataExporter:
     <div class="container">
         <div class="header">
             <h1>🏃 Garmin Health Report</h1>
-            <p><strong>{user_name}</strong></p>
+            <p><strong>{_html(user_name)}</strong></p>
         </div>
 
         <div class="meta-info">
-            <p><strong>Generated:</strong> {generated_at}</p>
-            <p><strong>Date:</strong> {config.today.isoformat()}</p>
+            <p><strong>Generated:</strong> {_html(generated_at)}</p>
+            <p><strong>Date:</strong> {_html(config.today.isoformat())}</p>
         </div>
 """
 
@@ -873,16 +908,16 @@ class DataExporter:
             <div class="metric-grid">
                 <div class="metric-card">
                     <h4>👟 Steps</h4>
-                    <div class="metric-value">{steps:,} <span class="metric-unit">steps</span></div>
+                    <div class="metric-value">{_html(f"{steps:,}")} <span class="metric-unit">steps</span></div>
                 </div>
                 <div class="metric-card">
                     <h4>🔥 Calories</h4>
-                    <div class="metric-value">{calories:,} <span class="metric-unit">total</span></div>
-                    <div style="margin-top: 10px;">{active_calories:,} active</div>
+                    <div class="metric-value">{_html(f"{calories:,}")} <span class="metric-unit">total</span></div>
+                    <div style="margin-top: 10px;">{_html(f"{active_calories:,}")} active</div>
                 </div>
                 <div class="metric-card">
                     <h4>📏 Distance</h4>
-                    <div class="metric-value">{distance} <span class="metric-unit">km</span></div>
+                    <div class="metric-value">{_html(distance)} <span class="metric-unit">km</span></div>
                 </div>
             </div>
         </div>
@@ -912,8 +947,8 @@ class DataExporter:
                 html_content += f"""
                 <div class="metric-card">
                     <h4>💓 Heart Rate</h4>
-                    <div class="metric-value">{resting_hr} <span class="metric-unit">bpm (resting)</span></div>
-                    <div style="margin-top: 10px;">Max: {max_hr} bpm</div>
+                    <div class="metric-value">{_html(resting_hr)} <span class="metric-unit">bpm (resting)</span></div>
+                    <div style="margin-top: 10px;">Max: {_html(max_hr)} bpm</div>
                 </div>
 """
 
@@ -932,8 +967,8 @@ class DataExporter:
                 html_content += f"""
                 <div class="metric-card">
                     <h4>😴 Sleep</h4>
-                    <div class="metric-value">{sleep_hours} <span class="metric-unit">hours</span></div>
-                    <div style="margin-top: 10px;">Deep Sleep: {deep_hours} hours</div>
+                    <div class="metric-value">{_html(sleep_hours)} <span class="metric-unit">hours</span></div>
+                    <div style="margin-top: 10px;">Deep Sleep: {_html(deep_hours)} hours</div>
                 </div>
 """
 
@@ -945,8 +980,8 @@ class DataExporter:
                 html_content += f"""
                 <div class="metric-card">
                     <h4>🎯 Step Goal</h4>
-                    <div class="metric-value">{total_steps:,} <span class="metric-unit">of {goal:,}</span></div>
-                    <div style="margin-top: 10px;">Goal: {round((total_steps / goal) * 100) if goal else 0}%</div>
+                    <div class="metric-value">{_html(f"{total_steps:,}")} <span class="metric-unit">of {_html(f"{goal:,}")}</span></div>
+                    <div style="margin-top: 10px;">Goal: {_html(round((total_steps / goal) * 100) if goal else 0)}%</div>
                 </div>
 """
 
@@ -958,8 +993,8 @@ class DataExporter:
                 html_content += f"""
                 <div class="metric-card">
                     <h4>😰 Stress Level</h4>
-                    <div class="metric-value">{avg_stress} <span class="metric-unit">avg</span></div>
-                    <div style="margin-top: 10px;">Max: {max_stress}</div>
+                    <div class="metric-value">{_html(avg_stress)} <span class="metric-unit">avg</span></div>
+                    <div style="margin-top: 10px;">Max: {_html(max_stress)}</div>
                 </div>
 """
 
@@ -972,8 +1007,8 @@ class DataExporter:
                 html_content += f"""
                 <div class="metric-card">
                     <h4>🔋 Body Battery</h4>
-                    <div class="metric-value">+{charged} <span class="metric-unit">charged</span></div>
-                    <div style="margin-top: 10px;">-{drained} drained</div>
+                    <div class="metric-value">+{_html(charged)} <span class="metric-unit">charged</span></div>
+                    <div style="margin-top: 10px;">-{_html(drained)} drained</div>
                 </div>
 """
 
@@ -1006,11 +1041,11 @@ class DataExporter:
 
                 html_content += f"""
                 <div class="metric-card">
-                    <h4>📅 {date}</h4>
-                    <div class="metric-value">{steps:,} <span class="metric-unit">steps</span></div>
+                    <h4>📅 {_html(date)}</h4>
+                    <div class="metric-value">{_html(f"{steps:,}")} <span class="metric-unit">steps</span></div>
                     <div style="margin-top: 10px;">
-                        <div>{calories:,} kcal</div>
-                        <div>{distance} km</div>
+                        <div>{_html(f"{calories:,}")} kcal</div>
+                        <div>{_html(distance)} km</div>
                     </div>
                 </div>
 """
@@ -1045,13 +1080,13 @@ class DataExporter:
 
                 html_content += f"""
                 <div class="activity-item">
-                    <h4>{name} ({activity_type})</h4>
+                    <h4>{_html(name)} ({_html(activity_type)})</h4>
                     <div class="activity-details">
-                        <div><strong>Date:</strong> {date}</div>
-                        <div><strong>Duration:</strong> {duration_min} min</div>
-                        <div><strong>Distance:</strong> {distance} km</div>
-                        <div><strong>Calories:</strong> {calories}</div>
-                        <div><strong>Avg HR:</strong> {avg_hr} bpm</div>
+                        <div><strong>Date:</strong> {_html(date)}</div>
+                        <div><strong>Duration:</strong> {_html(duration_min)} min</div>
+                        <div><strong>Distance:</strong> {_html(distance)} km</div>
+                        <div><strong>Calories:</strong> {_html(calories)}</div>
+                        <div><strong>Avg HR:</strong> {_html(avg_hr)} bpm</div>
                     </div>
                 </div>
 """
@@ -1079,9 +1114,9 @@ class DataExporter:
 
                 html_content += f"""
                 <div class="metric-card">
-                    <h4>{device_name}</h4>
-                    <div><strong>Model:</strong> {model}</div>
-                    <div><strong>Software:</strong> {version}</div>
+                    <h4>{_html(device_name)}</h4>
+                    <div><strong>Model:</strong> {_html(model)}</div>
+                    <div><strong>Software:</strong> {_html(version)}</div>
                 </div>
 """
             html_content += "            </div>\n        </div>\n"
@@ -1099,7 +1134,7 @@ class DataExporter:
 
         # Save HTML file
         html_filepath = config.export_dir / html_filename
-        with open(html_filepath, "w", encoding="utf-8") as f:
+        with _open_private(html_filepath, "w", encoding="utf-8") as f:
             f.write(html_content)
 
         return str(html_filepath)
@@ -1305,7 +1340,7 @@ def _display_single(api_call: str, output: Any):
         print("No data returned")
         # Save empty JSON to response.json in the export directory
         response_file = config.export_dir / "response.json"
-        with open(response_file, "w", encoding="utf-8") as f:
+        with _open_private(response_file, "w", encoding="utf-8") as f:
             f.write(f"{'-' * 20} {api_call} {'-' * 20}\n{{}}\n{'-' * 77}\n")
         return
 
@@ -1322,7 +1357,7 @@ def _display_single(api_call: str, output: Any):
         )
 
         response_file = config.export_dir / "response.json"
-        with open(response_file, "w", encoding="utf-8") as f:
+        with _open_private(response_file, "w", encoding="utf-8") as f:
             f.write(response_content)
 
         print(formatted_output)
@@ -1374,7 +1409,7 @@ def _display_group(group_name: str, api_responses: list[tuple[str, Any]]):
         footer = "=" * 77
         content_lines = [header, *response_content_parts, footer, ""]
         grouped_content = "\n".join(content_lines)
-        with response_file.open("w", encoding="utf-8") as f:
+        with _open_private(response_file, "w", encoding="utf-8") as f:
             f.write(grouped_content)
 
         print(f"\n✅ Grouped responses saved to: {response_file}")
@@ -1680,16 +1715,18 @@ def download_activities_by_date(api: Garmin) -> None:
 
             for fmt in formats:
                 try:
-                    filename = f"{start_time}_{activity_id}_ACTIVITY.{fmt.lower()}"
+                    safe_start = _safe_filename_component(start_time)
+                    safe_activity_id = _safe_filename_component(activity_id)
+                    filename = f"{safe_start}_{safe_activity_id}_ACTIVITY.{fmt.lower()}"
                     if fmt == "ORIGINAL":
-                        filename = f"{start_time}_{activity_id}_ACTIVITY.zip"
+                        filename = f"{safe_start}_{safe_activity_id}_ACTIVITY.zip"
 
                     filepath = config.export_dir / filename
 
                     if fmt == "CSV":
                         # Get activity details for CSV export
                         activity_details = api.get_activity_details(activity_id)
-                        with open(filepath, "w", encoding="utf-8") as f:
+                        with _open_private(filepath, "w", encoding="utf-8") as f:
                             import json
 
                             json.dump(activity_details, f, indent=2, ensure_ascii=False)
@@ -1706,7 +1743,7 @@ def download_activities_by_date(api: Garmin) -> None:
                         content = api.download_activity(activity_id, dl_fmt=dl_fmt)
 
                         if content:
-                            with open(filepath, "wb") as f:
+                            with _open_private(filepath, "wb") as f:
                                 f.write(content)
                             print(f"  ✅ {fmt}: {filename}")
                         else:
@@ -2207,8 +2244,10 @@ def download_workout_data(api: Garmin) -> None:
             workout_data = api.download_workout(workout_id)
 
             if workout_data:
-                output_file = config.export_dir / f"{workout_name}_{workout_id}.fit"
-                with open(output_file, "wb") as f:
+                safe_name = _safe_filename_component(workout_name)
+                safe_id = _safe_filename_component(workout_id)
+                output_file = config.export_dir / f"{safe_name}_{safe_id}.fit"
+                with _open_private(output_file, "wb") as f:
                     f.write(workout_data)
                 print(f"✅ Workout downloaded to: {output_file}")
             else:
@@ -2299,9 +2338,7 @@ def upload_workout_data(api: Garmin) -> None:
 
     except FileNotFoundError:
         print(f"❌ File not found: {config.workoutfile}")
-        print(
-            "ℹ️ Please ensure the workout JSON file exists in the test_data directory"
-        )
+        print("ℹ️ Please ensure the workout JSON file exists in the test_data directory")
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON format in {config.workoutfile}: {e}")
         print("ℹ️ Please check the JSON file format")
@@ -4369,15 +4406,12 @@ def execute_api_call(api: Garmin, key: str) -> None:
 def remove_stored_tokens():
     """Remove stored login tokens."""
     try:
-        import os
-        import shutil
-
-        token_path = os.path.expanduser(config.tokenstore)
-        if os.path.isdir(token_path):
-            shutil.rmtree(token_path)
-            print("✅ Stored login tokens directory removed")
-        else:
+        token_file = token_file_path(config.tokenstore)
+        if not token_file.exists():
             print("ℹ️ No stored login tokens found")
+            return
+        Garmin().logout(config.tokenstore)
+        print("✅ Stored login token file removed")
     except Exception as e:
         print(f"❌ Error removing stored login tokens: {e}")
 

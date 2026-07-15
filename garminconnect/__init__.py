@@ -7,7 +7,6 @@ import numbers
 import os
 import random
 import re
-import shutil
 import time
 from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
@@ -3050,20 +3049,22 @@ class Garmin:
         stale/poisoned cached tokens. ``login()`` already self-heals from
         rejected cached tokens, so this is only needed for manual control.
 
-        :param tokenstore: Path to the token directory/file to remove. Falls
-            back to the ``GARMINTOKENS`` environment variable. Token strings
-            passed inline (length > 512) are ignored — nothing to delete.
+        This only clears local authentication state. It does not revoke an
+        already-issued token at Garmin. The token-store directory and any
+        unrelated files in it are preserved.
+
+        :param tokenstore: Path to the token directory or JSON file whose
+            ``garmin_tokens.json`` file should be removed. Falls back to the
+            ``GARMINTOKENS`` environment variable. Token strings passed inline
+            (length > 512) are ignored — nothing to delete.
         """
         self.client._clear_auth_state()
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
         if not tokenstore or len(tokenstore) > 512:
             return
-        path = Path(tokenstore).expanduser()
-        with contextlib.suppress(Exception):
-            if path.is_dir():
-                shutil.rmtree(path)
-            elif path.exists():
-                path.unlink()
+        path = client.token_file_path(tokenstore)
+        with contextlib.suppress(FileNotFoundError):
+            path.unlink()
 
     def get_training_plans(self) -> dict[str, Any]:
         """Return all available training plans."""

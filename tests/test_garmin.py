@@ -1,13 +1,20 @@
+import os
+
 import pytest
 
 import garminconnect
 
 DATE = "2023-07-01"
+pytestmark = pytest.mark.integration
 
 
 @pytest.fixture(scope="session")
 def garmin() -> garminconnect.Garmin:
-    return garminconnect.Garmin("email@example.org", "password")
+    email = os.getenv("GARMIN_EMAIL")
+    password = os.getenv("GARMIN_PASSWORD")
+    if not email or not password:
+        pytest.skip("GARMIN_EMAIL and GARMIN_PASSWORD are required")
+    return garminconnect.Garmin(email, password)
 
 
 @pytest.mark.vcr
