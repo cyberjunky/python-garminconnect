@@ -6,16 +6,14 @@ authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
 ]
 dependencies = [
-    "curl_cffi>=0.6",
-    "requests>=2.28",
+    "curl_cffi>=0.15.0",
+    "requests>=2.33.0",
     "ua-generator>=1.0",
 ]
 readme = "README.md"
 license = {text = "MIT"}
 classifiers = [
     "Development Status :: 5 - Production/Stable",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "License :: OSI Approved :: MIT License",
@@ -36,7 +34,10 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pytest.ini_options]
-addopts = "--ignore=__pypackages__ --ignore-glob=*.yaml"
+addopts = "--ignore=__pypackages__ --ignore-glob=*.yaml -m 'not integration'"
+markers = [
+    "integration: requires a real Garmin account or a private VCR recording",
+]
 
 [tool.mypy]
 ignore_missing_imports = true
@@ -78,10 +79,14 @@ dev = [
     "matplotlib",
 ]
 workout = [
-    "pydantic>=2.0.0",
+    "pydantic>=2.4.0",
 ]
 typed = [
-    "pydantic>=2.0.0",
+    "pydantic>=2.4.0",
+]
+security = [
+    "bandit[toml]",
+    "pip-audit",
 ]
 linting = [
     "black[jupyter]",

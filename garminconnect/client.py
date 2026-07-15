@@ -44,6 +44,15 @@ from .exceptions import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def token_file_path(path: str) -> Path:
+    """Return the token file represented by a directory or JSON path."""
+    token_path = Path(path).expanduser()
+    if token_path.is_dir() or not token_path.name.endswith(".json"):
+        return token_path / "garmin_tokens.json"
+    return token_path
+
+
 # -- iOS mobile app constants (Strategy 1 & 2) --
 IOS_SSO_CLIENT_ID = "GCM_IOS_DARK"
 IOS_SERVICE_URL = "https://mobile.integration.garmin.com/gcm/ios"
@@ -1004,9 +1013,12 @@ class Client:
 
     def _http_post(self, url: str, **kwargs: Any) -> Any:
         """POST using curl_cffi if available, else plain requests."""
+        timeout = kwargs.pop("timeout", 30)
         if HAS_CFFI:
-            return cffi_requests.post(url, impersonate="chrome", **kwargs)
-        return requests.post(url, **kwargs)  # noqa: S113
+            return cffi_requests.post(
+                url, impersonate="chrome", timeout=timeout, **kwargs
+            )
+        return requests.post(url, timeout=timeout, **kwargs)
 
     def _exchange_service_ticket(
         self, ticket: str, service_url: str | None = None
@@ -1205,9 +1217,7 @@ class Client:
         permissive process umask can't leave it world-readable on a shared host
         (GHSA-wjhr-76vg-2hvc).
         """
-        p = Path(path).expanduser()
-        if p.is_dir() or not p.name.endswith(".json"):
-            p = p / "garmin_tokens.json"
+        p = token_file_path(path)
         p.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         # mkdir's mode is subject to umask and a no-op if the dir already
         # exists; chmod enforces 0o700 unconditionally.
@@ -1229,9 +1239,7 @@ class Client:
     def load(self, path: str) -> None:
         try:
             self._tokenstore_path = path
-            p = Path(path).expanduser()
-            if p.is_dir() or not p.name.endswith(".json"):
-                p = p / "garmin_tokens.json"
+            p = token_file_path(path)
             self.loads(p.read_text())
         except Exception as e:
             raise GarminConnectConnectionError(
