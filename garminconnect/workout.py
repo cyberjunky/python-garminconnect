@@ -25,23 +25,26 @@ else:
             return None
 
 
-# Sport Type IDs (common values)
+# Sport Type IDs — from /workout-service/workout/types
 class SportType:
-    """Common Garmin sport type IDs."""
+    """Garmin workout sport type IDs."""
 
     RUNNING = 1
     CYCLING = 2
-    SWIMMING = 3
-    WALKING = 4
-    MULTI_SPORT = 5
-    FITNESS_EQUIPMENT = 6
-    HIKING = 7
-    OTHER = 8
+    OTHER = 3
+    SWIMMING = 4
+    STRENGTH_TRAINING = 5
+    CARDIO_TRAINING = 6
+    YOGA = 7
+    PILATES = 8
+    HIIT = 9
+    MULTI_SPORT = 10
+    MOBILITY = 11
 
 
-# Step Type IDs
+# Step Type IDs — from /workout-service/workout/types
 class StepType:
-    """Common Garmin workout step type IDs."""
+    """Garmin workout step type IDs."""
 
     WARMUP = 1
     COOLDOWN = 2
@@ -49,31 +52,40 @@ class StepType:
     RECOVERY = 4
     REST = 5
     REPEAT = 6
+    OTHER = 7
+    MAIN = 8
 
 
-# Condition Type IDs
+# Condition Type IDs — from /workout-service/workout/types
 class ConditionType:
-    """Common Garmin end condition type IDs."""
+    """Garmin end condition type IDs."""
 
-    DISTANCE = 1
+    LAP_BUTTON = 1
     TIME = 2
-    HEART_RATE = 3
+    DISTANCE = 3
     CALORIES = 4
-    CADENCE = 5
-    POWER = 6
+    POWER = 5
+    HEART_RATE = 6
     ITERATIONS = 7
+    FIXED_REST = 8
+    FIXED_REPETITION = 9
+    REPS = 10
 
 
-# Target Type IDs
+# Target Type IDs — from /workout-service/workout/types
 class TargetType:
-    """Common Garmin workout target type IDs."""
+    """Garmin workout target type IDs."""
 
     NO_TARGET = 1
-    POWER = 2  # power.zone
-    CADENCE = 3  # cadence
-    HEART_RATE = 4  # heart.rate.zone
-    SPEED = 5  # speed.zone
-    OPEN = 6  # open
+    POWER_ZONE = 2
+    CADENCE = 3
+    HEART_RATE_ZONE = 4
+    SPEED_ZONE = 5
+    PACE_ZONE = 6
+    GRADE = 7
+    HEART_RATE_LAP = 8
+    POWER_LAP = 9
+    RESISTANCE = 15
 
 
 class SportTypeModel(BaseModel):
@@ -208,9 +220,7 @@ class SwimmingWorkout(BaseWorkout):
 
     sportType: dict[str, Any] = Field(
         default_factory=lambda: {
-            # Garmin workout-service expects swimming sportTypeId=4.
-            # Using 3 gets normalized to sportTypeKey="other" on upload.
-            "sportTypeId": 4,
+            "sportTypeId": SportType.SWIMMING,
             "sportTypeKey": "swimming",
             "displayOrder": 3,
         }
@@ -222,9 +232,9 @@ class WalkingWorkout(BaseWorkout):
 
     sportType: dict[str, Any] = Field(
         default_factory=lambda: {
-            "sportTypeId": SportType.WALKING,
+            "sportTypeId": 17,
             "sportTypeKey": "walking",
-            "displayOrder": 4,
+            "displayOrder": 17,
         }
     )
 
@@ -236,7 +246,7 @@ class MultiSportWorkout(BaseWorkout):
         default_factory=lambda: {
             "sportTypeId": SportType.MULTI_SPORT,
             "sportTypeKey": "multi_sport",
-            "displayOrder": 5,
+            "displayOrder": 10,
         }
     )
 
@@ -246,8 +256,8 @@ class FitnessEquipmentWorkout(BaseWorkout):
 
     sportType: dict[str, Any] = Field(
         default_factory=lambda: {
-            "sportTypeId": SportType.FITNESS_EQUIPMENT,
-            "sportTypeKey": "fitness_equipment",
+            "sportTypeId": SportType.CARDIO_TRAINING,
+            "sportTypeKey": "cardio_training",
             "displayOrder": 6,
         }
     )
@@ -258,9 +268,9 @@ class HikingWorkout(BaseWorkout):
 
     sportType: dict[str, Any] = Field(
         default_factory=lambda: {
-            "sportTypeId": SportType.HIKING,
+            "sportTypeId": 18,
             "sportTypeKey": "hiking",
-            "displayOrder": 7,
+            "displayOrder": 18,
         }
     )
 
@@ -315,6 +325,35 @@ def create_interval_step(
             "displayable": True,
         },
         endConditionValue=duration_seconds,
+        targetType=target_type
+        or {
+            "workoutTargetTypeId": TargetType.NO_TARGET,
+            "workoutTargetTypeKey": "no.target",
+            "displayOrder": 1,
+        },
+    )
+
+
+def create_distance_interval_step(
+    distance_meters: float,
+    step_order: int,
+    target_type: dict[str, Any] | None = None,
+) -> ExecutableStep:
+    """Create an interval step that ends after a distance in meters."""
+    return ExecutableStep(
+        stepOrder=step_order,
+        stepType={
+            "stepTypeId": StepType.INTERVAL,
+            "stepTypeKey": "interval",
+            "displayOrder": 3,
+        },
+        endCondition={
+            "conditionTypeId": ConditionType.DISTANCE,
+            "conditionTypeKey": "distance",
+            "displayOrder": 3,
+            "displayable": True,
+        },
+        endConditionValue=distance_meters,
         targetType=target_type
         or {
             "workoutTargetTypeId": TargetType.NO_TARGET,

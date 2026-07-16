@@ -562,6 +562,19 @@ menu_categories = {
             },
         },
     },
+    "d": {
+        "name": "✏️  Activity Editing",
+        "options": {
+            "1": {
+                "desc": "Set activity description (latest activity)",
+                "key": "set_activity_description",
+            },
+            "2": {
+                "desc": "Set activity exercise sets (strength activity)",
+                "key": "set_activity_exercise_sets",
+            },
+        },
+    },
 }
 
 current_category = None
@@ -2286,7 +2299,9 @@ def upload_workout_data(api: Garmin) -> None:
 
     except FileNotFoundError:
         print(f"❌ File not found: {config.workoutfile}")
-        print("ℹ️ Please ensure the workout JSON file exists in the test_data directory")
+        print(
+            "ℹ️ Please ensure the workout JSON file exists in the test_data directory"
+        )
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON format in {config.workoutfile}: {e}")
         print("ℹ️ Please check the JSON file format")
@@ -3291,6 +3306,89 @@ def set_activity_type_data(api: Garmin) -> None:
         print(f"❌ Error setting activity type: {e}")
 
 
+def set_activity_description_data(api: Garmin) -> None:
+    """Set the description of the most recent activity."""
+    try:
+        activities = api.get_activities(0, 1)
+        if not activities:
+            print("❌ No activities found")
+            return
+
+        activity = activities[0]
+        activity_id = activity["activityId"]
+        current = activity.get("description") or "(none)"
+        print(f"Activity: {activity.get('activityName')} (id {activity_id})")
+        print(f"Current description: {current}")
+
+        new_desc = input("Enter new description (or 'q' to cancel): ").strip()
+        if new_desc.lower() == "q":
+            print("❌ Cancelled")
+            return
+
+        call_and_display(
+            api.set_activity_description,
+            activity_id,
+            new_desc,
+            method_name="set_activity_description",
+            api_call_desc=f"api.set_activity_description({activity_id}, '{new_desc}')",
+        )
+        print("✅ Activity description updated!")
+    except Exception as e:
+        print(f"❌ Error setting activity description: {e}")
+
+
+def set_activity_exercise_sets_data(api: Garmin) -> None:
+    """Replace exercise sets on a strength-training activity.
+
+    Demonstrates the round-trip: fetch the current sets, then re-submit the
+    exact same payload (replace-all semantics). Re-submitting unchanged data
+    is a safe no-op that proves the endpoint without altering the activity.
+    """
+    try:
+        activities = api.get_activities(0, 20)
+        strength_activity = None
+        for activity in activities:
+            type_key = activity.get("activityType", {}).get("typeKey", "")
+            if "strength" in type_key.lower() or "training" in type_key.lower():
+                strength_activity = activity
+                break
+
+        if not strength_activity:
+            print("ℹ️ No strength training activities found")
+            return
+
+        activity_id = strength_activity["activityId"]
+        current = api.get_activity_exercise_sets(activity_id)
+        sets = current.get("exerciseSets") if isinstance(current, dict) else None
+        if not sets:
+            print(f"ℹ️ Activity {activity_id} has no exercise sets to replace")
+            return
+
+        print(f"Activity {activity_id} has {len(sets)} exercise set(s).")
+        print(
+            "⚠️  This REPLACES all exercise sets (replace-all). The demo re-submits "
+            "the same payload unchanged, so nothing actually changes."
+        )
+        confirm = input("Re-submit current sets? (yes/no): ").strip().lower()
+        if confirm != "yes":
+            print("❌ Cancelled")
+            return
+
+        call_and_display(
+            api.set_activity_exercise_sets,
+            activity_id,
+            {"exerciseSets": sets},
+            method_name="set_activity_exercise_sets",
+            api_call_desc=(
+                f"api.set_activity_exercise_sets({activity_id}, "
+                f"{{'exerciseSets': <{len(sets)} sets>}})"
+            ),
+        )
+        print("✅ Exercise sets submitted!")
+    except Exception as e:
+        print(f"❌ Error setting exercise sets: {e}")
+
+
 def create_manual_activity_data(api: Garmin) -> None:
     """Create manual activity."""
     try:
@@ -4239,6 +4337,8 @@ def execute_api_call(api: Garmin, key: str) -> None:
             # Activity Management
             "set_activity_name": lambda: set_activity_name_data(api),
             "set_activity_type": lambda: set_activity_type_data(api),
+            "set_activity_description": lambda: set_activity_description_data(api),
+            "set_activity_exercise_sets": lambda: set_activity_exercise_sets_data(api),
             "create_manual_activity": lambda: create_manual_activity_data(api),
             "delete_activity": lambda: delete_activity_data(api),
             "get_activities_by_date": lambda: call_and_display(
