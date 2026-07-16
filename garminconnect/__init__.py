@@ -486,11 +486,12 @@ class Garmin:
             f"{self.garmin_nutrition}/settings"
         )
 
-        self.garmin_ = "/gcs-golfcommunity/api/v2"
+        self.garmin_golf = "/gcs-golfcommunity/api/v2"
         self.garmin_golf_scorecard_summary = f"{self.garmin_golf}/scorecard/summary"
         self.garmin_golf_scorecard_detail = f"{self.garmin_golf}/scorecard/detail"
         self.garmin_golf_shot = f"{self.garmin_golf}/shot/scorecard"
-        self.garmin_golf_club_stats = f"{self.garmin_}/club/player"
+        self.garmin_golf_club_stats = f"{self.garmin_golf}/club/player"
+        self.garmin_golf_user_stats = f"{self.garmin_golf}/player/stats"
 
         self.garmin_connect_delete_activity_url = "/activity-service/activity"
 
@@ -500,6 +501,10 @@ class Garmin:
 
         self.garmin_connect_daily_lifestyle_logging_url = (
             "/lifestylelogging-service/dailyLog"
+        )
+
+        self.garmin_connect_daily_lifestyle_jounal_logging_url = (
+            "/lifestyle-journaling-service/journal/dailyReports"
         )
 
         self.client = client.Client(
@@ -1661,6 +1666,15 @@ class Garmin:
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_lifestyle_logging_url}/{cdate}"
         logger.debug("Requesting lifestyle logging data")
+
+        return self.connectapi(url)
+
+    def get_lifestyle_journal_logging_data(self, cdate: str) -> dict[str, Any]:
+        """Return lifestyle jounal logging data for current user."""
+        cdate = _validate_date_format(cdate, "cdate")
+        url = f"{self.garmin_connect_daily_lifestyle_jounal_logging_url}?date={cdate}"
+        print(url)
+        logger.debug("Requesting lifestyle journal logging data")
 
         return self.connectapi(url)
 
@@ -3093,7 +3107,7 @@ class Garmin:
         
     def get_golf_club_stats( 
         self,
-        limit: int = 1000
+        limit: int = 1000,
     ) -> dict[str, Any]:
         """Return golf scorecard summary.
         Args:
@@ -3106,11 +3120,23 @@ class Garmin:
         url = f"{self.garmin_golf_club_stats}"
         params = {"per-page": str(limit), "include-stats": "true"}
         logger.debug(
-            "Requesting golf club data for"
+            "Requesting golf club data for the user."
         )
         return self.connectapi(url, params=params)
     
+    def get_golf_user_stats( self ) -> dict[str, Any]:
+        """Return golf scorecard summary.
 
+        Returns:
+            Dictionary containing club list and distance data.
+
+        """
+        url = f"{self.garmin_golf_user_stats}"
+        logger.debug(
+            "Requesting golf user statistics"
+        )
+        return self.connectapi(url)
+    
 
 from .exceptions import (  # noqa: E402
     GarminConnectAuthenticationError,
