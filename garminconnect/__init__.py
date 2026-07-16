@@ -2792,6 +2792,35 @@ class Garmin:
             raise ValueError("workout_json must be a JSON object or array")
         return self.client.post("connectapi", url, json=payload, api=True)
 
+    def update_workout(
+        self, workout_id: int | str, workout_json: dict[str, Any] | str
+    ) -> dict[str, Any]:
+        """Update (replace) an existing workout in place using json data.
+
+        Garmin's workout endpoint replaces the whole workout via PUT, so
+        ``workout_json`` must be the complete structure (as returned by
+        ``get_workout_by_id`` or built the same way as for ``upload_workout``).
+        The workout keeps its id, so any calendar schedules pointing at it stay
+        valid. ``workoutId`` in the body is forced to match ``workout_id``.
+        """
+        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        url = f"{self.garmin_workouts}/workout/{workout_id}"
+        logger.debug("Updating workout using %s", url)
+
+        if isinstance(workout_json, str):
+            import json as _json
+
+            try:
+                payload = _json.loads(workout_json)
+            except Exception as e:
+                raise ValueError(f"invalid workout_json string: {e}") from e
+        else:
+            payload = workout_json
+        if not isinstance(payload, dict):
+            raise ValueError("workout_json must be a JSON object")
+        body = payload | {"workoutId": workout_id}
+        return self.client.put("connectapi", url, json=body, api=True)
+
     def upload_running_workout(self, workout: Any) -> dict[str, Any]:
         """Upload a typed running workout.
 
