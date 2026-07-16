@@ -509,3 +509,65 @@ class TestResponseHandling:
         assert last_params["start"] == "40"
         assert last_params["startDate"] == "2026-03-01"
         assert last_params["endDate"] == "2026-03-31"
+
+
+# ---------------------------------------------------------------------------
+# update_workout (in-place PUT)
+# ---------------------------------------------------------------------------
+
+
+class TestUpdateWorkout:
+    """``update_workout`` PUTs the full workout to /workout-service/workout/<id>."""
+
+    def test_puts_to_workout_url_with_injected_id(
+        self, garmin: garminconnect.Garmin
+    ):
+        workout = {"workoutName": "Edited", "sportType": {"sportTypeId": 1}}
+        with patch.object(garmin, "client") as client:
+            client.put.return_value = {"workoutId": 123, "workoutName": "Edited"}
+            result = garmin.update_workout(123, workout)
+
+        args, kwargs = client.put.call_args
+        assert args[0] == "connectapi"
+        assert args[1] == "/workout-service/workout/123"
+        assert kwargs["api"] is True
+        assert kwargs["json"]["workoutId"] == 123
+        assert kwargs["json"]["workoutName"] == "Edited"
+        assert result == {"workoutId": 123, "workoutName": "Edited"}
+
+    def test_injected_id_overrides_stray_workout_id(
+        self, garmin: garminconnect.Garmin
+    ):
+        workout = {"workoutId": 999, "workoutName": "Edited"}
+        with patch.object(garmin, "client") as client:
+            garmin.update_workout(123, workout)
+
+        assert client.put.call_args.kwargs["json"]["workoutId"] == 123
+        # caller dict is not mutated
+        assert workout["workoutId"] == 999
+
+    def test_accepts_json_string(self, garmin: garminconnect.Garmin):
+        import json as _json
+
+        with patch.object(garmin, "client") as client:
+            garmin.update_workout(123, _json.dumps({"workoutName": "Edited"}))
+
+        assert client.put.call_args.kwargs["json"]["workoutId"] == 123
+
+    def test_rejects_non_positive_id(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "client") as client:
+            with pytest.raises(ValueError, match="positive integer"):
+                garmin.update_workout(0, {"workoutName": "Edited"})
+        client.put.assert_not_called()
+
+    def test_rejects_non_dict_payload(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "client") as client:
+            with pytest.raises(ValueError, match="must be a JSON object"):
+                garmin.update_workout(123, [1, 2, 3])
+        client.put.assert_not_called()
+
+    def test_rejects_invalid_json_string(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "client") as client:
+            with pytest.raises(ValueError, match="invalid workout_json string"):
+                garmin.update_workout(123, "{not json")
+        client.put.assert_not_called()
