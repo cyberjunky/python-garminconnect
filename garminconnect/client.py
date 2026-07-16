@@ -13,6 +13,7 @@ import contextlib
 import http.cookiejar
 import json
 import logging
+import os
 import random
 import re
 import time
@@ -157,6 +158,11 @@ class Client:
         self._connect = f"https://connect.{domain}"
         self._connectapi = f"https://connectapi.{domain}"
         # Portal service URL is domain-aware for CN support
+        # Mobile service URLs are domain-aware for CN support
+        self._ios_service_url = f"https://mobile.integration.{domain}/gcm/ios"
+        self._mobile_sso_service_url = (
+            f"https://mobile.integration.{domain}/gcm/android"
+        )
         self._portal_service_url = f"https://connect.{domain}/app"
         # DI auth host is domain-aware too — CN users live on diauth.garmin.cn
         # and don't exist in the .com user database. Without this, token refresh
@@ -199,10 +205,53 @@ class Client:
         self._api_session.mount("https://", api_adapter)
 
         self._tokenstore_path: str | None = None
+        # Set of strategy names to skip during login, e.g. {"mobile+cffi"}.
+        # Valid names: mobile+cffi, mobile+requests, widget+cffi,
+        #              portal+cffi, portal+requests
+        self.skip_strategies: set[str] = set()
+        # When True (default), each login strategy's token is validated against
+        # the API tier before the chain accepts it; a token the API rejects
+        # (401/403) is discarded and the next strategy is tried. Set False to
+        # restore the legacy "first token wins" behavior.
+        self.verify_login: bool = kwargs.get("verify_login", True)
 
     @property
     def is_authenticated(self) -> bool:
         return bool(self.di_token or self.jwt_web)
+
+    def _clear_auth_state(self) -> None:
+        """Wipe all in-memory auth tokens so the next login starts clean."""
+        self.di_token = None
+        self.di_refresh_token = None
+        self.di_client_id = None
+        self.jwt_web = None
+        self.csrf_token = None
+
+    def _verify_token(self) -> bool:
+        """Check that the current token is actually accepted by the API tier.
+
+        A strategy can obtain a DI token from the auth host (HTTP 200) that the
+        API tier (connectapi) then rejects with 401 "Token is not active" —
+        this is account/region dependent (see issue #369). We confirm the token
+        works with one lightweight authenticated call.
+
+        Returns True if accepted, or if the check is inconclusive. Only a
+        definitive auth rejection (401/403) returns False, so a transient
+        network error or 5xx never blocks an otherwise-working login.
+        """
+        try:
+            self.connectapi("/userprofile-service/socialProfile")
+            return True
+        except GarminConnectConnectionError as e:
+            msg = str(e)
+            if "401" in msg or "403" in msg:
+                _LOGGER.warning("Token rejected by API tier: %s", msg)
+                return False
+            _LOGGER.debug("Token validation inconclusive (kept): %s", msg)
+            return True
+        except Exception as e:
+            _LOGGER.debug("Token validation inconclusive (kept): %s", e)
+            return True
 
     def get_api_headers(self) -> dict[str, str]:
         if not self.is_authenticated:
@@ -262,6 +311,11 @@ class Client:
                 lambda: self._portal_web_login_requests(email, password),
             ),
         ]
+        if self.skip_strategies:
+            strategies = [
+                (n, fn) for n, fn in strategies if n not in self.skip_strategies
+            ]
+            _LOGGER.debug("Skipping login strategies: %s", self.skip_strategies)
 
         last_err: Exception | None = None
         rate_limited_count = 0
@@ -270,7 +324,18 @@ class Client:
             try:
                 _LOGGER.debug("Trying login strategy: %s", name)
                 run()
-                # Strategy succeeded — login complete
+                # Strategy got a token — make sure the API tier accepts it
+                # before declaring success (else fall through to the next).
+                if self.verify_login and not self._verify_token():
+                    _LOGGER.warning(
+                        "%s obtained a token the API rejected; trying next strategy",
+                        name,
+                    )
+                    self._clear_auth_state()
+                    last_err = GarminConnectConnectionError(
+                        f"{name}: token rejected by API tier"
+                    )
+                    continue
                 return None, None
             except GarminConnectAuthenticationError:
                 # Wrong credentials — stop immediately, no point trying further
@@ -282,6 +347,17 @@ class Client:
                 if prompt_mfa:
                     mfa_code = prompt_mfa()
                     self._complete_mfa(mfa_code)
+                    if self.verify_login and not self._verify_token():
+                        _LOGGER.warning(
+                            "%s obtained a token the API rejected after MFA; "
+                            "trying next strategy",
+                            name,
+                        )
+                        self._clear_auth_state()
+                        last_err = GarminConnectConnectionError(
+                            f"{name}: token rejected by API tier"
+                        )
+                        continue
                     return None, None
                 raise GarminConnectAuthenticationError(  # noqa: B904
                     "MFA Required but no prompt_mfa mechanism supplied"
@@ -357,7 +433,7 @@ class Client:
         login_params = {
             "clientId": IOS_SSO_CLIENT_ID,
             "locale": "en-US",
-            "service": IOS_SERVICE_URL,
+            "service": self._ios_service_url,
         }
         login_headers = {
             "User-Agent": IOS_LOGIN_UA,
@@ -384,6 +460,12 @@ class Client:
                 "Mobile login returned 429 — IP rate limited by Garmin"
             )
 
+        if r.status_code == 403:
+            raise GarminConnectConnectionError(
+                "Mobile login: HTTP 403 (Cloudflare bot challenge) — "
+                "falling through to next strategy"
+            )
+
         try:
             res = r.json()
         except Exception as err:
@@ -400,13 +482,15 @@ class Client:
             self._mfa_session = sess
             self._mfa_login_params = login_params
             self._mfa_post_headers = login_headers
-            self._mfa_service_url = IOS_SERVICE_URL
+            self._mfa_service_url = self._ios_service_url
             self._mfa_flow = "ios"
             raise _MFARequired()
 
         if resp_type == "SUCCESSFUL":
             ticket = res["serviceTicketId"]
-            self._establish_session(ticket, sess=sess, service_url=IOS_SERVICE_URL)
+            self._establish_session(
+                ticket, sess=sess, service_url=self._ios_service_url
+            )
             return
 
         if resp_type == "INVALID_USERNAME_PASSWORD":
@@ -417,6 +501,12 @@ class Client:
         # Check for 429 buried inside JSON error body
         if res.get("error", {}).get("status-code") == "429":
             raise GarminConnectTooManyRequestsError("Mobile login: 429 in JSON body")
+
+        if resp_type == "CAPTCHA_REQUIRED":
+            raise GarminConnectConnectionError(
+                "Mobile login: CAPTCHA required (bot challenge) — "
+                "falling through to next strategy"
+            )
 
         raise GarminConnectConnectionError(f"Mobile login failed: {res}")
 
@@ -517,7 +607,25 @@ class Client:
                 f"Widget authentication failed: '{title}'"
             )
 
-        if "MFA" in title:
+        # Child/family accounts are restricted from web SSO — log clearly and
+        # fall through so the remaining strategies still get a chance.
+        if "unable to sign in" in title_lower or "unable to login" in title_lower:
+            _LOGGER.warning(
+                "Widget login: '%s' — account may be a Garmin child/family account "
+                "restricted from web SSO; child accounts are not supported.",
+                title,
+            )
+            raise GarminConnectConnectionError(
+                f"Widget login: account restricted '{title}'"
+            )
+
+        # MFA challenge. The page title depends on the MFA method: authenticator
+        # (TOTP) apps return "Enter MFA code for login", while email one-time
+        # codes return "GARMIN Authentication Application". Both are completed
+        # through the same verifyMFA endpoint, so detect either. Email MFA is
+        # mandatory on ECG-capable devices (e.g. Venu 4, Fenix 8), and the
+        # previous literal "MFA"-only check locked those accounts out entirely.
+        if "mfa" in title_lower or "authentication application" in title_lower:
             self._mfa_session = sess
             self._mfa_login_params = signin_params
             self._mfa_post_headers = {"Referer": r.url}
@@ -530,8 +638,8 @@ class Client:
                 f"Widget login: unexpected title '{title}'"
             )
 
-        # Step 4: Extract service ticket
-        ticket_match = re.search(r'embed\?ticket=([^"]+)"', r.text)
+        # Step 4: Extract service ticket — ticket may appear under any service URL
+        ticket_match = re.search(r'\?ticket=(ST-[^"&\s]+)', r.text)
         if not ticket_match:
             raise GarminConnectConnectionError("Widget login: missing service ticket")
 
@@ -570,7 +678,7 @@ class Client:
         if title != "Success":
             raise GarminConnectAuthenticationError(f"Widget MFA failed: {title}")
 
-        ticket_match = re.search(r'embed\?ticket=([^"]+)"', r.text)
+        ticket_match = re.search(r'\?ticket=(ST-[^"&\s]+)', r.text)
         if not ticket_match:
             raise GarminConnectAuthenticationError("Widget MFA: missing service ticket")
 
@@ -697,6 +805,12 @@ class Client:
                 "Portal login POST returned 429 — Cloudflare blocking this request."
             )
 
+        if r.status_code == 403:
+            raise GarminConnectConnectionError(
+                "Portal login: HTTP 403 (Cloudflare bot challenge) — "
+                "falling through to next strategy"
+            )
+
         try:
             res = r.json()
         except Exception as err:
@@ -732,6 +846,12 @@ class Client:
         # Check for 429 buried inside JSON error body
         if res.get("error", {}).get("status-code") == "429":
             raise GarminConnectTooManyRequestsError("Portal login: 429 in JSON body")
+
+        if resp_type == "CAPTCHA_REQUIRED":
+            raise GarminConnectConnectionError(
+                "Portal login: CAPTCHA required (bot challenge) — "
+                "falling through to next strategy"
+            )
 
         raise GarminConnectConnectionError(f"Portal web login failed: {res}")
 
@@ -785,7 +905,7 @@ class Client:
             alt_params = {
                 "clientId": IOS_SSO_CLIENT_ID,
                 "locale": "en-US",
-                "service": IOS_SERVICE_URL,
+                "service": self._ios_service_url,
             }
         mfa_endpoints.append((alt_endpoint, alt_params, self._mfa_post_headers))
 
@@ -825,7 +945,7 @@ class Client:
             if res.get("responseStatus", {}).get("type") == "SUCCESSFUL":
                 ticket = res["serviceTicketId"]
                 svc_url = (
-                    IOS_SERVICE_URL
+                    self._ios_service_url
                     if flow == "ios"
                     else getattr(self, "_mfa_service_url", self._portal_service_url)
                 )
@@ -862,7 +982,7 @@ class Client:
         if sess is not None:
             self.cs = sess
 
-        svc = service_url or IOS_SERVICE_URL
+        svc = service_url or self._ios_service_url
         self.cs.get(
             svc,
             params={"ticket": ticket},
@@ -897,7 +1017,7 @@ class Client:
         for an IT token via services.garmin.com.
         """
         # service_url must match the one used during SSO login
-        svc_url = service_url or MOBILE_SSO_SERVICE_URL
+        svc_url = service_url or self._mobile_sso_service_url
 
         di_token = None
         di_refresh = None
@@ -1037,7 +1157,7 @@ class Client:
                 f"{self._sso}/mobile/sso/en_US/sign-in",
                 params={
                     "clientId": MOBILE_SSO_CLIENT_ID,
-                    "service": MOBILE_SSO_SERVICE_URL,
+                    "service": self._mobile_sso_service_url,
                 },
                 allow_redirects=True,
                 timeout=15,
@@ -1078,12 +1198,33 @@ class Client:
         return json.dumps(data)
 
     def dump(self, path: str) -> None:
-        """Write tokens safely to disk."""
+        """Write tokens safely to disk with owner-only permissions.
+
+        The token file contains the DI refresh token, which grants persistent
+        account access. It is written as 0o600 inside a 0o700 directory so a
+        permissive process umask can't leave it world-readable on a shared host
+        (GHSA-wjhr-76vg-2hvc).
+        """
         p = Path(path).expanduser()
         if p.is_dir() or not p.name.endswith(".json"):
             p = p / "garmin_tokens.json"
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(self.dumps())
+        p.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        # mkdir's mode is subject to umask and a no-op if the dir already
+        # exists; chmod enforces 0o700 unconditionally.
+        with contextlib.suppress(OSError):
+            p.parent.chmod(0o700)
+        # Open with O_CREAT mode 0o600 (and O_NOFOLLOW where available so a
+        # pre-planted symlink can't redirect the write) instead of write_text,
+        # which would create the file under the umask first.
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+        if hasattr(os, "O_NOFOLLOW"):
+            flags |= os.O_NOFOLLOW
+        fd = os.open(p, flags, 0o600)
+        with os.fdopen(fd, "w", encoding="utf-8") as token_file:
+            token_file.write(self.dumps())
+        # Enforce 0o600 even if the file pre-existed with looser permissions.
+        with contextlib.suppress(OSError):
+            p.chmod(0o600)
 
     def load(self, path: str) -> None:
         try:
