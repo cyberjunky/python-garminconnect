@@ -7,6 +7,7 @@ import numbers
 import os
 import random
 import re
+import shutil
 import time
 from collections.abc import Callable
 from datetime import UTC, date, datetime, timedelta
@@ -282,6 +283,7 @@ class Garmin:
         retry_attempts: int = 3,
         retry_min_wait: float = 1.0,
         retry_max_wait: float = 10.0,
+        verify_login: bool = True,
     ) -> None:
         """Create a new class instance.
 
@@ -292,6 +294,11 @@ class Garmin:
         :param retry_min_wait: Initial backoff in seconds; grows exponentially
             with jitter between attempts.
         :param retry_max_wait: Upper bound on the backoff in seconds.
+        :param verify_login: When ``True`` (default), each login strategy's
+            token is validated against the API tier before the chain accepts
+            it, so a token the API rejects (401/403) is discarded and the next
+            strategy is tried. Set ``False`` for the legacy "first token wins"
+            behavior.
         """
         # Validate input types
         if email is not None and not isinstance(email, str):
@@ -306,6 +313,8 @@ class Garmin:
             raise ValueError("retry_attempts must be an int")
         if retry_attempts < 0:
             raise ValueError("retry_attempts must be non-negative")
+        if not isinstance(verify_login, bool):
+            raise ValueError("verify_login must be a boolean")
 
         self.username = email
         self.password = password
@@ -315,6 +324,7 @@ class Garmin:
         self.retry_attempts = retry_attempts
         self.retry_min_wait = float(retry_min_wait)
         self.retry_max_wait = float(retry_max_wait)
+        self.verify_login = verify_login
 
         self.garmin_connect_user_settings_url = (
             "/userprofile-service/userprofile/user-settings"
@@ -511,6 +521,7 @@ class Garmin:
             domain="garmin.cn" if is_cn else "garmin.com",
             pool_connections=20,
             pool_maxsize=20,
+            verify_login=verify_login,
         )
 
         self.display_name: str | None = None
@@ -635,49 +646,37 @@ class Garmin:
                         self.client.dump(tokenstore_path)
                 # Continue to load profile/settings below
 
-            # Ensure profile is loaded (tokenstore path may not populate it)
-            prof = None
-            for attempt in range(3):
-                try:
-                    prof = self.client.connectapi("/userprofile-service/socialProfile")
-                    if isinstance(prof, dict):
-                        break
-                except Exception as e:
-                    if attempt == 2:
-                        raise GarminConnectAuthenticationError(
-                            "Failed to retrieve social profile"
-                        ) from e
-                    logger.debug("Retrying social profile fetch: %s", e)
-                    time.sleep(1)
-            else:
-                raise GarminConnectAuthenticationError("Invalid profile data found")
-
-            self.display_name = prof.get("displayName", self.username)
-            self.full_name = prof.get("fullName", "")
-
-            settings = None
-            for attempt in range(3):
-                try:
-                    settings = self.client.connectapi(
-                        self.garmin_connect_user_settings_url
-                    )
-                    if (
-                        settings
-                        and isinstance(settings, dict)
-                        and "userData" in settings
-                    ):
-                        break
-                except Exception as e:
-                    if attempt == 2:
-                        raise GarminConnectAuthenticationError(
-                            "Failed to retrieve user settings"
-                        ) from e
-                    logger.debug("Retrying user settings fetch: %s", e)
-                    time.sleep(1)
-            else:
-                raise GarminConnectAuthenticationError("Invalid user settings found")
-
-            self.unit_system = settings["userData"].get("measurementSystem")
+            # Ensure profile is loaded (tokenstore path may not populate it).
+            try:
+                self._load_profile_and_settings()
+            except GarminConnectAuthenticationError:
+                # If we resumed from cached tokens and the API rejects them,
+                # the cache is stale/poisoned (e.g. a token whose audience the
+                # API tier no longer accepts — see #369). Discard it and run a
+                # full credential login so the strategy chain can find a token
+                # the API accepts. Without this, a poisoned cache silently
+                # short-circuits the chain on every run.
+                username, password = self.username, self.password
+                if not (
+                    tokens_loaded and username and password and not self.return_on_mfa
+                ):
+                    raise
+                logger.warning(
+                    "Cached tokens were rejected by the API; discarding and "
+                    "performing a fresh login."
+                )
+                self.client._clear_auth_state()
+                if tokenstore_path is not None:
+                    self.client._tokenstore_path = tokenstore_path
+                mfa_status, _legacy_token = self.client.login(
+                    username,
+                    password,
+                    prompt_mfa=self.prompt_mfa,
+                )
+                if tokenstore_path is not None:
+                    with contextlib.suppress(Exception):
+                        self.client.dump(tokenstore_path)
+                self._load_profile_and_settings()
 
             return mfa_status, _legacy_token
 
@@ -688,7 +687,9 @@ class Garmin:
         ) as e:
             status = getattr(getattr(e, "response", None), "status_code", None)
             error_str = str(e).lower()
-            logger.exception("Login failed: %s (status=%s)", e, status)
+            # Re-raised below with a clean message; avoid logging a full
+            # traceback for expected failures (rate limits, bot challenges).
+            logger.debug("Login failed: %s (status=%s)", e, status)
 
             if status == 429 or "429" in error_str:
                 raise GarminConnectTooManyRequestsError(
@@ -715,17 +716,59 @@ class Garmin:
             raise GarminConnectConnectionError(f"Login failed: {e}") from e
         except FileNotFoundError:
             raise
+        except (GarminConnectTooManyRequestsError, GarminConnectAuthenticationError):
+            raise
         except Exception as e:
-            if isinstance(e, GarminConnectAuthenticationError):
-                raise
             error_str = str(e).lower()
             auth_indicators = ["401", "unauthorized", "authentication", "login failed"]
             if any(indicator in error_str for indicator in auth_indicators):
                 raise GarminConnectAuthenticationError(
                     f"Authentication failed: {e}"
                 ) from e
-            logger.exception("Login failed")
+            logger.debug("Login failed: %s", e)
             raise GarminConnectConnectionError(f"Login failed: {e}") from e
+
+    def _load_profile_and_settings(self) -> None:
+        """Fetch social profile and user settings, populating display name,
+        full name and unit system. Raises ``GarminConnectAuthenticationError``
+        if either cannot be retrieved (e.g. the token is rejected).
+        """
+        prof = None
+        for attempt in range(3):
+            try:
+                prof = self.client.connectapi("/userprofile-service/socialProfile")
+                if isinstance(prof, dict):
+                    break
+            except Exception as e:
+                if attempt == 2:
+                    raise GarminConnectAuthenticationError(
+                        "Failed to retrieve social profile"
+                    ) from e
+                logger.debug("Retrying social profile fetch: %s", e)
+                time.sleep(1)
+        else:
+            raise GarminConnectAuthenticationError("Invalid profile data found")
+
+        self.display_name = prof.get("displayName", self.username)
+        self.full_name = prof.get("fullName", "")
+
+        settings = None
+        for attempt in range(3):
+            try:
+                settings = self.client.connectapi(self.garmin_connect_user_settings_url)
+                if settings and isinstance(settings, dict) and "userData" in settings:
+                    break
+            except Exception as e:
+                if attempt == 2:
+                    raise GarminConnectAuthenticationError(
+                        "Failed to retrieve user settings"
+                    ) from e
+                logger.debug("Retrying user settings fetch: %s", e)
+                time.sleep(1)
+        else:
+            raise GarminConnectAuthenticationError("Invalid user settings found")
+
+        self.unit_system = settings["userData"].get("measurementSystem")
 
     def resume_login(
         self, client_state: dict[str, Any], mfa_code: str
@@ -1699,7 +1742,7 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_training_readiness(self, cdate: str) -> dict[str, Any]:
+    def get_training_readiness(self, cdate: str) -> list[dict[str, Any]]:
         """Return training readiness data for current user."""
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_training_readiness_url}/{cdate}"
@@ -1732,30 +1775,27 @@ class Garmin:
         if not data:
             return None
 
-        # If response is a list, search for morning reading
-        if isinstance(data, list):
-            # First try to find entry with AFTER_WAKEUP_RESET context
-            morning_entry = next(
-                (
-                    entry
-                    for entry in data
-                    if entry.get("inputContext") == "AFTER_WAKEUP_RESET"
-                ),
-                None,
+        # The endpoint normally returns a list of snapshots, but stay defensive:
+        # some responses (or callers stubbing this) hand back a single dict.
+        if isinstance(data, dict):
+            return data
+
+        morning_entry = next(
+            (
+                entry
+                for entry in data
+                if entry.get("inputContext") == "AFTER_WAKEUP_RESET"
+            ),
+            None,
+        )
+
+        if morning_entry is None:
+            logger.debug(
+                "No AFTER_WAKEUP_RESET context found, using first entry as fallback"
             )
+            return data[0]
 
-            # If no explicit morning context, return first entry as fallback
-            # (typically the morning reading is first in the list)
-            if morning_entry is None and data:
-                logger.debug(
-                    "No AFTER_WAKEUP_RESET context found, using first entry as fallback"
-                )
-                return data[0]
-
-            return morning_entry
-
-        # If response is a single dict, return it directly
-        return data
+        return morning_entry
 
     def get_endurance_score(
         self, startdate: str, enddate: str | None = None
@@ -2051,6 +2091,13 @@ class Garmin:
             },
         }
         logger.debug("Changing activity type: %s", payload)
+        return self.client.put("connectapi", url, json=payload, api=True)
+
+    def set_activity_description(self, activity_id: str, description: str) -> Any:
+        """Set description for activity with id."""
+        url = f"{self.garmin_connect_activity}/{activity_id}"
+        payload = {"activityId": activity_id, "description": description}
+
         return self.client.put("connectapi", url, json=payload, api=True)
 
     def create_manual_activity_from_json(self, payload: dict[str, Any]) -> Any:
@@ -2570,6 +2617,24 @@ class Garmin:
 
         return self.connectapi(url)
 
+    def set_activity_exercise_sets(
+        self, activity_id: int | str, payload: dict[str, Any]
+    ) -> Any:
+        """Replace exercise sets for activity with id.
+
+        `payload` is the full body sent to the server, in the same shape as the
+        response from `get_activity_exercise_sets`. Replace-all semantics — the
+        existing `exerciseSets` array is overwritten. Garmin validates the
+        `exercises[].category` (parent) and `exercises[].name` (sub-category)
+        against its FIT enum and returns 400 "Invalid Sub-Category Passed" for
+        unknown values; `name=None` is always accepted under a known parent.
+        """
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
+        logger.debug("Replacing exercise sets for activity id %s", activity_id)
+
+        return self.client.put("connectapi", url, json=payload, api=True)
+
     def get_activity_gear(self, activity_id: int | str) -> dict[str, Any]:
         """Return gears used for activity id."""
         activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
@@ -2992,11 +3057,28 @@ class Garmin:
             "connectapi", self.garmin_graphql_endpoint, json=query
         ).json()
 
-    def logout(self) -> None:
-        """Log user out of session."""
-        logger.warning(
-            "Deprecated: Alternative is to delete the login tokens to logout."
-        )
+    def logout(self, tokenstore: str | None = None) -> None:
+        """Clear in-memory auth state and any cached tokens on disk.
+
+        Call this after an authentication failure to guarantee the next
+        ``login()`` runs the full strategy chain instead of resuming
+        stale/poisoned cached tokens. ``login()`` already self-heals from
+        rejected cached tokens, so this is only needed for manual control.
+
+        :param tokenstore: Path to the token directory/file to remove. Falls
+            back to the ``GARMINTOKENS`` environment variable. Token strings
+            passed inline (length > 512) are ignored — nothing to delete.
+        """
+        self.client._clear_auth_state()
+        tokenstore = tokenstore or os.getenv("GARMINTOKENS")
+        if not tokenstore or len(tokenstore) > 512:
+            return
+        path = Path(tokenstore).expanduser()
+        with contextlib.suppress(Exception):
+            if path.is_dir():
+                shutil.rmtree(path)
+            elif path.exists():
+                path.unlink()
 
     def get_training_plans(self) -> dict[str, Any]:
         """Return all available training plans."""
