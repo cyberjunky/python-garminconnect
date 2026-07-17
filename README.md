@@ -74,7 +74,7 @@ A comprehensive Python3 API wrapper for Garmin Connect, providing access to heal
 This library enables developers to programmatically access Garmin Connect data including:
 
 - **Health Metrics**: Heart rate, sleep, stress, body composition, SpO2, HRV
-- **Activity Data**: Workouts, typed workout uploads (running, cycling, swimming, walking, hiking), workout scheduling, exercises, training status, performance metrics, import-style uploads (no Strava re-export)
+- **Activity Data**: Workouts, typed workout uploads (running, cycling, swimming, walking, hiking, strength), workout scheduling, exercises, training status, performance metrics, import-style uploads (no Strava re-export)
 - **Nutrition**: Daily food logs, meals, and nutrition settings
 - **Golf**: Scorecard summaries, scorecard details, shot-by-shot data
 - **Device Information**: Connected devices, settings, alarms, solar data
@@ -335,7 +335,33 @@ client.delete_workout(workout_id)
 client.unschedule_workout(scheduled_workout_id)
 ```
 
-**Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
+**Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `StrengthWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
+
+**Strength workouts** are rep-based. Build each exercise with `create_strength_set(category, step_order, sets, reps, rest_seconds, exercise_name="", weight_kg=None)` and identify exercises with a `category` / `exercise` pair from the bundled catalog in `garminconnect.exercises` (1,500+ exercises, with `resolve(name)` and `find(term)` helpers):
+
+```python
+from garminconnect import exercises
+from garminconnect.workout import StrengthWorkout, WorkoutSegment, create_strength_set
+
+lat = exercises.resolve("Lat Pull-down")  # {'category': 'PULL_UP', 'exercise': 'LAT_PULLDOWN'}
+
+workout = StrengthWorkout(
+    workoutName="Upper Body",
+    estimatedDurationInSecs=0,
+    workoutSegments=[
+        WorkoutSegment(
+            segmentOrder=1,
+            sportType={"sportTypeId": 5, "sportTypeKey": "strength_training"},
+            workoutSteps=[
+                create_strength_set("BENCH_PRESS", step_order=1, sets=4, reps=10, rest_seconds=120),
+                create_strength_set(lat["category"], step_order=4, sets=3, reps=12,
+                                    rest_seconds=90, exercise_name=lat["exercise"]),
+            ],
+        )
+    ],
+)
+api.upload_strength_workout(workout)
+```
 
 **Helper functions:** `create_warmup_step`, `create_interval_step`, `create_distance_interval_step`, `create_recovery_step`, `create_cooldown_step`, `create_repeat_group`
 
