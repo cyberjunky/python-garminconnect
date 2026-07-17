@@ -55,6 +55,7 @@ module = [
     "test_garmin_unit",
     "test_retry_decorator",
     "test_workout_constants",
+    "test_strength_workout",
     "test_login_recovery",
     "test_token_permissions",
     "test_widget_mfa",
@@ -197,6 +198,7 @@ unfixable = []  # Allow all fixes, including unsafe ones
 "demo.py" = ["T20", "S101", "ERA", "RUF001", "PTH", "PERF401", "PERF203", "PLR0911", "D103"]  # Demo script - various user-facing patterns
 "example.py" = ["S110", "PLR0911", "T20", "PERF203"]  # Example script - simple error handling is intentional
 "test_strategy.py" = ["T20", "D103"]  # Interactive login-strategy diagnostic script
+"scripts/*" = ["T20", "D103"]  # Maintainer CLI utilities - printing is intentional
 "tests/test_token_permissions.py" = ["S105"]  # synthetic token literals in fixtures
 
 [tool.coverage.run]
