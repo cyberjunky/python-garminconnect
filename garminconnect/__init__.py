@@ -3173,9 +3173,10 @@ class Garmin:
         return self.connectapi(url, params=params)
 
 
-from .exceptions import (  # noqa: E402
+from .exceptions import (  # noqa: E402, F401
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
     GarminConnectInvalidFileFormatError,
+    GarminConnectNotFoundError,
     GarminConnectTooManyRequestsError,
 )
