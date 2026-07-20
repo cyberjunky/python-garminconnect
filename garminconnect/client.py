@@ -39,6 +39,7 @@ except ImportError:
 from .exceptions import (
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
+    GarminConnectNotFoundError,
     GarminConnectTooManyRequestsError,
 )
 
@@ -1346,6 +1347,9 @@ class Client:
             except Exception:
                 if len(resp.text) < 500:
                     error_msg += f" - {resp.text}"
+            # A 404 is a missing resource, not a connectivity failure.
+            if resp.status_code == 404:
+                raise GarminConnectNotFoundError(error_msg)
             raise GarminConnectConnectionError(error_msg)
 
         return resp

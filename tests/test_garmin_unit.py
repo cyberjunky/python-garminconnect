@@ -509,3 +509,51 @@ class TestResponseHandling:
         assert last_params["start"] == "40"
         assert last_params["startDate"] == "2026-03-01"
         assert last_params["endDate"] == "2026-03-31"
+
+
+# ---------------------------------------------------------------------------
+# _run_request: HTTP status -> exception mapping
+# ---------------------------------------------------------------------------
+
+
+class _FakeResp:
+    def __init__(self, status, payload):
+        self.status_code = status
+        self._payload = payload
+        self.text = str(payload)
+
+    def json(self):
+        return self._payload
+
+
+class TestHttpErrorMapping:
+    """A 404 raises GarminConnectNotFoundError; other >=400 stay ConnectionError."""
+
+    def _client(self, monkeypatch, resp):
+        g = garminconnect.Garmin()
+        c = g.client
+        monkeypatch.setattr(c, "get_api_headers", dict)
+        monkeypatch.setattr(c._api_session, "request", lambda *a, **k: resp)
+        return c
+
+    def test_404_raises_not_found(self, monkeypatch):
+        c = self._client(monkeypatch, _FakeResp(404, {"error": "NotFoundException"}))
+        with pytest.raises(garminconnect.GarminConnectNotFoundError):
+            c._run_request("DELETE", "workout-service/workout/1")
+
+    def test_not_found_is_backwards_compatible(self, monkeypatch):
+        # Existing handlers catching GarminConnectConnectionError must still work.
+        c = self._client(monkeypatch, _FakeResp(404, {"error": "NotFoundException"}))
+        with pytest.raises(garminconnect.GarminConnectConnectionError):
+            c._run_request("GET", "workout-service/workout/1")
+
+    def test_500_stays_connection_error_not_not_found(self, monkeypatch):
+        c = self._client(monkeypatch, _FakeResp(500, {"message": "boom"}))
+        with pytest.raises(garminconnect.GarminConnectConnectionError):
+            c._run_request("GET", "x")
+        try:
+            c._run_request("GET", "x")
+        except garminconnect.GarminConnectNotFoundError as err:
+            raise AssertionError("500 must not be GarminConnectNotFoundError") from err
+        except garminconnect.GarminConnectConnectionError:
+            pass
