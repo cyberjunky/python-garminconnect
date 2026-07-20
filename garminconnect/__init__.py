@@ -14,6 +14,7 @@ from datetime import UTC, date, datetime, timedelta
 from enum import Enum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+from urllib.parse import urlencode
 
 if TYPE_CHECKING:
     from .typed import TypedGarmin
@@ -3150,13 +3151,14 @@ class Garmin:
     def get_golf_shot_data(
         self,
         scorecard_id: int | str,
-        hole_numbers: str = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+        hole_numbers: str | None = None,
     ) -> dict[str, Any]:
         """Return golf shot data for a scorecard and specific holes.
 
         Args:
             scorecard_id: The scorecard ID to get shot data for.
-            hole_numbers: Comma-separated hole numbers (default: all 18).
+            hole_numbers: Comma-separated hole numbers, for example ``"1,2,3"``.
+                When omitted, Garmin returns every hole on the scorecard.
 
         Returns:
             Dictionary containing shot data per hole.
@@ -3164,11 +3166,19 @@ class Garmin:
         """
         scorecard_id = _validate_positive_integer(int(scorecard_id), "scorecard_id")
         url = f"{self.garmin_golf_shot}/{scorecard_id}/hole"
-        params = {"hole-numbers": hole_numbers}
+        # Garmin rejects percent-encoded commas in "hole-numbers", so the query
+        # string is built with commas kept safe. Passing a dict here would let
+        # requests encode them as %2C, which the endpoint answers with
+        # 400 "Invalid hole-numbers in request".
+        params = (
+            None
+            if hole_numbers is None
+            else urlencode({"hole-numbers": hole_numbers}, safe=",")
+        )
         logger.debug(
             "Requesting golf shot data for scorecard %d, holes %s",
             scorecard_id,
-            hole_numbers,
+            "all" if hole_numbers is None else hole_numbers,
         )
         return self.connectapi(url, params=params)
 

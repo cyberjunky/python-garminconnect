@@ -266,6 +266,37 @@ class TestUrlConstruction:
         url = mock.call_args[0][0]
         assert url.endswith("/usersummary-service/stats/steps/weekly/2026-03-15/12")
 
+    def test_get_golf_shot_data_omits_hole_numbers_by_default(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin, "connectapi", return_value={"holes": []}) as mock:
+            garmin.get_golf_shot_data(12345)
+
+        url = mock.call_args[0][0]
+        assert url.endswith("/gcs-golfcommunity/api/v2/shot/scorecard/12345/hole")
+        # Garmin returns every hole when the parameter is absent. Sending a
+        # comma-separated default instead fails with 400 "Invalid hole-numbers".
+        assert mock.call_args.kwargs["params"] is None
+
+    def test_get_golf_shot_data_keeps_commas_unencoded(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin, "connectapi", return_value={"holes": []}) as mock:
+            garmin.get_golf_shot_data(12345, hole_numbers="1,2,3")
+
+        # A dict would be encoded by requests as %2C, which the endpoint rejects.
+        assert mock.call_args.kwargs["params"] == "hole-numbers=1,2,3"
+
+    def test_get_golf_shot_data_escapes_query_separators(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin, "connectapi", return_value={"holes": []}) as mock:
+            garmin.get_golf_shot_data(12345, hole_numbers="1,2&injected=evil")
+
+        # Commas stay literal, but & and = must not leak extra query parameters.
+        params = mock.call_args.kwargs["params"]
+        assert params == "hole-numbers=1,2%26injected%3Devil"
+
 
 # ---------------------------------------------------------------------------
 # Parameter limit tests
