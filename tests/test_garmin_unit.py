@@ -549,11 +549,6 @@ class TestHttpErrorMapping:
 
     def test_500_stays_connection_error_not_not_found(self, monkeypatch):
         c = self._client(monkeypatch, _FakeResp(500, {"message": "boom"}))
-        with pytest.raises(garminconnect.GarminConnectConnectionError):
+        with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
             c._run_request("GET", "x")
-        try:
-            c._run_request("GET", "x")
-        except garminconnect.GarminConnectNotFoundError as err:
-            raise AssertionError("500 must not be GarminConnectNotFoundError") from err
-        except garminconnect.GarminConnectConnectionError:
-            pass
+        assert not isinstance(exc_info.value, garminconnect.GarminConnectNotFoundError)
