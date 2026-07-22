@@ -335,6 +335,8 @@ class Garmin:
         self.garmin_connect_devices_url = "/device-service/deviceregistration/devices"
         self.garmin_connect_device_url = "/device-service/deviceservice"
 
+        self.garmin_connect_devicemessage_url = "/device-service/devicemessage/messages"
+
         self.garmin_connect_primary_device_url = (
             "/web-gateway/device-info/primary-training-device"
         )
@@ -2933,6 +2935,49 @@ class Garmin:
                 "Pydantic is required for typed workouts. "
                 "Install it with: pip install pydantic or pip install garminconnect[workout]"
             ) from None
+
+    def push_workout_to_device(
+        self, workout_id: int | str | None = None, device_id: int | str | None = None
+    ) -> dict[str, Any]:
+        """Push a workout to a device.
+
+        Args:
+            workout_id: The workout ID returned after uploading. If not provided, will push last workout in the library.
+            device_id: Optional device ID to push the workout to. If not provided,  will choose the last used device.
+
+        Returns:
+            Dictionary containing the result of the push operation.
+
+        """
+        if device_id is None:
+            device_id = self.get_device_last_used()["userDeviceId"]
+
+        if workout_id is None:
+            workouts = self.get_workouts(start=0, limit=1)
+            if not workouts:
+                raise ValueError("No workouts found to push.")
+            workout_id = workouts[0]["workoutId"]
+
+        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        workout_name = self.get_workout_by_id(workout_id)["workoutName"]
+
+        url = self.garmin_connect_devicemessage_url
+
+        payload = [
+            {
+                "deviceId": device_id,
+                "messageUrl": f"workout-service/workout/FIT/{workout_id}",
+                "messageType": "workouts",
+                "groupName": None,
+                "messageName": workout_name,
+                "priority": 1,
+                "fileType": "FIT",
+                "metaDataId": workout_id,
+            }
+        ]
+
+        logger.debug("Pushing workout %s to device %s", workout_id, device_id)
+        return self.client.post("connectapi", url, json=payload, api=True)
 
     def get_scheduled_workouts(
         self, year: int | str, month: int | str
