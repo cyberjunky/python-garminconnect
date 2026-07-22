@@ -2952,6 +2952,8 @@ class Garmin:
         if device_id is None:
             device_id = self.get_device_last_used()["userDeviceId"]
 
+        device_id = _validate_positive_integer(int(device_id), "device_id")
+
         if workout_id is None:
             workouts = self.get_workouts(start=0, limit=1)
             if not workouts:
