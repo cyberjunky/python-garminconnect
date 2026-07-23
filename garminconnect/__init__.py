@@ -823,11 +823,11 @@ class Garmin:
         return self.display_name
 
     def get_full_name(self) -> str | None:
-        """Return full name."""
+        """Return full name of the authenticated user."""
         return self.full_name
 
     def get_unit_system(self) -> str | None:
-        """Return unit system."""
+        """Return the user's unit system (e.g. metric)."""
         return self.unit_system
 
     def get_stats(self, cdate: str) -> dict[str, Any]:
