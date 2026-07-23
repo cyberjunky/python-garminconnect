@@ -1583,21 +1583,21 @@ class Garmin:
         return self.connectapi(url)
 
     def get_earned_badges(self) -> list[dict[str, Any]]:
-        """Return earned badges for current user."""
+        """Return all earned badges for the current user."""
         url = self.garmin_connect_earned_badges_url
         logger.debug("Requesting earned badges for user")
 
         return self.connectapi(url)
 
     def get_available_badges(self) -> list[dict[str, Any]]:
-        """Return available badges for current user."""
+        """Return available (not yet earned) badges for the current user."""
         url = self.garmin_connect_available_badges_url
         logger.debug("Requesting available badges for user")
 
         return self.connectapi(url, params={"showExclusiveBadge": "true"})
 
     def get_in_progress_badges(self) -> list[dict[str, Any]]:
-        """Return in progress badges for current user."""
+        """Return all badges currently in progress for the current user."""
         logger.debug("Requesting in progress badges for user")
 
         earned_badges = self.get_earned_badges()
