@@ -190,3 +190,10 @@ def test_request_reload(garmin: garminconnect.Garmin) -> None:
     # Get steps data after reload - should still be accessible
     final_steps = sum(steps["steps"] for steps in garmin.get_steps_data(cdate))
     assert final_steps >= 0  # Steps data should be non-negative
+
+@pytest.mark.vcr
+def test_get_golf_shot_data(garmin: garminconnect.Garmin) -> None:
+    garmin.login()
+    # Test with no holes specified
+    result = garmin.get_golf_shot_data(12345678)
+    assert result is not None
