@@ -344,8 +344,9 @@ class Garmin:
         self.garmin_connect_daily_summary_url = "/usersummary-service/usersummary/daily"
         self.garmin_connect_metrics_url = "/metrics-service/metrics/maxmet/daily"
         self.garmin_connect_biometric_url = "/biometric-service/biometric"
-
         self.garmin_connect_biometric_stats_url = "/biometric-service/stats"
+        self.garmin_connect_heart_rate_zones_url = "/biometric-service/heartRateZones"
+        self.garmin_connect_power_zones_url = "/biometric-service/powerZones"
         self.garmin_connect_daily_hydration_url = (
             "/usersummary-service/usersummary/hydration/daily"
         )
@@ -2571,6 +2572,29 @@ class Garmin:
         """Return cycling Functional Threshold Power (FTP) information."""
         url = f"{self.garmin_connect_biometric_url}/latestFunctionalThresholdPower/CYCLING"
         logger.debug("Requesting latest cycling FTP")
+        return self.connectapi(url)
+
+    def get_heart_rate_zones(self) -> list[dict[str, Any]]:
+        """Return configured heart rate zones for all sport profiles."""
+        logger.debug("Requesting heart rate zones")
+        return self.connectapi(self.garmin_connect_heart_rate_zones_url)
+
+    def get_power_zones(self) -> list[dict[str, Any]]:
+        """Return configured power zones for all supported sports."""
+        url = f"{self.garmin_connect_power_zones_url}/sports/all"
+        logger.debug("Requesting power zones for all sports")
+        return self.connectapi(url)
+
+    def get_power_zones_for_sport(self, sport: str) -> dict[str, Any]:
+        """Return configured power zones for a Garmin sport key."""
+        if not isinstance(sport, str) or not sport.strip():
+            raise ValueError("sport must be a non-empty string")
+        normalized_sport = sport.strip().upper()
+        if not re.fullmatch(r"[A-Z_]+", normalized_sport):
+            raise ValueError("sport must contain only letters and underscores")
+
+        url = f"{self.garmin_connect_power_zones_url}/sport/{normalized_sport}"
+        logger.debug("Requesting power zones for sport %s", normalized_sport)
         return self.connectapi(url)
 
     def get_activity(self, activity_id: str) -> dict[str, Any]:

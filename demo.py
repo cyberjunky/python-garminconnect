@@ -227,6 +227,18 @@ menu_categories = {
                 "desc": f"Get running tolerance from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
                 "key": "get_running_tolerance",
             },
+            "c": {
+                "desc": "Get configured heart rate zones",
+                "key": "get_heart_rate_zones",
+            },
+            "d": {
+                "desc": "Get configured power zones for all sports",
+                "key": "get_power_zones",
+            },
+            "e": {
+                "desc": "Get configured cycling power zones",
+                "key": "get_power_zones_for_sport",
+            },
         },
     },
     "4": {
@@ -3966,6 +3978,22 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 api_call_desc=f"api.get_stress_data('{config.today.isoformat()}')",
             ),
             "get_lactate_threshold": lambda: get_lactate_threshold_data(api),
+            "get_heart_rate_zones": lambda: call_and_display(
+                api.get_heart_rate_zones,
+                method_name="get_heart_rate_zones",
+                api_call_desc="api.get_heart_rate_zones()",
+            ),
+            "get_power_zones": lambda: call_and_display(
+                api.get_power_zones,
+                method_name="get_power_zones",
+                api_call_desc="api.get_power_zones()",
+            ),
+            "get_power_zones_for_sport": lambda: call_and_display(
+                api.get_power_zones_for_sport,
+                "CYCLING",
+                method_name="get_power_zones_for_sport",
+                api_call_desc="api.get_power_zones_for_sport('CYCLING')",
+            ),
             "get_intensity_minutes_data": lambda: call_and_display(
                 api.get_intensity_minutes_data,
                 config.today.isoformat(),

@@ -126,6 +126,41 @@ class TestUrlConstruction:
         assert "/metrics-service/metrics/trainingreadiness/2026-03-15" in url
         assert result == payload
 
+    def test_get_heart_rate_zones_builds_url(self, garmin: garminconnect.Garmin):
+        payload = [{"sport": "RUNNING", "zone1Floor": 120}]
+        with patch.object(garmin, "connectapi", return_value=payload) as mock:
+            result = garmin.get_heart_rate_zones()
+
+        mock.assert_called_once_with("/biometric-service/heartRateZones")
+        assert result == payload
+
+    def test_get_power_zones_builds_all_sports_url(self, garmin: garminconnect.Garmin):
+        payload = [{"sport": "CYCLING", "zone1Floor": 100}]
+        with patch.object(garmin, "connectapi", return_value=payload) as mock:
+            result = garmin.get_power_zones()
+
+        mock.assert_called_once_with("/biometric-service/powerZones/sports/all")
+        assert result == payload
+
+    def test_get_power_zones_for_sport_normalizes_sport_key(
+        self, garmin: garminconnect.Garmin
+    ):
+        payload = {"sport": "CROSS_COUNTRY_SKIING", "zone1Floor": 100}
+        with patch.object(garmin, "connectapi", return_value=payload) as mock:
+            result = garmin.get_power_zones_for_sport(" cross_country_skiing ")
+
+        mock.assert_called_once_with(
+            "/biometric-service/powerZones/sport/CROSS_COUNTRY_SKIING"
+        )
+        assert result == payload
+
+    @pytest.mark.parametrize("sport", ["", "   ", "cycling/running", 123, None])
+    def test_get_power_zones_for_sport_rejects_invalid_keys(
+        self, garmin: garminconnect.Garmin, sport: object
+    ):
+        with pytest.raises(ValueError, match="sport must"):
+            garmin.get_power_zones_for_sport(sport)  # type: ignore[arg-type]
+
     def test_get_stress_data_builds_url_with_date(self, garmin: garminconnect.Garmin):
         with patch.object(garmin, "connectapi", return_value={"avgStress": 25}) as mock:
             garmin.get_stress_data("2026-03-15")
