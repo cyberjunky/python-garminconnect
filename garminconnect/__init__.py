@@ -1682,7 +1682,7 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_sleep_data(self, cdate: str) -> dict[str, Any]:
-        """Return sleep data for current user."""
+        """Return sleep data for 'cdate' format 'YYYY-MM-DD'."""
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_sleep_url}/{self.display_name}"
         params = {"date": cdate, "nonSleepBufferMinutes": 60}
@@ -1691,7 +1691,7 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_stress_data(self, cdate: str) -> dict[str, Any]:
-        """Return stress data for current user."""
+        """Return stress data for 'cdate' format 'YYYY-MM-DD'."""
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_stress_url}/{cdate}"
         logger.debug("Requesting stress data")
@@ -1699,7 +1699,7 @@ class Garmin:
         return self.connectapi(url)
 
     def get_lifestyle_logging_data(self, cdate: str) -> dict[str, Any]:
-        """Return lifestyle logging data for current user."""
+        """Return lifestyle logging data for 'cdate' format 'YYYY-MM-DD'."""
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_lifestyle_logging_url}/{cdate}"
         logger.debug("Requesting lifestyle logging data")
@@ -1707,7 +1707,7 @@ class Garmin:
         return self.connectapi(url)
 
     def get_rhr_day(self, cdate: str) -> dict[str, Any]:
-        """Return resting heartrate data for current user."""
+        """Return resting heart rate data for 'cdate' format 'YYYY-MM-DD'."""
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_rhr_url}/{self._require_display_name()}"
         params = {
@@ -1720,7 +1720,7 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_hrv_data(self, cdate: str) -> dict[str, Any] | None:
-        """Return Heart Rate Variability (hrv) data for current user."""
+        """Return HRV (Heart Rate Variability) data for 'cdate' format 'YYYY-MM-DD'."""
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_hrv_url}/{cdate}"
         logger.debug("Requesting Heart Rate Variability (hrv) data")
@@ -1728,7 +1728,7 @@ class Garmin:
         return self.connectapi(url)
 
     def get_training_readiness(self, cdate: str) -> list[dict[str, Any]]:
-        """Return training readiness data for current user."""
+        """Return training readiness data for 'cdate' format 'YYYY-MM-DD'."""
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_training_readiness_url}/{cdate}"
         logger.debug("Requesting training readiness data")
