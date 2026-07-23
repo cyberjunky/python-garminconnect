@@ -839,7 +839,15 @@ class Garmin:
         return self.get_user_summary(cdate)
 
     def get_user_summary(self, cdate: str) -> dict[str, Any]:
-        """Return user activity summary for 'cdate' format 'YYYY-MM-DD'."""
+        """Return user activity summary for 'cdate' format 'YYYY-MM-DD'.
+
+        Args:
+            cdate: The date to fetch the summary for.
+
+        Returns:
+            Dictionary containing the user activity summary.
+
+        """
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
 
