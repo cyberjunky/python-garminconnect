@@ -513,10 +513,6 @@ class Garmin:
             "/lifestylelogging-service/dailyLog"
         )
 
-        self.garmin_connect_daily_lifestyle_jounal_logging_url = (
-            "/lifestyle-journaling-service/journal/dailyReports"
-        )
-
         self.client = client.Client(
             domain="garmin.cn" if is_cn else "garmin.com",
             pool_connections=20,
@@ -1709,14 +1705,6 @@ class Garmin:
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_lifestyle_logging_url}/{cdate}"
         logger.debug("Requesting lifestyle logging data")
-
-        return self.connectapi(url)
-
-    def get_lifestyle_journal_logging_data(self, cdate: str) -> dict[str, Any]:
-        """Return lifestyle jounal logging data for current user."""
-        cdate = _validate_date_format(cdate, "cdate")
-        url = f"{self.garmin_connect_daily_lifestyle_jounal_logging_url}?date={cdate}"
-        logger.debug("Requesting lifestyle journal logging data")
 
         return self.connectapi(url)
 
