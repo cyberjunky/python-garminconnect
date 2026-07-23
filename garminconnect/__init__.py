@@ -3178,7 +3178,7 @@ class Garmin:
         self,
         limit: int = 1000,
     ) -> dict[str, Any]:
-        """Return golf scorecard summary.
+        """Return golf club names and statistics.
 
         Args:
             limit: Maximum number of results to return.
@@ -3193,10 +3193,10 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_golf_user_stats(self) -> dict[str, Any]:
-        """Return golf scorecard summary.
+        """Return overview of the users golf statistics.
 
         Returns:
-            Dictionary containing club list and distance data.
+            Dictionary containing user stats such as handicap and strokes gained.
 
         """
         url = f"{self.garmin_golf_user_stats}"
