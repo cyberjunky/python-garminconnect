@@ -3179,3 +3179,37 @@ from .exceptions import (  # noqa: E402
     GarminConnectInvalidFileFormatError,
     GarminConnectTooManyRequestsError,
 )
+
+def parse_activity_detail_metrics(details: dict[str, Any]) -> list[dict[str, Any]]:
+    """Parse activity details into a list of dictionaries with named metrics.
+
+    Args:
+        details: The dictionary returned by get_activity_details().
+
+    Returns:
+        A list of dictionaries where keys are metric names (e.g. 'directHeartRate')
+        and values are the metric values at that point in time.
+
+    """
+    descriptors = details.get("metricDescriptors", [])
+    
+    # Build a mapping from index -> key
+    index_to_key = {}
+    for desc in descriptors:
+        key = desc.get("key")
+        idx = desc.get("metricsIndex")
+        if key is not None and isinstance(idx, int):
+            index_to_key[idx] = key
+
+    parsed_metrics = []
+    
+    metrics_list = details.get("activityDetailMetrics", [])
+    for row in metrics_list:
+        raw_metrics = row.get("metrics", [])
+        row_dict = {}
+        for idx, key in index_to_key.items():
+            if idx < len(raw_metrics):
+                row_dict[key] = raw_metrics[idx]
+        parsed_metrics.append(row_dict)
+        
+    return parsed_metrics
