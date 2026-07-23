@@ -500,6 +500,8 @@ class Garmin:
         self.garmin_golf_scorecard_summary = f"{self.garmin_golf}/scorecard/summary"
         self.garmin_golf_scorecard_detail = f"{self.garmin_golf}/scorecard/detail"
         self.garmin_golf_shot = f"{self.garmin_golf}/shot/scorecard"
+        self.garmin_golf_club_stats = f"{self.garmin_golf}/club/player"
+        self.garmin_golf_user_stats = f"{self.garmin_golf}/player/stats"
 
         self.garmin_connect_delete_activity_url = "/activity-service/activity"
 
@@ -3171,6 +3173,36 @@ class Garmin:
             hole_numbers,
         )
         return self.connectapi(url, params=params)
+
+    def get_golf_club_stats(
+        self,
+        limit: int = 1000,
+    ) -> dict[str, Any]:
+        """Return golf club names and statistics.
+
+        Args:
+            limit: Maximum number of results to return.
+
+        Returns:
+            Dictionary containing club list and distance data.
+
+        """
+        limit = _validate_positive_integer(limit, "limit")
+        url = f"{self.garmin_golf_club_stats}"
+        params = {"per-page": str(limit), "include-stats": "true"}
+        logger.debug("Requesting golf club data for the user.")
+        return self.connectapi(url, params=params)
+
+    def get_golf_user_stats(self) -> dict[str, Any]:
+        """Return overview of the users golf statistics.
+
+        Returns:
+            Dictionary containing user stats such as handicap and strokes gained.
+
+        """
+        url = f"{self.garmin_golf_user_stats}"
+        logger.debug("Requesting golf user statistics")
+        return self.connectapi(url)
 
 
 from .exceptions import (  # noqa: E402
