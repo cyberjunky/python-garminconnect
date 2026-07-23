@@ -3010,7 +3010,7 @@ class Garmin:
         return self.connectapi(url)
 
     def get_pregnancy_summary(self) -> dict[str, Any]:
-        """Return snapshot of pregnancy data."""
+        """Return pregnancy summary for the current user."""
         url = f"{self.garmin_connect_pregnancy_snapshot_url}"
         logger.debug("Requesting pregnancy snapshot data")
 
