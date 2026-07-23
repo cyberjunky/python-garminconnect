@@ -2427,13 +2427,14 @@ class Garmin:
         return goals
 
     def get_gear(self, userProfileNumber: str) -> dict[str, Any]:
-        """Return all user gear."""
+        """Return a list of gear for the specified user profile number."""
         url = f"{self.garmin_connect_gear}?userProfilePk={userProfileNumber}"
         logger.debug("Requesting gear for user %s", userProfileNumber)
 
         return self.connectapi(url)
 
     def get_gear_stats(self, gearUUID: str) -> dict[str, Any]:
+        """Return statistics (e.g. distance) for specific gear UUID."""
         url = f"{self.garmin_connect_gear_baseurl}/stats/{gearUUID}"
         logger.debug("Requesting gear stats for gearUUID %s", gearUUID)
 
