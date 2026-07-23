@@ -1716,7 +1716,6 @@ class Garmin:
         """Return lifestyle jounal logging data for current user."""
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_lifestyle_jounal_logging_url}?date={cdate}"
-        print(url)
         logger.debug("Requesting lifestyle journal logging data")
 
         return self.connectapi(url)
@@ -3186,12 +3185,13 @@ class Garmin:
             hole_numbers,
         )
         return self.connectapi(url, params=params)
-        
-    def get_golf_club_stats( 
+
+    def get_golf_club_stats(
         self,
         limit: int = 1000,
     ) -> dict[str, Any]:
         """Return golf scorecard summary.
+
         Args:
             limit: Maximum number of results to return.
 
@@ -3201,12 +3201,10 @@ class Garmin:
         """
         url = f"{self.garmin_golf_club_stats}"
         params = {"per-page": str(limit), "include-stats": "true"}
-        logger.debug(
-            "Requesting golf club data for the user."
-        )
+        logger.debug("Requesting golf club data for the user.")
         return self.connectapi(url, params=params)
-    
-    def get_golf_user_stats( self ) -> dict[str, Any]:
+
+    def get_golf_user_stats(self) -> dict[str, Any]:
         """Return golf scorecard summary.
 
         Returns:
@@ -3214,11 +3212,9 @@ class Garmin:
 
         """
         url = f"{self.garmin_golf_user_stats}"
-        logger.debug(
-            "Requesting golf user statistics"
-        )
+        logger.debug("Requesting golf user statistics")
         return self.connectapi(url)
-    
+
 
 from .exceptions import (  # noqa: E402
     GarminConnectAuthenticationError,
