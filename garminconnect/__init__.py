@@ -1628,7 +1628,7 @@ class Garmin:
         return list(combined.values())
 
     def get_adhoc_challenges(self, start: int, limit: int) -> dict[str, Any]:
-        """Return adhoc challenges for current user."""
+        """Return adhoc challenges for the current user."""
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_adhoc_challenges_url
@@ -1638,7 +1638,7 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_badge_challenges(self, start: int, limit: int) -> dict[str, Any]:
-        """Return badge challenges for current user."""
+        """Return badge challenges for the current user."""
         start = _validate_non_negative_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_badge_challenges_url
