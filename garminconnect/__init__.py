@@ -3187,6 +3187,7 @@ class Garmin:
             Dictionary containing club list and distance data.
 
         """
+        limit = _validate_positive_integer(limit, "limit")
         url = f"{self.garmin_golf_club_stats}"
         params = {"per-page": str(limit), "include-stats": "true"}
         logger.debug("Requesting golf club data for the user.")
