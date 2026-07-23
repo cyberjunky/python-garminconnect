@@ -2934,6 +2934,48 @@ class Garmin:
                 "Install it with: pip install pydantic or pip install garminconnect[workout]"
             ) from None
 
+    def upload_strength_workout(self, workout: Any) -> dict[str, Any]:
+        """Upload a typed strength training workout.
+
+        Args:
+            workout: StrengthWorkout instance from garminconnect.workout
+
+        Returns:
+            Dictionary containing the uploaded workout data
+
+        Example:
+            from garminconnect.workout import StrengthWorkout, WorkoutSegment
+            from garminconnect.workout import create_strength_set
+
+            workout = StrengthWorkout(
+                workoutName="Upper Body",
+                estimatedDurationInSecs=0,
+                workoutSegments=[
+                    WorkoutSegment(
+                        segmentOrder=1,
+                        sportType={"sportTypeId": 5, "sportTypeKey": "strength_training"},
+                        workoutSteps=[
+                            create_strength_set("BENCH_PRESS", step_order=1,
+                                                sets=4, reps=10, rest_seconds=120),
+                        ],
+                    )
+                ],
+            )
+            api.upload_strength_workout(workout)
+
+        """
+        try:
+            from .workout import StrengthWorkout
+
+            if not isinstance(workout, StrengthWorkout):
+                raise TypeError("workout must be a StrengthWorkout instance")
+            return self.upload_workout(workout.to_dict())
+        except ImportError:
+            raise ImportError(
+                "Pydantic is required for typed workouts. "
+                "Install it with: pip install pydantic or pip install garminconnect[workout]"
+            ) from None
+
     def get_scheduled_workouts(
         self, year: int | str, month: int | str
     ) -> dict[str, Any]:
