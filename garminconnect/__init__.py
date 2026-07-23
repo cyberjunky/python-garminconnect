@@ -3150,7 +3150,7 @@ class Garmin:
     def get_golf_shot_data(
         self,
         scorecard_id: int | str,
-        hole_numbers: str = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+        hole_numbers: str | None = None,
     ) -> dict[str, Any]:
         """Return golf shot data for a scorecard and specific holes.
 
@@ -3164,13 +3164,15 @@ class Garmin:
         """
         scorecard_id = _validate_positive_integer(int(scorecard_id), "scorecard_id")
         url = f"{self.garmin_golf_shot}/{scorecard_id}/hole"
-        params = {"hole-numbers": hole_numbers}
+        if hole_numbers:
+            url += f"?hole-numbers={hole_numbers}"
+            
         logger.debug(
             "Requesting golf shot data for scorecard %d, holes %s",
             scorecard_id,
             hole_numbers,
         )
-        return self.connectapi(url, params=params)
+        return self.connectapi(url)
 
 
 from .exceptions import (  # noqa: E402
