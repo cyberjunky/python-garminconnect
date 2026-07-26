@@ -39,6 +39,7 @@ from garminconnect import (
     GarminConnectConnectionError,
     GarminConnectNotFoundError,
     GarminConnectTooManyRequestsError,
+    parse_activity_detail_metrics,
 )
 from garminconnect.client import token_file_path
 
@@ -2015,17 +2016,28 @@ def get_cycling_ftp_data(api: Garmin) -> None:
 
 
 def get_activity_details_data(api: Garmin) -> None:
-    """Get detailed activity information for the last activity."""
+    """Get detailed activity information for the last activity, plus its
+    per-sample metrics resolved from positional indices to metric names.
+    """
     try:
         activities = api.get_activities(0, 1)
         if activities:
             activity_id = activities[0]["activityId"]
-            call_and_display(
+            success, details = call_and_display(
                 api.get_activity_details,
                 activity_id,
                 method_name="get_activity_details",
                 api_call_desc=f"api.get_activity_details({activity_id})",
             )
+            if success:
+                call_and_display(
+                    parse_activity_detail_metrics,
+                    details,
+                    method_name="parse_activity_detail_metrics",
+                    api_call_desc=(
+                        f"parse_activity_detail_metrics(details) for activity {activity_id}"
+                    ),
+                )
         else:
             print("ℹ️ No activities found")
     except Exception as e:
