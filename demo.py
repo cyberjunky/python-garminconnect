@@ -610,6 +610,10 @@ menu_categories = {
                 "desc": "Update workout in place (edit existing template)",
                 "key": "update_workout",
             },
+            "6": {
+                "desc": "Push a workout to a device (interactive)",
+                "key": "push_workout_to_device",
+            },
         },
     },
     "c": {
@@ -2862,6 +2866,78 @@ def update_workout_data(api: Garmin) -> None:
         print(f"❌ Error updating workout: {e}")
 
 
+def push_workout_to_device_data(api: Garmin) -> None:
+    """Push a workout to a device, defaulting to the last workout/device."""
+    try:
+        workouts = api.get_workouts()
+        if not workouts:
+            print("ℹ️ No workouts found")
+            return
+
+        print("\nAvailable workouts (most recent):")
+        for i, workout in enumerate(workouts[:10]):
+            workout_id = workout.get("workoutId")
+            workout_name = workout.get("workoutName", "Unknown")
+            print(f"  [{i}] {workout_name} (ID: {workout_id})")
+
+        index_input = input(
+            f"\nEnter workout index to push (0-{min(9, len(workouts) - 1)}, "
+            "blank for last workout, or 'q' to cancel): "
+        ).strip()
+
+        if index_input.lower() == "q":
+            print("❌ Cancelled")
+            return
+
+        workout_id = None
+        if index_input:
+            try:
+                workout_index = int(index_input)
+            except ValueError:
+                print("❌ Invalid input")
+                return
+            if not (0 <= workout_index < min(10, len(workouts))):
+                print("❌ Invalid index")
+                return
+            workout_id = workouts[workout_index]["workoutId"]
+
+        devices = api.get_devices()
+        device_id = None
+        if devices:
+            print("\nAvailable devices:")
+            for i, device in enumerate(devices):
+                d_id = device.get("deviceId")
+                d_name = device.get("displayName", "Unknown")
+                print(f"  [{i}] {d_name} (ID: {d_id})")
+
+            device_input = input(
+                f"\nEnter device index (0-{len(devices) - 1}, "
+                "blank for last used device): "
+            ).strip()
+            if device_input:
+                try:
+                    device_index = int(device_input)
+                except ValueError:
+                    print("❌ Invalid input")
+                    return
+                if not (0 <= device_index < len(devices)):
+                    print("❌ Invalid index")
+                    return
+                device_id = devices[device_index]["deviceId"]
+
+        call_and_display(
+            api.push_workout_to_device,
+            workout_id,
+            device_id,
+            method_name="push_workout_to_device",
+            api_call_desc=f"api.push_workout_to_device({workout_id}, {device_id})",
+        )
+        print("✅ Workout pushed to device successfully!")
+
+    except Exception as e:
+        print(f"❌ Error pushing workout to device: {e}")
+
+
 def unschedule_workout_data(api: Garmin) -> None:
     """Remove a scheduled workout from the calendar."""
     try:
@@ -4339,6 +4415,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "scheduled_workout": lambda: schedule_workout_data(api),
             "delete_workout": lambda: delete_workout_data(api),
             "update_workout": lambda: update_workout_data(api),
+            "push_workout_to_device": lambda: push_workout_to_device_data(api),
             "unschedule_workout": lambda: unschedule_workout_data(api),
             "count_activities": lambda: call_and_display(
                 api.count_activities,

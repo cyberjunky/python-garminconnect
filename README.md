@@ -40,13 +40,13 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 139+ unique endpoints (snapshot)
+- **Total API Methods**: 140+ unique endpoints (snapshot)
 - **Categories**: 13 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 9 methods (today's health data)
 - **Advanced Health Metrics**: 15 methods (fitness metrics, HRV, VO2, training readiness, training zones, running tolerance)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
-- **Activities & Workouts**: 40 methods (comprehensive activity, workout management, typed workout uploads including strength, in-place edit, scheduling, import, edit description / exercise sets)
+- **Activities & Workouts**: 41 methods (comprehensive activity, workout management, typed workout uploads including strength, in-place edit, scheduling, push to device, import, edit description / exercise sets)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
@@ -370,6 +370,9 @@ client.update_workout(result["workoutId"], workout_data)
 # Delete a workout or remove it from the calendar
 client.delete_workout(workout_id)
 client.unschedule_workout(scheduled_workout_id)
+
+# Push a workout to a device - defaults to the last workout / last used device
+client.push_workout_to_device(result["workoutId"], device_id)
 ```
 
 **Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `StrengthWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
