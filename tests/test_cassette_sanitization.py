@@ -54,3 +54,14 @@ def test_sanitize_response_updates_non_json_token_body():
     sanitized = sanitize_response(response)
 
     assert sanitized["body"]["string"] == (b"oauth_token=SANITIZED&mfa_token=SANITIZED")
+
+
+def test_sanitize_response_scrubs_set_cookie_case_insensitively():
+    response = {
+        "headers": {"SET-COOKIE": ["session=private-value; Path=/"]},
+        "body": {"string": "{}"},
+    }
+
+    sanitized = sanitize_response(response)
+
+    assert "private-value" not in sanitized["headers"]["SET-COOKIE"][0]

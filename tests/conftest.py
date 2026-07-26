@@ -153,11 +153,10 @@ def sanitize_response(response: Any) -> Any:
             if k.lower() not in headers_to_remove
         }
 
-    for key in ["set-cookie", "Set-Cookie"]:
-        if key in response["headers"]:
+    for key in response["headers"]:
+        if key.casefold() == "set-cookie":
             cookies = response["headers"][key]
-            sanitized_cookies = [sanitize_cookie(cookie) for cookie in cookies]
-            response["headers"][key] = sanitized_cookies
+            response["headers"][key] = [sanitize_cookie(cookie) for cookie in cookies]
 
     body = response["body"]["string"]
     if isinstance(body, bytes):
