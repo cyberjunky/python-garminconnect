@@ -552,3 +552,24 @@ class TestHttpErrorMapping:
         with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
             c._run_request("GET", "x")
         assert not isinstance(exc_info.value, garminconnect.GarminConnectNotFoundError)
+
+    def _garmin(self, monkeypatch, resp):
+        g = garminconnect.Garmin()
+        monkeypatch.setattr(g.client, "get_api_headers", dict)
+        monkeypatch.setattr(g.client._api_session, "request", lambda *a, **k: resp)
+        monkeypatch.setattr(type(g.client), "is_authenticated", False)
+        return g
+
+    def test_connectapi_404_raises_not_found(self, monkeypatch):
+        # Garmin.connectapi is wrapped by _handle_api_errors, which must not
+        # downgrade GarminConnectNotFoundError back to a plain
+        # GarminConnectConnectionError the way it does for other 4xx codes.
+        g = self._garmin(monkeypatch, _FakeResp(404, {"error": "NotFoundException"}))
+        with pytest.raises(garminconnect.GarminConnectNotFoundError):
+            g.connectapi("some/path")
+
+    def test_connectapi_400_stays_connection_error_not_not_found(self, monkeypatch):
+        g = self._garmin(monkeypatch, _FakeResp(400, {"message": "bad request"}))
+        with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
+            g.connectapi("some/path")
+        assert not isinstance(exc_info.value, garminconnect.GarminConnectNotFoundError)
