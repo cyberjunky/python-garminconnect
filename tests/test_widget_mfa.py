@@ -85,6 +85,37 @@ def test_mfa_titles_trigger_mfa(title):
     assert c._widget_last_resp is not None
 
 
+def test_email_mfa_marks_delivery_uncertain():
+    """Email/SMS OTP MFA can't be confirmed as delivered (scraped HTML, no
+    JS execution) -- login() relies on this flag to shelve it and give
+    other strategies a chance instead of prompting for a code that may
+    never arrive.
+    """
+    c = client_mod.Client()
+    with (
+        _widget_session(_page("GARMIN Authentication Application")),
+        pytest.raises(_MFARequired),
+    ):
+        c._widget_web_login("e@x.com", "pw")
+
+    assert c._mfa_delivery_uncertain is True
+
+
+def test_totp_mfa_does_not_mark_delivery_uncertain():
+    """TOTP (authenticator-app) codes are user-generated, not delivered by
+    Garmin, so there's nothing to be uncertain about -- this must keep
+    stopping the chain immediately like before.
+    """
+    c = client_mod.Client()
+    with (
+        _widget_session(_page("Enter MFA code for login")),
+        pytest.raises(_MFARequired),
+    ):
+        c._widget_web_login("e@x.com", "pw")
+
+    assert getattr(c, "_mfa_delivery_uncertain", False) is False
+
+
 def test_unexpected_title_still_errors():
     """A genuinely unknown page must NOT be misread as an MFA challenge."""
     c = client_mod.Client()
