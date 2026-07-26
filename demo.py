@@ -601,6 +601,10 @@ menu_categories = {
                 "desc": "Upload typed strength workout (sample)",
                 "key": "upload_strength_workout",
             },
+            "4": {
+                "desc": "Search exercise catalog",
+                "key": "search_exercise_catalog",
+            },
         },
     },
     "c": {
@@ -2568,6 +2572,34 @@ def upload_hiking_workout_data(api: Garmin) -> None:
         print(f"❌ Error uploading hiking workout: {e}")
 
 
+def search_exercise_catalog_data(api: Garmin) -> None:
+    """Search the bundled strength-exercise catalog."""
+    from garminconnect import exercises
+
+    _ = api
+    term = input("Enter exercise name or search term: ").strip()
+    if not term:
+        print("ℹ️ No search term entered")
+        return
+
+    exact = exercises.resolve(term)
+    if exact:
+        print(f"✅ Exact match for '{term}':")
+        print(f"   category={exact['category']!r} exercise={exact['exercise']!r}")
+        return
+
+    matches = exercises.find(term)
+    if not matches:
+        print(f"❌ No exercises found matching '{term}'")
+        return
+
+    print(f"🔍 {len(matches)} exercise(s) matching '{term}' (showing up to 20):")
+    for e in matches[:20]:
+        print(
+            f"   {e['name']!r}: category={e['category']!r} exercise={e['exercise']!r}"
+        )
+
+
 def upload_strength_workout_data(api: Garmin) -> None:
     """Upload a typed strength workout."""
     try:
@@ -4225,6 +4257,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "upload_walking_workout": lambda: upload_walking_workout_data(api),
             "upload_hiking_workout": lambda: upload_hiking_workout_data(api),
             "upload_strength_workout": lambda: upload_strength_workout_data(api),
+            "search_exercise_catalog": lambda: search_exercise_catalog_data(api),
             "get_scheduled_workout_by_id": lambda: get_scheduled_workout_by_id_data(
                 api
             ),
