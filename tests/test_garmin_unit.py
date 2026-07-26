@@ -301,6 +301,44 @@ class TestUrlConstruction:
         url = mock.call_args[0][0]
         assert url.endswith("/usersummary-service/stats/steps/weekly/2026-03-15/12")
 
+    def test_get_golf_shot_data_omits_hole_numbers_by_default(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin, "connectapi", return_value={"holes": []}) as mock:
+            garmin.get_golf_shot_data(12345)
+
+        url = mock.call_args[0][0]
+        assert url.endswith("/hole")
+        assert mock.call_args.kwargs["params"] is None
+
+    def test_get_golf_shot_data_keeps_commas_unencoded(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin, "connectapi", return_value={"holes": []}) as mock:
+            garmin.get_golf_shot_data(12345, hole_numbers="1,2,3")
+
+        assert mock.call_args.kwargs["params"] == "hole-numbers=1,2,3"
+
+    def test_get_golf_shot_data_accepts_dash_separated_holes(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin, "connectapi", return_value={"holes": []}) as mock:
+            garmin.get_golf_shot_data(12345, hole_numbers="1-18")
+
+        assert mock.call_args.kwargs["params"] == "hole-numbers=1-18"
+
+    def test_get_golf_shot_data_rejects_out_of_range_hole(
+        self, garmin: garminconnect.Garmin
+    ):
+        with pytest.raises(ValueError, match="hole_numbers"):
+            garmin.get_golf_shot_data(12345, hole_numbers="19")
+
+    def test_get_golf_shot_data_rejects_injected_query_syntax(
+        self, garmin: garminconnect.Garmin
+    ):
+        with pytest.raises(ValueError, match="hole_numbers"):
+            garmin.get_golf_shot_data(12345, hole_numbers="1,2&foo=bar")
+
 
 # ---------------------------------------------------------------------------
 # Parameter limit tests

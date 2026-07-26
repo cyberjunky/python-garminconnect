@@ -21,6 +21,9 @@ import requests
 from requests import HTTPError
 
 from . import client
+from .activity_details import (
+    parse_activity_detail_metrics as parse_activity_detail_metrics,
+)
 from .fit import FitEncoderWeight  # type: ignore
 
 logger = logging.getLogger(__name__)
@@ -36,6 +39,11 @@ MAX_ACTIVITY_LIMIT = 1000
 MAX_HYDRATION_ML = 10000  # 10 liters
 DATE_FORMAT_REGEX = r"^\d{4}-\d{2}-\d{2}$"
 DATE_FORMAT_STR = "%Y-%m-%d"
+
+# Holes 1-18, separated by ',' or '-'; Garmin treats both as plain delimiters,
+# not a range operator (e.g. "1-18" selects holes 1 and 18, not the full front/back).
+HOLE_NUMBERS_REGEX = r"^([1-9]|1[0-8])([,-]([1-9]|1[0-8]))*$"
+SPORT_KEY_REGEX = r"^[A-Z_]+$"
 VALID_WEIGHT_UNITS = {"kg", "lbs"}
 
 
@@ -96,6 +104,27 @@ def _validate_positive_integer(value: int, param_name: str = "value") -> int:
     if value <= 0:
         raise ValueError(f"{param_name} must be a positive integer, got: {value}")
     return value
+
+
+def _validate_hole_numbers(value: str, param_name: str = "hole_numbers") -> str:
+    """Validate a golf hole-numbers string: holes 1-18 separated by ',' or '-'."""
+    if not isinstance(value, str):
+        raise ValueError(f"{param_name} must be a string")
+    if not re.fullmatch(HOLE_NUMBERS_REGEX, value):
+        raise ValueError(
+            f"{param_name} must be holes 1-18 separated by ',' or '-', got: {value!r}"
+        )
+    return value
+
+
+def _validate_sport_key(value: str, param_name: str = "sport") -> str:
+    """Validate and normalize a Garmin sport key (letters and underscores only)."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{param_name} must be a non-empty string")
+    normalized = value.strip().upper()
+    if not re.fullmatch(SPORT_KEY_REGEX, normalized):
+        raise ValueError(f"{param_name} must contain only letters and underscores")
+    return normalized
 
 
 def _fmt_ts(dt: datetime) -> str:
@@ -351,6 +380,7 @@ class Garmin:
         self.garmin_connect_daily_summary_url = "/usersummary-service/usersummary/daily"
         self.garmin_connect_metrics_url = "/metrics-service/metrics/maxmet/daily"
         self.garmin_connect_biometric_url = "/biometric-service/biometric"
+
         self.garmin_connect_biometric_stats_url = "/biometric-service/stats"
         self.garmin_connect_heart_rate_zones_url = "/biometric-service/heartRateZones"
         self.garmin_connect_power_zones_url = "/biometric-service/powerZones"
@@ -2594,12 +2624,7 @@ class Garmin:
 
     def get_power_zones_for_sport(self, sport: str) -> dict[str, Any]:
         """Return configured power zones for a Garmin sport key."""
-        if not isinstance(sport, str) or not sport.strip():
-            raise ValueError("sport must be a non-empty string")
-        normalized_sport = sport.strip().upper()
-        if not re.fullmatch(r"[A-Z_]+", normalized_sport):
-            raise ValueError("sport must contain only letters and underscores")
-
+        normalized_sport = _validate_sport_key(sport)
         url = f"{self.garmin_connect_power_zones_url}/sport/{normalized_sport}"
         logger.debug("Requesting power zones for sport %s", normalized_sport)
         return self.connectapi(url)
@@ -3225,13 +3250,14 @@ class Garmin:
     def get_golf_shot_data(
         self,
         scorecard_id: int | str,
-        hole_numbers: str = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18",
+        hole_numbers: str | None = None,
     ) -> dict[str, Any]:
         """Return golf shot data for a scorecard and specific holes.
 
         Args:
             scorecard_id: The scorecard ID to get shot data for.
-            hole_numbers: Comma-separated hole numbers (default: all 18).
+            hole_numbers: Holes 1-18 separated by ',' or '-' (e.g. "1,2,3").
+                Omit to get every hole on the scorecard.
 
         Returns:
             Dictionary containing shot data per hole.
@@ -3239,11 +3265,14 @@ class Garmin:
         """
         scorecard_id = _validate_positive_integer(int(scorecard_id), "scorecard_id")
         url = f"{self.garmin_golf_shot}/{scorecard_id}/hole"
-        params = {"hole-numbers": hole_numbers}
+        params = None
+        if hole_numbers is not None:
+            hole_numbers = _validate_hole_numbers(hole_numbers)
+            params = f"hole-numbers={hole_numbers}"
         logger.debug(
             "Requesting golf shot data for scorecard %d, holes %s",
             scorecard_id,
-            hole_numbers,
+            "all" if hole_numbers is None else hole_numbers,
         )
         return self.connectapi(url, params=params)
 
