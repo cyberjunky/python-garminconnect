@@ -171,6 +171,7 @@ ignore = [
     "D213",   # multi-line docstring summary should start at second line (conflicts with D212)
     # Pylint rules - API wrapper has complex functions by nature
     "PLR0913", # too many arguments to function call
+    "PLR0917", # too many positional arguments (same rationale as PLR0913)
     "PLR2004", # magic value used in comparison
     "PLR0912", # too many branches (complex API methods)
     "PLR0915", # too many statements (complex API methods)

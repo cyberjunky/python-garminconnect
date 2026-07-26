@@ -40,13 +40,13 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 137+ unique endpoints (snapshot)
+- **Total API Methods**: 138+ unique endpoints (snapshot)
 - **Categories**: 13 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 9 methods (today's health data)
 - **Advanced Health Metrics**: 15 methods (fitness metrics, HRV, VO2, training readiness, training zones, running tolerance)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
-- **Activities & Workouts**: 38 methods (comprehensive activity, workout management, typed workout uploads, scheduling, import, edit description / exercise sets)
+- **Activities & Workouts**: 39 methods (comprehensive activity, workout management, typed workout uploads including strength, scheduling, import, edit description / exercise sets)
 - **Body Composition & Weight**: 8 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
@@ -190,7 +190,7 @@ performs a fresh credential login automatically. To force a clean slate yourself
 (e.g. between a failed resume and a retry), call:
 
 ```python
-g.logout()            # clears in-memory auth + cached tokens (uses GARMINTOKENS)
+g.logout()  # clears in-memory auth + cached tokens (uses GARMINTOKENS)
 g.logout(tokenstore)  # or pass an explicit path
 ```
 
@@ -336,8 +336,11 @@ pip install garminconnect[workout]
 
 ```python
 from garminconnect.workout import (
-    RunningWorkout, WorkoutSegment,
-    create_warmup_step, create_interval_step, create_distance_interval_step,
+    RunningWorkout,
+    WorkoutSegment,
+    create_warmup_step,
+    create_interval_step,
+    create_distance_interval_step,
     create_cooldown_step,
     create_repeat_group,
 )
@@ -350,9 +353,9 @@ workout = RunningWorkout(
         WorkoutSegment(
             segmentOrder=1,
             sportType={"sportTypeId": 1, "sportTypeKey": "running"},
-            workoutSteps=[create_warmup_step(300.0)]
+            workoutSteps=[create_warmup_step(300.0)],
         )
-    ]
+    ],
 )
 
 # Upload and optionally schedule it
@@ -366,13 +369,15 @@ client.unschedule_workout(scheduled_workout_id)
 
 **Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `StrengthWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
 
-**Strength workouts** are rep-based. Build each exercise with `create_strength_set(category, step_order, sets, reps, rest_seconds, exercise_name="", weight_kg=None)` and identify exercises with a `category` / `exercise` pair from the bundled catalog in `garminconnect.exercises` (1,500+ exercises, with `resolve(name)` and `find(term)` helpers):
+**Strength workouts** are rep-based. Build each exercise with `create_strength_set(category, step_order, sets, reps, rest_seconds, exercise_name="", weight_kg=None)` and identify exercises with a `category` / `exercise` pair from the bundled catalog in `garminconnect.exercises` (1,527 exercises across 47 categories, with `resolve(name)` and `find(term)` helpers):
 
 ```python
 from garminconnect import exercises
 from garminconnect.workout import StrengthWorkout, WorkoutSegment, create_strength_set
 
-lat = exercises.resolve("Lat Pull-down")  # {'category': 'PULL_UP', 'exercise': 'LAT_PULLDOWN'}
+lat = exercises.resolve(
+    "Lat Pull-down"
+)  # {'category': 'PULL_UP', 'exercise': 'LAT_PULLDOWN'}
 
 workout = StrengthWorkout(
     workoutName="Upper Body",
@@ -382,9 +387,17 @@ workout = StrengthWorkout(
             segmentOrder=1,
             sportType={"sportTypeId": 5, "sportTypeKey": "strength_training"},
             workoutSteps=[
-                create_strength_set("BENCH_PRESS", step_order=1, sets=4, reps=10, rest_seconds=120),
-                create_strength_set(lat["category"], step_order=4, sets=3, reps=12,
-                                    rest_seconds=90, exercise_name=lat["exercise"]),
+                create_strength_set(
+                    "BENCH_PRESS", step_order=1, sets=4, reps=10, rest_seconds=120
+                ),
+                create_strength_set(
+                    lat["category"],
+                    step_order=4,
+                    sets=3,
+                    reps=12,
+                    rest_seconds=90,
+                    exercise_name=lat["exercise"],
+                ),
             ],
         )
     ],
@@ -392,7 +405,7 @@ workout = StrengthWorkout(
 api.upload_strength_workout(workout)
 ```
 
-**Helper functions:** `create_warmup_step`, `create_interval_step`, `create_distance_interval_step`, `create_recovery_step`, `create_cooldown_step`, `create_repeat_group`
+**Helper functions:** `create_warmup_step`, `create_interval_step`, `create_distance_interval_step`, `create_recovery_step`, `create_cooldown_step`, `create_repeat_group`, `create_strength_exercise_step`, `create_strength_rest_step`, `create_strength_set`
 
 Use `create_distance_interval_step(600.0, step_order=1)` for interval steps that should end after a distance in meters instead of after a duration.
 
