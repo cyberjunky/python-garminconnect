@@ -114,7 +114,7 @@ This project uses [PDM](https://pdm.fming.dev/) for dependency management and ta
 python3 -m venv .venv --copies
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install pdm
-python -m pdm install --group :all
+python3 -m pdm install --group :all
 pre-commit install --install-hooks  # optional but recommended
 ```
 
