@@ -67,11 +67,12 @@ def test_dump_tightens_preexisting_loose_permissions(tmp_path):
         os.umask(old_umask)
 
 
-def test_dump_explicit_json_path(tmp_path):
+@pytest.mark.parametrize("filename", ["garmin_tokens.json", "garmin_tokens.JSON"])
+def test_dump_explicit_json_path(tmp_path, filename):
     """A direct ``*.json`` path is also written owner-only."""
     old_umask = os.umask(0o022)
     try:
-        token_file = tmp_path / "store" / "garmin_tokens.json"
+        token_file = tmp_path / "store" / filename
         _make_client().dump(str(token_file))
         assert _mode(token_file) == 0o600, oct(_mode(token_file))
     finally:
