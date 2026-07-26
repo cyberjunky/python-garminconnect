@@ -708,3 +708,85 @@ class TestUpdateWorkout:
             with pytest.raises(ValueError, match="invalid workout_json string"):
                 garmin.update_workout(123, "{not json")
         client.put.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# push_workout_to_device
+# ---------------------------------------------------------------------------
+
+
+class TestPushWorkoutToDevice:
+    """``push_workout_to_device`` POSTs a device message for a workout."""
+
+    def test_pushes_with_explicit_ids(self, garmin: garminconnect.Garmin):
+        with (
+            patch.object(garmin, "get_workout_by_id") as get_workout_by_id,
+            patch.object(garmin, "client") as client,
+        ):
+            get_workout_by_id.return_value = {"workoutName": "Easy Run"}
+            client.post.return_value = {"result": "ok"}
+
+            result = garmin.push_workout_to_device(123, 456)
+
+        get_workout_by_id.assert_called_once_with(123)
+        args, kwargs = client.post.call_args
+        assert args[0] == "connectapi"
+        assert args[1] == "/device-service/devicemessage/messages"
+        assert kwargs["api"] is True
+        payload = kwargs["json"][0]
+        assert payload["deviceId"] == 456
+        assert payload["metaDataId"] == 123
+        assert payload["messageUrl"] == "workout-service/workout/FIT/123"
+        assert payload["messageName"] == "Easy Run"
+        assert result == {"result": "ok"}
+
+    def test_defaults_to_last_used_device(self, garmin: garminconnect.Garmin):
+        with (
+            patch.object(garmin, "get_device_last_used") as get_device_last_used,
+            patch.object(garmin, "get_workout_by_id") as get_workout_by_id,
+            patch.object(garmin, "client") as client,
+        ):
+            get_device_last_used.return_value = {"userDeviceId": 789}
+            get_workout_by_id.return_value = {"workoutName": "Easy Run"}
+
+            garmin.push_workout_to_device(workout_id=123)
+
+        get_device_last_used.assert_called_once()
+        assert client.post.call_args.kwargs["json"][0]["deviceId"] == 789
+
+    def test_defaults_to_last_workout(self, garmin: garminconnect.Garmin):
+        with (
+            patch.object(garmin, "get_workouts") as get_workouts,
+            patch.object(garmin, "get_workout_by_id") as get_workout_by_id,
+            patch.object(garmin, "client") as client,
+        ):
+            get_workouts.return_value = [{"workoutId": 555, "workoutName": "Last"}]
+            get_workout_by_id.return_value = {"workoutName": "Last"}
+
+            garmin.push_workout_to_device(device_id=456)
+
+        get_workouts.assert_called_once_with(start=0, limit=1)
+        get_workout_by_id.assert_called_once_with(555)
+        assert client.post.call_args.kwargs["json"][0]["metaDataId"] == 555
+
+    def test_raises_when_no_workouts_found(self, garmin: garminconnect.Garmin):
+        with (
+            patch.object(garmin, "get_workouts") as get_workouts,
+            patch.object(garmin, "client") as client,
+        ):
+            get_workouts.return_value = []
+            with pytest.raises(ValueError, match="No workouts found"):
+                garmin.push_workout_to_device(device_id=456)
+        client.post.assert_not_called()
+
+    def test_rejects_non_positive_workout_id(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "client") as client:
+            with pytest.raises(ValueError, match="positive integer"):
+                garmin.push_workout_to_device(workout_id=0, device_id=456)
+        client.post.assert_not_called()
+
+    def test_rejects_non_positive_device_id(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "client") as client:
+            with pytest.raises(ValueError, match="positive integer"):
+                garmin.push_workout_to_device(workout_id=123, device_id=0)
+        client.post.assert_not_called()
