@@ -597,6 +597,10 @@ menu_categories = {
         "options": {
             "1": {"desc": "Get training plans", "key": "get_training_plans"},
             "2": {"desc": "Get training plan by ID", "key": "get_training_plan_by_id"},
+            "3": {
+                "desc": "Upload typed strength workout (sample)",
+                "key": "upload_strength_workout",
+            },
         },
     },
     "c": {
@@ -2564,6 +2568,43 @@ def upload_hiking_workout_data(api: Garmin) -> None:
         print(f"❌ Error uploading hiking workout: {e}")
 
 
+def upload_strength_workout_data(api: Garmin) -> None:
+    """Upload a typed strength workout."""
+    try:
+        import sys
+        from pathlib import Path
+
+        # Add test_data to path for imports
+        test_data_path = Path(__file__).parent / "test_data"
+        if str(test_data_path) not in sys.path:
+            sys.path.insert(0, str(test_data_path))
+
+        from sample_strength_workout import create_sample_strength_workout
+
+        print("🏋️ Creating and uploading strength workout...")
+        workout = create_sample_strength_workout()
+        print(f"📤 Uploading workout: {workout.workoutName}")
+
+        result = api.upload_strength_workout(workout)
+
+        if result:
+            print("✅ Strength workout uploaded successfully!")
+            call_and_display(
+                lambda: result,
+                method_name="upload_strength_workout",
+                api_call_desc="api.upload_strength_workout(workout)",
+            )
+        else:
+            print("❌ Failed to upload strength workout")
+    except ImportError as e:
+        print(f"❌ Error: {e}")
+        print(
+            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
+        )
+    except Exception as e:
+        print(f"❌ Error uploading strength workout: {e}")
+
+
 def schedule_workout_data(api: Garmin) -> None:
     """Schedule a workout on a specific date."""
     try:
@@ -4183,6 +4224,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "upload_swimming_workout": lambda: upload_swimming_workout_data(api),
             "upload_walking_workout": lambda: upload_walking_workout_data(api),
             "upload_hiking_workout": lambda: upload_hiking_workout_data(api),
+            "upload_strength_workout": lambda: upload_strength_workout_data(api),
             "get_scheduled_workout_by_id": lambda: get_scheduled_workout_by_id_data(
                 api
             ),
