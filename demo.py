@@ -37,6 +37,7 @@ from garminconnect import (
     Garmin,
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
+    GarminConnectNotFoundError,
     GarminConnectTooManyRequestsError,
 )
 from garminconnect.client import token_file_path
@@ -1170,6 +1171,19 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
         _LOGGER.debug("api.%s OK in %.1f ms", method_name, elapsed_ms)
         return True, result, None
 
+    except GarminConnectNotFoundError as e:
+        _LOGGER.debug(
+            "api.%s FAIL in %.1f ms: %s",
+            method_name,
+            (time.perf_counter() - t0) * 1000,
+            e,
+        )
+        error_msg = (
+            "Endpoint not found (404) - This feature may have been moved or removed"
+        )
+        print(f"⚠️ {method_name} failed: {error_msg}")
+        return False, None, error_msg
+
     except GarminConnectConnectionError as e:
         _LOGGER.debug(
             "api.%s FAIL in %.1f ms: %s",
@@ -1196,11 +1210,6 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
             print(f"⚠️ {method_name} failed: {error_msg}")
         elif status_code == 403 or "403" in error_str:
             error_msg = "Access denied (403 Forbidden) - Your account may not have permission for this feature"
-            print(f"⚠️ {method_name} failed: {error_msg}")
-        elif status_code == 404 or "404" in error_str:
-            error_msg = (
-                "Endpoint not found (404) - This feature may have been moved or removed"
-            )
             print(f"⚠️ {method_name} failed: {error_msg}")
         elif status_code == 410 or "410" in error_str:
             error_msg = "Resource no longer available (410 Gone) - This data does not exist or the endpoint has been retired"

@@ -209,6 +209,14 @@ def _handle_api_errors(
                         raise GarminConnectTooManyRequestsError(
                             f"Rate limit exceeded: {e}"
                         ) from e
+                    if status == 404:
+                        not_found_exc = GarminConnectNotFoundError(
+                            f"{label} client error ({status}): {e}"
+                        )
+                        resp = getattr(e, "response", None)
+                        if resp is not None:
+                            not_found_exc.response = resp  # type: ignore[attr-defined]
+                        raise not_found_exc from e
                     if status and 400 <= status < 500:
                         new_exc = GarminConnectConnectionError(
                             f"{label} client error ({status}): {e}"
@@ -3174,7 +3182,7 @@ class Garmin:
         return self.connectapi(url, params=params)
 
 
-from .exceptions import (  # noqa: E402, F401
+from .exceptions import (  # noqa: E402
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
     GarminConnectInvalidFileFormatError,
