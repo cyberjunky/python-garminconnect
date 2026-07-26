@@ -606,6 +606,10 @@ menu_categories = {
                 "desc": "Search exercise catalog",
                 "key": "search_exercise_catalog",
             },
+            "5": {
+                "desc": "Update workout in place (edit existing template)",
+                "key": "update_workout",
+            },
         },
     },
     "c": {
@@ -2800,6 +2804,64 @@ def delete_workout_data(api: Garmin) -> None:
         print(f"❌ Error deleting workout: {e}")
 
 
+def update_workout_data(api: Garmin) -> None:
+    """Edit a workout in place (rename it) via update_workout."""
+    try:
+        workouts = api.get_workouts()
+        if not workouts:
+            print("ℹ️ No workouts found")
+            return
+
+        print("\nAvailable workouts (most recent):")
+        for i, workout in enumerate(workouts[:10]):
+            workout_id = workout.get("workoutId")
+            workout_name = workout.get("workoutName", "Unknown")
+            print(f"  [{i}] {workout_name} (ID: {workout_id})")
+
+        try:
+            index_input = input(
+                f"\nEnter workout index to update (0-{min(9, len(workouts) - 1)}, or 'q' to cancel): "
+            ).strip()
+
+            if index_input.lower() == "q":
+                print("❌ Cancelled")
+                return
+
+            workout_index = int(index_input)
+            if not (0 <= workout_index < min(10, len(workouts))):
+                print("❌ Invalid index")
+                return
+
+            selected_workout = workouts[workout_index]
+            workout_id = selected_workout["workoutId"]
+
+            # update_workout replaces the whole workout, so start from the full
+            # structure rather than the summary returned by get_workouts()
+            workout_data = api.get_workout_by_id(workout_id)
+            original_name = workout_data.get("workoutName", "Workout")
+
+            new_name = input(
+                f"New name for '{original_name}' (blank to keep): "
+            ).strip()
+            if new_name:
+                workout_data["workoutName"] = new_name
+
+            call_and_display(
+                api.update_workout,
+                workout_id,
+                workout_data,
+                method_name="update_workout",
+                api_call_desc=f"api.update_workout({workout_id}, workout_data)",
+            )
+            print("✅ Workout updated successfully!")
+
+        except ValueError:
+            print("❌ Invalid input")
+
+    except Exception as e:
+        print(f"❌ Error updating workout: {e}")
+
+
 def unschedule_workout_data(api: Garmin) -> None:
     """Remove a scheduled workout from the calendar."""
     try:
@@ -4276,6 +4338,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_scheduled_workouts": lambda: get_scheduled_workouts(api),
             "scheduled_workout": lambda: schedule_workout_data(api),
             "delete_workout": lambda: delete_workout_data(api),
+            "update_workout": lambda: update_workout_data(api),
             "unschedule_workout": lambda: unschedule_workout_data(api),
             "count_activities": lambda: call_and_display(
                 api.count_activities,
