@@ -625,6 +625,8 @@ menu_categories = {
                 "desc": "Get golf shot data by scorecard ID",
                 "key": "get_golf_shot_data",
             },
+            "4": {"desc": "Get golf club stats", "key": "get_golf_club_stats"},
+            "5": {"desc": "Get golf user stats", "key": "get_golf_user_stats"},
         },
     },
     "d": {
@@ -4380,6 +4382,16 @@ def execute_api_call(api: Garmin, key: str) -> None:
             ),
             "get_golf_scorecard": lambda: get_golf_scorecard_data(api),
             "get_golf_shot_data": lambda: get_golf_shot_data_entry(api),
+            "get_golf_club_stats": lambda: call_and_display(
+                api.get_golf_club_stats,
+                method_name="get_golf_club_stats",
+                api_call_desc="api.get_golf_club_stats()",
+            ),
+            "get_golf_user_stats": lambda: call_and_display(
+                api.get_golf_user_stats,
+                method_name="get_golf_user_stats",
+                api_call_desc="api.get_golf_user_stats()",
+            ),
             "upload_activity": lambda: upload_activity_file(api),
             "import_activity": lambda: import_activity_file(api),
             "download_activities": lambda: download_activities_by_date(api),
