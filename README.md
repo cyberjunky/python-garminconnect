@@ -85,6 +85,8 @@ Compatible with all Garmin Connect accounts. See <https://connect.garmin.com/>
 
 ## 📦 Installation
 
+Requires Python 3.12 or later.
+
 Install from PyPI:
 
 ```bash
@@ -410,7 +412,7 @@ workout = StrengthWorkout(
         )
     ],
 )
-api.upload_strength_workout(workout)
+client.upload_strength_workout(workout)
 ```
 
 **Helper functions:** `create_warmup_step`, `create_interval_step`, `create_distance_interval_step`, `create_recovery_step`, `create_cooldown_step`, `create_repeat_group`, `create_strength_exercise_step`, `create_strength_rest_step`, `create_strength_set`
@@ -461,6 +463,6 @@ Every contribution, no matter the size, makes a difference and is greatly apprec
 [releases-shield]: https://img.shields.io/github/release/cyberjunky/python-garminconnect.svg?style=for-the-badge
 [releases]: https://github.com/cyberjunky/python-garminconnect/releases
 [commits-shield]: https://img.shields.io/github/commit-activity/y/cyberjunky/python-garminconnect.svg?style=for-the-badge
-[commits]: https://github.com/cyberjunky/python-garminconnect/commits/main
+[commits]: https://github.com/cyberjunky/python-garminconnect/commits/master
 [license-shield]: https://img.shields.io/github/license/cyberjunky/python-garminconnect.svg?style=for-the-badge
 [maintenance-shield]: https://img.shields.io/badge/maintainer-cyberjunky-blue.svg?style=for-the-badge

@@ -390,10 +390,6 @@ menu_categories = {
             "n": {"desc": "Set activity type", "key": "set_activity_type"},
             "o": {"desc": "Create manual activity", "key": "create_manual_activity"},
             "p": {"desc": "Delete activity", "key": "delete_activity"},
-            "q": {
-                "desc": "Get scheduled workout by ID",
-                "key": "get_scheduled_workout_by_id",
-            },
             "r": {
                 "desc": "Count activities for current user",
                 "key": "count_activities",
@@ -449,18 +445,14 @@ menu_categories = {
             },
             "4": {"desc": "Add a weigh-in (interactive)", "key": "add_weigh_in"},
             "5": {
-                "desc": f"Set body composition data for '{config.today.isoformat()}' (interactive)",
-                "key": "set_body_composition",
-            },
-            "6": {
                 "desc": f"Add body composition for '{config.today.isoformat()}' (interactive)",
                 "key": "add_body_composition",
             },
-            "7": {
+            "6": {
                 "desc": f"Delete all weigh-ins for '{config.today.isoformat()}'",
                 "key": "delete_weigh_ins",
             },
-            "8": {"desc": "Delete specific weigh-in", "key": "delete_weigh_in"},
+            "7": {"desc": "Delete specific weigh-in", "key": "delete_weigh_in"},
         },
     },
     "7": {
@@ -613,6 +605,18 @@ menu_categories = {
             "6": {
                 "desc": "Push a workout to a device (interactive)",
                 "key": "push_workout_to_device",
+            },
+            "7": {
+                "desc": "Get scheduled workout by ID",
+                "key": "get_scheduled_workout_by_id",
+            },
+            "8": {
+                "desc": "Delete a workout template (interactive)",
+                "key": "delete_workout",
+            },
+            "9": {
+                "desc": "Unschedule a scheduled workout",
+                "key": "unschedule_workout",
             },
         },
     },
@@ -2187,15 +2191,14 @@ def get_golf_shot_data_entry(api: Garmin) -> None:
         holes = input(
             "Enter hole numbers (comma-separated, or Enter for all 18): "
         ).strip()
-        if not holes:
-            holes = "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
+        holes = holes or None
 
         call_and_display(
             api.get_golf_shot_data,
             int(scorecard_id),
             hole_numbers=holes,
             method_name="get_golf_shot_data",
-            api_call_desc=f"api.get_golf_shot_data({scorecard_id}, hole_numbers='{holes}')",
+            api_call_desc=f"api.get_golf_shot_data({scorecard_id}, hole_numbers={holes!r})",
         )
     except Exception as e:
         print(f"❌ Error getting golf shot data: {e}")
@@ -2700,8 +2703,8 @@ def schedule_workout_data(api: Garmin) -> None:
                 api.schedule_workout,
                 workout_id,
                 schedule_date,
-                method_name="scheduled_workout",
-                api_call_desc=f"api.scheduled_workout({workout_id}, '{schedule_date}') - {workout_name}",
+                method_name="schedule_workout",
+                api_call_desc=f"api.schedule_workout({workout_id}, '{schedule_date}') - {workout_name}",
             )
 
             print("✅ Workout scheduled successfully!")
@@ -2959,44 +2962,6 @@ def unschedule_workout_data(api: Garmin) -> None:
 
     except Exception as e:
         print(f"❌ Error unscheduling workout: {e}")
-
-
-def set_body_composition_data(api: Garmin) -> None:
-    """Set body composition data."""
-    try:
-        print(f"⚖️ Setting body composition data for {config.today.isoformat()}")
-        print("-" * 50)
-
-        # Get weight input from user
-        while True:
-            try:
-                weight_str = input(
-                    "Enter weight in kg (30-300, default: 85.1): "
-                ).strip()
-                if not weight_str:
-                    weight = 85.1
-                    break
-                weight = float(weight_str)
-                if 30 <= weight <= 300:
-                    break
-                print("❌ Weight must be between 30 and 300 kg")
-            except ValueError:
-                print("❌ Please enter a valid number")
-
-        call_and_display(
-            api.set_body_composition,
-            timestamp=config.today.isoformat(),
-            weight=weight,
-            percent_fat=15.4,
-            percent_hydration=54.8,
-            bone_mass=2.9,
-            muscle_mass=55.2,
-            method_name="set_body_composition",
-            api_call_desc=f"api.set_body_composition({config.today.isoformat()}, weight={weight}, ...)",
-        )
-        print("✅ Body composition data set successfully!")
-    except Exception as e:
-        print(f"❌ Error setting body composition: {e}")
 
 
 def add_body_composition_data(api: Garmin) -> None:
@@ -4455,7 +4420,6 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 api_call_desc=f"api.get_daily_weigh_ins('{config.today.isoformat()}')",
             ),
             "add_weigh_in": lambda: add_weigh_in_data(api),
-            "set_body_composition": lambda: set_body_composition_data(api),
             "add_body_composition": lambda: add_body_composition_data(api),
             "delete_weigh_ins": lambda: delete_weigh_ins_data(api),
             "delete_weigh_in": lambda: delete_weigh_in_data(api),
