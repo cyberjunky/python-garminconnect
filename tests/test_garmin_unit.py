@@ -311,13 +311,13 @@ class TestUrlConstruction:
         assert url.endswith("/hole")
         assert mock.call_args.kwargs["params"] is None
 
-    def test_get_golf_shot_data_keeps_commas_unencoded(
+    def test_get_golf_shot_data_normalizes_commas_to_dashes(
         self, garmin: garminconnect.Garmin
     ):
         with patch.object(garmin, "connectapi", return_value={"holes": []}) as mock:
             garmin.get_golf_shot_data(12345, hole_numbers="1,2,3")
 
-        assert mock.call_args.kwargs["params"] == "hole-numbers=1,2,3"
+        assert mock.call_args.kwargs["params"] == "hole-numbers=1-2-3"
 
     def test_get_golf_shot_data_accepts_dash_separated_holes(
         self, garmin: garminconnect.Garmin

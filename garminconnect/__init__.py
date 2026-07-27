@@ -40,8 +40,11 @@ MAX_HYDRATION_ML = 10000  # 10 liters
 DATE_FORMAT_REGEX = r"^\d{4}-\d{2}-\d{2}$"
 DATE_FORMAT_STR = "%Y-%m-%d"
 
-# Holes 1-18, separated by ',' or '-'; Garmin treats both as plain delimiters,
-# not a range operator (e.g. "1-18" selects holes 1 and 18, not the full front/back).
+# Holes 1-18, separated by ',' or '-'; '-' is a plain delimiter, not a range
+# operator (e.g. "1-18" selects holes 1 and 18, not the full front/back).
+# Garmin's API only accepts '-' as the separator (commas 400 in any encoding),
+# so callers may pass ',' for convenience but it gets normalized to '-' before
+# the request is sent.
 HOLE_NUMBERS_REGEX = r"^([1-9]|1[0-8])([,-]([1-9]|1[0-8]))*$"
 SPORT_KEY_REGEX = r"^[A-Z_]+$"
 VALID_WEIGHT_UNITS = {"kg", "lbs"}
@@ -3344,6 +3347,8 @@ class Garmin:
         Args:
             scorecard_id: The scorecard ID to get shot data for.
             hole_numbers: Holes 1-18 separated by ',' or '-' (e.g. "1,2,3").
+                Garmin's API only accepts '-' as a separator, so any commas
+                are normalized to '-' before the request is sent.
                 Omit to get every hole on the scorecard.
 
         Returns:
@@ -3355,7 +3360,7 @@ class Garmin:
         params = None
         if hole_numbers is not None:
             hole_numbers = _validate_hole_numbers(hole_numbers)
-            params = f"hole-numbers={hole_numbers}"
+            params = f"hole-numbers={hole_numbers.replace(',', '-')}"
         logger.debug(
             "Requesting golf shot data for scorecard %d, holes %s",
             scorecard_id,
