@@ -487,6 +487,28 @@ class TestWellnessDailyRangeMethods:
         with pytest.raises(ValueError, match="start date cannot be after end date"):
             garmin.get_sleep_daily("2026-03-15", "2026-03-01")
 
+    @pytest.mark.parametrize(
+        "method_name",
+        [
+            "get_max_metrics_range",
+            "get_hrv_data_range",
+            "get_rhr_daily",
+            "get_calories_daily",
+            "get_sleep_daily",
+        ],
+    )
+    def test_range_methods_reject_inverted_range_without_api_call(
+        self, garmin: garminconnect.Garmin, method_name: str
+    ):
+        """All *_range/*_daily methods must reject start > end before calling the API."""
+        method = getattr(garmin, method_name)
+        with (
+            patch.object(garmin, "connectapi") as mock,
+            pytest.raises(ValueError, match="start date cannot be after end date"),
+        ):
+            method("2026-03-15", "2026-03-01")
+        mock.assert_not_called()
+
 
 # ---------------------------------------------------------------------------
 # Parameter limit tests
