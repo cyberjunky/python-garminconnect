@@ -73,6 +73,17 @@ def _validate_date_format(date_str: str, param_name: str = "date") -> str:
     return date_str
 
 
+def _validate_date_range(start: str, end: str) -> tuple[str, str]:
+    """Validate 'start'/'end' are well-formed dates with start <= end."""
+    start = _validate_date_format(start, "start")
+    end = _validate_date_format(end, "end")
+    if datetime.strptime(start, DATE_FORMAT_STR) > datetime.strptime(
+        end, DATE_FORMAT_STR
+    ):
+        raise ValueError("start date cannot be after end date")
+    return start, end
+
+
 def _validate_positive_number(
     value: int | float, param_name: str = "value"
 ) -> int | float:
@@ -1402,13 +1413,13 @@ class Garmin:
         return self.connectapi(url)
 
     def get_max_metrics_range(self, start: str, end: str) -> dict[str, Any]:
-        """Return available max metric data for a date range, 'start' and 'end' format 'YYYY-MM-DD'.
+        """Return max metric data for a date range ('start'/'end' format 'YYYY-MM-DD').
 
-        Unlike `get_max_metrics`, which is limited to a single day, this queries
-        the same endpoint with distinct start/end dates to fetch a range in one request.
+        Unlike `get_max_metrics`, which is limited to a single day, this
+        queries the same endpoint with distinct start/end dates to fetch a
+        range in one request.
         """
-        start = _validate_date_format(start, "start")
-        end = _validate_date_format(end, "end")
+        start, end = _validate_date_range(start, end)
         url = f"{self.garmin_connect_metrics_url}/{start}/{end}"
         logger.debug("Requesting max metrics range")
 
@@ -1764,13 +1775,9 @@ class Garmin:
         splits the range into chunks and makes multiple API calls, then merges
         the results, de-duplicating by calendar date.
         """
-        start = _validate_date_format(start, "start")
-        end = _validate_date_format(end, "end")
-
+        start, end = _validate_date_range(start, end)
         start_date = datetime.strptime(start, DATE_FORMAT_STR).date()
         end_date = datetime.strptime(end, DATE_FORMAT_STR).date()
-        if start_date > end_date:
-            raise ValueError("start date cannot be after end date")
 
         results: list[dict[str, Any]] = []
         seen: set[str] = set()
@@ -1828,14 +1835,13 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_rhr_daily(self, start: str, end: str) -> list[dict[str, Any]]:
-        """Return daily resting heart rate for a date range, 'start' and 'end' format 'YYYY-MM-DD'.
+        """Return daily resting heart rate for a date range ('start'/'end' format 'YYYY-MM-DD').
 
-        Unlike `get_rhr_day`, which is limited to a single day, this queries the
-        same wellness-stats endpoint with distinct fromDate/untilDate to fetch a
-        range (up to ~1 year) in a single request.
+        Unlike `get_rhr_day`, which is limited to a single day, this queries
+        the same wellness-stats endpoint with distinct fromDate/untilDate to
+        fetch a range (up to ~1 year) in a single request.
         """
-        start = _validate_date_format(start, "start")
-        end = _validate_date_format(end, "end")
+        start, end = _validate_date_range(start, end)
         url = f"{self.garmin_connect_rhr_url}/{self._require_display_name()}"
         params = {
             "fromDate": start,
@@ -1855,14 +1861,13 @@ class Garmin:
         ]
 
     def get_calories_daily(self, start: str, end: str) -> list[dict[str, Any]]:
-        """Return daily active + resting (BMR) calories for a date range, 'start' and 'end' format 'YYYY-MM-DD'.
+        """Return daily active + resting (BMR) calories for a date range.
 
-        Uses the same wellness-stats endpoint as `get_rhr_daily` (metric IDs
-        22 = active calories, 23 = BMR calories) to fetch both series for the
-        range in a single request.
+        'start'/'end' format 'YYYY-MM-DD'. Uses the same wellness-stats
+        endpoint as `get_rhr_daily` (metric IDs 22 = active calories, 23 = BMR
+        calories) to fetch both series for the range in a single request.
         """
-        start = _validate_date_format(start, "start")
-        end = _validate_date_format(end, "end")
+        start, end = _validate_date_range(start, end)
         url = f"{self.garmin_connect_rhr_url}/{self._require_display_name()}"
         params = {
             "fromDate": start,
@@ -1908,13 +1913,13 @@ class Garmin:
         return self.connectapi(url)
 
     def get_hrv_data_range(self, start: str, end: str) -> dict[str, Any] | None:
-        """Return HRV (Heart Rate Variability) data for a date range, 'start' and 'end' format 'YYYY-MM-DD'.
+        """Return HRV (Heart Rate Variability) data for a date range.
 
-        Unlike `get_hrv_data`, which is limited to a single day, this queries the
-        same endpoint with distinct start/end dates to fetch a range in one request.
+        'start'/'end' format 'YYYY-MM-DD'. Unlike `get_hrv_data`, which is
+        limited to a single day, this queries the same endpoint with distinct
+        start/end dates to fetch a range in one request.
         """
-        start = _validate_date_format(start, "start")
-        end = _validate_date_format(end, "end")
+        start, end = _validate_date_range(start, end)
         url = f"{self.garmin_connect_hrv_url}/daily/{start}/{end}"
         logger.debug("Requesting Heart Rate Variability (hrv) data range")
 
