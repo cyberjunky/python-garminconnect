@@ -866,7 +866,7 @@ class TestUpdateWorkout:
     def test_rejects_non_dict_payload(self, garmin: garminconnect.Garmin):
         with patch.object(garmin, "client") as client:
             with pytest.raises(ValueError, match="must be a JSON object"):
-                garmin.update_workout(123, [1, 2, 3])
+                garmin.update_workout(123, [1, 2, 3])  # type: ignore[arg-type]
         client.put.assert_not_called()
 
     def test_rejects_invalid_json_string(self, garmin: garminconnect.Garmin):

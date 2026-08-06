@@ -111,7 +111,7 @@ def sanitize_json(value: Any) -> Any:
     profile_object = any(
         key in value for key in ("profileId", "garminGUID", "userProfileId")
     )
-    sanitized = {}
+    sanitized: dict[str, Any] = {}
     for key, item in value.items():
         normalized_key = key.casefold()
         if (

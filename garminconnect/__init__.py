@@ -121,9 +121,15 @@ def _validate_positive_integer(value: int, param_name: str = "value") -> int:
 
 
 def _validate_hole_numbers(value: str, param_name: str = "hole_numbers") -> str:
-    """Validate a golf hole-numbers string: holes 1-18 separated by ',' or '-'."""
+    """Validate a golf hole-numbers string: holes 1-18 separated by ',' or '-'.
+
+    Spaces around separators are tolerated (e.g. "1, 2, 3" or "1 - 18").
+    """
     if not isinstance(value, str):
         raise ValueError(f"{param_name} must be a string")
+    # Remove spaces so callers can use "1, 2, 3" or "1 - 18" and still pass
+    # a clean hyphen-separated string to Garmin's API.
+    value = value.replace(" ", "")
     if not re.fullmatch(HOLE_NUMBERS_REGEX, value):
         raise ValueError(
             f"{param_name} must be holes 1-18 separated by ',' or '-', got: {value!r}"

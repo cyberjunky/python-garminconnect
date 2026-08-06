@@ -43,7 +43,7 @@ Make your selection:
 - **Total API Methods**: 142+ unique endpoints (snapshot)
 - **Categories**: 13 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
-- **Daily Health & Activity**: 9 methods (today's health data)
+- **Daily Health & Activity**: 10 methods (today's health data plus daily calories, resting HR and sleep ranges)
 - **Advanced Health Metrics**: 15 methods (fitness metrics, HRV, VO2, training readiness, training zones, running tolerance)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
 - **Activities & Workouts**: 41 methods (comprehensive activity, workout management, typed workout uploads including strength, in-place edit, scheduling, push to device, import, edit description / exercise sets)
@@ -313,7 +313,7 @@ from garminconnect import Garmin
 # First run: logs in and saves tokens to ~/.garminconnect
 # Subsequent runs: loads saved tokens and auto-refreshes
 client = Garmin(
-    os.getenv("EMAIL"),
+    os.getenv("GARMIN_EMAIL"),
     getpass("Garmin password: "),
     prompt_mfa=lambda: input("MFA code: "),
 )
