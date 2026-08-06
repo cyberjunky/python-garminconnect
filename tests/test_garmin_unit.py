@@ -341,6 +341,176 @@ class TestUrlConstruction:
 
 
 # ---------------------------------------------------------------------------
+# Date-range wellness method tests (max metrics, RHR, calories, sleep, HRV)
+# ---------------------------------------------------------------------------
+
+
+class TestWellnessDailyRangeMethods:
+    """URL/param construction and chunking for the *_daily / *_range wellness methods."""
+
+    def test_get_max_metrics_range_builds_url_with_distinct_dates(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin, "connectapi", return_value={"vo2Max": 55}) as mock:
+            result = garmin.get_max_metrics_range("2026-03-01", "2026-03-15")
+
+        url = mock.call_args[0][0]
+        assert url.endswith(
+            "/metrics-service/metrics/maxmet/daily/2026-03-01/2026-03-15"
+        )
+        assert result == {"vo2Max": 55}
+
+    def test_get_max_metrics_range_rejects_malformed_date(
+        self, garmin: garminconnect.Garmin
+    ):
+        with pytest.raises(ValueError, match="YYYY-MM-DD"):
+            garmin.get_max_metrics_range("not-a-date", "2026-03-15")
+
+    def test_get_hrv_data_range_builds_url_with_distinct_dates(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(
+            garmin, "connectapi", return_value={"hrvSummaries": []}
+        ) as mock:
+            result = garmin.get_hrv_data_range("2026-03-01", "2026-03-15")
+
+        url = mock.call_args[0][0]
+        assert url.endswith("/hrv-service/hrv/daily/2026-03-01/2026-03-15")
+        assert result == {"hrvSummaries": []}
+
+    def test_get_rhr_daily_builds_url_and_filters_metric_map(
+        self, garmin: garminconnect.Garmin
+    ):
+        payload = {
+            "allMetrics": {
+                "metricsMap": {
+                    "WELLNESS_RESTING_HEART_RATE": [
+                        {"calendarDate": "2026-03-01", "value": 52},
+                        {"calendarDate": "2026-03-02", "value": None},
+                    ]
+                }
+            }
+        }
+        with patch.object(garmin, "connectapi", return_value=payload) as mock:
+            result = garmin.get_rhr_daily("2026-03-01", "2026-03-02")
+
+        url, kwargs = mock.call_args[0][0], mock.call_args[1]
+        assert url.endswith("/userstats-service/wellness/daily/test-display")
+        assert kwargs["params"] == {
+            "fromDate": "2026-03-01",
+            "untilDate": "2026-03-02",
+            "metricId": 60,
+        }
+        # Rows with a null value are dropped.
+        assert result == [{"calendarDate": "2026-03-01", "value": 52}]
+
+    def test_get_rhr_daily_rejects_malformed_date(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="YYYY-MM-DD"):
+            garmin.get_rhr_daily("not-a-date", "2026-03-02")
+
+    def test_get_calories_daily_merges_active_and_resting(
+        self, garmin: garminconnect.Garmin
+    ):
+        payload = {
+            "allMetrics": {
+                "metricsMap": {
+                    "WELLNESS_ACTIVE_CALORIES": [
+                        {"calendarDate": "2026-03-01", "value": 400},
+                    ],
+                    "WELLNESS_BMR_CALORIES": [
+                        {"calendarDate": "2026-03-01", "value": 1600},
+                        {"calendarDate": "2026-03-02", "value": 1500},
+                    ],
+                }
+            }
+        }
+        with patch.object(garmin, "connectapi", return_value=payload) as mock:
+            result = garmin.get_calories_daily("2026-03-01", "2026-03-02")
+
+        kwargs = mock.call_args[1]
+        assert kwargs["params"]["metricId"] == [22, 23]
+        assert result == [
+            {
+                "calendarDate": "2026-03-01",
+                "active": 400,
+                "resting": 1600,
+                "total": 2000,
+            },
+            {
+                "calendarDate": "2026-03-02",
+                "active": None,
+                "resting": 1500,
+                "total": 1500,
+            },
+        ]
+
+    def test_get_sleep_daily_single_chunk_dedupes_and_sorts(
+        self, garmin: garminconnect.Garmin
+    ):
+        payload = {
+            "individualStats": [
+                {"calendarDate": "2026-03-02", "overallSleepScore": 80},
+                {"calendarDate": "2026-03-01", "overallSleepScore": 75},
+                {"calendarDate": "2026-03-01", "overallSleepScore": 75},
+            ]
+        }
+        with patch.object(garmin, "connectapi", return_value=payload) as mock:
+            result = garmin.get_sleep_daily("2026-03-01", "2026-03-02")
+
+        mock.assert_called_once()
+        url = mock.call_args[0][0]
+        assert url.endswith("/sleep-service/stats/sleep/daily/2026-03-01/2026-03-02")
+        assert [row["calendarDate"] for row in result] == ["2026-03-01", "2026-03-02"]
+
+    def test_get_sleep_daily_chunks_ranges_over_28_days(
+        self, garmin: garminconnect.Garmin
+    ):
+        # 30-day range should be split into two requests (28 days + 2 days).
+        with patch.object(
+            garmin, "connectapi", return_value={"individualStats": []}
+        ) as mock:
+            garmin.get_sleep_daily("2026-01-01", "2026-01-30")
+
+        assert mock.call_count == 2
+        first_url = mock.call_args_list[0][0][0]
+        second_url = mock.call_args_list[1][0][0]
+        assert first_url.endswith(
+            "/sleep-service/stats/sleep/daily/2026-01-01/2026-01-28"
+        )
+        assert second_url.endswith(
+            "/sleep-service/stats/sleep/daily/2026-01-29/2026-01-30"
+        )
+
+    def test_get_sleep_daily_rejects_start_after_end(
+        self, garmin: garminconnect.Garmin
+    ):
+        with pytest.raises(ValueError, match="start date cannot be after end date"):
+            garmin.get_sleep_daily("2026-03-15", "2026-03-01")
+
+    @pytest.mark.parametrize(
+        "method_name",
+        [
+            "get_max_metrics_range",
+            "get_hrv_data_range",
+            "get_rhr_daily",
+            "get_calories_daily",
+            "get_sleep_daily",
+        ],
+    )
+    def test_range_methods_reject_inverted_range_without_api_call(
+        self, garmin: garminconnect.Garmin, method_name: str
+    ):
+        """All *_range/*_daily methods must reject start > end before calling the API."""
+        method = getattr(garmin, method_name)
+        with (
+            patch.object(garmin, "connectapi") as mock,
+            pytest.raises(ValueError, match="start date cannot be after end date"),
+        ):
+            method("2026-03-15", "2026-03-01")
+        mock.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
 # Parameter limit tests
 # ---------------------------------------------------------------------------
 
@@ -656,9 +826,7 @@ class TestHttpErrorMapping:
 class TestUpdateWorkout:
     """``update_workout`` PUTs the full workout to /workout-service/workout/<id>."""
 
-    def test_puts_to_workout_url_with_injected_id(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_puts_to_workout_url_with_injected_id(self, garmin: garminconnect.Garmin):
         workout = {"workoutName": "Edited", "sportType": {"sportTypeId": 1}}
         with patch.object(garmin, "client") as client:
             client.put.return_value = {"workoutId": 123, "workoutName": "Edited"}
@@ -672,9 +840,7 @@ class TestUpdateWorkout:
         assert kwargs["json"]["workoutName"] == "Edited"
         assert result == {"workoutId": 123, "workoutName": "Edited"}
 
-    def test_injected_id_overrides_stray_workout_id(
-        self, garmin: garminconnect.Garmin
-    ):
+    def test_injected_id_overrides_stray_workout_id(self, garmin: garminconnect.Garmin):
         workout = {"workoutId": 999, "workoutName": "Edited"}
         with patch.object(garmin, "client") as client:
             garmin.update_workout(123, workout)
