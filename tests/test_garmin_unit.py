@@ -16,7 +16,7 @@ Run with:
     python -m pytest tests/test_garmin_unit.py -v
 """
 
-from datetime import date
+from datetime import date, datetime
 from unittest.mock import patch
 
 import pytest
@@ -255,6 +255,34 @@ class TestUrlConstruction:
             garmin.get_functional_threshold_power_range(
                 start_date, end_date, sport=sport, aggregation=aggregation
             )
+
+    def test_get_lactate_threshold_rejects_inverted_range(
+        self, garmin: garminconnect.Garmin
+    ):
+        with (
+            patch.object(garmin, "connectapi") as mock_connectapi,
+            patch.object(
+                garmin,
+                "get_functional_threshold_power_range",
+                side_effect=ValueError("start_date must be on or before end_date"),
+            ) as mock_ftp,
+        ):
+            with pytest.raises(
+                ValueError, match="start_date must be on or before end_date"
+            ):
+                garmin.get_lactate_threshold(
+                    latest=False,
+                    start_date="2025-06-30",
+                    end_date="2025-06-01",
+                )
+
+        mock_ftp.assert_called_once_with(
+            "2025-06-30",
+            "2025-06-01",
+            sport="RUNNING",
+            aggregation="daily",
+        )
+        mock_connectapi.assert_not_called()
 
     def test_get_fitnessage_data_builds_url_with_date(
         self, garmin: garminconnect.Garmin

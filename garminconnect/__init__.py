@@ -1439,12 +1439,16 @@ class Garmin:
         endpoint.  It is useful for FTP history because the existing
         ``get_cycling_ftp`` endpoint returns only the latest cycling value.
         """
-        if isinstance(start_date, date):
+        if isinstance(start_date, datetime):
+            normalized_start_date = start_date.date().isoformat()
+        elif isinstance(start_date, date):
             normalized_start_date = start_date.isoformat()
         else:
             normalized_start_date = _validate_date_format(start_date, "start_date")
         if end_date is None:
             normalized_end_date = date.today().isoformat()
+        elif isinstance(end_date, datetime):
+            normalized_end_date = end_date.date().isoformat()
         elif isinstance(end_date, date):
             normalized_end_date = end_date.isoformat()
         else:
@@ -1557,18 +1561,19 @@ class Garmin:
         if aggregation not in _valid_aggregations:
             raise ValueError(f"aggregation must be one of {_valid_aggregations}")
 
-        speed_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdSpeed/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
-
-        heart_rate_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdHeartRate/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
-
-        speed = self.connectapi(speed_url)
-        heart_rate = self.connectapi(heart_rate_url)
         power = self.get_functional_threshold_power_range(
             start_date,
             end_date,
             sport="RUNNING",
             aggregation=aggregation,
         )
+
+        speed_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdSpeed/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+
+        heart_rate_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdHeartRate/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+
+        speed = self.connectapi(speed_url)
+        heart_rate = self.connectapi(heart_rate_url)
 
         return {"speed": speed, "heart_rate": heart_rate, "power": power}
 
