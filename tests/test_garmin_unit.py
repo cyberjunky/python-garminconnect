@@ -212,7 +212,9 @@ class TestUrlConstruction:
             "/hrv-service/hrv/daily/2026-03-01/2026-03-15"
         )
 
-    @pytest.mark.parametrize("method_name", ["get_max_metrics_range", "get_hrv_data_range"])
+    @pytest.mark.parametrize(
+        "method_name", ["get_max_metrics_range", "get_hrv_data_range"]
+    )
     def test_new_range_methods_reject_inverted_dates(
         self, garmin: garminconnect.Garmin, method_name: str
     ):
@@ -224,7 +226,10 @@ class TestUrlConstruction:
     ):
         with patch.object(garmin, "connectapi", return_value=[]) as mock:
             garmin.get_functional_threshold_power_range(
-                date(2025, 6, 1), date(2025, 6, 30), sport="RUNNING", aggregation="weekly"
+                date(2025, 6, 1),
+                date(2025, 6, 30),
+                sport="RUNNING",
+                aggregation="weekly",
             )
 
         assert "sport=RUNNING&aggregation=weekly" in mock.call_args[0][0]
