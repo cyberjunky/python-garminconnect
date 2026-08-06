@@ -199,12 +199,12 @@ menu_categories = {
                 "key": "get_heart_rates",
             },
             "6": {
-                "desc": f"Get resting heart rate for '{config.today.isoformat()}'",
-                "key": "get_resting_heart_rate",
+                "desc": f"Get resting heart rate from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "key": "get_rhr_daily",
             },
             "7": {
-                "desc": f"Get sleep data for '{config.today.isoformat()}'",
-                "key": "get_sleep_data",
+                "desc": f"Get daily sleep summaries from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "key": "get_sleep_daily",
             },
             "8": {
                 "desc": f"Get stress data for '{config.today.isoformat()}'",
@@ -213,6 +213,10 @@ menu_categories = {
             "9": {
                 "desc": f"Get lifestyle logging data for '{config.today.isoformat()}'",
                 "key": "get_lifestyle_logging_data",
+            },
+            "a": {
+                "desc": f"Get daily calories from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "key": "get_calories_daily",
             },
         },
     },
@@ -240,12 +244,12 @@ menu_categories = {
                 "key": "get_spo2_data",
             },
             "6": {
-                "desc": f"Get max metrics (VO2, fitness age) for '{config.today.isoformat()}'",
-                "key": "get_max_metrics",
+                "desc": f"Get max metrics (VO2, fitness age) from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "key": "get_max_metrics_range",
             },
             "7": {
-                "desc": f"Get Heart Rate Variability (HRV) for '{config.today.isoformat()}'",
-                "key": "get_hrv_data",
+                "desc": f"Get Heart Rate Variability (HRV) from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "key": "get_hrv_data_range",
             },
             "8": {
                 "desc": f"Get Fitness Age data for '{config.today.isoformat()}'",
@@ -4135,23 +4139,32 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 method_name="get_heart_rates",
                 api_call_desc=f"api.get_heart_rates('{config.today.isoformat()}')",
             ),
-            "get_resting_heart_rate": lambda: call_and_display(
-                api.get_rhr_day,
+            "get_rhr_daily": lambda: call_and_display(
+                api.get_rhr_daily,
+                config.week_start.isoformat(),
                 config.today.isoformat(),
-                method_name="get_rhr_day",
-                api_call_desc=f"api.get_rhr_day('{config.today.isoformat()}')",
+                method_name="get_rhr_daily",
+                api_call_desc=f"api.get_rhr_daily('{config.week_start.isoformat()}', '{config.today.isoformat()}')",
             ),
-            "get_sleep_data": lambda: call_and_display(
-                api.get_sleep_data,
+            "get_sleep_daily": lambda: call_and_display(
+                api.get_sleep_daily,
+                config.week_start.isoformat(),
                 config.today.isoformat(),
-                method_name="get_sleep_data",
-                api_call_desc=f"api.get_sleep_data('{config.today.isoformat()}')",
+                method_name="get_sleep_daily",
+                api_call_desc=f"api.get_sleep_daily('{config.week_start.isoformat()}', '{config.today.isoformat()}')",
             ),
             "get_all_day_stress": lambda: call_and_display(
                 api.get_all_day_stress,
                 config.today.isoformat(),
                 method_name="get_all_day_stress",
                 api_call_desc=f"api.get_all_day_stress('{config.today.isoformat()}')",
+            ),
+            "get_calories_daily": lambda: call_and_display(
+                api.get_calories_daily,
+                config.week_start.isoformat(),
+                config.today.isoformat(),
+                method_name="get_calories_daily",
+                api_call_desc=f"api.get_calories_daily('{config.week_start.isoformat()}', '{config.today.isoformat()}')",
             ),
             # Advanced Health Metrics
             "get_running_tolerance": lambda: call_and_display(
@@ -4189,17 +4202,19 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 method_name="get_spo2_data",
                 api_call_desc=f"api.get_spo2_data('{config.today.isoformat()}')",
             ),
-            "get_max_metrics": lambda: call_and_display(
-                api.get_max_metrics,
+            "get_max_metrics_range": lambda: call_and_display(
+                api.get_max_metrics_range,
+                config.week_start.isoformat(),
                 config.today.isoformat(),
-                method_name="get_max_metrics",
-                api_call_desc=f"api.get_max_metrics('{config.today.isoformat()}')",
+                method_name="get_max_metrics_range",
+                api_call_desc=f"api.get_max_metrics_range('{config.week_start.isoformat()}', '{config.today.isoformat()}')",
             ),
-            "get_hrv_data": lambda: call_and_display(
-                api.get_hrv_data,
+            "get_hrv_data_range": lambda: call_and_display(
+                api.get_hrv_data_range,
+                config.week_start.isoformat(),
                 config.today.isoformat(),
-                method_name="get_hrv_data",
-                api_call_desc=f"api.get_hrv_data('{config.today.isoformat()}')",
+                method_name="get_hrv_data_range",
+                api_call_desc=f"api.get_hrv_data_range('{config.week_start.isoformat()}', '{config.today.isoformat()}')",
             ),
             "get_fitnessage_data": lambda: call_and_display(
                 api.get_fitnessage_data,

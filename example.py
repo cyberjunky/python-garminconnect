@@ -10,8 +10,8 @@ Dependencies:
     pip install curl_cffi
 
 Environment Variables (optional):
-    export EMAIL=<your garmin email address>
-    export PASSWORD=<your garmin password>
+    export GARMIN_EMAIL=<your garmin email address>
+    export GARMIN_PASSWORD=<your garmin password>
     export GARMINTOKENS=<path to token storage, default ~/.garminconnect>
 """
 
@@ -27,10 +27,30 @@ from garminconnect import (
     Garmin,
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
+    GarminConnectNotFoundError,
     GarminConnectTooManyRequestsError,
 )
 
 logging.getLogger("garminconnect").setLevel(logging.CRITICAL)
+
+
+def _status_code_from_error(exc: Exception) -> int | None:
+    """Best-effort HTTP status extraction from a library exception.
+
+    The library attaches the underlying response object to many exceptions,
+    so use that first. Otherwise fall back to scanning the message string.
+    """
+    response = getattr(exc, "response", None)
+    if response is not None:
+        status = getattr(response, "status_code", None)
+        if isinstance(status, int):
+            return status
+
+    error_str = str(exc)
+    for code in ("400", "401", "403", "404", "429", "500"):
+        if code in error_str:
+            return int(code)
+    return None
 
 
 def safe_api_call(api_method, *args, **kwargs):
@@ -39,27 +59,29 @@ def safe_api_call(api_method, *args, **kwargs):
         result = api_method(*args, **kwargs)
         return True, result, None
 
+    except GarminConnectNotFoundError as e:
+        return False, None, f"Not found (404) — endpoint may have moved: {e}"
     except GarminConnectAuthenticationError as e:
         return False, None, f"Authentication error: {e}"
     except GarminConnectTooManyRequestsError as e:
         return False, None, f"Rate limit exceeded: {e}"
     except GarminConnectConnectionError as e:
-        error_str = str(e)
-        if "400" in error_str:
+        status = _status_code_from_error(e)
+        if status == 400:
             return (
                 False,
                 None,
                 "Not available (400) — feature may not be enabled for your account",
             )
-        if "401" in error_str:
+        if status == 401:
             return False, None, "Authentication required (401) — please re-authenticate"
-        if "403" in error_str:
+        if status == 403:
             return False, None, "Access denied (403) — account may not have permission"
-        if "404" in error_str:
+        if status == 404:
             return False, None, "Not found (404) — endpoint may have moved"
-        if "429" in error_str:
+        if status == 429:
             return False, None, "Rate limit (429) — please wait before retrying"
-        if "500" in error_str:
+        if status == 500:
             return False, None, "Server error (500) — Garmin servers are having issues"
         return False, None, f"Connection error: {e}"
     except Exception as e:
@@ -93,8 +115,8 @@ def init_api() -> Garmin | None:
     # Fresh credential login with MFA support
     while True:
         try:
-            email = os.getenv("EMAIL") or input("Email: ").strip()
-            password = os.getenv("PASSWORD") or getpass("Password: ")
+            email = os.getenv("GARMIN_EMAIL") or input("Email: ").strip()
+            password = os.getenv("GARMIN_PASSWORD") or getpass("Password: ")
 
             garmin = Garmin(
                 email=email,

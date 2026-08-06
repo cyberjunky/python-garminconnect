@@ -60,6 +60,10 @@ module = [
     "test_login_recovery",
     "test_token_permissions",
     "test_widget_mfa",
+    "test_cassette_sanitization",
+    "test_mfa_shelving",
+    "test_activity_details",
+    "test_demo_security",
     "conftest",
 ]
 disallow_untyped_defs = false

@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-sys.modules.setdefault("readchar", SimpleNamespace(readkey=lambda: "q"))
+sys.modules.setdefault("readchar", SimpleNamespace(readkey=lambda: "q"))  # type: ignore[arg-type]
 
 import demo  # noqa: E402
 
