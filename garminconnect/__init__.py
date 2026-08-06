@@ -1568,9 +1568,17 @@ class Garmin:
             aggregation=aggregation,
         )
 
-        speed_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdSpeed/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+        speed_url = (
+            f"{self.garmin_connect_biometric_stats_url}"
+            f"/lactateThresholdSpeed/range/{start_date}/{end_date}"
+            f"?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+        )
 
-        heart_rate_url = f"{self.garmin_connect_biometric_stats_url}/lactateThresholdHeartRate/range/{start_date}/{end_date}?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+        heart_rate_url = (
+            f"{self.garmin_connect_biometric_stats_url}"
+            f"/lactateThresholdHeartRate/range/{start_date}/{end_date}"
+            f"?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
+        )
 
         speed = self.connectapi(speed_url)
         heart_rate = self.connectapi(heart_rate_url)
