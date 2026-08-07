@@ -419,6 +419,32 @@ client.upload_strength_workout(workout)
 
 Use `create_distance_interval_step(600.0, step_order=1)` for interval steps that should end after a distance in meters instead of after a duration.
 
+### Golf
+
+The library supports reading Garmin Golf scorecards, shot-level data, club statistics, and golf user statistics.
+
+```python
+# List recent golf scorecards
+summary = client.get_golf_summary(limit=10)
+scorecard_id = summary["scorecardSummaries"][0]["id"]
+
+# Get the full scorecard details
+scorecard = client.get_golf_scorecard(scorecard_id)
+
+# Get shot-by-shot data
+# - Omit hole_numbers to receive every hole (recommended for holes 10-18).
+# - Single-digit holes work as a comma- or dash-separated list, e.g. "1,2,3".
+# - Lists containing double-digit holes (10-18) are automatically upgraded
+#   to return all 18 holes, because Garmin's endpoint drops double-digit
+#   holes from filtered queries.
+shots = client.get_golf_shot_data(scorecard_id)
+shots = client.get_golf_shot_data(scorecard_id, hole_numbers="1,2,3")
+
+# Club and player statistics
+club_stats = client.get_golf_club_stats()
+user_stats = client.get_golf_user_stats()
+```
+
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
 - **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 130+ API methods
