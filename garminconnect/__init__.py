@@ -1765,7 +1765,14 @@ class Garmin:
         return self.connectapi(url, params=params)
 
     def get_sleep_data(self, cdate: str) -> dict[str, Any]:
-        """Return sleep data for 'cdate' format 'YYYY-MM-DD'."""
+        """Return sleep data for 'cdate' format 'YYYY-MM-DD'.
+
+        The response is passed through exactly as Garmin returns it. Some users
+        (notably China/UTC+8 accounts on connect.garmin.cn) have reported that
+        ``sleepStartTimestampLocal`` / ``sleepEndTimestampLocal`` can be offset
+        by the local timezone twice. When in doubt, use the ``*GMT`` fields and
+        convert to local time yourself.
+        """
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_sleep_url}/{self.display_name}"
         params = {"date": cdate, "nonSleepBufferMinutes": 60}
