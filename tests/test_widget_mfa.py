@@ -16,6 +16,7 @@ from garminconnect.client import _MFARequired
 from garminconnect.exceptions import (
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
+    GarminConnectTooManyRequestsError,
 )
 
 # The signin GET must yield a CSRF token for the flow to reach the POST.
@@ -31,97 +32,156 @@ def _resp(text="", status_code=200, url="https://sso.garmin.com/sso/signin"):
     )
 
 
-def _page(title):
-    return f"<html><head><title>{title}</title></head><body></body></html>"
+def _mfa_page(title, mfa_method, code_sent_to=None, customer_guid="cg-123"):
+    """Build a widget page with the inline JS vars Garmin uses for MFA."""
+    vars_ = [
+        f'var customerGuid = "{customer_guid}";',
+        f'var mfaMethod = "{mfa_method}";',
+        'var locale = "en-US";',
+        'var clientId = "";',
+    ]
+    if code_sent_to is not None:
+        vars_.append(f'var codeSentTo = "{code_sent_to}";')
+    return (
+        f'<html><head><title>{title}</title></head><body>'
+        f'<script>{" ".join(vars_)}</script></body></html>'
+    )
 
 
 class _FakeSession:
     """Minimal stand-in for curl_cffi's Session for the widget flow.
 
     Every GET returns a CSRF-bearing page (covers both the embed and signin
-    GETs); the credential POST returns the caller-supplied page carrying the
-    title under test.
+    GETs). The credential POST returns the caller-supplied MFA page; any
+    ``verifyMFA/mfaCode`` POST returns a 200 unless a per-URL response is set.
     """
 
-    def __init__(self, post_text):
+    def __init__(self, post_text, per_url=None):
         self._post_text = post_text
+        self._per_url = per_url or {}
+        self.post_urls = []
 
     def get(self, url, **kwargs):
         return _resp(text=_CSRF_HTML)
 
     def post(self, url, **kwargs):
+        self.post_urls.append(url)
+        for key, value in self._per_url.items():
+            if key in url:
+                return value
         return _resp(text=self._post_text)
 
 
 @contextlib.contextmanager
-def _widget_session(post_text):
+def _widget_session(post_text, per_url=None):
     """Patch the widget flow to drive ``_FakeSession`` with no real network/delay."""
+    cm = SimpleNamespace(session=None)
+
+    def make_session(*args, **kwargs):
+        sess = _FakeSession(post_text, per_url=per_url)
+        cm.session = sess
+        return sess
+
     with (
         patch.object(client_mod, "HAS_CFFI", True),
         patch.object(
             client_mod,
             "cffi_requests",
-            SimpleNamespace(Session=lambda *a, **k: _FakeSession(post_text)),
+            SimpleNamespace(Session=make_session),
         ),
         patch.object(client_mod.time, "sleep"),
     ):
-        yield
+        yield cm
 
 
 @pytest.mark.parametrize(
-    "title",
+    "title, method",
     [
-        "GARMIN Authentication Application",  # email one-time-code MFA
-        "Enter MFA code for login",  # authenticator-app (TOTP) MFA
+        ("GARMIN Authentication Application", "email"),  # email OTP MFA
+        ("Enter MFA code for login", "totp"),  # authenticator-app MFA
     ],
 )
-def test_mfa_titles_trigger_mfa(title):
+def test_mfa_titles_trigger_mfa(title, method):
     """Both MFA page-title variants must enter the MFA completion flow."""
     c = client_mod.Client()
-    with _widget_session(_page(title)), pytest.raises(_MFARequired):
+    with _widget_session(_mfa_page(title, method)) as cm, pytest.raises(_MFARequired):
         c._widget_web_login("e@x.com", "pw")
 
     assert c._mfa_flow == "widget"
     assert c._widget_last_resp is not None
 
 
-def test_email_mfa_marks_delivery_uncertain():
-    """Email/SMS OTP MFA can't be confirmed as delivered (scraped HTML, no
-    JS execution) -- login() relies on this flag to shelve it and give
-    other strategies a chance instead of prompting for a code that may
-    never arrive.
+def test_email_mfa_requests_code_when_not_already_sent():
+    """Email/SMS MFA pages that have not yet delivered a code must trigger the
+    same ``/sso/verifyMFA/mfaCode`` request the browser's "Request a new code"
+    link uses.
     """
     c = client_mod.Client()
-    with (
-        _widget_session(_page("GARMIN Authentication Application")),
-        pytest.raises(_MFARequired),
+    page = _mfa_page("GARMIN Authentication Application", "email")
+    with _widget_session(page) as cm, pytest.raises(_MFARequired):
+        c._widget_web_login("e@x.com", "pw")
+
+    assert any("/sso/verifyMFA/mfaCode" in url for url in cm.session.post_urls)
+    assert c._mfa_method == "email"
+
+
+def test_email_mfa_does_not_request_code_when_already_sent():
+    """If the signin POST already sent a code, do not request another one."""
+    c = client_mod.Client()
+    page = _mfa_page(
+        "Enter MFA code for login", "email", code_sent_to="x@example.com"
+    )
+    with _widget_session(page) as cm, pytest.raises(_MFARequired):
+        c._widget_web_login("e@x.com", "pw")
+
+    assert not any("/sso/verifyMFA/mfaCode" in url for url in cm.session.post_urls)
+
+
+def test_totp_mfa_does_not_request_code():
+    """Authenticator/TOTP codes are user-generated, not delivered by Garmin."""
+    c = client_mod.Client()
+    page = _mfa_page("Enter MFA code for login", "totp")
+    with _widget_session(page) as cm, pytest.raises(_MFARequired):
+        c._widget_web_login("e@x.com", "pw")
+
+    assert not any("/sso/verifyMFA/mfaCode" in url for url in cm.session.post_urls)
+
+
+def test_mfa_code_request_rate_limit_falls_through():
+    """A 429 on the explicit code-request endpoint falls through to the next
+    strategy, not a misleading MFA prompt.
+    """
+    c = client_mod.Client()
+    page = _mfa_page("GARMIN Authentication Application", "email")
+    per_url = {
+        "/sso/verifyMFA/mfaCode": _resp(
+            text="rate limited", status_code=429, url="https://sso.garmin.com/sso/verifyMFA/mfaCode"
+        )
+    }
+    with _widget_session(page, per_url=per_url), pytest.raises(
+        GarminConnectTooManyRequestsError
     ):
         c._widget_web_login("e@x.com", "pw")
 
-    assert c._mfa_delivery_uncertain is True
 
-
-def test_totp_mfa_does_not_mark_delivery_uncertain():
-    """TOTP (authenticator-app) codes are user-generated, not delivered by
-    Garmin, so there's nothing to be uncertain about -- this must keep
-    stopping the chain immediately like before.
+def test_signin_page_title_not_mfa():
+    """The bare signin page is also titled "GARMIN Authentication Application".
+    Without the MFA JS variables it must not be mistaken for an MFA challenge.
     """
     c = client_mod.Client()
-    with (
-        _widget_session(_page("Enter MFA code for login")),
-        pytest.raises(_MFARequired),
+    page = "<html><head><title>GARMIN Authentication Application</title></head><body></body></html>"
+    with _widget_session(page), pytest.raises(
+        GarminConnectConnectionError, match="unexpected title"
     ):
         c._widget_web_login("e@x.com", "pw")
-
-    assert getattr(c, "_mfa_delivery_uncertain", False) is False
 
 
 def test_unexpected_title_still_errors():
     """A genuinely unknown page must NOT be misread as an MFA challenge."""
     c = client_mod.Client()
-    with (
-        _widget_session(_page("Some Unrelated Page")),
-        pytest.raises(GarminConnectConnectionError, match="unexpected title"),
+    page = "<html><head><title>Some Unrelated Page</title></head><body></body></html>"
+    with _widget_session(page), pytest.raises(
+        GarminConnectConnectionError, match="unexpected title"
     ):
         c._widget_web_login("e@x.com", "pw")
 
@@ -167,6 +227,6 @@ def test_complete_mfa_widget_missing_context():
 def test_complete_mfa_widget_rejects_bad_code():
     """A non-Success verify page (e.g. wrong/expired code) raises auth error."""
     c = client_mod.Client()
-    _set_widget_mfa_context(c, _page("Enter MFA code for login"))
+    _set_widget_mfa_context(c, _mfa_page("Enter MFA code for login", "totp"))
     with pytest.raises(GarminConnectAuthenticationError, match="Widget MFA failed"):
         c._complete_mfa_widget("000000")
