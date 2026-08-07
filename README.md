@@ -434,9 +434,11 @@ scorecard = client.get_golf_scorecard(scorecard_id)
 # Get shot-by-shot data
 # - Omit hole_numbers to receive every hole (recommended for holes 10-18).
 # - Single-digit holes work as a comma- or dash-separated list, e.g. "1,2,3".
-# - Lists containing double-digit holes (10-18) are automatically upgraded
-#   to return all 18 holes, because Garmin's endpoint drops double-digit
-#   holes from filtered queries.
+#   Commas are normalized to dashes because Garmin only accepts '-' as the
+#   separator.
+# - Double-digit holes (10-18) cannot be fetched with a filter at all; the
+#   API either drops them or returns an empty response. If you request holes
+#   10-18, the library falls back to returning all 18 holes.
 shots = client.get_golf_shot_data(scorecard_id)
 shots = client.get_golf_shot_data(scorecard_id, hole_numbers="1,2,3")
 

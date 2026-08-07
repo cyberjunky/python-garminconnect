@@ -2194,7 +2194,7 @@ def get_golf_shot_data_entry(api: Garmin) -> None:
 
         holes = input(
             "Enter hole numbers 1-9, comma/dash separated "
-            "(10-18 always returns all 18 holes, or Enter for all): "
+            "(10-18 cannot be fetched with a filter; the API returns all 18 holes, or Enter for all): "
         ).strip()
         holes = holes or None
 
