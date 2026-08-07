@@ -3500,6 +3500,9 @@ class Garmin:
             hole_numbers: Holes 1-18 separated by ',' or '-' (e.g. "1,2,3").
                 Garmin's API only accepts '-' as a separator, so any commas
                 are normalized to '-' before the request is sent.
+                Lists containing holes 10-18 are silently upgraded to return
+                all 18 holes, because Garmin's endpoint drops double-digit
+                hole numbers from filtered queries.
                 Omit to get every hole on the scorecard.
 
         Returns:
@@ -3511,7 +3514,20 @@ class Garmin:
         params = None
         if hole_numbers is not None:
             hole_numbers = _validate_hole_numbers(hole_numbers)
-            params = f"hole-numbers={hole_numbers.replace(',', '-')}"
+            # Garmin's endpoint only returns single-digit holes reliably when a
+            # hole-numbers filter is supplied. Double-digit holes (10-18) are
+            # dropped or cause an empty response. The only reliable way to
+            # retrieve holes 10-18 is to omit the parameter and get all 18 holes.
+            if any(int(n) > 9 for n in re.findall(r"\d+", hole_numbers)):
+                logger.warning(
+                    "Garmin drops double-digit hole numbers from hole-numbers "
+                    "queries; returning all 18 holes for scorecard %s instead of %s",
+                    scorecard_id,
+                    hole_numbers,
+                )
+                hole_numbers = None
+            else:
+                params = f"hole-numbers={hole_numbers.replace(',', '-')}"
         logger.debug(
             "Requesting golf shot data for scorecard %d, holes %s",
             scorecard_id,
