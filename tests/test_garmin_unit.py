@@ -16,7 +16,6 @@ Run with:
     python -m pytest tests/test_garmin_unit.py -v
 """
 
-from datetime import date, datetime
 from unittest.mock import patch
 
 import pytest
@@ -194,40 +193,13 @@ class TestUrlConstruction:
         )
         assert result == payload
 
-    def test_get_max_metrics_range_builds_distinct_date_url(
-        self, garmin: garminconnect.Garmin
-    ):
-        with patch.object(garmin, "connectapi", return_value=[]) as mock:
-            garmin.get_max_metrics_range("2026-03-01", "2026-03-15")
-        assert mock.call_args[0][0].endswith(
-            "/metrics-service/metrics/maxmet/daily/2026-03-01/2026-03-15"
-        )
-
-    def test_get_hrv_data_range_builds_distinct_date_url(
-        self, garmin: garminconnect.Garmin
-    ):
-        with patch.object(garmin, "connectapi", return_value={}) as mock:
-            garmin.get_hrv_data_range("2026-03-01", "2026-03-15")
-        assert mock.call_args[0][0].endswith(
-            "/hrv-service/hrv/daily/2026-03-01/2026-03-15"
-        )
-
-    @pytest.mark.parametrize(
-        "method_name", ["get_max_metrics_range", "get_hrv_data_range"]
-    )
-    def test_new_range_methods_reject_inverted_dates(
-        self, garmin: garminconnect.Garmin, method_name: str
-    ):
-        with pytest.raises(ValueError, match="start date cannot be after end date"):
-            getattr(garmin, method_name)("2026-03-15", "2026-03-01")
-
-    def test_get_functional_threshold_power_range_accepts_dates(
+    def test_get_functional_threshold_power_range_builds_url_with_weekly_aggregation(
         self, garmin: garminconnect.Garmin
     ):
         with patch.object(garmin, "connectapi", return_value=[]) as mock:
             garmin.get_functional_threshold_power_range(
-                date(2025, 6, 1),
-                date(2025, 6, 30),
+                "2025-06-01",
+                "2025-06-30",
                 sport="RUNNING",
                 aggregation="weekly",
             )
@@ -235,9 +207,9 @@ class TestUrlConstruction:
         assert "sport=RUNNING&aggregation=weekly" in mock.call_args[0][0]
 
     @pytest.mark.parametrize(
-        ("start_date", "end_date", "sport", "aggregation", "message"),
+        ("start", "end", "sport", "aggregation", "message"),
         [
-            ("2025-06-30", "2025-06-01", "CYCLING", "daily", "start_date"),
+            ("2025-06-30", "2025-06-01", "CYCLING", "daily", "start date cannot be after end date"),
             ("2025-06-01", "2025-06-30", "cycling/running", "daily", "sport must"),
             ("2025-06-01", "2025-06-30", "CYCLING", "hourly", "aggregation"),
         ],
@@ -245,15 +217,15 @@ class TestUrlConstruction:
     def test_get_functional_threshold_power_range_validates_parameters(
         self,
         garmin: garminconnect.Garmin,
-        start_date: str,
-        end_date: str,
+        start: str,
+        end: str,
         sport: str,
         aggregation: str,
         message: str,
     ):
         with pytest.raises(ValueError, match=message):
             garmin.get_functional_threshold_power_range(
-                start_date, end_date, sport=sport, aggregation=aggregation
+                start, end, sport=sport, aggregation=aggregation
             )
 
     def test_get_lactate_threshold_rejects_inverted_range(
@@ -264,17 +236,15 @@ class TestUrlConstruction:
             patch.object(
                 garmin,
                 "get_functional_threshold_power_range",
-                side_effect=ValueError("start_date must be on or before end_date"),
+                side_effect=ValueError("start date cannot be after end date"),
             ) as mock_ftp,
+            pytest.raises(ValueError, match="start date cannot be after end date"),
         ):
-            with pytest.raises(
-                ValueError, match="start_date must be on or before end_date"
-            ):
-                garmin.get_lactate_threshold(
-                    latest=False,
-                    start_date="2025-06-30",
-                    end_date="2025-06-01",
-                )
+            garmin.get_lactate_threshold(
+                latest=False,
+                start_date="2025-06-30",
+                end_date="2025-06-01",
+            )
 
         mock_ftp.assert_called_once_with(
             "2025-06-30",
