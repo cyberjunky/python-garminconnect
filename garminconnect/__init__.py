@@ -1433,8 +1433,8 @@ class Garmin:
 
     def get_functional_threshold_power_range(
         self,
-        start_date: str | date,
-        end_date: str | date | None = None,
+        start: str,
+        end: str,
         *,
         sport: str = "RUNNING",
         aggregation: str = "daily",
@@ -1442,25 +1442,17 @@ class Garmin:
         """Return historic functional threshold power for a Garmin sport.
 
         This uses Garmin Connect's undocumented biometric statistics range
-        endpoint.  It is useful for FTP history because the existing
+        endpoint. It is useful for FTP history because the existing
         ``get_cycling_ftp`` endpoint returns only the latest cycling value.
+
+        Args:
+            start: First date in the range, format 'YYYY-MM-DD'.
+            end: Last date in the range, format 'YYYY-MM-DD'.
+            sport: Garmin sport key (e.g. ``RUNNING``, ``CYCLING``).
+            aggregation: One of ``daily``, ``weekly``, ``monthly``, ``yearly``.
+
         """
-        if isinstance(start_date, datetime):
-            normalized_start_date = start_date.date().isoformat()
-        elif isinstance(start_date, date):
-            normalized_start_date = start_date.isoformat()
-        else:
-            normalized_start_date = _validate_date_format(start_date, "start_date")
-        if end_date is None:
-            normalized_end_date = date.today().isoformat()
-        elif isinstance(end_date, datetime):
-            normalized_end_date = end_date.date().isoformat()
-        elif isinstance(end_date, date):
-            normalized_end_date = end_date.isoformat()
-        else:
-            normalized_end_date = _validate_date_format(end_date, "end_date")
-        if normalized_start_date > normalized_end_date:
-            raise ValueError("start_date must be on or before end_date")
+        start, end = _validate_date_range(start, end)
 
         valid_aggregations = {"daily", "weekly", "monthly", "yearly"}
         if aggregation not in valid_aggregations:
@@ -1469,13 +1461,13 @@ class Garmin:
         normalized_sport = _validate_sport_key(sport)
         url = (
             f"{self.garmin_connect_biometric_stats_url}"
-            f"/functionalThresholdPower/range/{normalized_start_date}/{normalized_end_date}"
+            f"/functionalThresholdPower/range/{start}/{end}"
             f"?sport={normalized_sport}&aggregation={aggregation}&aggregationStrategy=LATEST"
         )
         logger.debug(
             "Requesting functional threshold power from %s to %s for sport %s",
-            normalized_start_date,
-            normalized_end_date,
+            start,
+            end,
             normalized_sport,
         )
         return self.connectapi(url)
