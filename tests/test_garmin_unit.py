@@ -222,6 +222,16 @@ class TestUrlConstruction:
         url = mock.call_args[0][0]
         assert url.endswith("/wellness-service/wellness/daily/spo2/2026-03-15")
 
+    def test_get_spo2_data_normalizes_last_seven_days_avg(
+        self, garmin: garminconnect.Garmin
+    ):
+        payload = {"lastSevenDaysAvgSpO2": "94.42857142857143"}
+        with patch.object(garmin, "connectapi", return_value=payload):
+            result = garmin.get_spo2_data("2026-03-15")
+
+        assert result["lastSevenDaysAvgSpO2"] == 94.42857142857143
+        assert isinstance(result["lastSevenDaysAvgSpO2"], float)
+
     def test_get_intensity_minutes_builds_url_with_date(
         self, garmin: garminconnect.Garmin
     ):
