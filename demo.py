@@ -4247,8 +4247,8 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 api_call_desc=f"api.get_stress_data('{config.today.isoformat()}')",
             ),
             "get_lactate_threshold": lambda: get_lactate_threshold_data(api),
-            "get_functional_threshold_power_range": lambda: get_functional_threshold_power_range_data(
-                api
+            "get_functional_threshold_power_range": lambda: (
+                get_functional_threshold_power_range_data(api)
             ),
             "get_heart_rate_zones": lambda: call_and_display(
                 api.get_heart_rate_zones,
