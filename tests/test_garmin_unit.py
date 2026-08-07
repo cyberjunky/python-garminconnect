@@ -323,9 +323,22 @@ class TestUrlConstruction:
         self, garmin: garminconnect.Garmin
     ):
         with patch.object(garmin, "connectapi", return_value={"holes": []}) as mock:
-            garmin.get_golf_shot_data(12345, hole_numbers="1-18")
+            garmin.get_golf_shot_data(12345, hole_numbers="1-9")
 
-        assert mock.call_args.kwargs["params"] == "hole-numbers=1-18"
+        assert mock.call_args.kwargs["params"] == "hole-numbers=1-9"
+
+    def test_get_golf_shot_data_falls_back_to_all_holes_for_double_digits(
+        self, garmin: garminconnect.Garmin
+    ):
+        """Garmin's endpoint drops double-digit holes from hole-numbers queries.
+
+        The only reliable way to retrieve holes 10-18 is to omit the parameter
+        and receive every hole.
+        """
+        with patch.object(garmin, "connectapi", return_value={"holes": []}) as mock:
+            garmin.get_golf_shot_data(12345, hole_numbers="4-10-11-13")
+
+        assert mock.call_args.kwargs["params"] is None
 
     def test_get_golf_shot_data_rejects_out_of_range_hole(
         self, garmin: garminconnect.Garmin
