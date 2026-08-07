@@ -1625,12 +1625,22 @@ class Garmin:
         return self.connectapi(url)
 
     def get_spo2_data(self, cdate: str) -> dict[str, Any]:
-        """Return available SpO2 data 'cdate' format 'YYYY-MM-DD'."""
+        """Return available SpO2 data 'cdate' format 'YYYY-MM-DD'.
+
+        The API occasionally returns ``lastSevenDaysAvgSpO2`` as a string; it is
+        converted to ``float`` when that happens so the field is consistent with
+        the other numeric SpO2 values.
+        """
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_daily_spo2_url}/{cdate}"
         logger.debug("Requesting SpO2 data")
 
-        return self.connectapi(url)
+        data = self.connectapi(url)
+        if isinstance(data, dict):
+            value = data.get("lastSevenDaysAvgSpO2")
+            if isinstance(value, str):
+                data["lastSevenDaysAvgSpO2"] = float(value)
+        return data
 
     def get_intensity_minutes_data(self, cdate: str) -> dict[str, Any]:
         """Return available Intensity Minutes data 'cdate' format 'YYYY-MM-DD'."""
