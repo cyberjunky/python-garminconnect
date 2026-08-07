@@ -280,6 +280,10 @@ menu_categories = {
                 "desc": "Get configured cycling power zones",
                 "key": "get_power_zones_for_sport",
             },
+            "f": {
+                "desc": f"Get functional threshold power range from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "key": "get_functional_threshold_power_range",
+            },
         },
     },
     "4": {
@@ -2030,6 +2034,19 @@ def get_cycling_ftp_data(api: Garmin) -> None:
         api.get_cycling_ftp,
         method_name="get_cycling_ftp",
         api_call_desc="api.get_cycling_ftp()",
+    )
+
+
+def get_functional_threshold_power_range_data(api: Garmin) -> None:
+    """Get historic functional threshold power (FTP) range."""
+    call_and_display(
+        api.get_functional_threshold_power_range,
+        config.week_start.isoformat(),
+        config.today.isoformat(),
+        sport="CYCLING",
+        aggregation="daily",
+        method_name="get_functional_threshold_power_range",
+        api_call_desc=f"api.get_functional_threshold_power_range('{config.week_start.isoformat()}', '{config.today.isoformat()}', sport='CYCLING', aggregation='daily')",
     )
 
 
@@ -4230,6 +4247,9 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 api_call_desc=f"api.get_stress_data('{config.today.isoformat()}')",
             ),
             "get_lactate_threshold": lambda: get_lactate_threshold_data(api),
+            "get_functional_threshold_power_range": lambda: get_functional_threshold_power_range_data(
+                api
+            ),
             "get_heart_rate_zones": lambda: call_and_display(
                 api.get_heart_rate_zones,
                 method_name="get_heart_rate_zones",
