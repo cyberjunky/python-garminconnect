@@ -749,6 +749,11 @@ class Garmin:
                         self.client.dump(tokenstore_path)
                 self._load_profile_and_settings()
 
+            # Successful authentication no longer needs the plaintext password.
+            # Keeping it would enlarge the credential exposure window (heap dumps,
+            # serialization, debug output) for the lifetime of the object.
+            self.password = None
+
             return mfa_status, _legacy_token
 
         except (

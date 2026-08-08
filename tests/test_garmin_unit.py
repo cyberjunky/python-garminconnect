@@ -545,6 +545,51 @@ class TestUrlConstruction:
 
 
 # ---------------------------------------------------------------------------
+# Credential lifecycle
+# ---------------------------------------------------------------------------
+
+
+class TestCredentialLifecycle:
+    """Plaintext credentials should not outlive successful authentication."""
+
+    def test_password_cleared_after_successful_credential_login(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        with (
+            patch.object(g.client, "login", return_value=(None, None)),
+            patch.object(g, "_load_profile_and_settings"),
+        ):
+            g.login()
+
+        assert g.password is None
+        assert g.username == "user@example.com"
+
+    def test_password_cleared_after_successful_tokenstore_login(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        g.client.di_refresh_token = "refresh"
+        with (
+            patch.object(g.client, "load") as mock_load,
+            patch.object(g.client, "_token_expires_soon", return_value=False),
+            patch.object(g, "_load_profile_and_settings"),
+        ):
+            g.login("/tmp/tokens")
+
+        mock_load.assert_called_once()
+        assert g.password is None
+
+    def test_password_retained_when_login_returns_for_mfa(self):
+        g = garminconnect.Garmin(
+            "user@example.com", "secret", return_on_mfa=True
+        )
+        with patch.object(
+            g.client, "login", return_value=("mfa_status", "legacy_token")
+        ):
+            status, token = g.login()
+
+        assert status == "mfa_status"
+        assert g.password == "secret"
+
+
+# ---------------------------------------------------------------------------
 # Date-range wellness method tests (max metrics, RHR, calories, sleep, HRV)
 # ---------------------------------------------------------------------------
 
