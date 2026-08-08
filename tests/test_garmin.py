@@ -1,8 +1,10 @@
 import os
+from pathlib import Path
 
 import pytest
 
 import garminconnect
+from garminconnect.fit import FitEncoder
 
 DATE = "2023-07-01"
 pytestmark = pytest.mark.integration
@@ -165,10 +167,35 @@ def test_all_day_stress(garmin: garminconnect.Garmin) -> None:
     assert "stressValuesArray" in all_day_stress
 
 
+def _synthetic_activity_fit(tmp_path: Path) -> str:
+    """Return the path to a minimal, anonymised .fit upload fixture.
+
+    The historical test file was a real physical-device recording containing
+    biometric PII; it has been removed from the repository.  Integration
+    testers can still supply a real file via the GARMIN_TEST_ACTIVITY_FIT env
+    var if they need to record against the live API.
+    """
+    if path := os.getenv("GARMIN_TEST_ACTIVITY_FIT"):
+        return path
+
+    encoder = FitEncoder()
+    encoder.write_file_info(
+        serial_number=1234567890,
+        manufacturer=1,  # garmin
+        product=1,
+    )
+    encoder.write_file_creator(software_version=1)
+    encoder.finish()
+
+    fpath = tmp_path / "synthetic_activity.fit"
+    fpath.write_bytes(encoder.getvalue())
+    return str(fpath)
+
+
 @pytest.mark.vcr
-def test_upload(garmin: garminconnect.Garmin) -> None:
+def test_upload(garmin: garminconnect.Garmin, tmp_path: Path) -> None:
     garmin.login()
-    fpath = "tests/12129115726_ACTIVITY.fit"
+    fpath = _synthetic_activity_fit(tmp_path)
     # This test may fail with 409 Conflict if the activity already exists
     # In such cases, we verify that the appropriate error is raised
     try:
