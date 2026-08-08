@@ -18,6 +18,7 @@ Run with:
 
 import base64
 import json
+import threading
 import time
 from contextlib import contextmanager
 from pathlib import Path
@@ -733,6 +734,44 @@ class TestLoginMFA:
 
         assert c.di_token == "portal-token"  # noqa: S105
         mock_clear.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# Token refresh concurrency
+# ---------------------------------------------------------------------------
+
+
+class TestTokenRefreshConcurrency:
+    """Token refresh and state mutation must be serialized across threads."""
+
+    def test_refresh_session_blocks_on_token_lock(self):
+        """`_refresh_session()` must acquire the instance token lock; a second
+        thread should block while the lock is held elsewhere."""
+        c = client_mod.Client(verify_login=False)
+        c.di_token = "token"
+        c.di_refresh_token = "refresh"
+        c.di_client_id = "client"
+
+        hold_lock = threading.Event()
+        release_lock = threading.Event()
+
+        def lock_holder():
+            with c._token_lock:
+                hold_lock.set()
+                release_lock.wait(timeout=5)
+
+        t1 = threading.Thread(target=lock_holder)
+        t1.start()
+        hold_lock.wait(timeout=1)
+
+        t2 = threading.Thread(target=c._refresh_session)
+        t2.start()
+        t2.join(timeout=0.3)
+        assert t2.is_alive(), "_refresh_session did not block on token lock"
+
+        release_lock.set()
+        t1.join(timeout=5)
+        t2.join(timeout=5)
 
 
 # ---------------------------------------------------------------------------

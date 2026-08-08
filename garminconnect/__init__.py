@@ -687,12 +687,13 @@ class Garmin:
                     # Proactively refresh DI token if it's expired or about to expire.
                     # This avoids hitting the SSO login endpoint (which may be
                     # Cloudflare-blocked) when a simple DI refresh would suffice.
-                    if (
-                        self.client.di_refresh_token
-                        and self.client._token_expires_soon()
-                    ):
-                        logger.debug("Token expiring soon, refreshing proactively")
-                        self.client._refresh_session()
+                    with self.client._token_lock:
+                        if (
+                            self.client.di_refresh_token
+                            and self.client._token_expires_soon()
+                        ):
+                            logger.debug("Token expiring soon, refreshing proactively")
+                            self.client._refresh_session()
 
                 except Exception as e:
                     logger.debug(
