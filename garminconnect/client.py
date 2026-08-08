@@ -178,6 +178,29 @@ def _build_basic_auth(client_id: str) -> str:
     return "Basic " + base64.b64encode(f"{client_id}:".encode()).decode()
 
 
+def _decode_jwt_payload(token: str) -> dict[str, Any] | None:
+    """Decode a JWT payload without verifying the signature.
+
+    Garmin signs tokens on the server side; the client does not have the
+    signing key, so full signature verification is not possible here. We do
+    reject tokens that claim ``alg: none`` or otherwise look structurally
+    invalid, preventing the most trivial client-side spoofing of unsigned
+    payloads.
+    """
+    try:
+        parts = token.split(".")
+        if len(parts) < 2:
+            return None
+        header_b64 = parts[0] + "=" * (-len(parts[0]) % 4)
+        header = json.loads(base64.urlsafe_b64decode(header_b64).decode())
+        if header.get("alg") == "none":
+            return None
+        payload_b64 = parts[1] + "=" * (-len(parts[1]) % 4)
+        return json.loads(base64.urlsafe_b64decode(payload_b64).decode())
+    except Exception:
+        return None
+
+
 def _native_headers(extra: dict[str, str] | None = None) -> dict[str, str]:
     headers: dict[str, str] = {
         "User-Agent": NATIVE_API_USER_AGENT,
@@ -1258,36 +1281,21 @@ class Client:
         )
 
     def _extract_client_id_from_jwt(self, token: str) -> str | None:
-        try:
-            parts = token.split(".")
-            if len(parts) < 2:
-                return None
-            payload_b64 = parts[1] + "=" * (-len(parts[1]) % 4)
-            payload = json.loads(base64.urlsafe_b64decode(payload_b64).decode())
-            value = payload.get("client_id")
-            return str(value) if value else None
-        except Exception:
+        payload = _decode_jwt_payload(token)
+        if not payload:
             return None
+        value = payload.get("client_id")
+        return str(value) if value else None
 
     def _token_expires_soon(self) -> bool:
         token = self.di_token or self.jwt_web
         if not token:
             return False
-        try:
-            import time as _time
-
-            parts = str(token).split(".")
-            if len(parts) >= 2:
-                payload_b64 = parts[1] + "=" * (-len(parts[1]) % 4)
-                payload = json.loads(
-                    base64.urlsafe_b64decode(payload_b64.encode()).decode()
-                )
-                exp = payload.get("exp")
-                if exp and _time.time() > (int(exp) - 900):
-                    return True
-        except Exception:
-            _LOGGER.debug("Failed to check token expiry")
-        return False
+        payload = _decode_jwt_payload(str(token))
+        if not payload:
+            return False
+        exp = payload.get("exp")
+        return bool(exp and time.time() > int(exp) - 900)
 
     def _refresh_session(self) -> None:
         """Refresh auth — DI token refresh or legacy JWT_WEB CAS refresh."""

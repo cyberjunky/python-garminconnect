@@ -16,6 +16,9 @@ Run with:
     python -m pytest tests/test_garmin_unit.py -v
 """
 
+import base64
+import json
+import time
 from typing import Any
 from unittest.mock import patch
 
@@ -1000,6 +1003,74 @@ class TestErrorMessageSanitization:
         with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
             c.loads('{"di_token": "SECRET_TOKEN_VALUE"')
         assert "SECRET_TOKEN_VALUE" not in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# JWT handling
+# ---------------------------------------------------------------------------
+
+
+def _b64url(data: dict[str, Any]) -> str:
+    return (
+        base64.urlsafe_b64encode(json.dumps(data).encode())
+        .decode()
+        .rstrip("=")
+    )
+
+
+def _make_jwt(header: dict[str, Any], payload: dict[str, Any]) -> str:
+    return f"{_b64url(header)}.{_b64url(payload)}.signature"
+
+
+class TestJwtHandling:
+    """JWT payload decoding should reject unsigned tokens and parse known claims."""
+
+    def test_extract_client_id_rejects_alg_none(self):
+        c = client_mod.Client(verify_login=False)
+        token = _make_jwt({"alg": "none"}, {"client_id": "12345"})
+        assert c._extract_client_id_from_jwt(token) is None
+
+    def test_extract_client_id_parses_valid_claim(self):
+        c = client_mod.Client(verify_login=False)
+        token = _make_jwt({"alg": "RS256"}, {"client_id": 12345})
+        assert c._extract_client_id_from_jwt(token) == "12345"
+
+    def test_extract_client_id_returns_none_when_claim_missing(self):
+        c = client_mod.Client(verify_login=False)
+        token = _make_jwt({"alg": "RS256"}, {"sub": "user"})
+        assert c._extract_client_id_from_jwt(token) is None
+
+    def test_token_expires_soon_rejects_alg_none(self):
+        c = client_mod.Client(verify_login=False)
+        token = _make_jwt(
+            {"alg": "none"}, {"exp": int(time.time()) + 60}
+        )
+        c.di_token = token
+        assert c._token_expires_soon() is False
+
+    def test_token_expires_soon_true_when_close_to_expiry(self):
+        c = client_mod.Client(verify_login=False)
+        token = _make_jwt(
+            {"alg": "RS256"}, {"exp": int(time.time()) + 60}
+        )
+        c.di_token = token
+        assert c._token_expires_soon() is True
+
+    def test_token_expires_soon_false_when_far_from_expiry(self):
+        c = client_mod.Client(verify_login=False)
+        token = _make_jwt(
+            {"alg": "RS256"}, {"exp": int(time.time()) + 3600}
+        )
+        c.di_token = token
+        assert c._token_expires_soon() is False
+
+    def test_token_expires_soon_falls_back_to_jwt_web(self):
+        c = client_mod.Client(verify_login=False)
+        token = _make_jwt(
+            {"alg": "RS256"}, {"exp": int(time.time()) + 60}
+        )
+        c.jwt_web = token
+        assert c._token_expires_soon() is True
 
 
 # ---------------------------------------------------------------------------
