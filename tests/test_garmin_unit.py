@@ -693,6 +693,7 @@ class TestLogout:
 
         g.logout()
 
+        assert g.username is None
         assert g.password is None
         assert g.display_name is None
         assert g.full_name is None
