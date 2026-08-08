@@ -1810,3 +1810,26 @@ class TestIdentifierValidation:
     def test_delete_blood_pressure_validates_date(self, garmin: garminconnect.Garmin):
         with pytest.raises(ValueError, match="YYYY-MM-DD"):
             garmin.delete_blood_pressure("1", "not-a-date")
+
+
+# ---------------------------------------------------------------------------
+# Activity upload filename handling
+# ---------------------------------------------------------------------------
+
+
+class TestActivityUpload:
+    """import_activity() must pass filenames to requests without extra quoting."""
+
+    def test_import_activity_passes_filename_without_extra_quotes(self, tmp_path):
+        fit_file = tmp_path / "activity.fit"
+        fit_file.write_bytes(b"fake-fit-data")
+        g = garminconnect.Garmin("user@example.com", "secret")
+
+        with patch.object(g.client, "post", return_value={}) as mock_post:
+            g.import_activity(str(fit_file))
+
+        files = mock_post.call_args.kwargs["files"]
+        filename = files["file"][0]
+        assert filename == "activity.fit"
+        assert not filename.startswith('"')
+        assert not filename.endswith('"')

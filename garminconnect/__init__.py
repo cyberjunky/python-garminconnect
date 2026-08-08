@@ -2544,7 +2544,7 @@ class Garmin:
             with p.open("rb") as file_handle:
                 files = {
                     "file": (
-                        f'"{file_base_name}"',
+                        file_base_name,
                         file_handle,
                         "application/octet-stream",
                     )
