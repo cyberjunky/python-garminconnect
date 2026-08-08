@@ -147,6 +147,19 @@ def _validate_sport_key(value: str, param_name: str = "sport") -> str:
     return normalized
 
 
+def _validate_uuid(value: str, param_name: str = "uuid") -> str:
+    """Validate a UUID string (with or without hyphens)."""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{param_name} must be a non-empty string")
+    value = value.strip()
+    if not re.fullmatch(
+        r"^[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}$",
+        value,
+    ):
+        raise ValueError(f"{param_name} must be a valid UUID, got: {value!r}")
+    return value
+
+
 def _fmt_ts(dt: datetime) -> str:
     # Use ms precision to match server expectations
     return dt.replace(tzinfo=None).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
@@ -1288,6 +1301,7 @@ class Garmin:
     def delete_weigh_in(self, weight_pk: str, cdate: str) -> Any:
         """Delete specific weigh-in."""
         cdate = _validate_date_format(cdate, "cdate")
+        weight_pk = str(_validate_positive_integer(int(weight_pk), "weight_pk"))
         url = f"{self.garmin_connect_weight_url}/weight/{cdate}/byversion/{weight_pk}"
         logger.debug("Deleting weigh-in")
 
@@ -1400,6 +1414,8 @@ class Garmin:
 
     def delete_blood_pressure(self, version: str, cdate: str) -> dict[str, Any]:
         """Delete specific blood pressure measurement."""
+        cdate = _validate_date_format(cdate, "cdate")
+        version = str(_validate_positive_integer(int(version), "version"))
         url = f"{self.garmin_connect_set_blood_pressure_endpoint}/{cdate}/{version}"
         logger.debug("Deleting blood pressure measurement")
 
@@ -2328,6 +2344,7 @@ class Garmin:
 
     def set_activity_name(self, activity_id: str, title: str) -> Any:
         """Set name for activity with id."""
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {"activityId": activity_id, "activityName": title}
 
@@ -2340,6 +2357,7 @@ class Garmin:
         type_key: str,
         parent_type_id: int,
     ) -> Any:
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {
             "activityId": activity_id,
@@ -2354,6 +2372,7 @@ class Garmin:
 
     def set_activity_description(self, activity_id: str, description: str) -> Any:
         """Set description for activity with id."""
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {"activityId": activity_id, "description": description}
 
@@ -2702,6 +2721,9 @@ class Garmin:
 
     def get_gear(self, userProfileNumber: str) -> dict[str, Any]:
         """Return a list of gear for the specified user profile number."""
+        userProfileNumber = str(
+            _validate_positive_integer(int(userProfileNumber), "userProfileNumber")
+        )
         url = f"{self.garmin_connect_gear}?userProfilePk={userProfileNumber}"
         logger.debug("Requesting gear for user %s", userProfileNumber)
 
@@ -2709,6 +2731,7 @@ class Garmin:
 
     def get_gear_stats(self, gearUUID: str) -> dict[str, Any]:
         """Return statistics (e.g. distance) for specific gear UUID."""
+        gearUUID = _validate_uuid(gearUUID, "gearUUID")
         url = f"{self.garmin_connect_gear_baseurl}/stats/{gearUUID}"
         logger.debug("Requesting gear stats for gearUUID %s", gearUUID)
 
@@ -2725,6 +2748,9 @@ class Garmin:
             raise
 
     def get_gear_defaults(self, userProfileNumber: str) -> dict[str, Any]:
+        userProfileNumber = str(
+            _validate_positive_integer(int(userProfileNumber), "userProfileNumber")
+        )
         url = (
             f"{self.garmin_connect_gear_baseurl}/user/{userProfileNumber}/activityTypes"
         )
@@ -2734,6 +2760,8 @@ class Garmin:
     def set_gear_default(
         self, activityType: str, gearUUID: str, defaultGear: bool = True
     ) -> Any:
+        activityType = _validate_sport_key(activityType, "activityType")
+        gearUUID = _validate_uuid(gearUUID, "gearUUID")
         defaultGearString = "/default/true" if defaultGear else ""
         method_override = "PUT" if defaultGear else "DELETE"
         url = (
@@ -2774,7 +2802,7 @@ class Garmin:
         "Original" will return the zip file content, up to user to extract it.
         "CSV" will return a csv of the splits.
         """
-        activity_id = str(activity_id)
+        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         urls = {
             Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.garmin_connect_fit_download}/{activity_id}",
             Garmin.ActivityDownloadFormat.TCX: f"{self.garmin_connect_tcx_download}/{activity_id}",
@@ -2932,7 +2960,7 @@ class Garmin:
         :param limit: Maximum number of activities to return (default: 1000)
         :return: List of activities where the specified gear was used.
         """
-        gearUUID = str(gearUUID)
+        gearUUID = _validate_uuid(gearUUID, "gearUUID")
         limit = _validate_positive_integer(limit, "limit")
         # Optional: enforce a reasonable ceiling to avoid heavy responses
         limit = min(limit, MAX_ACTIVITY_LIMIT)
@@ -2964,7 +2992,7 @@ class Garmin:
             Dictionary containing information for the added gear
 
         """
-        gearUUID = str(gearUUID)
+        gearUUID = _validate_uuid(gearUUID, "gearUUID")
         activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
 
         url = (
@@ -2995,7 +3023,7 @@ class Garmin:
             Dictionary containing information about the removed gear
 
         """
-        gearUUID = str(gearUUID)
+        gearUUID = _validate_uuid(gearUUID, "gearUUID")
         activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
 
         url = f"{self.garmin_connect_gear_baseurl}/unlink/{gearUUID}/activity/{activity_id}"
