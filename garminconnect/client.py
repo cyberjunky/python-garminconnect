@@ -292,12 +292,27 @@ class Client:
         return bool(self.di_token or self.jwt_web)
 
     def _clear_auth_state(self) -> None:
-        """Wipe all in-memory auth tokens so the next login starts clean."""
+        """Wipe all in-memory auth tokens and session state so the next login starts clean."""
         self.di_token = None
         self.di_refresh_token = None
         self.di_client_id = None
         self.jwt_web = None
         self.csrf_token = None
+        self._tokenstore_path = None
+        self._mfa_delivery_uncertain = False
+        for attr in (
+            "_mfa_session",
+            "_mfa_login_params",
+            "_mfa_post_headers",
+            "_mfa_service_url",
+            "_mfa_flow",
+            "_mfa_method",
+            "_widget_last_resp",
+        ):
+            setattr(self, attr, None)
+        # Drop any SSO / CAS / JWT_WEB cookies so a stale session cannot be
+        # silently refreshed after logout.
+        self.cs.cookies.clear()
 
     def _verify_token(self) -> bool:
         """Check that the current token is actually accepted by the API tier.

@@ -20,6 +20,7 @@ import base64
 import json
 import time
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
@@ -652,6 +653,57 @@ class TestResumeLogin:
             g.resume_login({}, "123456")
 
         mock_load.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# Logout cleanup
+# ---------------------------------------------------------------------------
+
+
+class TestLogout:
+    """logout() must clear session cookies and user-facing state."""
+
+    def test_logout_clears_client_auth_tokens_and_cookies(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        g.client.di_token = "token"
+        g.client.cs.cookies.set("CASTGT", "ticket", domain="garmin.com")
+
+        g.logout()
+
+        assert g.client.di_token is None
+        assert len(g.client.cs.cookies) == 0
+
+    def test_logout_clears_mfa_state(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        g.client._mfa_session = object()
+        g.client._mfa_login_params = {"x": 1}
+        g.client._widget_last_resp = object()
+
+        g.logout()
+
+        assert g.client._mfa_session is None
+        assert g.client._mfa_login_params is None
+        assert g.client._widget_last_resp is None
+
+    def test_logout_clears_garmin_wrapper_state(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        g.display_name = "test-user"
+        g.full_name = "Test User"
+        g.unit_system = "metric"
+
+        g.logout()
+
+        assert g.password is None
+        assert g.display_name is None
+        assert g.full_name is None
+        assert g.unit_system is None
+
+    def test_logout_skips_unlinking_inline_token_json(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        token_json = '{"di_token": "x"}'
+        with patch.object(Path, "unlink") as mock_unlink:
+            g.logout(token_json)
+        mock_unlink.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
