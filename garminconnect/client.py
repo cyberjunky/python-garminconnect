@@ -593,7 +593,11 @@ class Client:
                 "falling through to next strategy"
             )
 
-        raise GarminConnectConnectionError(f"Mobile login failed: {res}")
+        _LOGGER.debug("Mobile login unexpected response: %s", res)
+        raise GarminConnectConnectionError(
+            f"Mobile login failed: HTTP {r.status_code}, "
+            f"responseStatus={resp_type or 'unknown'}"
+        )
 
     # ------------------------------------------------------------------ #
     #  STRATEGY 3 — SSO Embed Widget + curl_cffi                         #
@@ -993,7 +997,11 @@ class Client:
                 "falling through to next strategy"
             )
 
-        raise GarminConnectConnectionError(f"Portal web login failed: {res}")
+        _LOGGER.debug("Portal web login unexpected response: %s", res)
+        raise GarminConnectConnectionError(
+            f"Portal web login failed: HTTP {r.status_code}, "
+            f"responseStatus={resp_type or 'unknown'}"
+        )
 
     # ------------------------------------------------------------------ #
     #  MFA COMPLETION — dual-endpoint fallback                           #
@@ -1092,8 +1100,14 @@ class Client:
                 self._establish_session(ticket, sess=sess, service_url=svc_url)
                 return
 
-            # Non-success JSON response — could be auth failure
-            failures.append(f"{mfa_url}: {res}")
+            # Non-success JSON response — could be auth failure. Log the full
+            # response at DEBUG but keep exception messages free of sensitive
+            # SSO metadata such as serviceTicketId, customerGuid, or URLs.
+            _LOGGER.debug("MFA verify non-success response from %s: %s", mfa_url, res)
+            status = res.get("responseStatus", {}).get("type") or res.get(
+                "error", {}
+            ).get("status-code", "unknown")
+            failures.append(f"{mfa_url}: {status}")
 
         # All endpoints failed
         if rate_limited_count == len(mfa_endpoints):

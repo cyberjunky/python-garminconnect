@@ -775,6 +775,110 @@ class TestTokenRefreshConcurrency:
 
 
 # ---------------------------------------------------------------------------
+# Sanitized login error messages
+# ---------------------------------------------------------------------------
+
+
+class TestSanitizedLoginErrors:
+    """Authentication error messages must not embed full server responses
+    containing session metadata such as serviceTicketId, customerGuid, or
+    internal endpoint URLs.
+    """
+
+    @staticmethod
+    def _json_response(status_code, json_data):
+        resp = type(
+            "Resp",
+            (),
+            {
+                "status_code": status_code,
+                "ok": 200 <= status_code < 400,
+                "text": str(json_data),
+                "json": lambda self: json_data,
+            },
+        )()
+        return resp
+
+    def test_mobile_login_error_does_not_embed_full_response(self):
+        sensitive = {
+            "responseStatus": {"type": "LOCKED"},
+            "serviceTicketId": "ST-LEAK-123",
+            "customerGuid": "guid-123",
+            "serviceUrl": "https://internal-sso.garmin.com/secret",
+        }
+        sess = type("Sess", (), {"post": lambda *a, **k: self._json_response(200, sensitive)})()
+        c = client_mod.Client(verify_login=False)
+        with pytest.raises(
+            garminconnect.GarminConnectConnectionError, match="responseStatus=LOCKED"
+        ) as exc:
+            c._do_mobile_login(sess, "e@x.com", "pw")
+
+        msg = str(exc.value)
+        assert "ST-LEAK-123" not in msg
+        assert "guid-123" not in msg
+        assert "internal-sso" not in msg
+
+    def test_portal_login_error_does_not_embed_full_response(self):
+        sensitive = {
+            "responseStatus": {"type": "MAINTENANCE"},
+            "serviceTicketId": "ST-LEAK-456",
+            "customerGuid": "guid-456",
+            "serviceUrl": "https://internal-sso.garmin.com/secret",
+        }
+        sess = type(
+            "Sess",
+            (),
+            {
+                "get": lambda *a, **k: self._json_response(200, {}),
+                "post": lambda *a, **k: self._json_response(200, sensitive),
+            },
+        )()
+        c = client_mod.Client(verify_login=False)
+        with (
+            patch.object(client_mod.time, "sleep"),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError,
+                match="responseStatus=MAINTENANCE",
+            ) as exc,
+        ):
+            c._do_portal_web_login(sess, "e@x.com", "pw")
+
+        msg = str(exc.value)
+        assert "ST-LEAK-456" not in msg
+        assert "guid-456" not in msg
+        assert "internal-sso" not in msg
+
+    def test_mfa_failure_does_not_embed_full_response(self):
+        sensitive = {
+            "responseStatus": {"type": "INVALID_OTP"},
+            "serviceTicketId": "ST-MFA-LEAK",
+            "customerGuid": "mfa-guid",
+        }
+        sess = type(
+            "Sess",
+            (),
+            {
+                "post": lambda *a, **k: self._json_response(200, sensitive),
+                "cookies": type("Jar", (), {"jar": []})(),
+            },
+        )()
+        c = client_mod.Client(verify_login=False)
+        c._mfa_flow = "portal"
+        c._mfa_session = sess
+        c._mfa_login_params = {}
+        c._mfa_post_headers = {}
+        c._mfa_service_url = c._portal_service_url
+        with pytest.raises(
+            garminconnect.GarminConnectAuthenticationError, match="INVALID_OTP"
+        ) as exc:
+            c._complete_mfa("000000")
+
+        msg = str(exc.value)
+        assert "ST-MFA-LEAK" not in msg
+        assert "mfa-guid" not in msg
+
+
+# ---------------------------------------------------------------------------
 # Logout cleanup
 # ---------------------------------------------------------------------------
 
