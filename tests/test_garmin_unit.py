@@ -389,6 +389,46 @@ class TestUrlConstruction:
         assert url.endswith("/gear-service/gear/filterGear")
         assert mock.call_args.kwargs["params"] == {"userProfilePk": "98765"}
 
+    def test_get_lactate_threshold_latest_passes_power_sport_in_params(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(
+            garmin,
+            "connectapi",
+            side_effect=[
+                [{"value": 250}],
+                [
+                    {
+                        "speed": 12,
+                        "heartRate": 160,
+                        "userProfilePK": 12345,
+                        "version": 1,
+                        "calendarDate": "2026-03-15",
+                        "sequence": 1,
+                    }
+                ],
+            ],
+        ) as mock:
+            garmin.get_lactate_threshold(latest=True)
+
+        assert mock.call_count == 2
+        power_call = mock.call_args_list[0]
+        assert "/powerToWeight/latest/" in power_call[0][0]
+        assert "?sport" not in power_call[0][0]
+        assert power_call.kwargs["params"] == {"sport": "Running"}
+
+    def test_get_all_day_events_builds_url_with_params(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(
+            garmin, "connectapi", return_value={"calendarEvents": []}
+        ) as mock:
+            garmin.get_all_day_events("2026-03-15")
+
+        url = mock.call_args[0][0]
+        assert url.endswith("/wellness-service/wellness/dailyEvents")
+        assert mock.call_args.kwargs["params"] == {"calendarDate": "2026-03-15"}
+
     def test_get_weigh_ins_builds_url_with_date_range(
         self, garmin: garminconnect.Garmin
     ):

@@ -1507,9 +1507,9 @@ class Garmin:
             speed_and_heart_rate_url = (
                 f"{self.garmin_connect_biometric_url}/latestLactateThreshold"
             )
-            power_url = f"{self.garmin_connect_biometric_url}/powerToWeight/latest/{date.today()}?sport=Running"
+            power_url = f"{self.garmin_connect_biometric_url}/powerToWeight/latest/{date.today()}"
 
-            power = self.connectapi(power_url)
+            power = self.connectapi(power_url, params={"sport": "Running"})
             if isinstance(power, list) and power:
                 power_dict = power[0]
             elif isinstance(power, dict):
@@ -1732,10 +1732,10 @@ class Garmin:
         Includes autodetected activities, even if not recorded on the watch.
         """
         cdate = _validate_date_format(cdate, "cdate")
-        url = f"{self.garmin_daily_events_url}?calendarDate={cdate}"
+        url = self.garmin_daily_events_url
         logger.debug("Requesting all day events data")
 
-        return self.connectapi(url)
+        return self.connectapi(url, params={"calendarDate": cdate})
 
     def get_personal_record(self) -> dict[str, Any]:
         """Return personal records for current user."""
