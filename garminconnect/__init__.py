@@ -3491,12 +3491,17 @@ class Garmin:
 
         :param tokenstore: Path to the token directory or JSON file whose
             ``garmin_tokens.json`` file should be removed. Falls back to the
-            ``GARMINTOKENS`` environment variable. Token strings passed inline
-            (length > 512) are ignored — nothing to delete.
+            ``GARMINTOKENS`` environment variable. Inline JSON token strings
+            are ignored — nothing to delete.
         """
         self.client._clear_auth_state()
+        self.password = None
+        self.display_name = None
+        self.full_name = None
+        self.unit_system = None
+
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
-        if not tokenstore or len(tokenstore) > 512:
+        if not tokenstore or _looks_like_json(tokenstore):
             return
         path = client.token_file_path(tokenstore)
         with contextlib.suppress(FileNotFoundError):
