@@ -16,6 +16,7 @@ Run with:
     python -m pytest tests/test_garmin_unit.py -v
 """
 
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -1124,3 +1125,55 @@ class TestPushWorkoutToDevice:
             with pytest.raises(ValueError, match="positive integer"):
                 garmin.push_workout_to_device(workout_id=123, device_id=0)
         client.post.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Identifier validation on mutating/download/gear endpoints
+# ---------------------------------------------------------------------------
+
+
+class TestIdentifierValidation:
+    """Methods that interpolate identifiers into URLs must validate them."""
+
+    MALICIOUS = "123/../../userprofile-service/socialProfile"
+    UUID = "3c814e7a-0db1-41a4-bdb8-4944db6fb8b3"
+
+    @pytest.mark.parametrize(
+        "method_name,args",
+        [
+            ("set_activity_name", (MALICIOUS, "title")),
+            ("set_activity_type", (MALICIOUS, 2, "RUNNING", 1)),
+            ("set_activity_description", (MALICIOUS, "desc")),
+            ("download_activity", (MALICIOUS,)),
+            ("get_gear_defaults", (MALICIOUS,)),
+            ("delete_weigh_in", (MALICIOUS, "2026-01-01")),
+            ("delete_blood_pressure", (MALICIOUS, "2026-01-01")),
+        ],
+    )
+    def test_rejects_path_traversal_in_numeric_id(
+        self, garmin: garminconnect.Garmin, method_name: str, args: tuple[Any, ...]
+    ):
+        method = getattr(garmin, method_name)
+        with pytest.raises(ValueError):
+            method(*args)
+
+    def test_rejects_path_traversal_in_gear_uuid(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError):
+            garmin.get_gear_stats(self.MALICIOUS)
+
+    def test_rejects_path_traversal_in_add_gear(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError):
+            garmin.add_gear_to_activity(self.MALICIOUS, 1)
+
+    def test_rejects_invalid_activity_type(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError):
+            garmin.set_gear_default("invalid!", self.UUID)
+
+    def test_accepts_valid_gear_uuid(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "connectapi", return_value={}) as api:
+            garmin.get_gear_stats(self.UUID)
+        assert self.UUID in api.call_args[0][0]
+
+    def test_delete_blood_pressure_validates_date(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="YYYY-MM-DD"):
+            garmin.delete_blood_pressure("1", "not-a-date")
