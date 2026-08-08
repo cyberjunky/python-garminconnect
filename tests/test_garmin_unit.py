@@ -708,6 +708,32 @@ class TestLogout:
 
 
 # ---------------------------------------------------------------------------
+# Token file path
+# ---------------------------------------------------------------------------
+
+
+class TestTokenFilePath:
+    """token_file_path must stay within the current user's scope."""
+
+    def test_bare_tilde_expands_to_current_user(self):
+        path = client_mod.token_file_path("~/.garminconnect")
+        assert path.name == "garmin_tokens.json"
+
+    def test_rejects_other_user_home_expansion(self):
+        with pytest.raises(ValueError, match="another user's home"):
+            client_mod.token_file_path("~otheruser/.garminconnect")
+
+    def test_rejects_other_user_home_at_root(self):
+        with pytest.raises(ValueError, match="another user's home"):
+            client_mod.token_file_path("~root")
+
+    def test_absolute_path_outside_home_still_allowed(self):
+        # Absolute paths are explicit configuration, not a cross-user trick.
+        path = client_mod.token_file_path("/var/lib/garmin/tokens.json")
+        assert path == Path("/var/lib/garmin/tokens.json")
+
+
+# ---------------------------------------------------------------------------
 # Tokenstore path-vs-data detection
 # ---------------------------------------------------------------------------
 
