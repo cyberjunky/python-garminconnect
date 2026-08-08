@@ -19,6 +19,7 @@ Run with:
 import base64
 import json
 import time
+from contextlib import contextmanager
 from typing import Any
 from unittest.mock import patch
 
@@ -587,6 +588,61 @@ class TestCredentialLifecycle:
 
         assert status == "mfa_status"
         assert g.password == "secret"
+
+
+# ---------------------------------------------------------------------------
+# Tokenstore path-vs-data detection
+# ---------------------------------------------------------------------------
+
+
+class TestTokenstoreDetection:
+    """tokenstore may be a path or inline JSON; detection must not rely on length."""
+
+    @contextmanager
+    def _tokenstore_mocks(self, g: garminconnect.Garmin):
+        with (
+            patch.object(g.client, "load") as mock_load,
+            patch.object(g.client, "loads") as mock_loads,
+            patch.object(g.client, "_token_expires_soon", return_value=False),
+            patch.object(g, "_load_profile_and_settings"),
+        ):
+            yield mock_load, mock_loads
+
+    def test_long_path_uses_file_load_not_json_loads(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        long_path = "/home/" + "a" * 600 + "/tokens"
+        with self._tokenstore_mocks(g) as (mock_load, mock_loads):
+            g.login(tokenstore=long_path)
+
+        mock_load.assert_called_once()
+        mock_loads.assert_not_called()
+
+    def test_short_json_uses_inline_loads(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        token_json = '{"di_token": "x"}'
+        with self._tokenstore_mocks(g) as (mock_load, mock_loads):
+            g.login(tokenstore=token_json)
+
+        mock_loads.assert_called_once()
+        mock_load.assert_not_called()
+
+    def test_long_json_uses_inline_loads(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        token_json = '{"di_token": "' + "A" * 600 + '"}'
+        with self._tokenstore_mocks(g) as (mock_load, mock_loads):
+            g.login(tokenstore=token_json)
+
+        mock_loads.assert_called_once()
+        mock_load.assert_not_called()
+
+    def test_json_array_uses_inline_loads(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        token_json = '[{"di_token": "x"}]'
+        with self._tokenstore_mocks(g) as (mock_load, mock_loads):
+            g.login(tokenstore=token_json)
+
+        mock_loads.assert_called_once()
+        mock_load.assert_not_called()
 
 
 # ---------------------------------------------------------------------------

@@ -173,6 +173,18 @@ def _validate_json_exists(response: requests.Response) -> dict[str, Any] | None:
     return response.json()
 
 
+def _looks_like_json(value: str) -> bool:
+    """Return True if the value appears to be JSON rather than a file path.
+
+    The tokenstore argument may be either a filesystem path or an inline JSON
+    token string. Structural detection is more reliable than a length threshold,
+    which misclassifies long legitimate paths as JSON and short JSON strings as
+    paths.
+    """
+    stripped = value.strip()
+    return stripped.startswith(("{", "["))
+
+
 def _extract_status_code(exc: BaseException) -> int | None:
     """Best-effort extraction of an HTTP status code from an exception.
 
@@ -657,7 +669,7 @@ class Garmin:
             tokenstore_path = None
             if tokenstore:
                 try:
-                    if len(tokenstore) > 512:
+                    if _looks_like_json(tokenstore):
                         # Token data is provided directly as string
                         self.client.loads(tokenstore)
                     else:
