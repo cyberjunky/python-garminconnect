@@ -61,7 +61,6 @@ module = [
     "test_token_permissions",
     "test_widget_mfa",
     "test_cassette_sanitization",
-    "test_mfa_shelving",
     "test_activity_details",
     "test_demo_security",
     "conftest",

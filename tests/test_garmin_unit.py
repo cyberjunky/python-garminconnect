@@ -656,6 +656,86 @@ class TestResumeLogin:
 
 
 # ---------------------------------------------------------------------------
+# MFA resolution in login()
+# ---------------------------------------------------------------------------
+
+
+class TestLoginMFA:
+    """A strategy that raises _MFARequired must be resolved immediately.
+
+    The historical "shelving" fallback for uncertain widget-MFA delivery was
+    dead code (the trigger flag was never set in production); these tests cover
+    the actual current behavior.
+    """
+
+    def test_mfa_resolved_immediately_with_prompt_mfa(self):
+        c = client_mod.Client(verify_login=False)
+
+        def mfa_strategy(_email, _password):
+            c._mfa_flow = "widget"
+            raise client_mod._MFARequired()
+
+        def fake_complete(code):
+            c.di_token = f"{c._mfa_flow}-{code}"
+
+        with (
+            patch.object(c, "_widget_web_login", side_effect=mfa_strategy),
+            patch.object(c, "_complete_mfa", side_effect=fake_complete),
+        ):
+            c.login("e@x.com", "pw", prompt_mfa=lambda: "654321")
+
+        assert c.di_token == "widget-654321"  # noqa: S105
+
+    def test_mfa_returns_immediately_with_return_on_mfa(self):
+        c = client_mod.Client(verify_login=False)
+
+        def mfa_strategy(_email, _password):
+            raise client_mod._MFARequired()
+
+        with patch.object(c, "_widget_web_login", side_effect=mfa_strategy):
+            status, _ = c.login("e@x.com", "pw", return_on_mfa=True)
+
+        assert status == "needs_mfa"
+
+    def test_mfa_without_prompt_raises(self):
+        c = client_mod.Client(verify_login=False)
+
+        def mfa_strategy(_email, _password):
+            raise client_mod._MFARequired()
+
+        with (
+            patch.object(c, "_widget_web_login", side_effect=mfa_strategy),
+            pytest.raises(
+                garminconnect.GarminConnectAuthenticationError,
+                match="MFA Required but no prompt_mfa mechanism supplied",
+            ),
+        ):
+            c.login("e@x.com", "pw")
+
+    def test_mfa_token_rejection_falls_through_to_next_strategy(self):
+        c = client_mod.Client(verify_login=True)
+
+        def mfa_strategy(_email, _password):
+            c._mfa_flow = "widget"
+            raise client_mod._MFARequired()
+
+        def portal_strategy(_email, _password):
+            c.di_token = "portal-token"  # noqa: S105
+
+        with (
+            patch.object(c, "_widget_web_login", side_effect=mfa_strategy),
+            patch.object(c, "_portal_web_login_cffi", side_effect=portal_strategy),
+            patch.object(c, "_complete_mfa"),
+            patch.object(c, "_verify_token", side_effect=[False, True]),
+            patch.object(c, "_clear_auth_state") as mock_clear,
+        ):
+            c.login("e@x.com", "pw", prompt_mfa=lambda: "000000")
+
+        assert c.di_token == "portal-token"  # noqa: S105
+        mock_clear.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
 # Logout cleanup
 # ---------------------------------------------------------------------------
 
