@@ -5,6 +5,7 @@ All in-process — no network. We mock the strategy methods and ``connectapi``
 on a real ``Client`` / ``Garmin`` instance.
 """
 
+import os
 from unittest.mock import patch
 
 import pytest
@@ -168,6 +169,34 @@ def test_logout_no_tokenstore_is_safe():
         os.environ.pop("GARMINTOKENS", None)
         g.logout()
     assert g.client.di_token is None
+
+
+# ----- disk-token symlink protection -----
+
+
+def test_load_refuses_symlink(tmp_path):
+    """A pre-planted symlink at the token path must not redirect the read."""
+    real_target = tmp_path / "attacker_tokens.json"
+    real_target.write_text('{"di_token": "x"}')
+    link = tmp_path / "garmin_tokens.json"
+    os.symlink(real_target, link)
+
+    c = client_mod.Client(verify_login=False)
+    with pytest.raises(GarminConnectConnectionError):
+        c.load(str(link))
+
+
+def test_load_reads_regular_file(tmp_path):
+    """A normal token file should load cleanly."""
+    tokenfile = tmp_path / "garmin_tokens.json"
+    tokenfile.write_text('{"di_token": "t", "di_refresh_token": "r", "di_client_id": "c"}')
+
+    c = client_mod.Client(verify_login=False)
+    c.load(str(tokenfile))
+
+    assert c.di_token == "t"
+    assert c.di_refresh_token == "r"
+    assert c.di_client_id == "c"
 
 
 # ----- constructor validation -----
