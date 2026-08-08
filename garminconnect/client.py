@@ -1449,6 +1449,9 @@ class Client:
     def resume_login(self, _client_state: Any, mfa_code: str) -> tuple[str | None, Any]:
         """Complete a previously initiated MFA login."""
         self._complete_mfa(mfa_code)
+        if self.verify_login and not self._verify_token():
+            self._clear_auth_state()
+            raise GarminConnectConnectionError("token rejected by API tier after MFA")
         return None, None
 
     def download(self, path: str, **kwargs: Any) -> bytes:

@@ -864,39 +864,10 @@ class Garmin:
         """Resume login interactively."""
         mfa_status, _legacy_token = self.client.resume_login(client_state, mfa_code)
 
-        prof = None
-        for attempt in range(3):
-            try:
-                prof = self.client.connectapi("/userprofile-service/socialProfile")
-                if isinstance(prof, dict):
-                    self.display_name = prof.get("displayName")
-                    self.full_name = prof.get("fullName", "")
-                    break
-            except Exception as e:
-                if attempt == 2:
-                    logger.debug("Profile fetch failed during resume_login, continuing")
-                else:
-                    logger.debug("Retrying profile fetch during resume_login: %s", e)
-                    time.sleep(1)
-
-        settings = None
-        for attempt in range(3):
-            try:
-                settings = self.client.connectapi(self.garmin_connect_user_settings_url)
-                if settings and isinstance(settings, dict) and "userData" in settings:
-                    self.unit_system = settings["userData"].get("measurementSystem")
-                    break
-            except Exception as e:
-                if attempt == 2:
-                    logger.debug(
-                        "User settings fetch failed during resume_login, continuing: %s",
-                        e,
-                    )
-                else:
-                    logger.debug(
-                        "Retrying user settings fetch during resume_login: %s", e
-                    )
-                    time.sleep(1)
+        # The client already verifies the token against the API tier; if we reach
+        # this point the token is good. Load profile/settings normally and let
+        # any failure propagate so callers don't think the login succeeded.
+        self._load_profile_and_settings()
 
         return mfa_status, _legacy_token
 
