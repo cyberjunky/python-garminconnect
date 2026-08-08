@@ -3495,6 +3495,7 @@ class Garmin:
             are ignored — nothing to delete.
         """
         self.client._clear_auth_state()
+        self.username = None
         self.password = None
         self.display_name = None
         self.full_name = None
