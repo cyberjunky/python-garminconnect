@@ -2724,10 +2724,10 @@ class Garmin:
         userProfileNumber = str(
             _validate_positive_integer(int(userProfileNumber), "userProfileNumber")
         )
-        url = f"{self.garmin_connect_gear}?userProfilePk={userProfileNumber}"
+        url = self.garmin_connect_gear
         logger.debug("Requesting gear for user %s", userProfileNumber)
 
-        return self.connectapi(url)
+        return self.connectapi(url, params={"userProfilePk": userProfileNumber})
 
     def get_gear_stats(self, gearUUID: str) -> dict[str, Any]:
         """Return statistics (e.g. distance) for specific gear UUID."""
