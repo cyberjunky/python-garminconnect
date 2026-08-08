@@ -83,6 +83,26 @@ def scrub_dates(response: Any) -> Any:
     return response
 
 
+# Form-encoded body parameters that must never be recorded, even in request
+# bodies. Keep in sync with the regex patterns used in sanitize_response.
+SENSITIVE_FORM_PARAMS = [
+    "access_token",
+    "mfa_token",
+    "oauth_token",
+    "oauth_token_secret",
+    "password",
+    "refresh_token",
+    "username",
+]
+
+
+def _sanitize_form_body(body: str) -> str:
+    """Scrub sensitive parameters from application/x-www-form-urlencoded bodies."""
+    for key in SENSITIVE_FORM_PARAMS:
+        body = re.sub(re.escape(key) + r"=[^&]*", f"{key}=SANITIZED", body)
+    return body
+
+
 def sanitize_request(request: Any) -> Any:
     if request.body:
         try:
@@ -90,9 +110,7 @@ def sanitize_request(request: Any) -> Any:
         except UnicodeDecodeError:
             return request  # leave as-is; binary bodies not sanitized
         else:
-            for key in ["username", "password", "refresh_token"]:
-                body = re.sub(key + r"=[^&]*", f"{key}=SANITIZED", body)
-            request.body = body.encode("utf8")
+            request.body = _sanitize_form_body(body).encode("utf8")
 
     if "Cookie" in request.headers:
         cookies = request.headers["Cookie"].split("; ")
@@ -162,13 +180,10 @@ def sanitize_response(response: Any) -> Any:
     if isinstance(body, bytes):
         body = body.decode("utf8")
 
-    patterns = [
-        "oauth_token=[^&]*",
-        "oauth_token_secret=[^&]*",
-        "mfa_token=[^&]*",
-    ]
-    for pattern in patterns:
-        body = re.sub(pattern, pattern.split("=")[0] + "=SANITIZED", body)
+    # Scrub sensitive form-encoded parameters from response bodies using the
+    # same deny-list applied to requests, so a field added to one is always
+    # covered by the other.
+    body = _sanitize_form_body(body)
     body_was_bytes = isinstance(response["body"]["string"], bytes)
     try:
         body_json = json.loads(body)
