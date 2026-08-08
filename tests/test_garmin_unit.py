@@ -429,6 +429,46 @@ class TestUrlConstruction:
         assert url.endswith("/wellness-service/wellness/dailyEvents")
         assert mock.call_args.kwargs["params"] == {"calendarDate": "2026-03-15"}
 
+    def test_require_display_name_url_encodes_special_chars(
+        self, garmin: garminconnect.Garmin
+    ):
+        garmin.display_name = "../admin?user#x"
+        encoded = garmin._require_display_name()
+        assert "../" not in encoded
+        assert "%2F" in encoded
+        assert "%3F" in encoded
+        assert "%23" in encoded
+
+    def test_require_display_name_raises_when_not_set(
+        self, garmin: garminconnect.Garmin
+    ):
+        garmin.display_name = None
+        with pytest.raises(
+            garminconnect.GarminConnectConnectionError, match="Display name is not set"
+        ):
+            garmin._require_display_name()
+
+    @pytest.mark.parametrize(
+        "method_name,args,expected_suffix",
+        [
+            ("get_heart_rates", ("2026-03-15",), "/wellness-service/wellness/dailyHeartRate"),
+            ("get_sleep_data", ("2026-03-15",), "/wellness-service/wellness/dailySleepData"),
+        ],
+    )
+    def test_display_name_is_url_encoded_in_path(
+        self,
+        garmin: garminconnect.Garmin,
+        method_name: str,
+        args: tuple[Any, ...],
+        expected_suffix: str,
+    ):
+        garmin.display_name = "name with space"
+        with patch.object(garmin, "connectapi", return_value={}) as mock:
+            getattr(garmin, method_name)(*args)
+
+        url = mock.call_args[0][0]
+        assert url.endswith(f"{expected_suffix}/name%20with%20space")
+
     def test_get_weigh_ins_builds_url_with_date_range(
         self, garmin: garminconnect.Garmin
     ):

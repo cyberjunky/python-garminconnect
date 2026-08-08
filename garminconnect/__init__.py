@@ -17,6 +17,8 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from .typed import TypedGarmin
 
+from urllib.parse import quote
+
 import requests
 from requests import HTTPError
 
@@ -882,11 +884,15 @@ class Garmin:
         return mfa_status, _legacy_token
 
     def _require_display_name(self) -> str:
-        """Return display_name or raise if not set.
+        """Return display_name, URL-encoded, or raise if not set.
 
         New/empty Garmin profiles may not have a displayName, which
         would cause 'None' to be interpolated into API URLs and
         result in 403 Forbidden errors.
+
+        Encoding the value before it enters a URL path prevents a
+        compromised or malicious server response from injecting path
+        separators or query/fragment characters via displayName.
         """
         if not self.display_name:
             raise GarminConnectConnectionError(
@@ -895,7 +901,7 @@ class Garmin:
                 "display name configured). Please set a display name "
                 "at https://connect.garmin.com and try again."
             )
-        return self.display_name
+        return quote(str(self.display_name), safe="")
 
     def get_full_name(self) -> str | None:
         """Return full name of the authenticated user."""
@@ -1118,7 +1124,9 @@ class Garmin:
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
 
-        url = f"{self.garmin_connect_heartrates_daily_url}/{self.display_name}"
+        url = (
+            f"{self.garmin_connect_heartrates_daily_url}/{self._require_display_name()}"
+        )
         params = {"date": cdate}
         logger.debug("Requesting heart rates")
 
@@ -1739,7 +1747,9 @@ class Garmin:
 
     def get_personal_record(self) -> dict[str, Any]:
         """Return personal records for current user."""
-        url = f"{self.garmin_connect_personal_record_url}/{self.display_name}"
+        url = (
+            f"{self.garmin_connect_personal_record_url}/{self._require_display_name()}"
+        )
         logger.debug("Requesting personal records for user")
 
         return self.connectapi(url)
@@ -1853,7 +1863,7 @@ class Garmin:
         convert to local time yourself.
         """
         cdate = _validate_date_format(cdate, "cdate")
-        url = f"{self.garmin_connect_daily_sleep_url}/{self.display_name}"
+        url = f"{self.garmin_connect_daily_sleep_url}/{self._require_display_name()}"
         params = {"date": cdate, "nonSleepBufferMinutes": 60}
         logger.debug("Requesting sleep data")
 
