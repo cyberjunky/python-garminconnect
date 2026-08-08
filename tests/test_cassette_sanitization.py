@@ -68,6 +68,31 @@ def test_sanitize_response_scrubs_set_cookie_case_insensitively():
     assert "private-value" not in sanitized["headers"]["SET-COOKIE"][0]
 
 
+def test_sanitize_response_scrubs_widget_mfa_html_vars():
+    """Widget MFA embeds PII as JS variables in HTML bodies; those must be redacted."""
+    response = {
+        "headers": {"Content-Type": ["text/html"]},
+        "body": {
+            "string": (
+                '<script>var customerGuid = "real-guid-1234"; '
+                'var codeSentTo = "user@example.com"; '
+                'var clientId = "client-456"; '
+                'var mfaMethod = "EMAIL";</script>'
+            )
+        },
+    }
+
+    sanitized = sanitize_response(response)
+    body = sanitized["body"]["string"]
+
+    assert "real-guid-1234" not in body
+    assert "user@example.com" not in body
+    assert "client-456" not in body
+    assert 'var customerGuid = "SANITIZED";' in body
+    assert 'var codeSentTo = "SANITIZED";' in body
+    assert 'var clientId = "SANITIZED";' in body
+
+
 def test_sanitize_request_scrubs_oauth_exchange_body():
     """The OAuth exchange request body must have its credentials sanitized.
 

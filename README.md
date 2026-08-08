@@ -15,7 +15,16 @@ The Garmin Connect API library comes with two examples:
 
 ```bash
 $ ./demo.py
-🏃‍♂️ Full-blown Garmin Connect API Demo - Main Menu
+📁 Exported data will be saved to the directory: 'your_data'
+📄 All API responses are written to: 'response.json'
+Attempting to login using stored tokens from: ~/.garminconnect
+Successfully logged in using stored tokens!
+
+📊 Your Stats Today: 4,045 steps | 1445.0 kcal
+🐌 Time to get those legs moving!
+
+==================================================
+🚴 Full-blown Garmin Connect API Demo - Main Menu
 ==================================================
 Select a category:
 
@@ -24,14 +33,15 @@ Select a category:
   [3] 🔬 Advanced Health Metrics
   [4] 📈 Historical Data & Trends
   [5] 🏃 Activities & Workouts
-  [6] ⚖️ Body Composition & Weight
+  [6] ⚖️  Body Composition & Weight
   [7] 🏆 Goals & Achievements
   [8] ⌚ Device & Technical
   [9] 🎽 Gear & Equipment
   [0] 💧 Hydration & Wellness
   [a] 🔧 System & Export
-  [b] 📅 Training plans
+  [b] 📅 Training Plans
   [c] ⛳ Golf
+  [d] ✏️  Activity Editing
 
   [q] Exit program
 
