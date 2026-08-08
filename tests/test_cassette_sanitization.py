@@ -1,8 +1,9 @@
 """Security regression tests for private VCR recordings."""
 
 import json
+from types import SimpleNamespace
 
-from conftest import sanitize_response
+from conftest import sanitize_request, sanitize_response
 
 
 def test_sanitize_response_recurses_through_nested_personal_data():
@@ -65,3 +66,23 @@ def test_sanitize_response_scrubs_set_cookie_case_insensitively():
     sanitized = sanitize_response(response)
 
     assert "private-value" not in sanitized["headers"]["SET-COOKIE"][0]
+
+
+def test_sanitize_request_scrubs_oauth_exchange_body():
+    """The OAuth exchange request body must have its credentials sanitized.
+
+    Regression test for exposed mfa_token values in VCR cassettes.
+    """
+    request = SimpleNamespace(
+        body=b"oauth_token=secret&mfa_token=private-token&access_token=abc",
+        headers={"Cookie": "session=secret-value"},
+    )
+
+    sanitized = sanitize_request(request)
+
+    body = sanitized.body.decode("utf8")
+    assert "oauth_token=SANITIZED" in body
+    assert "mfa_token=SANITIZED" in body
+    assert "access_token=SANITIZED" in body
+    assert "private-token" not in body
+    assert "secret-value" not in sanitized.headers["Cookie"]

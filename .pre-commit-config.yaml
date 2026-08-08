@@ -32,6 +32,13 @@ repos:
     args: [--fix, --unsafe-fixes]
   - id: ruff-format
 
+- repo: https://github.com/gitleaks/gitleaks
+  rev: v8.23.3
+  hooks:
+  - id: gitleaks
+    name: gitleaks
+    description: Detect hardcoded secrets in staged changes
+
 - repo: local
   hooks:
   - id: mypy
