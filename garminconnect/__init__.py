@@ -3505,9 +3505,13 @@ class Garmin:
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
         if not tokenstore or _looks_like_json(tokenstore):
             return
-        path = client.token_file_path(tokenstore)
-        with contextlib.suppress(FileNotFoundError):
+        try:
+            path = client.token_file_path(tokenstore)
             path.unlink()
+        except FileNotFoundError:
+            pass
+        except ValueError as e:
+            logger.debug("Skipping tokenstore cleanup for unsafe path: %s", e)
 
     def get_training_plans(self) -> dict[str, Any]:
         """Return all available training plans."""
