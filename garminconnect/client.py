@@ -1241,8 +1241,13 @@ class Client:
             timeout=30,
         )
         if not r.ok:
+            _LOGGER.debug(
+                "DI token refresh failed: status=%s body=%r",
+                r.status_code,
+                r.text[:200],
+            )
             raise GarminConnectAuthenticationError(
-                f"DI token refresh failed: {r.status_code} {r.text[:200]}"
+                f"DI token refresh failed: {r.status_code}"
             )
         data = r.json()
         access_token = data["access_token"]
@@ -1400,8 +1405,9 @@ class Client:
             if not self.is_authenticated:
                 raise GarminConnectAuthenticationError("Missing tokens from dict load")
         except Exception as e:
+            _LOGGER.debug("Token extraction loads() structurally failed: %s", e)
             raise GarminConnectConnectionError(
-                f"Token extraction loads() structurally failed: {e}"
+                "Token extraction loads() structurally failed"
             ) from e
 
     def connectapi(self, path: str, **kwargs: Any) -> Any:
@@ -1482,23 +1488,24 @@ class Client:
 
         if resp.status_code >= 400:
             error_msg = f"API Error {resp.status_code}"
+            safe_detail = ""
             try:
                 error_data = resp.json()
                 if isinstance(error_data, dict):
-                    msg = (
+                    safe_detail = (
                         error_data.get("message")
                         or error_data.get("content")
                         or error_data.get("detailedImportResult", {})
                         .get("failures", [{}])[0]
                         .get("messages", [""])[0]
-                    )
-                    if msg:
-                        error_msg += f" - {msg}"
-                    else:
-                        error_msg += f" - {error_data}"
-            except Exception:
-                if len(resp.text) < 500:
-                    error_msg += f" - {resp.text}"
+                    ) or ""
+            except Exception as e:
+                _LOGGER.debug("Could not extract safe error detail: %s", e)
+            if safe_detail:
+                error_msg += f" - {safe_detail}"
+            _LOGGER.debug(
+                "API error response: status=%s body=%r", resp.status_code, resp.text
+            )
             # A 404 is a missing resource, not a connectivity failure.
             if resp.status_code == 404:
                 raise GarminConnectNotFoundError(error_msg)
