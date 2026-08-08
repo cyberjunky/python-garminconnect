@@ -2,6 +2,7 @@
 vulnerability_reports/
 SECURITY_AUDIT_LOG.md
 your_data/
+tests/*.fit
 tests/cassettes/
 pdm.lock
 .claude/
