@@ -95,12 +95,28 @@ SENSITIVE_FORM_PARAMS = [
     "username",
 ]
 
+# JavaScript variable names produced by Garmin's widget MFA flow that contain
+# PII (email/phone) or stable identifiers. Embedded in HTML response bodies.
+SENSITIVE_JS_VARS = {"customerGuid", "clientId", "codeSentTo", "mfaMethod"}
+_JS_VAR_RE = re.compile(
+    r"(var\s+)("
+    + "|".join(re.escape(name) for name in SENSITIVE_JS_VARS)
+    + r")(\s*=\s*['\"])([^'\"]*)(['\"]\s*;)"
+)
+
 
 def _sanitize_form_body(body: str) -> str:
     """Scrub sensitive parameters from application/x-www-form-urlencoded bodies."""
     for key in SENSITIVE_FORM_PARAMS:
         body = re.sub(re.escape(key) + r"=[^&]*", f"{key}=SANITIZED", body)
     return body
+
+
+def _sanitize_html_body(body: str) -> str:
+    """Scrub sensitive JS variables embedded in HTML response bodies."""
+    return _JS_VAR_RE.sub(
+        lambda m: f'{m.group(1)}{m.group(2)}{m.group(3)}SANITIZED{m.group(5)}', body
+    )
 
 
 def sanitize_request(request: Any) -> Any:
@@ -184,6 +200,9 @@ def sanitize_response(response: Any) -> Any:
     # same deny-list applied to requests, so a field added to one is always
     # covered by the other.
     body = _sanitize_form_body(body)
+    # Scrub sensitive JS variables embedded in HTML bodies (e.g., Garmin widget
+    # MFA flow: customerGuid, codeSentTo, clientId).
+    body = _sanitize_html_body(body)
     body_was_bytes = isinstance(response["body"]["string"], bytes)
     try:
         body_json = json.loads(body)
