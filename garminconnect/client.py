@@ -54,6 +54,11 @@ def token_file_path(path: str) -> Path:
     return token_path
 
 
+# -- Domain allowlist --
+# Only official Garmin domains are valid for authentication and API traffic.
+# Arbitrary values would let a malicious caller redirect credentials elsewhere.
+ALLOWED_DOMAINS = {"garmin.com", "garmin.cn"}
+
 # -- iOS mobile app constants (Strategy 1 & 2) --
 IOS_SSO_CLIENT_ID = "GCM_IOS_DARK"
 IOS_SERVICE_URL = "https://mobile.integration.garmin.com/gcm/ios"
@@ -193,6 +198,10 @@ class Client:
     """A client to communicate with Garmin Connect."""
 
     def __init__(self, domain: str = "garmin.com", **kwargs: Any) -> None:
+        if domain not in ALLOWED_DOMAINS:
+            raise ValueError(
+                f"Invalid domain {domain!r}; must be one of {sorted(ALLOWED_DOMAINS)}"
+            )
         self.domain = domain
         self._sso = f"https://sso.{domain}"
         self._connect = f"https://connect.{domain}"
