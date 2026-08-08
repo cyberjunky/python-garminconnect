@@ -1,4 +1,5 @@
 # Custom
+vulnerability_reports/
 your_data/
 tests/cassettes/
 pdm.lock
