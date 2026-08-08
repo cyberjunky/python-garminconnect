@@ -46,8 +46,21 @@ from .exceptions import (
 _LOGGER = logging.getLogger(__name__)
 
 
+# Detect ~username expansion that would point into another user's home directory.
+_OTHER_USER_HOME_RE = re.compile(r"^~[^/\\]")
+
+
 def token_file_path(path: str) -> Path:
-    """Return the token file represented by a directory or JSON path."""
+    """Return the token file represented by a directory or JSON path.
+
+    Rejects paths that expand into another user's home directory via
+    ``~username`` syntax. Bare ``~`` and ``~/...`` are allowed because they
+    resolve to the current user's home.
+    """
+    if _OTHER_USER_HOME_RE.match(path):
+        raise ValueError(
+            f"Token path must not reference another user's home directory: {path!r}"
+        )
     token_path = Path(path).expanduser()
     if token_path.is_dir() or token_path.suffix.casefold() != ".json":
         return token_path / "garmin_tokens.json"
