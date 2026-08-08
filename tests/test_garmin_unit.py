@@ -17,7 +17,9 @@ Run with:
 """
 
 import base64
+import io
 import json
+import logging
 import threading
 import time
 from contextlib import contextmanager
@@ -1099,6 +1101,33 @@ class TestTokenstoreDetection:
 
         mock_loads.assert_called_once()
         mock_load.assert_not_called()
+
+    def test_failed_inline_token_load_does_not_log_refresh_token(self):
+        """A malformed inline token blob must not be written to the debug log."""
+        g = garminconnect.Garmin("user@example.com", "secret")
+        canary = "REFRESH-TOKEN-CANARY-9d1f7c2a"
+        blob = '{"padding": "' + "P" * 559 + '", "refresh_token": "' + canary + '"}'
+
+        log_stream = io.StringIO()
+        handler = logging.StreamHandler(log_stream)
+        logger = logging.getLogger("garminconnect")
+        logger.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+        try:
+            with self._tokenstore_mocks(g) as (mock_load, mock_loads):
+                mock_loads.side_effect = Exception("parse error")
+                with patch.object(
+                    g.client, "login", side_effect=Exception("skip login")
+                ):
+                    with pytest.raises(Exception, match="skip login"):
+                        g.login(tokenstore=blob)
+        finally:
+            logger.removeHandler(handler)
+
+        logged = log_stream.getvalue()
+        assert "Failed to cleanly load tokens" in logged
+        assert canary not in logged
+        assert blob not in logged
 
 
 # ---------------------------------------------------------------------------
