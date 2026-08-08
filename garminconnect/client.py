@@ -1453,6 +1453,11 @@ class Client:
         if self.is_authenticated and self._token_expires_soon():
             self._refresh_session()
 
+        # Defense-in-depth: callers must pass clean path components; query strings
+        # belong in the `params` kwarg, not embedded in the path.
+        if ".." in path or "?" in path or "#" in path:
+            raise ValueError(f"Invalid API path: {path!r}")
+
         url = f"{self._connectapi}/{path.lstrip('/')}"
 
         if "timeout" not in kwargs:

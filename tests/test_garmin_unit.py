@@ -952,6 +952,21 @@ class TestHttpErrorMapping:
         assert "db01.garmin.internal" not in str(exc_info.value)
         assert "API Error 500" in str(exc_info.value)
 
+    @pytest.mark.parametrize(
+        "bad_path",
+        [
+            "foo/../bar",
+            "foo?bar=1",
+            "foo#fragment",
+        ],
+    )
+    def test_rejects_path_with_traversal_or_query(
+        self, monkeypatch, bad_path: str
+    ):
+        c = self._client(monkeypatch, _FakeResp(200, {}))
+        with pytest.raises(ValueError, match="Invalid API path"):
+            c._run_request("GET", bad_path)
+
 
 # ---------------------------------------------------------------------------
 # Error-message sanitization
