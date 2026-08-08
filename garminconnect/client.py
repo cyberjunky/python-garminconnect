@@ -16,6 +16,7 @@ import logging
 import os
 import random
 import re
+import threading
 import time
 from pathlib import Path
 from typing import Any, cast
@@ -269,6 +270,9 @@ class Client:
         self._api_session.mount("https://", api_adapter)
 
         self._tokenstore_path: str | None = None
+        # Serialize token refresh and state mutation so concurrent API calls can't
+        # race on the same refresh token or observe half-updated state.
+        self._token_lock: threading.RLock = threading.RLock()
         # Set of strategy names to skip during login, e.g. {"mobile+cffi"}.
         # Valid names: mobile+cffi, mobile+requests, widget+cffi,
         #              portal+cffi, portal+requests
@@ -1216,39 +1220,44 @@ class Client:
         """Refresh the DI Bearer token using the stored refresh token."""
         if not self.di_refresh_token or not self.di_client_id:
             raise GarminConnectAuthenticationError("No DI refresh token available")
-        r = self._http_post(
-            self._di_token_url,
-            headers=_native_headers(
-                {
-                    "Authorization": _build_basic_auth(self.di_client_id),
-                    "Accept": "application/json",
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Cache-Control": "no-cache",
-                }
-            ),
-            data={
-                "grant_type": "refresh_token",
-                "client_id": self.di_client_id,
-                "refresh_token": self.di_refresh_token,
-            },
-            timeout=30,
-        )
-        if not r.ok:
-            _LOGGER.debug(
-                "DI token refresh failed: status=%s body=%r",
-                r.status_code,
-                r.text[:200],
+        with self._token_lock:
+            # Re-check under the lock in case another thread already refreshed
+            # while we were waiting.
+            if not self.di_refresh_token or not self.di_client_id:
+                raise GarminConnectAuthenticationError("No DI refresh token available")
+            r = self._http_post(
+                self._di_token_url,
+                headers=_native_headers(
+                    {
+                        "Authorization": _build_basic_auth(self.di_client_id),
+                        "Accept": "application/json",
+                        "Content-Type": "application/x-www-form-urlencoded",
+                        "Cache-Control": "no-cache",
+                    }
+                ),
+                data={
+                    "grant_type": "refresh_token",
+                    "client_id": self.di_client_id,
+                    "refresh_token": self.di_refresh_token,
+                },
+                timeout=30,
             )
-            raise GarminConnectAuthenticationError(
-                f"DI token refresh failed: {r.status_code}"
+            if not r.ok:
+                _LOGGER.debug(
+                    "DI token refresh failed: status=%s body=%r",
+                    r.status_code,
+                    r.text[:200],
+                )
+                raise GarminConnectAuthenticationError(
+                    f"DI token refresh failed: {r.status_code}"
+                )
+            data = r.json()
+            access_token = data["access_token"]
+            self.di_token = access_token
+            self.di_refresh_token = data.get("refresh_token", self.di_refresh_token)
+            self.di_client_id = (
+                self._extract_client_id_from_jwt(access_token) or self.di_client_id
             )
-        data = r.json()
-        access_token = data["access_token"]
-        self.di_token = access_token
-        self.di_refresh_token = data.get("refresh_token", self.di_refresh_token)
-        self.di_client_id = (
-            self._extract_client_id_from_jwt(access_token) or self.di_client_id
-        )
 
     def _extract_client_id_from_jwt(self, token: str) -> str | None:
         payload = _decode_jwt_payload(token)
@@ -1269,54 +1278,55 @@ class Client:
 
     def _refresh_session(self) -> None:
         """Refresh auth — DI token refresh or legacy JWT_WEB CAS refresh."""
-        if self.di_token:
-            try:
-                self._refresh_di_token()
-                if self._tokenstore_path:
-                    with contextlib.suppress(Exception):
-                        self.dump(self._tokenstore_path)
-            except Exception as err:
-                _LOGGER.debug("DI token refresh failed: %s", err)
-            return
-
-        # JWT_WEB refresh via CAS TGT
-        if not self.is_authenticated:
-            return
-        try:
-            self.cs.get(
-                f"{self._sso}/mobile/sso/en_US/sign-in",
-                params={
-                    "clientId": MOBILE_SSO_CLIENT_ID,
-                    "service": self._mobile_sso_service_url,
-                },
-                allow_redirects=True,
-                timeout=15,
-            )
-            for c in self.cs.cookies.jar:
-                if c.name == "JWT_WEB":
-                    self.jwt_web = c.value
-                    _LOGGER.debug("Session refreshed via CAS TGT")
+        with self._token_lock:
+            if self.di_token:
+                try:
+                    self._refresh_di_token()
                     if self._tokenstore_path:
                         with contextlib.suppress(Exception):
                             self.dump(self._tokenstore_path)
-                    return
+                except Exception as err:
+                    _LOGGER.debug("DI token refresh failed: %s", err)
+                return
 
-            with contextlib.suppress(Exception):
-                self.cs.post(
-                    f"{self._connect}/services/auth/token/di-oauth/refresh",
-                    headers={
-                        "Accept": "application/json",
-                        "NK": "NT",
-                        "Referer": f"{self._connect}/modern/",
+            # JWT_WEB refresh via CAS TGT
+            if not self.is_authenticated:
+                return
+            try:
+                self.cs.get(
+                    f"{self._sso}/mobile/sso/en_US/sign-in",
+                    params={
+                        "clientId": MOBILE_SSO_CLIENT_ID,
+                        "service": self._mobile_sso_service_url,
                     },
-                    timeout=10,
+                    allow_redirects=True,
+                    timeout=15,
                 )
-            for c in self.cs.cookies.jar:
-                if c.name == "JWT_WEB":
-                    self.jwt_web = c.value
-                    break
-        except Exception as err:
-            _LOGGER.debug("Refresh failed: %s", err)
+                for c in self.cs.cookies.jar:
+                    if c.name == "JWT_WEB":
+                        self.jwt_web = c.value
+                        _LOGGER.debug("Session refreshed via CAS TGT")
+                        if self._tokenstore_path:
+                            with contextlib.suppress(Exception):
+                                self.dump(self._tokenstore_path)
+                        return
+
+                with contextlib.suppress(Exception):
+                    self.cs.post(
+                        f"{self._connect}/services/auth/token/di-oauth/refresh",
+                        headers={
+                            "Accept": "application/json",
+                            "NK": "NT",
+                            "Referer": f"{self._connect}/modern/",
+                        },
+                        timeout=10,
+                    )
+                for c in self.cs.cookies.jar:
+                    if c.name == "JWT_WEB":
+                        self.jwt_web = c.value
+                        break
+            except Exception as err:
+                _LOGGER.debug("Refresh failed: %s", err)
 
     def dumps(self) -> str:
         """Serialize session state to JSON string."""
@@ -1334,8 +1344,15 @@ class Client:
         account access. It is written as 0o600 inside a 0o700 directory so a
         permissive process umask can't leave it world-readable on a shared host
         (GHSA-wjhr-76vg-2hvc).
+
+        Writes to a sibling temporary file and atomically replaces the target so
+        a concurrent reader never sees a truncated or partial token file.
         """
         p = token_file_path(path)
+        # Serialize with token mutation so the serialized snapshot is consistent
+        # (e.g. not torn across a concurrent refresh).
+        with self._token_lock:
+            payload = self.dumps()
         p.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         # mkdir's mode is subject to umask and a no-op if the dir already
         # exists; chmod enforces 0o700 unconditionally.
@@ -1344,15 +1361,22 @@ class Client:
         # Open with O_CREAT mode 0o600 (and O_NOFOLLOW where available so a
         # pre-planted symlink can't redirect the write) instead of write_text,
         # which would create the file under the umask first.
-        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-        if hasattr(os, "O_NOFOLLOW"):
-            flags |= os.O_NOFOLLOW
-        fd = os.open(p, flags, 0o600)
-        with os.fdopen(fd, "w", encoding="utf-8") as token_file:
-            token_file.write(self.dumps())
-        # Enforce 0o600 even if the file pre-existed with looser permissions.
-        with contextlib.suppress(OSError):
-            p.chmod(0o600)
+        tmp = p.with_name(p.name + ".tmp")
+        try:
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+            if hasattr(os, "O_NOFOLLOW"):
+                flags |= os.O_NOFOLLOW
+            fd = os.open(tmp, flags, 0o600)
+            with os.fdopen(fd, "w", encoding="utf-8") as token_file:
+                token_file.write(payload)
+            # Enforce 0o600 even if the file pre-existed with looser permissions.
+            with contextlib.suppress(OSError):
+                tmp.chmod(0o600)
+            tmp.replace(p)
+        except Exception:
+            with contextlib.suppress(OSError):
+                tmp.unlink()
+            raise
 
     def load(self, path: str) -> None:
         """Read tokens from disk, refusing to follow symlinks.
@@ -1431,8 +1455,9 @@ class Client:
         return self._run_request("GET", path, **kwargs).content
 
     def _run_request(self, method: str, path: str, **kwargs: Any) -> Any:
-        if self.is_authenticated and self._token_expires_soon():
-            self._refresh_session()
+        with self._token_lock:
+            if self.is_authenticated and self._token_expires_soon():
+                self._refresh_session()
 
         # Defense-in-depth: callers must pass clean path components; query strings
         # belong in the `params` kwarg, not embedded in the path.
@@ -1452,7 +1477,8 @@ class Client:
         resp = sess.request(method, url, headers=headers, **kwargs)
 
         if resp.status_code == 401:
-            self._refresh_session()
+            with self._token_lock:
+                self._refresh_session()
             resp = sess.request(method, url, headers=self.get_api_headers(), **kwargs)
 
         if resp.status_code == 204:

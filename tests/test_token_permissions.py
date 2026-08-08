@@ -12,6 +12,7 @@ import os
 import stat
 import sys
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -77,3 +78,56 @@ def test_dump_explicit_json_path(tmp_path, filename):
         assert _mode(token_file) == 0o600, oct(_mode(token_file))
     finally:
         os.umask(old_umask)
+
+
+def test_dump_uses_atomic_replace(tmp_path):
+    """dump() must write a sibling temp file and os.replace() it into place.
+
+    A concurrent reader must never observe a truncated token file.
+    """
+    token_dir = tmp_path / "tokens"
+    token_file = token_dir / "garmin_tokens.json"
+    c = _make_client()
+
+    replaced = {}
+    original_replace = os.replace
+
+    def tracking_replace(src, dst):
+        replaced["src"] = Path(src).name
+        replaced["dst"] = Path(dst).name
+        original_replace(src, dst)
+
+    with patch("garminconnect.client.os.replace", side_effect=tracking_replace):
+        c.dump(str(token_dir))
+
+    assert replaced.get("src") == "garmin_tokens.json.tmp"
+    assert replaced.get("dst") == "garmin_tokens.json"
+    assert not (token_dir / "garmin_tokens.json.tmp").exists()
+    assert token_file.exists()
+    loaded = Client()
+    loaded.load(str(token_file))
+    assert loaded.di_token == "ACCESS_TOKEN_EXAMPLE"
+    assert loaded.di_refresh_token == "REFRESH_TOKEN_EXAMPLE"
+
+
+def test_dump_leaves_original_intact_on_write_failure(tmp_path):
+    """If the temp-file write fails, the existing token file must not be touched."""
+    token_dir = tmp_path / "tokens"
+    token_file = token_dir / "garmin_tokens.json"
+    token_dir.mkdir(mode=0o700)
+    token_file.write_text('{"di_token": "original"}')
+    token_file.chmod(0o600)
+
+    c = _make_client()
+
+    with (
+        patch(
+            "garminconnect.client.os.open", side_effect=OSError("disk full")
+        ) as mock_open,
+        pytest.raises(OSError, match="disk full"),
+    ):
+        c.dump(str(token_dir))
+
+    mock_open.assert_called_once()
+    assert token_file.read_text() == '{"di_token": "original"}'
+    assert not (token_dir / "garmin_tokens.json.tmp").exists()
