@@ -273,6 +273,10 @@ class Client:
         # Serialize token refresh and state mutation so concurrent API calls can't
         # race on the same refresh token or observe half-updated state.
         self._token_lock: threading.RLock = threading.RLock()
+        # True after login(return_on_mfa=True) returns "needs_mfa" until
+        # resume_login() finishes. Prevents interleaving another login on the
+        # same instance while MFA state is held on self.
+        self._mfa_pending: bool = False
         # Set of strategy names to skip during login, e.g. {"mobile+cffi"}.
         # Valid names: mobile+cffi, mobile+requests, widget+cffi,
         #              portal+cffi, portal+requests
@@ -295,6 +299,7 @@ class Client:
         self.jwt_web = None
         self.csrf_token = None
         self._tokenstore_path = None
+        self._mfa_pending = False
         for attr in (
             "_mfa_session",
             "_mfa_login_params",
@@ -384,6 +389,12 @@ class Client:
             (None, None) on success; ("needs_mfa", None) when return_on_mfa=True.
 
         """
+        if self._mfa_pending:
+            raise GarminConnectAuthenticationError(
+                "MFA login already in progress; complete it with resume_login() "
+                "or call logout() first"
+            )
+
         strategies: list[tuple[str, Any]] = [
             ("mobile+cffi", lambda: self._mobile_login_cffi(email, password)),
             ("mobile+requests", lambda: self._mobile_login_requests(email, password)),
@@ -405,6 +416,7 @@ class Client:
 
         def resolve_mfa(name: str) -> tuple[str | None, Any]:
             if return_on_mfa:
+                self._mfa_pending = True
                 return "needs_mfa", None
             if prompt_mfa:
                 mfa_code = prompt_mfa()
@@ -414,6 +426,7 @@ class Client:
                     raise GarminConnectConnectionError(
                         f"{name}: token rejected by API tier after MFA"
                     )
+                self._mfa_pending = False
                 return None, None
             raise GarminConnectAuthenticationError(
                 "MFA Required but no prompt_mfa mechanism supplied"
@@ -1456,11 +1469,28 @@ class Client:
 
     def resume_login(self, _client_state: Any, mfa_code: str) -> tuple[str | None, Any]:
         """Complete a previously initiated MFA login."""
-        self._complete_mfa(mfa_code)
-        if self.verify_login and not self._verify_token():
-            self._clear_auth_state()
-            raise GarminConnectConnectionError("token rejected by API tier after MFA")
-        return None, None
+        try:
+            self._complete_mfa(mfa_code)
+            if self.verify_login and not self._verify_token():
+                self._clear_auth_state()
+                raise GarminConnectConnectionError(
+                    "token rejected by API tier after MFA"
+                )
+            return None, None
+        finally:
+            # Always clear the pending MFA flag and per-attempt state so a new
+            # login can start after resume_login() finishes (success or failure).
+            self._mfa_pending = False
+            for attr in (
+                "_mfa_session",
+                "_mfa_login_params",
+                "_mfa_post_headers",
+                "_mfa_service_url",
+                "_mfa_flow",
+                "_mfa_method",
+                "_widget_last_resp",
+            ):
+                setattr(self, attr, None)
 
     def download(self, path: str, **kwargs: Any) -> bytes:
         if "headers" not in kwargs:

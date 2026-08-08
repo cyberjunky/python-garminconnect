@@ -735,6 +735,62 @@ class TestLoginMFA:
         assert c.di_token == "portal-token"  # noqa: S105
         mock_clear.assert_called_once()
 
+    def test_return_on_mfa_sets_pending_flag(self):
+        c = client_mod.Client(verify_login=False)
+
+        def mfa_strategy(_email, _password):
+            c._mfa_flow = "widget"
+            raise client_mod._MFARequired()
+
+        with patch.object(c, "_widget_web_login", side_effect=mfa_strategy):
+            status, _ = c.login("e@x.com", "pw", return_on_mfa=True)
+
+        assert status == "needs_mfa"
+        assert c._mfa_pending is True
+
+    def test_login_rejects_interleaved_mfa_attempt(self):
+        """A second login while MFA is pending must be rejected to avoid
+        overwriting the first attempt's MFA state.
+        """
+        c = client_mod.Client(verify_login=False)
+
+        def mfa_strategy(_email, _password):
+            c._mfa_flow = "widget"
+            raise client_mod._MFARequired()
+
+        with patch.object(c, "_widget_web_login", side_effect=mfa_strategy):
+            c.login("a@x.com", "pw", return_on_mfa=True)
+
+        with (
+            patch.object(c, "_widget_web_login", side_effect=mfa_strategy),
+            pytest.raises(
+                garminconnect.GarminConnectAuthenticationError,
+                match="MFA login already in progress",
+            ),
+        ):
+            c.login("b@x.com", "pw", return_on_mfa=True)
+
+    def test_resume_login_clears_pending_flag(self):
+        c = client_mod.Client(verify_login=False)
+
+        def mfa_strategy(_email, _password):
+            c._mfa_flow = "widget"
+            raise client_mod._MFARequired()
+
+        def fake_complete(code):
+            c.di_token = f"widget-{code}"  # noqa: S105
+
+        with patch.object(c, "_widget_web_login", side_effect=mfa_strategy):
+            c.login("e@x.com", "pw", return_on_mfa=True)
+
+        assert c._mfa_pending is True
+
+        with patch.object(c, "_complete_mfa", side_effect=fake_complete):
+            c.resume_login({}, "654321")
+
+        assert c._mfa_pending is False
+        assert c._mfa_flow is None
+
 
 # ---------------------------------------------------------------------------
 # Token refresh concurrency
