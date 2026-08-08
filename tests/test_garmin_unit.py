@@ -386,8 +386,8 @@ class TestUrlConstruction:
             garmin.get_gear("98765")
 
         url = mock.call_args[0][0]
-        assert "/gear-service/gear/filterGear" in url
-        assert "userProfilePk=98765" in url
+        assert url.endswith("/gear-service/gear/filterGear")
+        assert mock.call_args.kwargs["params"] == {"userProfilePk": "98765"}
 
     def test_get_weigh_ins_builds_url_with_date_range(
         self, garmin: garminconnect.Garmin
