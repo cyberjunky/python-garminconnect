@@ -937,6 +937,54 @@ class TestHttpErrorMapping:
             g.connectapi("some/path")
         assert not isinstance(exc_info.value, garminconnect.GarminConnectNotFoundError)
 
+    def test_error_message_includes_safe_message_field(self, monkeypatch):
+        c = self._client(monkeypatch, _FakeResp(500, {"message": "server error"}))
+        with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
+            c._run_request("GET", "x")
+        assert "server error" in str(exc_info.value)
+
+    def test_error_message_omits_raw_response_body(self, monkeypatch):
+        body = "<html><body>internal hostname: db01.garmin.internal</body></html>"
+        c = self._client(monkeypatch, _FakeResp(500, body))
+        with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
+            c._run_request("GET", "x")
+        assert "db01.garmin.internal" not in str(exc_info.value)
+        assert "API Error 500" in str(exc_info.value)
+
+
+# ---------------------------------------------------------------------------
+# Error-message sanitization
+# ---------------------------------------------------------------------------
+
+
+class TestErrorMessageSanitization:
+    """Exception messages must not embed raw server responses or token content."""
+
+    def test_di_refresh_error_omits_response_body(self):
+        c = client_mod.Client(verify_login=False)
+        c.di_refresh_token = "refresh"
+        c.di_client_id = "client"
+
+        class FakeResp:
+            ok = False
+            status_code = 500
+            text = "internal stack trace: db01.garmin.internal"
+
+        with patch.object(c, "_http_post", return_value=FakeResp()):
+            with pytest.raises(
+                garminconnect.GarminConnectAuthenticationError
+            ) as exc_info:
+                c._refresh_di_token()
+
+        assert "db01.garmin.internal" not in str(exc_info.value)
+        assert "500" in str(exc_info.value)
+
+    def test_loads_error_omits_token_content(self):
+        c = client_mod.Client(verify_login=False)
+        with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
+            c.loads('{"di_token": "SECRET_TOKEN_VALUE"')
+        assert "SECRET_TOKEN_VALUE" not in str(exc_info.value)
+
 
 # ---------------------------------------------------------------------------
 # update_workout (in-place PUT)
