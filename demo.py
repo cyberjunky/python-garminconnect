@@ -4732,6 +4732,8 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
             garmin = Garmin(
                 email=email, password=password, is_cn=False, return_on_mfa=True
             )
+            # Don't keep the plaintext password in local scope longer than needed.
+            password = None
             result1, result2 = garmin.login()
 
             if result1 == "needs_mfa":
