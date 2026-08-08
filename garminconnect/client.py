@@ -1372,10 +1372,20 @@ class Client:
             p.chmod(0o600)
 
     def load(self, path: str) -> None:
+        """Read tokens from disk, refusing to follow symlinks.
+
+        A pre-planted symlink must not redirect the read to an attacker-controlled
+        file, so this mirrors the write-side hardening in ``dump()``.
+        """
         try:
             self._tokenstore_path = path
             p = token_file_path(path)
-            self.loads(p.read_text())
+            flags = os.O_RDONLY
+            if hasattr(os, "O_NOFOLLOW"):
+                flags |= os.O_NOFOLLOW
+            fd = os.open(p, flags)
+            with os.fdopen(fd, encoding="utf-8") as token_file:
+                self.loads(token_file.read())
         except Exception as e:
             raise GarminConnectConnectionError(
                 f"Token path not loading cleanly: {e}"
