@@ -696,8 +696,15 @@ class Garmin:
                             self.client._refresh_session()
 
                 except Exception as e:
+                    # Never log the raw tokenstore value: it may be the inline
+                    # token JSON (and thus the refresh token). Log only the
+                    # source type, length, and the parse error.
+                    source = "inline-json" if _looks_like_json(tokenstore) else "path"
                     logger.debug(
-                        f"Failed to cleanly load tokens from {tokenstore}: {e}"
+                        "Failed to cleanly load tokens (source=%s, len=%d): %s",
+                        source,
+                        len(tokenstore),
+                        e,
                     )
                     tokens_loaded = False
 
