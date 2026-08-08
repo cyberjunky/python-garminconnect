@@ -57,12 +57,25 @@ def token_file_path(path: str) -> Path:
     Rejects paths that expand into another user's home directory via
     ``~username`` syntax. Bare ``~`` and ``~/...`` are allowed because they
     resolve to the current user's home.
+
+    Also rejects symlinked tokenstore paths so a pre-planted symlink cannot
+    redirect load/dump/logout to an attacker-controlled location.
     """
     if _OTHER_USER_HOME_RE.match(path):
         raise ValueError(
             f"Token path must not reference another user's home directory: {path!r}"
         )
     token_path = Path(path).expanduser()
+    # Reject symlinks on the tokenstore path or its immediate parent
+    # (e.g. ~/.garminconnect -> /attacker/dir).
+    for check_path in (token_path, token_path.parent):
+        try:
+            if check_path.is_symlink():
+                raise ValueError(f"Token path must not be a symlink: {path!r}")
+        except OSError as e:
+            raise ValueError(
+                f"Token path cannot be checked for symlinks: {path!r}"
+            ) from e
     if token_path.is_dir() or token_path.suffix.casefold() != ".json":
         return token_path / "garmin_tokens.json"
     return token_path
