@@ -161,30 +161,9 @@ DI_CLIENT_IDS = (
 class _MFARequired(Exception):
     """Internal sentinel — raised by login strategies when MFA is needed.
 
-    Normally stops the strategy chain immediately (like a credential error).
-    The caller (login()) handles it via prompt_mfa / return_on_mfa.
-
-    Exception: when the strategy that reached MFA can't be trusted to have
-    actually triggered OTP delivery (see ``_MFA_STATE_ATTRS`` /
-    ``_mfa_delivery_uncertain`` in ``login()``), the chain gives remaining
-    strategies a chance first and only falls back to this one if none of
-    them do better.
+    Stops the strategy chain immediately. The caller (login()) handles it via
+    prompt_mfa / return_on_mfa.
     """
-
-
-# Attributes a login strategy stashes on ``self`` when it hits MFA. Snapshotted
-# so a "delivery uncertain" MFA state (see login()) can be shelved while later
-# strategies are tried, then restored if nothing better turns up.
-_MFA_STATE_ATTRS = (
-    "_mfa_method",
-    "_mfa_session",
-    "_mfa_login_params",
-    "_mfa_post_headers",
-    "_mfa_flow",
-    "_mfa_service_url",
-    "_widget_last_resp",
-)
-_UNSET = object()
 
 
 def _build_basic_auth(client_id: str) -> str:
@@ -312,7 +291,6 @@ class Client:
         self.jwt_web = None
         self.csrf_token = None
         self._tokenstore_path = None
-        self._mfa_delivery_uncertain = False
         for attr in (
             "_mfa_session",
             "_mfa_login_params",
@@ -388,10 +366,8 @@ class Client:
         Tries each strategy in order.  Only credential errors (GarminConnectAuthenticationError)
         and MFA requirements stop the chain immediately — all other failures
         (429 rate limits, transport errors, HTML challenges) fall through to
-        the next strategy. Exception: widget+cffi's email/SMS MFA can't be
-        confirmed to have actually triggered OTP delivery (scraped HTML, no
-        JS execution), so it's shelved instead — remaining strategies get a
-        chance first, and it's only used if none of them do better.
+        the next strategy. MFA requirements are resolved immediately via
+        prompt_mfa / return_on_mfa.
 
         Args:
             email: Garmin account email.
@@ -422,8 +398,6 @@ class Client:
 
         last_err: Exception | None = None
         rate_limited_count = 0
-        shelved_mfa: dict[str, Any] | None = None
-        shelved_mfa_name = ""
 
         def resolve_mfa(name: str) -> tuple[str | None, Any]:
             if return_on_mfa:
@@ -441,8 +415,7 @@ class Client:
                 "MFA Required but no prompt_mfa mechanism supplied"
             )
 
-        for idx, (name, run) in enumerate(strategies):
-            self._mfa_delivery_uncertain = False
+        for name, run in strategies:
             try:
                 _LOGGER.debug("Trying login strategy: %s", name)
                 run()
@@ -463,28 +436,8 @@ class Client:
                 # Wrong credentials — stop immediately, no point trying further
                 raise
             except _MFARequired:
-                # A strategy whose MFA delivery can't be trusted (currently:
-                # widget+cffi's email/SMS OTP page — it's scraped HTML with
-                # no JS execution, so we can't confirm Garmin actually sent a
-                # code) doesn't get to stop the chain outright. Shelve its
-                # MFA state and let remaining strategies — which use real
-                # login APIs that are known to trigger delivery — try first.
-                more_strategies_left = idx < len(strategies) - 1
-                if (
-                    self._mfa_delivery_uncertain
-                    and more_strategies_left
-                    and shelved_mfa is None
-                ):
-                    _LOGGER.debug(
-                        "%s reached MFA but OTP delivery is unconfirmed; "
-                        "trying remaining strategies before prompting",
-                        name,
-                    )
-                    shelved_mfa = {
-                        attr: getattr(self, attr, _UNSET) for attr in _MFA_STATE_ATTRS
-                    }
-                    shelved_mfa_name = name
-                    continue
+                # Resolve MFA immediately; the strategy is responsible for
+                # triggering code delivery (widget flow does so explicitly).
                 try:
                     return resolve_mfa(name)
                 except GarminConnectConnectionError as e:
@@ -499,17 +452,6 @@ class Client:
                 _LOGGER.warning("%s failed: %s", name, e)
                 last_err = e
                 continue
-
-        if shelved_mfa is not None:
-            _LOGGER.debug(
-                "No later strategy reached MFA or succeeded; falling back to "
-                "%s's MFA state",
-                shelved_mfa_name,
-            )
-            for attr, value in shelved_mfa.items():
-                if value is not _UNSET:
-                    setattr(self, attr, value)
-            return resolve_mfa(shelved_mfa_name)
 
         if rate_limited_count == len(strategies):
             raise GarminConnectTooManyRequestsError(
