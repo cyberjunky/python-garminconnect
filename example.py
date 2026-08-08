@@ -123,6 +123,8 @@ def init_api() -> Garmin | None:
                 password=password,
                 prompt_mfa=lambda: input("MFA code: ").strip(),
             )
+            # Don't keep the plaintext password in local scope longer than needed.
+            password = None
             garmin.login(tokenstore_path)
             print(f"Login successful. Tokens saved to: {tokenstore_path}")
             return garmin
