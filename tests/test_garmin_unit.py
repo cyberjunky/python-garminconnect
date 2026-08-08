@@ -21,6 +21,7 @@ from unittest.mock import patch
 import pytest
 
 import garminconnect
+from garminconnect import client as client_mod
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -40,6 +41,26 @@ def garmin() -> garminconnect.Garmin:
     g.full_name = "Test User"
     g.unit_system = "metric"
     return g
+
+
+# ---------------------------------------------------------------------------
+# Client construction / domain validation
+# ---------------------------------------------------------------------------
+
+
+class TestClientConstruction:
+    """Constructor should reject unsafe configuration values."""
+
+    def test_rejects_arbitrary_domain(self):
+        """Arbitrary domains would redirect credentials to attacker-controlled hosts."""
+        with pytest.raises(ValueError, match="Invalid domain"):
+            client_mod.Client(domain="evil.com")
+
+    @pytest.mark.parametrize("domain", ["garmin.com", "garmin.cn"])
+    def test_accepts_official_domains(self, domain: str):
+        c = client_mod.Client(domain=domain, verify_login=False)
+        assert c.domain == domain
+        assert c._sso == f"https://sso.{domain}"
 
 
 # ---------------------------------------------------------------------------
