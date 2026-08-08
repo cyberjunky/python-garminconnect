@@ -591,6 +591,70 @@ class TestCredentialLifecycle:
 
 
 # ---------------------------------------------------------------------------
+# MFA resume_login
+# ---------------------------------------------------------------------------
+
+
+class TestResumeLogin:
+    """Two-step MFA resume_login must verify the token and propagate failures."""
+
+    def test_client_resume_login_verifies_token_when_verify_login_enabled(self):
+        c = client_mod.Client(verify_login=True)
+        with (
+            patch.object(c, "_complete_mfa") as mock_complete,
+            patch.object(c, "_verify_token", return_value=True) as mock_verify,
+            patch.object(c, "_clear_auth_state") as mock_clear,
+        ):
+            assert c.resume_login({}, "123456") == (None, None)
+
+        mock_complete.assert_called_once_with("123456")
+        mock_verify.assert_called_once()
+        mock_clear.assert_not_called()
+
+    def test_client_resume_login_clears_auth_when_token_rejected(self):
+        c = client_mod.Client(verify_login=True)
+        with (
+            patch.object(c, "_complete_mfa"),
+            patch.object(c, "_verify_token", return_value=False),
+            patch.object(c, "_clear_auth_state") as mock_clear,
+            pytest.raises(garminconnect.GarminConnectConnectionError, match="token rejected by API tier after MFA"),
+        ):
+            c.resume_login({}, "123456")
+
+        mock_clear.assert_called_once()
+
+    def test_client_resume_login_skips_verify_when_verify_login_disabled(self):
+        c = client_mod.Client(verify_login=False)
+        with (
+            patch.object(c, "_complete_mfa") as mock_complete,
+            patch.object(c, "_verify_token") as mock_verify,
+        ):
+            assert c.resume_login({}, "123456") == (None, None)
+
+        mock_complete.assert_called_once_with("123456")
+        mock_verify.assert_not_called()
+
+    def test_garmin_resume_login_propagates_profile_load_failure(self):
+        g = garminconnect.Garmin("user@example.com", "secret")
+        with (
+            patch.object(g.client, "resume_login", return_value=(None, None)),
+            patch.object(
+                g,
+                "_load_profile_and_settings",
+                side_effect=garminconnect.GarminConnectAuthenticationError(
+                    "bad token"
+                ),
+            ) as mock_load,
+            pytest.raises(
+                garminconnect.GarminConnectAuthenticationError, match="bad token"
+            ),
+        ):
+            g.resume_login({}, "123456")
+
+        mock_load.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
 # Tokenstore path-vs-data detection
 # ---------------------------------------------------------------------------
 
