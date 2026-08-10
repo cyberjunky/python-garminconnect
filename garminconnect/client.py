@@ -425,7 +425,10 @@ class Client:
             _LOGGER.debug("Token validation inconclusive (kept): %s", msg)
             return True
         except Exception as e:
-            _LOGGER.debug("Token validation inconclusive (kept): %s", e)
+            _LOGGER.debug(
+                "Token validation inconclusive (kept): %s",
+                _sanitize_exception_text(e),
+            )
             return True
 
     def get_api_headers(self) -> dict[str, str]:
@@ -592,11 +595,15 @@ class Client:
             except (GarminConnectAuthenticationError, _MFARequired):
                 raise
             except GarminConnectTooManyRequestsError as e:
-                _LOGGER.debug("mobile+cffi(%s) 429: %s", imp, e)
+                _LOGGER.debug(
+                    "mobile+cffi(%s) 429: %s", imp, _sanitize_exception_text(e)
+                )
                 last_err = e
                 continue
             except Exception as e:
-                _LOGGER.debug("mobile+cffi(%s) failed: %s", imp, e)
+                _LOGGER.debug(
+                    "mobile+cffi(%s) failed: %s", imp, _sanitize_exception_text(e)
+                )
                 last_err = e
                 continue
         if last_err:
@@ -958,11 +965,15 @@ class Client:
             except (GarminConnectAuthenticationError, _MFARequired):
                 raise
             except GarminConnectTooManyRequestsError as e:
-                _LOGGER.debug("portal+cffi(%s) 429: %s", imp, e)
+                _LOGGER.debug(
+                    "portal+cffi(%s) 429: %s", imp, _sanitize_exception_text(e)
+                )
                 last_err = e
                 continue
             except Exception as e:
-                _LOGGER.debug("portal+cffi(%s) failed: %s", imp, e)
+                _LOGGER.debug(
+                    "portal+cffi(%s) failed: %s", imp, _sanitize_exception_text(e)
+                )
                 last_err = e
                 continue
         if last_err:
@@ -1419,7 +1430,9 @@ class Client:
                         with contextlib.suppress(Exception):
                             self.dump(self._tokenstore_path)
                 except Exception as err:
-                    _LOGGER.debug("DI token refresh failed: %s", err)
+                    _LOGGER.debug(
+                        "DI token refresh failed: %s", _sanitize_exception_text(err)
+                    )
                 return
 
             # JWT_WEB refresh via CAS TGT
@@ -1459,7 +1472,7 @@ class Client:
                         self.jwt_web = c.value
                         break
             except Exception as err:
-                _LOGGER.debug("Refresh failed: %s", err)
+                _LOGGER.debug("Refresh failed: %s", _sanitize_exception_text(err))
 
     def dumps(self) -> str:
         """Serialize session state to JSON string."""
@@ -1615,7 +1628,12 @@ class Client:
         # characters (e.g. %2e -> .) after this check, so a literal-only match
         # would let a %2e%2e traversal slip through.
         decoded_path = unquote(path)
-        if ".." in decoded_path or "?" in decoded_path or "#" in decoded_path or "\\" in decoded_path:
+        if (
+            ".." in decoded_path
+            or "?" in decoded_path
+            or "#" in decoded_path
+            or "\\" in decoded_path
+        ):
             raise ValueError(f"Invalid API path: {path!r}")
 
         url = f"{self._connectapi}/{path.lstrip('/')}"

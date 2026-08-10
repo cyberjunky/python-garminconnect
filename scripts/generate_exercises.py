@@ -25,20 +25,54 @@ from __future__ import annotations
 import html
 import re
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parent.parent / "garminconnect" / "exercises.py"
 
-# Split into elements first; the row regex below is then scoped to a single
-# <li> and can never capture a <span> from elsewhere in the document.
-LI = re.compile(r"<li\b.*?</li>", re.S)
 
-ROW = re.compile(
-    r'data-category-key="([^"]*)"\s+'
-    r'data-exercise-key="([^"]*)"'
-    r".*?<span>([^<]*)</span>",
-    re.S,
-)
+class _PickerParser(HTMLParser):
+    """Collect (category, exercise, name) rows, each scoped to its own <li>.
+
+    Regex extraction with DOTALL can reach past an element boundary and
+    capture a <span> from unrelated page chrome; a real parser cannot, and
+    it also keeps items separate when a closing </li> is omitted.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.rows: list[tuple[str, str, str]] = []
+        self._cur: list[str | None] | None = None
+        self._in_span = False
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        a = dict(attrs)
+        if tag == "li":
+            # An unclosed previous <li> ends here, not at its </li>.
+            self._flush()
+            if "data-category-key" in a and "data-exercise-key" in a:
+                self._cur = [a["data-category-key"], a["data-exercise-key"], None]
+        elif tag == "span" and self._cur is not None and self._cur[2] is None:
+            self._in_span = True
+
+    def handle_data(self, data: str) -> None:
+        if self._in_span and self._cur is not None:
+            self._cur[2] = data.strip()
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "span":
+            self._in_span = False
+        elif tag == "li" and self._cur is not None:
+            self._flush()
+
+    def _flush(self) -> None:
+        # Attribute-only element (no span of its own): skip rather than
+        # borrowing text from elsewhere in the document.
+        if self._cur is not None and self._cur[2]:
+            self.rows.append((self._cur[0] or "", self._cur[1] or "", self._cur[2]))
+        self._cur = None
+        self._in_span = False
+
 
 # Names are display labels; anything shaped like session data means the
 # extraction went out of scope (or the wrong HTML was pasted).
@@ -46,19 +80,19 @@ SUSPECT = re.compile(
     r"[\w.+-]+@[\w-]+\.[\w.]+"  # e-mail address
     r"|eyJ[\w-]{10,}"  # JWT
     r"|https?://"  # URL
-    r"|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"  # GUID
+    r"|[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",  # GUID
+    re.IGNORECASE,
 )
 
 
 def parse(text: str) -> list[dict[str, str]]:
     """Extract unique (name, category, exercise) rows from picker HTML."""
+    parser = _PickerParser()
+    parser.feed(text)
+    parser.close()
     seen: set[tuple[str, str]] = set()
     out: list[dict[str, str]] = []
-    for element in LI.findall(text):
-        match = ROW.search(element)
-        if not match:
-            continue  # attribute-only element: skip, don't reach outside it
-        category, exercise, name = match.groups()
+    for category, exercise, name in parser.rows:
         key = (category, exercise)
         if key in seen:
             continue  # the "Recent" block repeats items listed below
@@ -132,11 +166,14 @@ def main() -> None:
     if len(sys.argv) != 2:
         sys.exit("usage: python scripts/generate_exercises.py <picker.html>")
     exercises = parse(Path(sys.argv[1]).read_text(encoding="utf-8"))
-    suspect = [e for e in exercises if SUSPECT.search(e["name"])]
+    suspect = [i for i, e in enumerate(exercises) if SUSPECT.search(e["name"])]
     if suspect:
+        # Report only row positions — the matched labels are exactly the
+        # potentially sensitive text we refuse to write out.
         sys.exit(
-            "refusing to write: entries look like session data, not exercise "
-            f"names (check the pasted HTML): {suspect}"
+            f"refusing to write: {len(suspect)} entr{'ies' if len(suspect) != 1 else 'y'} "
+            "look like session data, not exercise names (rows "
+            f"{suspect}; check the pasted HTML)"
         )
     OUT.write_text(render(exercises), encoding="utf-8")
     print(f"Wrote {len(exercises)} exercises to {OUT}")
