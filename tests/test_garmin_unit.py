@@ -218,8 +218,12 @@ class TestUrlConstruction:
             )
 
         mock.assert_called_once_with(
-            "/biometric-service/stats/functionalThresholdPower/range/2025-06-01/2025-06-30"
-            "?sport=CYCLING&aggregation=daily&aggregationStrategy=LATEST"
+            "/biometric-service/stats/functionalThresholdPower/range/2025-06-01/2025-06-30",
+            params={
+                "sport": "CYCLING",
+                "aggregation": "daily",
+                "aggregationStrategy": "LATEST",
+            },
         )
         assert result == payload
 
@@ -234,7 +238,8 @@ class TestUrlConstruction:
                 aggregation="weekly",
             )
 
-        assert "sport=RUNNING&aggregation=weekly" in mock.call_args[0][0]
+        assert mock.call_args.kwargs["params"]["sport"] == "RUNNING"
+        assert mock.call_args.kwargs["params"]["aggregation"] == "weekly"
 
     @pytest.mark.parametrize(
         ("start", "end", "sport", "aggregation", "message"),
@@ -768,6 +773,40 @@ class TestLoginMFA:
         assert c.di_token == "portal-token"  # noqa: S105
         assert c._tokenstore_path == "/tmp/tokenstore.json"  # noqa: S108
 
+    def test_sanitize_exception_text_redacts_query_values(self):
+        err = Exception("Max retries exceeded with url: /x?ticket=ST-1&foo=bar ok")
+        out = client_mod._sanitize_exception_text(err)
+        assert "ST-1" not in out
+        assert "bar" not in out
+        assert "ticket=<redacted>" in out
+        assert "foo=<redacted>" in out
+        assert out.startswith("Exception: ")
+
+    def test_failed_login_redacts_ticket_from_log_and_error(self, caplog):
+        # requests embeds the full URL — query string included — in exception
+        # text; the ticket-consumption fallback URL carries ?ticket=ST-...,
+        # which must reach neither the log nor the raised error.
+        c = client_mod.Client(verify_login=False)
+        boom = Exception(
+            "Max retries exceeded with url: /gcm/ios?ticket=ST-CANARY-123 "
+            "(Caused by ConnectTimeoutError)"
+        )
+        with (
+            patch.object(c, "_mobile_login_cffi", side_effect=boom),
+            patch.object(c, "_mobile_login_requests", side_effect=boom),
+            patch.object(c, "_widget_web_login", side_effect=boom),
+            patch.object(c, "_portal_web_login_cffi", side_effect=boom),
+            patch.object(c, "_portal_web_login_requests", side_effect=boom),
+            caplog.at_level(logging.WARNING, logger="garminconnect"),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError, match="exhausted"
+            ) as exc_info,
+        ):
+            c.login("e@x.com", "pw")
+        assert "ST-CANARY-123" not in caplog.text
+        assert "ST-CANARY-123" not in str(exc_info.value)
+        assert "ticket=<redacted>" in caplog.text
+
     def test_return_on_mfa_sets_pending_flag(self):
         c = client_mod.Client(verify_login=False)
 
@@ -1151,6 +1190,18 @@ class TestTokenFilePath:
 
         with pytest.raises(ValueError, match="must not be a symlink"):
             client_mod.token_file_path(str(link_dir / "garmin_tokens.json"))
+
+    def test_rejects_symlink_two_levels_up(self, tmp_path, make_symlink):
+        # O_NOFOLLOW only covers the final path component; a symlink planted
+        # higher in the ancestry must also be rejected.
+        real = tmp_path / "real"
+        real.mkdir()
+        (tmp_path / "cfg").mkdir()
+        make_symlink(real, tmp_path / "cfg" / "store")
+
+        target = tmp_path / "cfg" / "store" / "sub" / ".garminconnect"
+        with pytest.raises(ValueError, match="must not be a symlink"):
+            client_mod.token_file_path(str(target))
 
 
 # ---------------------------------------------------------------------------
@@ -1782,6 +1833,15 @@ class TestHttpErrorMapping:
             "foo/../bar",
             "foo?bar=1",
             "foo#fragment",
+            # Percent-encoded variants: requests' requote_uri() decodes
+            # unreserved characters (%2e -> .) after the guard would see a
+            # literal-only match, so validation must run on the decoded path.
+            "foo/%2e%2e/bar",
+            "foo/%2E%2E/bar",
+            "foo/%2e%2e%2fbar",
+            "foo/%2e%2e;/bar",
+            "foo/%3fbar=1",
+            "foo\\..\\bar",
         ],
     )
     def test_rejects_path_with_traversal_or_query(
@@ -1790,6 +1850,30 @@ class TestHttpErrorMapping:
         c = self._client(monkeypatch, _FakeResp(200, {}))
         with pytest.raises(ValueError, match="Invalid API path"):
             c._run_request("GET", bad_path)
+
+    @pytest.mark.parametrize(
+        "path",
+        [
+            # A run of dots that doesn't form a ".." path segment (e.g. a
+            # quoted display name like "first..last") must not be rejected
+            # as traversal.
+            "userprofile-service/first..last",
+            "userprofile-service/foo...bar",
+        ],
+    )
+    def test_accepts_path_with_dots_not_forming_traversal_segment(
+        self, monkeypatch, path: str
+    ):
+        c = self._client(monkeypatch, _FakeResp(200, {"ok": True}))
+        resp = c._run_request("GET", path)
+        assert resp.status_code == 200
+
+    def test_accepts_legitimate_path(self, monkeypatch):
+        c = self._client(monkeypatch, _FakeResp(200, {"ok": True}))
+        resp = c._run_request(
+            "GET", "/userprofile-service/socialProfile"
+        )
+        assert resp.status_code == 200
 
 
 # ---------------------------------------------------------------------------

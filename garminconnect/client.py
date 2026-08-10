@@ -22,6 +22,7 @@ import time
 from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import unquote
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -69,9 +70,11 @@ def token_file_path(path: str) -> Path:
             f"Token path must not reference another user's home directory: {path!r}"
         )
     token_path = Path(path).expanduser()
-    # Reject symlinks on the tokenstore path or its immediate parent
-    # (e.g. ~/.garminconnect -> /attacker/dir).
-    for check_path in (token_path, token_path.parent):
+    # Reject symlinks anywhere in the tokenstore ancestry (e.g.
+    # ~/.garminconnect -> /attacker/dir). O_NOFOLLOW on the final open()
+    # only covers the last component; an intermediate symlinked directory
+    # would still redirect load/dump/logout into an attacker-controlled tree.
+    for check_path in (token_path, *token_path.parents):
         try:
             if check_path.is_symlink():
                 raise ValueError(f"Token path must not be a symlink: {path!r}")
@@ -185,6 +188,20 @@ class _MFARequired(Exception):
 
 def _build_basic_auth(client_id: str) -> str:
     return "Basic " + base64.b64encode(f"{client_id}:".encode()).decode()
+
+
+_QUERY_VALUE_RE = re.compile(r"([?&][\w.-]+=)[^&\s)'\"]+")
+
+
+def _sanitize_exception_text(err: Exception) -> str:
+    """Render an exception for logs/messages with URL query values redacted.
+
+    ``requests`` embeds the full request URL — query string included — in its
+    exception text. On the login fallback path that URL carries the CAS
+    service ticket (``?ticket=ST-...``), so logging or re-raising the raw
+    exception would leak a credential into application logs and bug reports.
+    """
+    return _QUERY_VALUE_RE.sub(r"\1<redacted>", f"{type(err).__name__}: {err}")
 
 
 def _iter_file_objects(kwargs: dict[str, Any]) -> Iterator[Any]:
@@ -414,7 +431,10 @@ class Client:
             _LOGGER.debug("Token validation inconclusive (kept): %s", msg)
             return True
         except Exception as e:
-            _LOGGER.debug("Token validation inconclusive (kept): %s", e)
+            _LOGGER.debug(
+                "Token validation inconclusive (kept): %s",
+                _sanitize_exception_text(e),
+            )
             return True
 
     def get_api_headers(self) -> dict[str, str]:
@@ -546,12 +566,14 @@ class Client:
                     last_err = e
                     continue
             except GarminConnectTooManyRequestsError as e:
-                _LOGGER.warning("%s returned 429: %s", name, e)
+                _LOGGER.warning(
+                    "%s returned 429: %s", name, _sanitize_exception_text(e)
+                )
                 rate_limited_count += 1
                 last_err = e
                 continue
             except Exception as e:
-                _LOGGER.warning("%s failed: %s", name, e)
+                _LOGGER.warning("%s failed: %s", name, _sanitize_exception_text(e))
                 last_err = e
                 continue
 
@@ -561,7 +583,8 @@ class Client:
                 "Try again later or check your IP/network."
             )
         raise GarminConnectConnectionError(
-            f"All login strategies exhausted: {last_err}"
+            "All login strategies exhausted: "
+            + (_sanitize_exception_text(last_err) if last_err else "no strategies ran")
         )
 
     # ------------------------------------------------------------------ #
@@ -586,11 +609,15 @@ class Client:
             except (GarminConnectAuthenticationError, _MFARequired):
                 raise
             except GarminConnectTooManyRequestsError as e:
-                _LOGGER.debug("mobile+cffi(%s) 429: %s", imp, e)
+                _LOGGER.debug(
+                    "mobile+cffi(%s) 429: %s", imp, _sanitize_exception_text(e)
+                )
                 last_err = e
                 continue
             except Exception as e:
-                _LOGGER.debug("mobile+cffi(%s) failed: %s", imp, e)
+                _LOGGER.debug(
+                    "mobile+cffi(%s) failed: %s", imp, _sanitize_exception_text(e)
+                )
                 last_err = e
                 continue
         if last_err:
@@ -952,11 +979,15 @@ class Client:
             except (GarminConnectAuthenticationError, _MFARequired):
                 raise
             except GarminConnectTooManyRequestsError as e:
-                _LOGGER.debug("portal+cffi(%s) 429: %s", imp, e)
+                _LOGGER.debug(
+                    "portal+cffi(%s) 429: %s", imp, _sanitize_exception_text(e)
+                )
                 last_err = e
                 continue
             except Exception as e:
-                _LOGGER.debug("portal+cffi(%s) failed: %s", imp, e)
+                _LOGGER.debug(
+                    "portal+cffi(%s) failed: %s", imp, _sanitize_exception_text(e)
+                )
                 last_err = e
                 continue
         if last_err:
@@ -1228,7 +1259,10 @@ class Client:
             self._exchange_service_ticket(ticket, service_url=service_url)
             return
         except Exception as e:
-            _LOGGER.warning("DI token exchange failed (%s), falling back to JWT_WEB", e)
+            _LOGGER.warning(
+                "DI token exchange failed (%s), falling back to JWT_WEB",
+                _sanitize_exception_text(e),
+            )
 
         # Fallback: consume ticket via connect.garmin.com for JWT_WEB cookie
         if sess is not None:
@@ -1410,7 +1444,9 @@ class Client:
                         with contextlib.suppress(Exception):
                             self.dump(self._tokenstore_path)
                 except Exception as err:
-                    _LOGGER.debug("DI token refresh failed: %s", err)
+                    _LOGGER.debug(
+                        "DI token refresh failed: %s", _sanitize_exception_text(err)
+                    )
                 return
 
             # JWT_WEB refresh via CAS TGT
@@ -1450,7 +1486,7 @@ class Client:
                         self.jwt_web = c.value
                         break
             except Exception as err:
-                _LOGGER.debug("Refresh failed: %s", err)
+                _LOGGER.debug("Refresh failed: %s", _sanitize_exception_text(err))
 
     def dumps(self) -> str:
         """Serialize session state to JSON string."""
@@ -1601,8 +1637,23 @@ class Client:
                 self._refresh_session()
 
         # Defense-in-depth: callers must pass clean path components; query strings
-        # belong in the `params` kwarg, not embedded in the path.
-        if ".." in path or "?" in path or "#" in path:
+        # belong in the `params` kwarg, not embedded in the path. Validate the
+        # percent-decoded form: requests' requote_uri() decodes unreserved
+        # characters (e.g. %2e -> .) after this check, so a literal-only match
+        # would let a %2e%2e traversal slip through.
+        decoded_path = unquote(path)
+        # A quoted display name may legitimately contain a run of dots (e.g.
+        # "first..last"); only a path *segment* that is exactly ".." (or
+        # "..;<matrix-params>", a known filter-bypass trick) is traversal.
+        has_traversal_segment = any(
+            segment.split(";", 1)[0] == ".." for segment in decoded_path.split("/")
+        )
+        if (
+            has_traversal_segment
+            or "?" in decoded_path
+            or "#" in decoded_path
+            or "\\" in decoded_path
+        ):
             raise ValueError(f"Invalid API path: {path!r}")
 
         url = f"{self._connectapi}/{path.lstrip('/')}"

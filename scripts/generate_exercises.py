@@ -6,7 +6,10 @@ workout editor's exercise picker.  To refresh it:
 
 1. Open the workout editor at https://connect.garmin.com, add a strength
    exercise, and open the exercise picker.
-2. Copy the picker's ``<ul>`` (or the whole page) HTML into a file.
+2. Copy only the picker's ``<ul>`` HTML into a file.  Do not paste the
+   whole page: it comes from an authenticated session and may contain
+   account data, and the generated file is published to a public
+   repository.
 3. Run::
 
        python scripts/generate_exercises.py path/to/picker.html
@@ -22,23 +25,89 @@ from __future__ import annotations
 import html
 import re
 import sys
+from html.parser import HTMLParser
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parent.parent / "garminconnect" / "exercises.py"
 
-ROW = re.compile(
-    r'data-category-key="([^"]*)"\s+'
-    r'data-exercise-key="([^"]*)"'
-    r".*?<span>([^<]*)</span>",
-    re.S,
+
+class _PickerParser(HTMLParser):
+    """Collect (category, exercise, name) rows, each scoped to its own <li>.
+
+    Regex extraction with DOTALL can reach past an element boundary and
+    capture a <span> from unrelated page chrome; a real parser cannot, and
+    it also keeps items separate when a closing </li> is omitted.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.rows: list[tuple[str, str, str]] = []
+        self._cur: list[str | None] | None = None
+        # Nesting depth of <span> while inside the selected span; 0 means
+        # not in one. A plain in/out flag would drop back out on an inner
+        # </span>, losing any text after it (e.g. "Squat" in
+        # "<span><span>Back</span> Squat</span>").
+        self._span_depth = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        a = dict(attrs)
+        if tag == "li":
+            # An unclosed previous <li> ends here, not at its </li>.
+            self._flush()
+            if "data-category-key" in a and "data-exercise-key" in a:
+                self._cur = [a["data-category-key"], a["data-exercise-key"], None]
+        elif tag == "span" and self._cur is not None:
+            if self._span_depth:
+                self._span_depth += 1
+            elif self._cur[2] is None:
+                self._span_depth = 1
+
+    def handle_data(self, data: str) -> None:
+        # A nested tag inside the span (e.g. <b>) triggers another
+        # handle_data call for its own text; accumulate rather than
+        # overwrite, or a fragment like the "https://" prefix of a stray
+        # URL is dropped and the SUSPECT filter never sees it.
+        if self._span_depth and self._cur is not None:
+            self._cur[2] = (self._cur[2] or "") + data
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag == "span" and self._span_depth:
+            self._span_depth -= 1
+        elif tag == "li" and self._cur is not None:
+            self._flush()
+
+    def _flush(self) -> None:
+        # Attribute-only element (no span of its own): skip rather than
+        # borrowing text from elsewhere in the document.
+        if self._cur is not None and self._cur[2]:
+            self.rows.append((self._cur[0] or "", self._cur[1] or "", self._cur[2]))
+        self._cur = None
+        self._span_depth = 0
+
+
+# Names are display labels; anything shaped like session data means the
+# extraction went out of scope (or the wrong HTML was pasted).
+SUSPECT = re.compile(
+    r"[\w.+-]+@[\w-]+\.[\w.]+"  # e-mail address
+    r"|eyJ[\w-]{10,}"  # JWT
+    r"|https?://"  # URL
+    r"|[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",  # GUID
+    re.IGNORECASE,
 )
 
 
 def parse(text: str) -> list[dict[str, str]]:
     """Extract unique (name, category, exercise) rows from picker HTML."""
+    parser = _PickerParser()
+    parser.feed(text)
+    parser.close()
+    # HTMLParser.close() doesn't synthesize a missing </li>, so the last
+    # item (if the source HTML omits its closing tag) needs an explicit
+    # flush here.
+    parser._flush()
     seen: set[tuple[str, str]] = set()
     out: list[dict[str, str]] = []
-    for category, exercise, name in ROW.findall(text):
+    for category, exercise, name in parser.rows:
         key = (category, exercise)
         if key in seen:
             continue  # the "Recent" block repeats items listed below
@@ -112,6 +181,15 @@ def main() -> None:
     if len(sys.argv) != 2:
         sys.exit("usage: python scripts/generate_exercises.py <picker.html>")
     exercises = parse(Path(sys.argv[1]).read_text(encoding="utf-8"))
+    suspect = [i for i, e in enumerate(exercises) if SUSPECT.search(e["name"])]
+    if suspect:
+        # Report only row positions — the matched labels are exactly the
+        # potentially sensitive text we refuse to write out.
+        sys.exit(
+            f"refusing to write: {len(suspect)} entr{'ies' if len(suspect) != 1 else 'y'} "
+            "look like session data, not exercise names (rows "
+            f"{suspect}; check the pasted HTML)"
+        )
     OUT.write_text(render(exercises), encoding="utf-8")
     print(f"Wrote {len(exercises)} exercises to {OUT}")
     print("Run `pdm run format` to normalize quoting/formatting.")
