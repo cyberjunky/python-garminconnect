@@ -218,8 +218,12 @@ class TestUrlConstruction:
             )
 
         mock.assert_called_once_with(
-            "/biometric-service/stats/functionalThresholdPower/range/2025-06-01/2025-06-30"
-            "?sport=CYCLING&aggregation=daily&aggregationStrategy=LATEST"
+            "/biometric-service/stats/functionalThresholdPower/range/2025-06-01/2025-06-30",
+            params={
+                "sport": "CYCLING",
+                "aggregation": "daily",
+                "aggregationStrategy": "LATEST",
+            },
         )
         assert result == payload
 
@@ -234,7 +238,8 @@ class TestUrlConstruction:
                 aggregation="weekly",
             )
 
-        assert "sport=RUNNING&aggregation=weekly" in mock.call_args[0][0]
+        assert mock.call_args.kwargs["params"]["sport"] == "RUNNING"
+        assert mock.call_args.kwargs["params"]["aggregation"] == "weekly"
 
     @pytest.mark.parametrize(
         ("start", "end", "sport", "aggregation", "message"),
@@ -761,7 +766,7 @@ class TestLoginMFA:
             patch.object(c, "_widget_web_login", side_effect=boom),
             patch.object(c, "_portal_web_login_cffi", side_effect=boom),
             patch.object(c, "_portal_web_login_requests", side_effect=boom),
-            caplog.at_level(logging.WARNING),
+            caplog.at_level(logging.WARNING, logger="garminconnect"),
             pytest.raises(
                 garminconnect.GarminConnectConnectionError, match="exhausted"
             ) as exc_info,
