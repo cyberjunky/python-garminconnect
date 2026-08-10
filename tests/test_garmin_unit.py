@@ -22,10 +22,10 @@ import json
 import logging
 import threading
 import time
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import call, patch
 
 import pytest
 
@@ -717,6 +717,7 @@ class TestLoginMFA:
 
     def test_mfa_token_rejection_falls_through_to_next_strategy(self):
         c = client_mod.Client(verify_login=True)
+        c._tokenstore_path = "/tmp/tokenstore.json"  # noqa: S108
 
         def mfa_strategy(_email, _password):
             c._mfa_flow = "widget"
@@ -735,7 +736,37 @@ class TestLoginMFA:
             c.login("e@x.com", "pw", prompt_mfa=lambda: "000000")
 
         assert c.di_token == "portal-token"  # noqa: S105
-        mock_clear.assert_called_once()
+        # One clear on login entry (fresh slate), one on the MFA token
+        # rejection before falling through to the portal strategy. Both must
+        # keep the tokenstore path so the successful strategy's tokens still
+        # persist to the configured store.
+        assert mock_clear.mock_calls == [
+            call(keep_tokenstore_path=True),
+            call(keep_tokenstore_path=True),
+        ]
+
+    def test_rejected_strategy_then_success_keeps_tokenstore_path(self):
+        # Real (unmocked) clears: a strategy whose token the API rejects
+        # followed by a successful strategy must retain the tokenstore path
+        # set before login, so refreshed tokens keep persisting to it.
+        c = client_mod.Client(verify_login=True)
+        c._tokenstore_path = "/tmp/tokenstore.json"  # noqa: S108
+
+        def rejected_strategy(_email, _password):
+            c.di_token = "widget-token"  # noqa: S105
+
+        def portal_strategy(_email, _password):
+            c.di_token = "portal-token"  # noqa: S105
+
+        with (
+            patch.object(c, "_widget_web_login", side_effect=rejected_strategy),
+            patch.object(c, "_portal_web_login_cffi", side_effect=portal_strategy),
+            patch.object(c, "_verify_token", side_effect=[False, True]),
+        ):
+            c.login("e@x.com", "pw")
+
+        assert c.di_token == "portal-token"  # noqa: S105
+        assert c._tokenstore_path == "/tmp/tokenstore.json"  # noqa: S108
 
     def test_return_on_mfa_sets_pending_flag(self):
         c = client_mod.Client(verify_login=False)
@@ -792,6 +823,78 @@ class TestLoginMFA:
 
         assert c._mfa_pending is False
         assert c._mfa_flow is None
+
+
+class TestLoginClearsStaleAuth:
+    """login() must start from a clean auth slate."""
+
+    ALL_STRATEGIES = (
+        "_mobile_login_cffi",
+        "_mobile_login_requests",
+        "_widget_web_login",
+        "_portal_web_login_cffi",
+        "_portal_web_login_requests",
+    )
+
+    def test_failed_login_clears_stale_token(self):
+        c = client_mod.Client(verify_login=False)
+        c.di_token = "STALE_DI_TOKEN_USER_A"  # noqa: S105
+
+        def fail(_email, _password):
+            raise garminconnect.GarminConnectConnectionError("skip")
+
+        with ExitStack() as stack:
+            for name in self.ALL_STRATEGIES:
+                stack.enter_context(patch.object(c, name, side_effect=fail))
+            with pytest.raises(
+                garminconnect.GarminConnectConnectionError,
+                match="All login strategies exhausted",
+            ):
+                c.login("userB@x.com", "pw")
+
+        assert c.is_authenticated is False
+        with pytest.raises(garminconnect.GarminConnectAuthenticationError):
+            c.get_api_headers()
+
+    def test_web_login_uses_fresh_jwt_not_stale_di_token(self):
+        c = client_mod.Client(verify_login=False)
+        c.di_token = "STALE_DI_TOKEN_USER_A"  # noqa: S105
+        c.skip_strategies = {
+            "mobile+cffi",
+            "mobile+requests",
+            "portal+cffi",
+            "portal+requests",
+        }
+
+        def web_login(_email, _password):
+            c.jwt_web = "FRESH_JWT_USER_B"  # noqa: S105
+
+        with patch.object(c, "_widget_web_login", side_effect=web_login):
+            c.login("userB@x.com", "pw")
+
+        assert not c.di_token
+        headers = c.get_api_headers()
+        assert headers["Cookie"] == "JWT_WEB=FRESH_JWT_USER_B"
+
+    def test_login_preserves_tokenstore_path(self):
+        c = client_mod.Client(verify_login=False)
+        c._tokenstore_path = "~/.garminconnect"
+        c.di_token = "STALE"  # noqa: S105
+        c.skip_strategies = {
+            "mobile+cffi",
+            "mobile+requests",
+            "portal+cffi",
+            "portal+requests",
+        }
+
+        def web_login(_email, _password):
+            c.di_token = "FRESH"  # noqa: S105
+
+        with patch.object(c, "_widget_web_login", side_effect=web_login):
+            c.login("userB@x.com", "pw")
+
+        assert c._tokenstore_path == "~/.garminconnect"
+        assert c.di_token == "FRESH"  # noqa: S105
 
 
 # ---------------------------------------------------------------------------
