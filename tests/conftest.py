@@ -10,8 +10,10 @@ import pytest
 SENSITIVE_FIELDS = {
     "access_token",
     "activityId",
+    "captchaToken",
     "consumer_key",
     "consumer_secret",
+    "customerGuid",
     "di_refresh_token",
     "di_token",
     "displayName",
@@ -20,6 +22,7 @@ SENSITIVE_FIELDS = {
     "garminGUID",
     "jti",
     "locationName",
+    "mfaVerificationCode",
     "mfa_token",
     "oauth_token",
     "oauth_token_secret",
@@ -32,11 +35,14 @@ SENSITIVE_FIELDS = {
     "profileImageUrlMedium",
     "profileImageUrlSmall",
     "refresh_token",
+    "serviceTicketId",
+    "service_ticket",
     "token",
     "userId",
     "userName",
     "userProfileFullName",
     "userProfileId",
+    "username",
 }
 LOCATION_FIELDS = {
     "endLatitude",
@@ -105,6 +111,7 @@ SENSITIVE_FORM_PARAMS = [
     "oauth_token_secret",
     "password",
     "refresh_token",
+    "service_ticket",
     "username",
 ]
 
@@ -138,8 +145,24 @@ def sanitize_request(request: Any) -> Any:
             body = request.body.decode("utf8")
         except UnicodeDecodeError:
             return request  # leave as-is; binary bodies not sanitized
+        # The login strategies post credentials as JSON; a key=value regex
+        # alone never matches those bodies, so parse by structure first and
+        # fall back to form-encoded scrubbing.
+        try:
+            parsed = json.loads(body)
+        except json.JSONDecodeError:
+            body = _sanitize_form_body(body)
         else:
-            request.body = _sanitize_form_body(body).encode("utf8")
+            body = json.dumps(sanitize_json(parsed))
+        request.body = body.encode("utf8")
+
+    # Credentials can also ride in the URI itself (CAS service ticket on the
+    # ticket-consumption fallback: GET <service_url>?ticket=ST-...).
+    uri = getattr(request, "uri", None)
+    if uri:
+        request.uri = re.sub(
+            r"([?&](?:ticket|service_ticket)=)[^&]*", r"\1SANITIZED", uri
+        )
 
     if "Cookie" in request.headers:
         cookies = request.headers["Cookie"].split("; ")
