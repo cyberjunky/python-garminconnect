@@ -56,8 +56,12 @@ class _PickerParser(HTMLParser):
             self._in_span = True
 
     def handle_data(self, data: str) -> None:
+        # A nested tag inside the span (e.g. <b>) triggers another
+        # handle_data call for its own text; accumulate rather than
+        # overwrite, or a fragment like the "https://" prefix of a stray
+        # URL is dropped and the SUSPECT filter never sees it.
         if self._in_span and self._cur is not None:
-            self._cur[2] = data.strip()
+            self._cur[2] = (self._cur[2] or "") + data
 
     def handle_endtag(self, tag: str) -> None:
         if tag == "span":
@@ -90,6 +94,10 @@ def parse(text: str) -> list[dict[str, str]]:
     parser = _PickerParser()
     parser.feed(text)
     parser.close()
+    # HTMLParser.close() doesn't synthesize a missing </li>, so the last
+    # item (if the source HTML omits its closing tag) needs an explicit
+    # flush here.
+    parser._flush()
     seen: set[tuple[str, str]] = set()
     out: list[dict[str, str]] = []
     for category, exercise, name in parser.rows:

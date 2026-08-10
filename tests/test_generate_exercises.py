@@ -73,3 +73,33 @@ def test_main_refuses_suspect_names(gen, tmp_path, monkeypatch, capsys):
 )
 def test_suspect_regex_is_case_insensitive(gen, label):
     assert gen.SUSPECT.search(label)
+
+
+def test_parse_accumulates_text_across_nested_tags(gen):
+    # A nested <b> inside the span splits the label into two handle_data
+    # calls; the "https://" prefix must not be dropped, or the SUSPECT
+    # filter never sees the full (sensitive) label.
+    rows = gen.parse(
+        '<li data-category-key="X" data-exercise-key="Y">'
+        "<span>https://host/<b>?ticket=secret</b></span></li>"
+    )
+    assert rows == [
+        {
+            "name": "https://host/?ticket=secret",
+            "category": "X",
+            "exercise": "Y",
+        }
+    ]
+    assert gen.SUSPECT.search(rows[0]["name"])
+
+
+def test_parse_flushes_final_item_without_closing_tag(gen):
+    # HTMLParser.close() does not synthesize a missing </li>; the last
+    # item in the source HTML must still be captured.
+    rows = gen.parse(
+        '<ul><li data-category-key="SQUAT" data-exercise-key="BACK_SQUAT">'
+        "<span>Back Squat</span>"
+    )
+    assert rows == [
+        {"name": "Back Squat", "category": "SQUAT", "exercise": "BACK_SQUAT"}
+    ]
