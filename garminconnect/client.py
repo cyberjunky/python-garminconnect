@@ -18,6 +18,7 @@ import random
 import re
 import threading
 import time
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any, cast
 
@@ -185,10 +186,10 @@ def _build_basic_auth(client_id: str) -> str:
     return "Basic " + base64.b64encode(f"{client_id}:".encode()).decode()
 
 
-def _iter_file_objects(kwargs: dict[str, Any]) -> Any:
+def _iter_file_objects(kwargs: dict[str, Any]) -> Iterator[Any]:
     """Yield file-like objects referenced by request kwargs (files/data)."""
     files = kwargs.get("files")
-    if isinstance(files, dict):
+    if isinstance(files, Mapping):
         values = list(files.values())
     elif isinstance(files, (list, tuple)):
         values = [v for _, v in files]
@@ -222,6 +223,11 @@ def _capture_file_positions(
             positions.append((fileobj, fileobj.tell()))
         except (OSError, ValueError, AttributeError):
             return None
+    data = kwargs.get("data")
+    if data is not None and not hasattr(data, "read") and isinstance(data, Iterator):
+        # Streamed iterable body (e.g. a generator): attempt #1 consumes it
+        # and it cannot be rewound, so a retry must not be attempted.
+        return None
     return positions
 
 
@@ -230,7 +236,7 @@ def _restore_file_positions(positions: list[tuple[Any, int]]) -> bool:
     try:
         for fileobj, pos in positions:
             fileobj.seek(pos)
-    except (OSError, ValueError):
+    except (OSError, ValueError, AttributeError):
         return False
     return True
 

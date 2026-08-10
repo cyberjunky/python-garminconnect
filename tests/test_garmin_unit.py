@@ -1713,6 +1713,59 @@ class Test401RetryFileRewind:
         # No blind retry that would have sent an empty body.
         assert len(calls) == 1
 
+    def test_retry_rewinds_mapping_files(self, monkeypatch):
+        # requests accepts any Mapping for files (via to_key_val_list), so
+        # position capture must not be limited to plain dicts.
+        from types import MappingProxyType
+
+        read_sizes: list[int] = []
+        responses = [_FakeResp(401, {}), _FakeResp(200, {"ok": True})]
+        c = self._client(
+            monkeypatch, self._consuming_request(responses, read_sizes)
+        )
+        payload = b"FITDATA" * 100
+        files = MappingProxyType({"file": ("a.fit", io.BytesIO(payload))})
+        resp = c._run_request("POST", "upload", files=files)
+        assert resp.status_code == 200
+        assert read_sizes == [len(payload), len(payload)]
+
+    def test_generator_data_skips_retry_and_raises(self, monkeypatch):
+        # A streamed (generator) body is consumed by attempt #1 and cannot be
+        # rewound; the 401 must raise instead of resending the remainder.
+        calls = []
+
+        def request(method, url, **kwargs):
+            calls.append(url)
+            # Drain the streamed body like requests does.
+            for _ in kwargs.get("data") or ():
+                pass
+            return _FakeResp(401, {})
+
+        c = self._client(monkeypatch, request)
+
+        def body():
+            yield b"chunk1"
+            yield b"chunk2"
+
+        with pytest.raises(garminconnect.GarminConnectConnectionError):
+            c._run_request("POST", "upload", data=body())
+        assert len(calls) == 1
+
+    def test_restore_file_positions_false_when_seek_missing(self):
+        # A duck-typed stream with seekable()/tell() but no seek() must make
+        # restoration fail (AttributeError caught) rather than raise.
+        class NoSeekStream:
+            def read(self, n: int = -1) -> bytes:
+                return b""
+
+            def seekable(self) -> bool:
+                return True
+
+            def tell(self) -> int:
+                return 0
+
+        assert client_mod._restore_file_positions([(NoSeekStream(), 0)]) is False
+
     def test_retry_keeps_custom_headers(self, monkeypatch):
         seen_headers = []
         responses = [_FakeResp(401, {}), _FakeResp(200, {"ok": True})]
