@@ -1640,6 +1640,98 @@ class TestHttpErrorMapping:
 
 
 # ---------------------------------------------------------------------------
+# _run_request: 401 retry must rewind file bodies and keep custom headers
+# ---------------------------------------------------------------------------
+
+
+class Test401RetryFileRewind:
+    """A 401 retry must not re-send a consumed file handle (empty upload)."""
+
+    def _client(self, monkeypatch, request_fn):
+        g = garminconnect.Garmin()
+        c = g.client
+        monkeypatch.setattr(c, "get_api_headers", dict)
+        monkeypatch.setattr(c, "_refresh_session", lambda: None)
+        monkeypatch.setattr(c._api_session, "request", request_fn)
+        return c
+
+    def _consuming_request(self, responses, read_sizes):
+        """Fake session.request that drains file bodies like requests does."""
+
+        def request(method, url, **kwargs):
+            files = kwargs.get("files") or {}
+            for value in files.values():
+                fileobj = value[1] if isinstance(value, tuple) else value
+                read_sizes.append(len(fileobj.read()))
+            return responses.pop(0)
+
+        return request
+
+    def test_retry_rewinds_file_body(self, monkeypatch):
+        read_sizes: list[int] = []
+        responses = [_FakeResp(401, {}), _FakeResp(200, {"ok": True})]
+        c = self._client(
+            monkeypatch, self._consuming_request(responses, read_sizes)
+        )
+        payload = b"FITDATA" * 100
+        resp = c._run_request(
+            "POST", "upload", files={"file": ("a.fit", io.BytesIO(payload))}
+        )
+        assert resp.status_code == 200
+        # Attempt #1 and the retry must both read the full payload.
+        assert read_sizes == [len(payload), len(payload)]
+
+    def test_retry_restores_initial_position_not_zero(self, monkeypatch):
+        read_sizes: list[int] = []
+        responses = [_FakeResp(401, {}), _FakeResp(200, {"ok": True})]
+        c = self._client(
+            monkeypatch, self._consuming_request(responses, read_sizes)
+        )
+        stream = io.BytesIO(b"HEADER" + b"BODY" * 10)
+        stream.seek(6)  # caller intentionally skips a prefix
+        c._run_request("POST", "upload", files={"file": ("a.fit", stream)})
+        assert read_sizes[0] == read_sizes[1] == 40
+
+    def test_unseekable_body_skips_retry_and_raises(self, monkeypatch):
+        class UnseekableStream(io.BytesIO):
+            def seekable(self):
+                return False
+
+        calls = []
+
+        def request(method, url, **kwargs):
+            calls.append(url)
+            return _FakeResp(401, {})
+
+        c = self._client(monkeypatch, request)
+        with pytest.raises(garminconnect.GarminConnectConnectionError):
+            c._run_request(
+                "POST",
+                "upload",
+                files={"file": ("a.fit", UnseekableStream(b"DATA"))},
+            )
+        # No blind retry that would have sent an empty body.
+        assert len(calls) == 1
+
+    def test_retry_keeps_custom_headers(self, monkeypatch):
+        seen_headers = []
+        responses = [_FakeResp(401, {}), _FakeResp(200, {"ok": True})]
+
+        def request(method, url, **kwargs):
+            seen_headers.append(kwargs.get("headers") or {})
+            return responses.pop(0)
+
+        c = self._client(monkeypatch, request)
+        c._run_request(
+            "POST",
+            "upload",
+            headers={"NK": "NT", "User-Agent": "GCM-iOS-5.7.2.1"},
+        )
+        assert seen_headers[1].get("NK") == "NT"
+        assert seen_headers[1].get("User-Agent") == "GCM-iOS-5.7.2.1"
+
+
+# ---------------------------------------------------------------------------
 # Error-message sanitization
 # ---------------------------------------------------------------------------
 
