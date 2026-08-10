@@ -6,7 +6,10 @@ workout editor's exercise picker.  To refresh it:
 
 1. Open the workout editor at https://connect.garmin.com, add a strength
    exercise, and open the exercise picker.
-2. Copy the picker's ``<ul>`` (or the whole page) HTML into a file.
+2. Copy only the picker's ``<ul>`` HTML into a file.  Do not paste the
+   whole page: it comes from an authenticated session and may contain
+   account data, and the generated file is published to a public
+   repository.
 3. Run::
 
        python scripts/generate_exercises.py path/to/picker.html
@@ -26,6 +29,10 @@ from pathlib import Path
 
 OUT = Path(__file__).resolve().parent.parent / "garminconnect" / "exercises.py"
 
+# Split into elements first; the row regex below is then scoped to a single
+# <li> and can never capture a <span> from elsewhere in the document.
+LI = re.compile(r"<li\b.*?</li>", re.S)
+
 ROW = re.compile(
     r'data-category-key="([^"]*)"\s+'
     r'data-exercise-key="([^"]*)"'
@@ -33,12 +40,25 @@ ROW = re.compile(
     re.S,
 )
 
+# Names are display labels; anything shaped like session data means the
+# extraction went out of scope (or the wrong HTML was pasted).
+SUSPECT = re.compile(
+    r"[\w.+-]+@[\w-]+\.[\w.]+"  # e-mail address
+    r"|eyJ[\w-]{10,}"  # JWT
+    r"|https?://"  # URL
+    r"|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"  # GUID
+)
+
 
 def parse(text: str) -> list[dict[str, str]]:
     """Extract unique (name, category, exercise) rows from picker HTML."""
     seen: set[tuple[str, str]] = set()
     out: list[dict[str, str]] = []
-    for category, exercise, name in ROW.findall(text):
+    for element in LI.findall(text):
+        match = ROW.search(element)
+        if not match:
+            continue  # attribute-only element: skip, don't reach outside it
+        category, exercise, name = match.groups()
         key = (category, exercise)
         if key in seen:
             continue  # the "Recent" block repeats items listed below
@@ -112,6 +132,12 @@ def main() -> None:
     if len(sys.argv) != 2:
         sys.exit("usage: python scripts/generate_exercises.py <picker.html>")
     exercises = parse(Path(sys.argv[1]).read_text(encoding="utf-8"))
+    suspect = [e for e in exercises if SUSPECT.search(e["name"])]
+    if suspect:
+        sys.exit(
+            "refusing to write: entries look like session data, not exercise "
+            f"names (check the pasted HTML): {suspect}"
+        )
     OUT.write_text(render(exercises), encoding="utf-8")
     print(f"Wrote {len(exercises)} exercises to {OUT}")
     print("Run `pdm run format` to normalize quoting/formatting.")
