@@ -1679,6 +1679,15 @@ class TestHttpErrorMapping:
             "foo/../bar",
             "foo?bar=1",
             "foo#fragment",
+            # Percent-encoded variants: requests' requote_uri() decodes
+            # unreserved characters (%2e -> .) after the guard would see a
+            # literal-only match, so validation must run on the decoded path.
+            "foo/%2e%2e/bar",
+            "foo/%2E%2E/bar",
+            "foo/%2e%2e%2fbar",
+            "foo/%2e%2e;/bar",
+            "foo/%3fbar=1",
+            "foo\\..\\bar",
         ],
     )
     def test_rejects_path_with_traversal_or_query(
@@ -1687,6 +1696,13 @@ class TestHttpErrorMapping:
         c = self._client(monkeypatch, _FakeResp(200, {}))
         with pytest.raises(ValueError, match="Invalid API path"):
             c._run_request("GET", bad_path)
+
+    def test_accepts_legitimate_path(self, monkeypatch):
+        c = self._client(monkeypatch, _FakeResp(200, {"ok": True}))
+        resp = c._run_request(
+            "GET", "/userprofile-service/socialProfile"
+        )
+        assert resp.status_code == 200
 
 
 # ---------------------------------------------------------------------------

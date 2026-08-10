@@ -1488,15 +1488,19 @@ class Garmin:
         url = (
             f"{self.garmin_connect_biometric_stats_url}"
             f"/functionalThresholdPower/range/{start}/{end}"
-            f"?sport={normalized_sport}&aggregation={aggregation}&aggregationStrategy=LATEST"
         )
+        params = {
+            "sport": normalized_sport,
+            "aggregation": aggregation,
+            "aggregationStrategy": "LATEST",
+        }
         logger.debug(
             "Requesting functional threshold power from %s to %s for sport %s",
             start,
             end,
             normalized_sport,
         )
-        return self.connectapi(url)
+        return self.connectapi(url, params=params)
 
     def get_lactate_threshold(
         self,
@@ -1592,20 +1596,23 @@ class Garmin:
             aggregation=aggregation,
         )
 
+        params = {
+            "sport": "RUNNING",
+            "aggregation": aggregation,
+            "aggregationStrategy": "LATEST",
+        }
         speed_url = (
             f"{self.garmin_connect_biometric_stats_url}"
             f"/lactateThresholdSpeed/range/{start_date}/{end_date}"
-            f"?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
         )
 
         heart_rate_url = (
             f"{self.garmin_connect_biometric_stats_url}"
             f"/lactateThresholdHeartRate/range/{start_date}/{end_date}"
-            f"?sport=RUNNING&aggregation={aggregation}&aggregationStrategy=LATEST"
         )
 
-        speed = self.connectapi(speed_url)
-        heart_rate = self.connectapi(heart_rate_url)
+        speed = self.connectapi(speed_url, params=params)
+        heart_rate = self.connectapi(heart_rate_url, params=params)
 
         return {"speed": speed, "heart_rate": heart_rate, "power": power}
 
@@ -2991,11 +2998,11 @@ class Garmin:
         limit = _validate_positive_integer(limit, "limit")
         # Optional: enforce a reasonable ceiling to avoid heavy responses
         limit = min(limit, MAX_ACTIVITY_LIMIT)
-        url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear?start=0&limit={limit}"
+        url = f"{self.garmin_connect_activities_baseurl}{gearUUID}/gear"
         logger.debug("Requesting activities for gearUUID %s", gearUUID)
 
         try:
-            return self.connectapi(url)
+            return self.connectapi(url, params={"start": 0, "limit": limit})
         except GarminConnectConnectionError as e:
             status = getattr(getattr(e, "response", None), "status_code", None)
             if status == 404:

@@ -22,6 +22,7 @@ import time
 from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import unquote
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -1587,8 +1588,12 @@ class Client:
                 self._refresh_session()
 
         # Defense-in-depth: callers must pass clean path components; query strings
-        # belong in the `params` kwarg, not embedded in the path.
-        if ".." in path or "?" in path or "#" in path:
+        # belong in the `params` kwarg, not embedded in the path. Validate the
+        # percent-decoded form: requests' requote_uri() decodes unreserved
+        # characters (e.g. %2e -> .) after this check, so a literal-only match
+        # would let a %2e%2e traversal slip through.
+        decoded_path = unquote(path)
+        if ".." in decoded_path or "?" in decoded_path or "#" in decoded_path or "\\" in decoded_path:
             raise ValueError(f"Invalid API path: {path!r}")
 
         url = f"{self._connectapi}/{path.lstrip('/')}"
