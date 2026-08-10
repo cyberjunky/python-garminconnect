@@ -10,6 +10,9 @@
 - Do not reference security-report numbers with `#` in commit messages or PR
   titles/bodies (GitHub auto-links them to unrelated issues). Use plain
   "report NNNN" wording instead.
+- Never mention security-report numbers in code or code comments — describe
+  the defect/behavior instead. Report traceability lives only in the local
+  `SECURITY_AUDIT_LOG.md`.
 
 ## Security audit workflow
 
