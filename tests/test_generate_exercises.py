@@ -103,3 +103,15 @@ def test_parse_flushes_final_item_without_closing_tag(gen):
     assert rows == [
         {"name": "Back Squat", "category": "SQUAT", "exercise": "BACK_SQUAT"}
     ]
+
+
+def test_parse_keeps_capturing_after_nested_span_closes(gen):
+    # A plain in/out flag drops back "out of span" on the inner </span>,
+    # losing text that follows it but is still inside the outer span.
+    rows = gen.parse(
+        '<li data-category-key="SQUAT" data-exercise-key="BACK_SQUAT">'
+        "<span><span>Back</span> Squat</span></li>"
+    )
+    assert rows == [
+        {"name": "Back Squat", "category": "SQUAT", "exercise": "BACK_SQUAT"}
+    ]

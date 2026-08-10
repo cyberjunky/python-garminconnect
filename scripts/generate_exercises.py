@@ -43,7 +43,11 @@ class _PickerParser(HTMLParser):
         super().__init__()
         self.rows: list[tuple[str, str, str]] = []
         self._cur: list[str | None] | None = None
-        self._in_span = False
+        # Nesting depth of <span> while inside the selected span; 0 means
+        # not in one. A plain in/out flag would drop back out on an inner
+        # </span>, losing any text after it (e.g. "Squat" in
+        # "<span><span>Back</span> Squat</span>").
+        self._span_depth = 0
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         a = dict(attrs)
@@ -52,20 +56,23 @@ class _PickerParser(HTMLParser):
             self._flush()
             if "data-category-key" in a and "data-exercise-key" in a:
                 self._cur = [a["data-category-key"], a["data-exercise-key"], None]
-        elif tag == "span" and self._cur is not None and self._cur[2] is None:
-            self._in_span = True
+        elif tag == "span" and self._cur is not None:
+            if self._span_depth:
+                self._span_depth += 1
+            elif self._cur[2] is None:
+                self._span_depth = 1
 
     def handle_data(self, data: str) -> None:
         # A nested tag inside the span (e.g. <b>) triggers another
         # handle_data call for its own text; accumulate rather than
         # overwrite, or a fragment like the "https://" prefix of a stray
         # URL is dropped and the SUSPECT filter never sees it.
-        if self._in_span and self._cur is not None:
+        if self._span_depth and self._cur is not None:
             self._cur[2] = (self._cur[2] or "") + data
 
     def handle_endtag(self, tag: str) -> None:
-        if tag == "span":
-            self._in_span = False
+        if tag == "span" and self._span_depth:
+            self._span_depth -= 1
         elif tag == "li" and self._cur is not None:
             self._flush()
 
@@ -75,7 +82,7 @@ class _PickerParser(HTMLParser):
         if self._cur is not None and self._cur[2]:
             self.rows.append((self._cur[0] or "", self._cur[1] or "", self._cur[2]))
         self._cur = None
-        self._in_span = False
+        self._span_depth = 0
 
 
 # Names are display labels; anything shaped like session data means the
