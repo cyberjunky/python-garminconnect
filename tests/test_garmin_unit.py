@@ -1748,6 +1748,23 @@ class TestHttpErrorMapping:
         with pytest.raises(ValueError, match="Invalid API path"):
             c._run_request("GET", bad_path)
 
+    @pytest.mark.parametrize(
+        "path",
+        [
+            # A run of dots that doesn't form a ".." path segment (e.g. a
+            # quoted display name like "first..last") must not be rejected
+            # as traversal.
+            "userprofile-service/first..last",
+            "userprofile-service/foo...bar",
+        ],
+    )
+    def test_accepts_path_with_dots_not_forming_traversal_segment(
+        self, monkeypatch, path: str
+    ):
+        c = self._client(monkeypatch, _FakeResp(200, {"ok": True}))
+        resp = c._run_request("GET", path)
+        assert resp.status_code == 200
+
     def test_accepts_legitimate_path(self, monkeypatch):
         c = self._client(monkeypatch, _FakeResp(200, {"ok": True}))
         resp = c._run_request(

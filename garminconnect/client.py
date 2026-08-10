@@ -1628,8 +1628,14 @@ class Client:
         # characters (e.g. %2e -> .) after this check, so a literal-only match
         # would let a %2e%2e traversal slip through.
         decoded_path = unquote(path)
+        # A quoted display name may legitimately contain a run of dots (e.g.
+        # "first..last"); only a path *segment* that is exactly ".." (or
+        # "..;<matrix-params>", a known filter-bypass trick) is traversal.
+        has_traversal_segment = any(
+            segment.split(";", 1)[0] == ".." for segment in decoded_path.split("/")
+        )
         if (
-            ".." in decoded_path
+            has_traversal_segment
             or "?" in decoded_path
             or "#" in decoded_path
             or "\\" in decoded_path
