@@ -1740,6 +1740,43 @@ class TestJwtHandling:
         c.jwt_web = token
         assert c._token_expires_soon() is True
 
+    def test_token_expires_soon_accepts_numeric_string_exp(self):
+        # Some tokens encode 'exp' as a numeric string; it must still parse.
+        c = client_mod.Client(verify_login=False)
+        token = _make_jwt(
+            {"alg": "RS256"}, {"exp": str(int(time.time()) + 60)}
+        )
+        c.di_token = token
+        assert c._token_expires_soon() is True
+
+    @pytest.mark.parametrize(
+        "exp",
+        [
+            "not-a-number",  # non-numeric string -> would raise ValueError
+            {"a": 1},        # non-empty dict     -> would raise TypeError
+            [1],             # non-empty list     -> would raise TypeError
+            None,            # missing / null
+            "",              # empty string
+            {},              # empty dict
+            [],              # empty list
+            True,            # bool is an int subclass; must be rejected
+            False,
+            "inf",           # non-finite string  -> parses, must be rejected
+            "-inf",
+            "nan",
+            10**400,         # huge JSON int      -> would raise OverflowError
+        ],
+    )
+    def test_token_expires_soon_survives_malformed_exp(self, exp: Any):
+        # A hostile/MITM server can return an access token whose unverified
+        # 'exp' claim is non-numeric, boolean, non-finite or overflowing.
+        # int()/float() coercion must not raise and take down every
+        # subsequent request. Malformed 'exp' is treated as "not expiring
+        # soon" so the client stays usable.
+        c = client_mod.Client(verify_login=False)
+        c.di_token = _make_jwt({"alg": "RS256"}, {"exp": exp})
+        assert c._token_expires_soon() is False
+
 
 # ---------------------------------------------------------------------------
 # update_workout (in-place PUT)
