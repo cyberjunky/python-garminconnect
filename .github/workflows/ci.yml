@@ -5,7 +5,6 @@ name: CI
     branches:
       - main
       - master
-      - revamp
   pull_request:
     branches:
       - main
