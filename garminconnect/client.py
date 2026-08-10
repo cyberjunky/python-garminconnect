@@ -305,14 +305,20 @@ class Client:
     def is_authenticated(self) -> bool:
         return bool(self.di_token or self.jwt_web)
 
-    def _clear_auth_state(self) -> None:
-        """Wipe all in-memory auth tokens and session state so the next login starts clean."""
+    def _clear_auth_state(self, *, keep_tokenstore_path: bool = False) -> None:
+        """Wipe all in-memory auth tokens and session state so the next login starts clean.
+
+        ``keep_tokenstore_path`` preserves the persistence target: login() sets
+        it via the Garmin wrapper *before* the credential flow runs, and a
+        fresh login should keep persisting to the same store.
+        """
         self.di_token = None
         self.di_refresh_token = None
         self.di_client_id = None
         self.jwt_web = None
         self.csrf_token = None
-        self._tokenstore_path = None
+        if not keep_tokenstore_path:
+            self._tokenstore_path = None
         self._mfa_pending = False
         for attr in (
             "_mfa_session",
@@ -408,6 +414,14 @@ class Client:
                 "MFA login already in progress; complete it with resume_login() "
                 "or call logout() first"
             )
+
+        # Start every credential login from a clean slate. A stale di_token
+        # from a previous login/token-load must not survive this call: it
+        # would keep is_authenticated True after all strategies fail, and
+        # get_api_headers() prefers di_token, so it would silently shadow a
+        # fresh jwt_web obtained by a web strategy (and _verify_token would
+        # then "verify" the old identity instead of the new login).
+        self._clear_auth_state(keep_tokenstore_path=True)
 
         strategies: list[tuple[str, Any]] = [
             ("mobile+cffi", lambda: self._mobile_login_cffi(email, password)),
