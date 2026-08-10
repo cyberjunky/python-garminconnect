@@ -19,6 +19,7 @@ import random
 import re
 import threading
 import time
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any, cast
 
@@ -184,6 +185,61 @@ class _MFARequired(Exception):
 
 def _build_basic_auth(client_id: str) -> str:
     return "Basic " + base64.b64encode(f"{client_id}:".encode()).decode()
+
+
+def _iter_file_objects(kwargs: dict[str, Any]) -> Iterator[Any]:
+    """Yield file-like objects referenced by request kwargs (files/data)."""
+    files = kwargs.get("files")
+    if isinstance(files, Mapping):
+        values = list(files.values())
+    elif isinstance(files, (list, tuple)):
+        values = [v for _, v in files]
+    else:
+        values = []
+    for value in values:
+        # requests accepts fileobj or (name, fileobj[, content_type[, headers]])
+        fileobj = (
+            value[1] if isinstance(value, (tuple, list)) and len(value) >= 2 else value
+        )
+        if hasattr(fileobj, "read"):
+            yield fileobj
+    data = kwargs.get("data")
+    if hasattr(data, "read"):
+        yield data
+
+
+def _capture_file_positions(
+    kwargs: dict[str, Any],
+) -> list[tuple[Any, int]] | None:
+    """Record the stream position of each file-like body before a request.
+
+    Returns None when any body cannot be repositioned, meaning a retry
+    would re-read from EOF and silently send empty/truncated content.
+    """
+    positions: list[tuple[Any, int]] = []
+    for fileobj in _iter_file_objects(kwargs):
+        try:
+            if not fileobj.seekable():
+                return None
+            positions.append((fileobj, fileobj.tell()))
+        except (OSError, ValueError, AttributeError):
+            return None
+    data = kwargs.get("data")
+    if data is not None and not hasattr(data, "read") and isinstance(data, Iterator):
+        # Streamed iterable body (e.g. a generator): attempt #1 consumes it
+        # and it cannot be rewound, so a retry must not be attempted.
+        return None
+    return positions
+
+
+def _restore_file_positions(positions: list[tuple[Any, int]]) -> bool:
+    """Rewind file-like bodies to their pre-request positions. False on failure."""
+    try:
+        for fileobj, pos in positions:
+            fileobj.seek(pos)
+    except (OSError, ValueError, AttributeError):
+        return False
+    return True
 
 
 def _decode_jwt_payload(token: str) -> dict[str, Any] | None:
@@ -1545,12 +1601,23 @@ class Client:
         headers.update(custom_headers)
 
         sess = self._api_session
+        # Snapshot stream positions of any file bodies so a 401 retry can
+        # rewind them; attempt #1 reads file handles to EOF, and re-sending
+        # the same kwargs would otherwise upload an empty/truncated body.
+        file_positions = _capture_file_positions(kwargs)
         resp = sess.request(method, url, headers=headers, **kwargs)
 
         if resp.status_code == 401:
             with self._token_lock:
                 self._refresh_session()
-            resp = sess.request(method, url, headers=self.get_api_headers(), **kwargs)
+            if file_positions is not None and _restore_file_positions(file_positions):
+                headers = self.get_api_headers()
+                headers.update(custom_headers)
+                resp = sess.request(method, url, headers=headers, **kwargs)
+            else:
+                # Unseekable/unrewindable file body: retrying would silently
+                # send an empty part. Fall through so the 401 raises below.
+                _LOGGER.debug("Skipping 401 retry: request body is not rewindable")
 
         if resp.status_code == 204:
 
