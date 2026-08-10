@@ -39,6 +39,12 @@ _STATUS_CODE_RE = re.compile(r"(?:API Error|Error|HTTP)\s*(\d{3})")
 # Constants for validation
 MAX_ACTIVITY_LIMIT = 1000
 MAX_HYDRATION_ML = 10000  # 10 liters
+# Safety cap on server-driven pagination loops (get_activities_by_date,
+# get_goals). Termination of those loops otherwise depends entirely on the
+# server eventually returning an empty page, so a hostile/broken server could
+# loop the client forever with unbounded memory growth. 2000 pages at 20-30
+# items per page (40k-60k items) is far beyond any legitimate account.
+MAX_PAGINATED_REQUESTS = 2000
 DATE_FORMAT_REGEX = r"^\d{4}-\d{2}-\d{2}$"
 DATE_FORMAT_STR = "%Y-%m-%d"
 
@@ -2639,7 +2645,7 @@ class Garmin:
             params["sortOrder"] = sortorder
 
         logger.debug("Requesting activities by date from %s to %s", startdate, enddate)
-        while True:
+        for _ in range(MAX_PAGINATED_REQUESTS):
             params["start"] = str(start)
             logger.debug("Requesting activities %d to %d", start, start + limit)
             act = self.connectapi(url, params=params)
@@ -2648,6 +2654,12 @@ class Garmin:
                 start = start + limit
             else:
                 break
+        else:
+            # A server that never returns an empty page would otherwise loop
+            # the client forever (DoS); fail loudly instead of truncating.
+            raise GarminConnectConnectionError(
+                f"Pagination exceeded {MAX_PAGINATED_REQUESTS} requests; aborting"
+            )
 
         return activities
 
@@ -2714,7 +2726,7 @@ class Garmin:
         }
 
         logger.debug("Requesting %s goals", status)
-        while True:
+        for _ in range(MAX_PAGINATED_REQUESTS):
             params["start"] = str(start)
             logger.debug(
                 "Requesting %s goals %d to %d", status, start, start + limit - 1
@@ -2725,6 +2737,12 @@ class Garmin:
                 start = start + limit
             else:
                 break
+        else:
+            # A server that never returns an empty page would otherwise loop
+            # the client forever (DoS); fail loudly instead of truncating.
+            raise GarminConnectConnectionError(
+                f"Pagination exceeded {MAX_PAGINATED_REQUESTS} requests; aborting"
+            )
 
         return goals
 
