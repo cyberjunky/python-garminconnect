@@ -717,6 +717,7 @@ class TestLoginMFA:
 
     def test_mfa_token_rejection_falls_through_to_next_strategy(self):
         c = client_mod.Client(verify_login=True)
+        c._tokenstore_path = "/tmp/tokenstore.json"  # noqa: S108
 
         def mfa_strategy(_email, _password):
             c._mfa_flow = "widget"
@@ -736,11 +737,36 @@ class TestLoginMFA:
 
         assert c.di_token == "portal-token"  # noqa: S105
         # One clear on login entry (fresh slate), one on the MFA token
-        # rejection before falling through to the portal strategy.
+        # rejection before falling through to the portal strategy. Both must
+        # keep the tokenstore path so the successful strategy's tokens still
+        # persist to the configured store.
         assert mock_clear.mock_calls == [
             call(keep_tokenstore_path=True),
-            call(),
+            call(keep_tokenstore_path=True),
         ]
+
+    def test_rejected_strategy_then_success_keeps_tokenstore_path(self):
+        # Real (unmocked) clears: a strategy whose token the API rejects
+        # followed by a successful strategy must retain the tokenstore path
+        # set before login, so refreshed tokens keep persisting to it.
+        c = client_mod.Client(verify_login=True)
+        c._tokenstore_path = "/tmp/tokenstore.json"  # noqa: S108
+
+        def rejected_strategy(_email, _password):
+            c.di_token = "widget-token"  # noqa: S105
+
+        def portal_strategy(_email, _password):
+            c.di_token = "portal-token"  # noqa: S105
+
+        with (
+            patch.object(c, "_widget_web_login", side_effect=rejected_strategy),
+            patch.object(c, "_portal_web_login_cffi", side_effect=portal_strategy),
+            patch.object(c, "_verify_token", side_effect=[False, True]),
+        ):
+            c.login("e@x.com", "pw")
+
+        assert c.di_token == "portal-token"  # noqa: S105
+        assert c._tokenstore_path == "/tmp/tokenstore.json"  # noqa: S108
 
     def test_return_on_mfa_sets_pending_flag(self):
         c = client_mod.Client(verify_login=False)

@@ -450,7 +450,7 @@ class Client:
                 mfa_code = prompt_mfa()
                 self._complete_mfa(mfa_code)
                 if self.verify_login and not self._verify_token():
-                    self._clear_auth_state()
+                    self._clear_auth_state(keep_tokenstore_path=True)
                     raise GarminConnectConnectionError(
                         f"{name}: token rejected by API tier after MFA"
                     )
@@ -471,7 +471,7 @@ class Client:
                         "%s obtained a token the API rejected; trying next strategy",
                         name,
                     )
-                    self._clear_auth_state()
+                    self._clear_auth_state(keep_tokenstore_path=True)
                     last_err = GarminConnectConnectionError(
                         f"{name}: token rejected by API tier"
                     )
