@@ -1759,13 +1759,20 @@ class TestJwtHandling:
             "",              # empty string
             {},              # empty dict
             [],              # empty list
+            True,            # bool is an int subclass; must be rejected
+            False,
+            "inf",           # non-finite string  -> parses, must be rejected
+            "-inf",
+            "nan",
+            10**400,         # huge JSON int      -> would raise OverflowError
         ],
     )
     def test_token_expires_soon_survives_malformed_exp(self, exp: Any):
         # A hostile/MITM server can return an access token whose unverified
-        # 'exp' claim is non-numeric. int()/float() coercion must not raise and
-        # take down every subsequent request. Malformed 'exp'
-        # is treated as "not expiring soon" so the client stays usable.
+        # 'exp' claim is non-numeric, boolean, non-finite or overflowing.
+        # int()/float() coercion must not raise and take down every
+        # subsequent request. Malformed 'exp' is treated as "not expiring
+        # soon" so the client stays usable.
         c = client_mod.Client(verify_login=False)
         c.di_token = _make_jwt({"alg": "RS256"}, {"exp": exp})
         assert c._token_expires_soon() is False

@@ -13,6 +13,7 @@ import contextlib
 import http.cookiejar
 import json
 import logging
+import math
 import os
 import random
 import re
@@ -1315,11 +1316,17 @@ class Client:
         if not payload:
             return False
         # 'exp' is a server-controlled claim from an unverified JWT payload, so
-        # coerce it defensively: a non-numeric string or container must not
-        # raise (ValueError/TypeError) and take down every request.
+        # coerce it defensively: a non-numeric string, container, boolean,
+        # non-finite or overflowing value must not raise (TypeError/ValueError/
+        # OverflowError) and take down every request.
+        raw_exp = payload.get("exp")
+        if isinstance(raw_exp, bool):
+            return False
         try:
-            exp = float(payload.get("exp"))  # type: ignore[arg-type]
-        except (TypeError, ValueError):
+            exp = float(raw_exp)  # type: ignore[arg-type]
+        except (TypeError, ValueError, OverflowError):
+            return False
+        if not math.isfinite(exp):
             return False
         return time.time() > exp - 900
 
