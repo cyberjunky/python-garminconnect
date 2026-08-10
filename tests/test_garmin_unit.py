@@ -1083,6 +1083,18 @@ class TestTokenFilePath:
         with pytest.raises(ValueError, match="must not be a symlink"):
             client_mod.token_file_path(str(link_dir / "garmin_tokens.json"))
 
+    def test_rejects_symlink_two_levels_up(self, tmp_path, make_symlink):
+        # O_NOFOLLOW only covers the final path component; a symlink planted
+        # higher in the ancestry must also be rejected.
+        real = tmp_path / "real"
+        real.mkdir()
+        (tmp_path / "cfg").mkdir()
+        make_symlink(real, tmp_path / "cfg" / "store")
+
+        target = tmp_path / "cfg" / "store" / "sub" / ".garminconnect"
+        with pytest.raises(ValueError, match="must not be a symlink"):
+            client_mod.token_file_path(str(target))
+
 
 # ---------------------------------------------------------------------------
 # Tokenstore path-vs-data detection

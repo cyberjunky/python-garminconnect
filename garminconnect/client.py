@@ -70,9 +70,11 @@ def token_file_path(path: str) -> Path:
             f"Token path must not reference another user's home directory: {path!r}"
         )
     token_path = Path(path).expanduser()
-    # Reject symlinks on the tokenstore path or its immediate parent
-    # (e.g. ~/.garminconnect -> /attacker/dir).
-    for check_path in (token_path, token_path.parent):
+    # Reject symlinks anywhere in the tokenstore ancestry (e.g.
+    # ~/.garminconnect -> /attacker/dir). O_NOFOLLOW on the final open()
+    # only covers the last component; an intermediate symlinked directory
+    # would still redirect load/dump/logout into an attacker-controlled tree.
+    for check_path in (token_path, *token_path.parents):
         try:
             if check_path.is_symlink():
                 raise ValueError(f"Token path must not be a symlink: {path!r}")
