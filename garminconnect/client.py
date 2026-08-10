@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import requests
+from requests.adapters import HTTPAdapter
 
 try:
     from curl_cffi import requests as cffi_requests
@@ -258,7 +259,7 @@ class Client:
 
         # Plain session for JWT_WEB fallback and session refresh
         self.cs: Any = requests.Session()
-        adapter = requests.adapters.HTTPAdapter(
+        adapter = HTTPAdapter(
             pool_connections=kwargs.get("pool_connections", 20),
             pool_maxsize=kwargs.get("pool_maxsize", 20),
         )
@@ -276,7 +277,7 @@ class Client:
         self._api_session.cookies.set_policy(
             http.cookiejar.DefaultCookiePolicy(allowed_domains=[])
         )
-        api_adapter = requests.adapters.HTTPAdapter(
+        api_adapter = HTTPAdapter(
             pool_connections=kwargs.get("pool_connections", 20),
             pool_maxsize=kwargs.get("pool_maxsize", 20),
         )

@@ -1,5 +1,14 @@
+from typing import Any
+
+
 class GarminConnectConnectionError(Exception):
-    """Raised when communication ended in error."""
+    """Raised when communication ended in error.
+
+    ``response`` carries the original HTTP response when the error wraps an
+    HTTP failure, so callers can inspect status codes and bodies.
+    """
+
+    response: Any = None
 
 
 class GarminConnectNotFoundError(GarminConnectConnectionError):

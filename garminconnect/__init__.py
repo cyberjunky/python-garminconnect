@@ -26,7 +26,7 @@ from . import client
 from .activity_details import (
     parse_activity_detail_metrics as parse_activity_detail_metrics,
 )
-from .fit import FitEncoderWeight  # type: ignore
+from .fit import FitEncoderWeight
 
 logger = logging.getLogger(__name__)
 
@@ -291,7 +291,7 @@ def _handle_api_errors(
                         )
                         resp = getattr(e, "response", None)
                         if resp is not None:
-                            not_found_exc.response = resp  # type: ignore[attr-defined]
+                            not_found_exc.response = resp
                         raise not_found_exc from e
                     if status and 400 <= status < 500:
                         new_exc = GarminConnectConnectionError(
@@ -299,7 +299,7 @@ def _handle_api_errors(
                         )
                         resp = getattr(e, "response", None)
                         if resp is not None:
-                            new_exc.response = resp  # type: ignore[attr-defined]
+                            new_exc.response = resp
                         raise new_exc from e
                     # 5xx or no parseable status — retryable path.
                     if attempt < attempts:
@@ -323,7 +323,7 @@ def _handle_api_errors(
                     new_exc = GarminConnectConnectionError(f"{label} HTTP error: {e}")
                     resp = getattr(e, "response", None)
                     if resp is not None:
-                        new_exc.response = resp  # type: ignore[attr-defined]
+                        new_exc.response = resp
                     raise new_exc from e
                 except (requests.ConnectionError, requests.Timeout) as e:
                     if attempt < attempts:
@@ -897,7 +897,7 @@ class Garmin:
                 "display name configured). Please set a display name "
                 "at https://connect.garmin.com and try again."
             )
-        return quote(str(self.display_name), safe="")
+        return quote(self.display_name, safe="")
 
     def get_full_name(self) -> str | None:
         """Return full name of the authenticated user."""
@@ -1160,7 +1160,7 @@ class Garmin:
         ):
             raise ValueError("startdate cannot be after enddate")
         url = f"{self.garmin_connect_weight_url}/weight/dateRange"
-        params = {"startDate": str(startdate), "endDate": str(enddate)}
+        params = {"startDate": startdate, "endDate": enddate}
         logger.debug("Requesting body composition")
 
         return self.connectapi(url, params=params)
@@ -1350,7 +1350,7 @@ class Garmin:
         else:
             enddate = _validate_date_format(enddate, "enddate")
         url = self.garmin_connect_daily_body_battery_url
-        params = {"startDate": str(startdate), "endDate": str(enddate)}
+        params = {"startDate": startdate, "endDate": enddate}
         logger.debug("Requesting body battery data")
 
         return self.connectapi(url, params=params)
@@ -1617,6 +1617,7 @@ class Garmin:
         # Validate inputs
         if not isinstance(value_in_ml, numbers.Real):
             raise ValueError("value_in_ml must be a number")
+        value_in_ml = float(value_in_ml)
 
         # Allow negative values for subtraction but validate reasonable range
         if abs(value_in_ml) > MAX_HYDRATION_ML:
@@ -1655,6 +1656,8 @@ class Garmin:
                 raise ValueError("invalid timestamp format (expected ISO 8601)") from e
         else:
             # Both provided - validate consistency and normalize
+            if not isinstance(cdate, str):
+                raise ValueError("cdate must be a string")
             cdate = _validate_date_format(cdate, "cdate")
             if not isinstance(timestamp, str):
                 raise ValueError("timestamp must be a string")
@@ -2089,15 +2092,15 @@ class Garmin:
         startdate = _validate_date_format(startdate, "startdate")
         if enddate is None:
             url = self.garmin_connect_endurance_score_url
-            params = {"calendarDate": str(startdate)}
+            params = {"calendarDate": startdate}
             logger.debug("Requesting endurance score data for a single day")
 
             return self.connectapi(url, params=params)
         url = f"{self.garmin_connect_endurance_score_url}/stats"
         enddate = _validate_date_format(enddate, "enddate")
         params = {
-            "startDate": str(startdate),
-            "endDate": str(enddate),
+            "startDate": startdate,
+            "endDate": enddate,
             "aggregation": "weekly",
         }
         logger.debug("Requesting endurance score data for a range of days")
@@ -2126,8 +2129,8 @@ class Garmin:
             )
         url = self.garmin_connect_running_tolerance_url
         params = {
-            "startDate": str(startdate),
-            "endDate": str(enddate),
+            "startDate": startdate,
+            "endDate": enddate,
             "aggregation": aggregation,
         }
         logger.debug(
@@ -2213,7 +2216,7 @@ class Garmin:
         if enddate is None:
             url = self.garmin_connect_hill_score_url
             startdate = _validate_date_format(startdate, "startdate")
-            params = {"calendarDate": str(startdate)}
+            params = {"calendarDate": startdate}
             logger.debug("Requesting hill score data for a single day")
 
             return self.connectapi(url, params=params)
@@ -2222,8 +2225,8 @@ class Garmin:
         startdate = _validate_date_format(startdate, "startdate")
         enddate = _validate_date_format(enddate, "enddate")
         params = {
-            "startDate": str(startdate),
-            "endDate": str(enddate),
+            "startDate": startdate,
+            "endDate": enddate,
             "aggregation": "daily",
         }
         logger.debug("Requesting hill score data for a range of days")
@@ -2328,7 +2331,7 @@ class Garmin:
         url = self.garmin_connect_activities
         params = {"start": str(start), "limit": str(limit)}
         if activitytype:
-            params["activityType"] = str(activitytype)
+            params["activityType"] = activitytype
 
         logger.debug("Requesting activities from %d with limit %d", start, limit)
 
@@ -2631,9 +2634,9 @@ class Garmin:
         if enddate:
             params["endDate"] = enddate
         if activitytype:
-            params["activityType"] = str(activitytype)
+            params["activityType"] = activitytype
         if sortorder:
-            params["sortOrder"] = str(sortorder)
+            params["sortOrder"] = sortorder
 
         logger.debug("Requesting activities by date from %s to %s", startdate, enddate)
         while True:
@@ -2667,11 +2670,11 @@ class Garmin:
         startdate = _validate_date_format(startdate, "startdate")
         enddate = _validate_date_format(enddate, "enddate")
         params = {
-            "startDate": str(startdate),
-            "endDate": str(enddate),
+            "startDate": startdate,
+            "endDate": enddate,
             "aggregation": "lifetime",
             "groupByParentActivityType": str(groupbyactivities),
-            "metric": str(metric),
+            "metric": metric,
         }
 
         logger.debug(
@@ -2951,7 +2954,7 @@ class Garmin:
         """Return gears used for activity id."""
         activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
         params = {
-            "activityId": str(activity_id),
+            "activityId": activity_id,
         }
         url = self.garmin_connect_gear
         logger.debug("Requesting gear for activity_id %s", activity_id)
@@ -3681,9 +3684,17 @@ class Garmin:
 
 
 from .exceptions import (  # noqa: E402
-    GarminConnectAuthenticationError,
-    GarminConnectConnectionError,
-    GarminConnectInvalidFileFormatError,
-    GarminConnectNotFoundError,
-    GarminConnectTooManyRequestsError,
+    GarminConnectAuthenticationError as GarminConnectAuthenticationError,
+)
+from .exceptions import (  # noqa: E402
+    GarminConnectConnectionError as GarminConnectConnectionError,
+)
+from .exceptions import (  # noqa: E402
+    GarminConnectInvalidFileFormatError as GarminConnectInvalidFileFormatError,
+)
+from .exceptions import (  # noqa: E402
+    GarminConnectNotFoundError as GarminConnectNotFoundError,
+)
+from .exceptions import (  # noqa: E402
+    GarminConnectTooManyRequestsError as GarminConnectTooManyRequestsError,
 )

@@ -31,7 +31,7 @@ def test_health_report_escapes_garmin_data_and_is_private(tmp_path, monkeypatch)
         )
     )
 
-    report = report_path.read_text()
+    report = report_path.read_text(encoding="utf-8")
     assert payload not in report
     assert "&lt;script&gt;" in report
     if sys.platform != "win32":

@@ -987,7 +987,9 @@ class TestLogout:
             g.logout(token_json)
         mock_unlink.assert_not_called()
 
-    def test_logout_does_not_delete_through_symlinked_directory(self, tmp_path):
+    def test_logout_does_not_delete_through_symlinked_directory(
+        self, tmp_path, make_symlink
+    ):
         """A symlinked tokenstore directory must not let logout() delete a file
         outside the intended location.
         """
@@ -996,7 +998,7 @@ class TestLogout:
         victim_file = target_dir / "garmin_tokens.json"
         victim_file.write_text('{"di_token": "x"}')
         link_dir = tmp_path / "garminconnect"
-        link_dir.symlink_to(target_dir)
+        make_symlink(target_dir, link_dir)
 
         g = garminconnect.Garmin("user@example.com", "secret")
         g.logout(str(link_dir))
@@ -1029,20 +1031,20 @@ class TestTokenFilePath:
         path = client_mod.token_file_path("/var/lib/garmin/tokens.json")
         assert path == Path("/var/lib/garmin/tokens.json")
 
-    def test_rejects_symlinked_directory_tokenstore(self, tmp_path):
+    def test_rejects_symlinked_directory_tokenstore(self, tmp_path, make_symlink):
         target_dir = tmp_path / "attacker_dir"
         target_dir.mkdir()
         link_dir = tmp_path / "garminconnect"
-        link_dir.symlink_to(target_dir)
+        make_symlink(target_dir, link_dir)
 
         with pytest.raises(ValueError, match="must not be a symlink"):
             client_mod.token_file_path(str(link_dir))
 
-    def test_rejects_symlinked_parent_of_json_tokenstore(self, tmp_path):
+    def test_rejects_symlinked_parent_of_json_tokenstore(self, tmp_path, make_symlink):
         target_dir = tmp_path / "attacker_dir"
         target_dir.mkdir()
         link_dir = tmp_path / "garminconnect"
-        link_dir.symlink_to(target_dir)
+        make_symlink(target_dir, link_dir)
 
         with pytest.raises(ValueError, match="must not be a symlink"):
             client_mod.token_file_path(str(link_dir / "garmin_tokens.json"))

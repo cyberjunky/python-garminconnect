@@ -49,6 +49,19 @@ LOCATION_FIELDS = {
 
 
 @pytest.fixture
+def make_symlink() -> Any:
+    """Create a symlink, or skip the test where that needs privileges (Windows)."""
+
+    def _make(target: Path, link: Path) -> None:
+        try:
+            link.symlink_to(target)
+        except OSError:
+            pytest.skip("symlink creation requires elevated privileges here")
+
+    return _make
+
+
+@pytest.fixture
 def vcr(vcr: Any, monkeypatch: pytest.MonkeyPatch) -> Any:
     # Set default GARMINTOKENS path if not already set
     if "GARMINTOKENS" not in os.environ:
