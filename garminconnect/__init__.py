@@ -26,7 +26,7 @@ from . import client
 from .activity_details import (
     parse_activity_detail_metrics as parse_activity_detail_metrics,
 )
-from .fit import FitEncoderWeight
+from .fit import FitEncoderWeight  # type: ignore[attr-defined]
 
 logger = logging.getLogger(__name__)
 
