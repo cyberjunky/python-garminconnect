@@ -1573,6 +1573,28 @@ class TestResponseHandling:
 
         assert mock.call_count == garminconnect.MAX_PAGINATED_REQUESTS
 
+    def test_get_goals_paginates_until_empty(self, garmin: garminconnect.Garmin):
+        # Normal termination: two non-empty pages followed by an empty page
+        # must complete successfully and advance start by limit each page.
+        # (params is mutated between calls, so snapshot start at call time.)
+        starts: list[str] = []
+        pages = [
+            [{"goalId": i} for i in range(30)],
+            [{"goalId": i + 30} for i in range(10)],
+            [],
+        ]
+
+        def fake_connectapi(url, params=None):
+            starts.append(params["start"])
+            return pages.pop(0)
+
+        with patch.object(garmin, "connectapi", side_effect=fake_connectapi) as mock:
+            result = garmin.get_goals()
+
+        assert len(result) == 40
+        assert mock.call_count == 3
+        assert starts == ["0", "30", "60"]
+
 
 # ---------------------------------------------------------------------------
 # _run_request: HTTP status -> exception mapping
