@@ -188,6 +188,20 @@ def _build_basic_auth(client_id: str) -> str:
     return "Basic " + base64.b64encode(f"{client_id}:".encode()).decode()
 
 
+_QUERY_VALUE_RE = re.compile(r"([?&][\w.-]+=)[^&\s)'\"]+")
+
+
+def _sanitize_exception_text(err: Exception) -> str:
+    """Render an exception for logs/messages with URL query values redacted.
+
+    ``requests`` embeds the full request URL — query string included — in its
+    exception text. On the login fallback path that URL carries the CAS
+    service ticket (``?ticket=ST-...``), so logging or re-raising the raw
+    exception would leak a credential into application logs and bug reports.
+    """
+    return _QUERY_VALUE_RE.sub(r"\1<redacted>", f"{type(err).__name__}: {err}")
+
+
 def _iter_file_objects(kwargs: dict[str, Any]) -> Iterator[Any]:
     """Yield file-like objects referenced by request kwargs (files/data)."""
     files = kwargs.get("files")
@@ -533,12 +547,14 @@ class Client:
                     last_err = e
                     continue
             except GarminConnectTooManyRequestsError as e:
-                _LOGGER.warning("%s returned 429: %s", name, e)
+                _LOGGER.warning(
+                    "%s returned 429: %s", name, _sanitize_exception_text(e)
+                )
                 rate_limited_count += 1
                 last_err = e
                 continue
             except Exception as e:
-                _LOGGER.warning("%s failed: %s", name, e)
+                _LOGGER.warning("%s failed: %s", name, _sanitize_exception_text(e))
                 last_err = e
                 continue
 
@@ -548,7 +564,8 @@ class Client:
                 "Try again later or check your IP/network."
             )
         raise GarminConnectConnectionError(
-            f"All login strategies exhausted: {last_err}"
+            "All login strategies exhausted: "
+            + (_sanitize_exception_text(last_err) if last_err else "no strategies ran")
         )
 
     # ------------------------------------------------------------------ #
@@ -1215,7 +1232,10 @@ class Client:
             self._exchange_service_ticket(ticket, service_url=service_url)
             return
         except Exception as e:
-            _LOGGER.warning("DI token exchange failed (%s), falling back to JWT_WEB", e)
+            _LOGGER.warning(
+                "DI token exchange failed (%s), falling back to JWT_WEB",
+                _sanitize_exception_text(e),
+            )
 
         # Fallback: consume ticket via connect.garmin.com for JWT_WEB cookie
         if sess is not None:

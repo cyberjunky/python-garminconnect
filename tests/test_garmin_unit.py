@@ -737,6 +737,40 @@ class TestLoginMFA:
         assert c.di_token == "portal-token"  # noqa: S105
         mock_clear.assert_called_once()
 
+    def test_sanitize_exception_text_redacts_query_values(self):
+        err = Exception("Max retries exceeded with url: /x?ticket=ST-1&foo=bar ok")
+        out = client_mod._sanitize_exception_text(err)
+        assert "ST-1" not in out
+        assert "bar" not in out
+        assert "ticket=<redacted>" in out
+        assert "foo=<redacted>" in out
+        assert out.startswith("Exception: ")
+
+    def test_failed_login_redacts_ticket_from_log_and_error(self, caplog):
+        # requests embeds the full URL — query string included — in exception
+        # text; the ticket-consumption fallback URL carries ?ticket=ST-...,
+        # which must reach neither the log nor the raised error.
+        c = client_mod.Client(verify_login=False)
+        boom = Exception(
+            "Max retries exceeded with url: /gcm/ios?ticket=ST-CANARY-123 "
+            "(Caused by ConnectTimeoutError)"
+        )
+        with (
+            patch.object(c, "_mobile_login_cffi", side_effect=boom),
+            patch.object(c, "_mobile_login_requests", side_effect=boom),
+            patch.object(c, "_widget_web_login", side_effect=boom),
+            patch.object(c, "_portal_web_login_cffi", side_effect=boom),
+            patch.object(c, "_portal_web_login_requests", side_effect=boom),
+            caplog.at_level(logging.WARNING),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError, match="exhausted"
+            ) as exc_info,
+        ):
+            c.login("e@x.com", "pw")
+        assert "ST-CANARY-123" not in caplog.text
+        assert "ST-CANARY-123" not in str(exc_info.value)
+        assert "ticket=<redacted>" in caplog.text
+
     def test_return_on_mfa_sets_pending_flag(self):
         c = client_mod.Client(verify_login=False)
 
