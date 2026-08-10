@@ -1314,8 +1314,14 @@ class Client:
         payload = _decode_jwt_payload(str(token))
         if not payload:
             return False
-        exp = payload.get("exp")
-        return bool(exp and time.time() > int(exp) - 900)
+        # 'exp' is a server-controlled claim from an unverified JWT payload, so
+        # coerce it defensively: a non-numeric string or container must not
+        # raise (ValueError/TypeError) and take down every request.
+        try:
+            exp = float(payload.get("exp"))  # type: ignore[arg-type]
+        except (TypeError, ValueError):
+            return False
+        return time.time() > exp - 900
 
     def _refresh_session(self) -> None:
         """Refresh auth — DI token refresh or legacy JWT_WEB CAS refresh."""
