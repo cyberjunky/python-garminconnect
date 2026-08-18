@@ -100,9 +100,10 @@ def test_dump_uses_atomic_replace(tmp_path):
     with patch("garminconnect.client.os.replace", side_effect=tracking_replace):
         c.dump(str(token_dir))
 
-    assert replaced.get("src") == "garmin_tokens.json.tmp"
+    src = replaced.get("src", "")
+    assert src.startswith(".garmin_tokens.json.") and src.endswith(".tmp"), src
     assert replaced.get("dst") == "garmin_tokens.json"
-    assert not (token_dir / "garmin_tokens.json.tmp").exists()
+    assert not list(token_dir.glob("*.tmp"))
     assert token_file.exists()
     loaded = Client()
     loaded.load(str(token_file))
@@ -130,4 +131,31 @@ def test_dump_leaves_original_intact_on_write_failure(tmp_path):
 
     mock_open.assert_called_once()
     assert token_file.read_text() == '{"di_token": "original"}'
-    assert not (token_dir / "garmin_tokens.json.tmp").exists()
+    assert not list(token_dir.glob("*.tmp"))
+
+
+def test_dump_does_not_reuse_predictable_tmp_name(tmp_path):
+    """A file pre-planted at the historical predictable ``*.tmp`` name must
+    never be reused as the write target: reusing a pre-existing inode lets
+    whoever holds a descriptor on it observe the token payload once dump()
+    writes through it.
+    """
+    token_dir = tmp_path / "tokens"
+    token_dir.mkdir(mode=0o700)
+    planted = token_dir / "garmin_tokens.json.tmp"
+    planted.write_text("PLANTED")
+    fd = os.open(planted, os.O_RDONLY)
+    try:
+        _make_client().dump(str(token_dir))
+
+        # The pre-planted file is left completely untouched.
+        assert planted.read_text() == "PLANTED"
+        # The real token file was written correctly, through a different name.
+        loaded = Client()
+        loaded.load(str(token_dir / "garmin_tokens.json"))
+        assert loaded.di_refresh_token == "REFRESH_TOKEN_EXAMPLE"
+        # No leftover new-style temp file (the planted file above is
+        # intentionally excluded from this check; it's untouched, not ours).
+        assert not list(token_dir.glob(".*.tmp"))
+    finally:
+        os.close(fd)
