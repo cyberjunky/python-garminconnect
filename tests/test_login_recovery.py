@@ -5,6 +5,7 @@ All in-process — no network. We mock the strategy methods and ``connectapi``
 on a real ``Client`` / ``Garmin`` instance.
 """
 
+import json
 import os
 from unittest.mock import patch
 
@@ -184,6 +185,58 @@ def test_load_refuses_symlink(tmp_path, make_symlink):
     c = client_mod.Client(verify_login=False)
     with pytest.raises(GarminConnectConnectionError):
         c.load(str(link))
+
+
+def test_login_refuses_symlinked_tokenstore_write(tmp_path, make_symlink):
+    """Garmin.login() must not resolve() a tokenstore symlink before the
+    anti-symlink validation runs: after a fresh credential login, the
+    persisted tokens must not be written through the symlink into the
+    attacker-controlled target.
+    """
+    attacker_dir = tmp_path / "attacker_controlled"
+    attacker_dir.mkdir()
+    link = tmp_path / "victim-tokenstore"
+    make_symlink(attacker_dir, link)
+
+    g = garminconnect.Garmin("e@x.com", "pw")
+    with (
+        patch.object(g.client, "login", return_value=(None, None)) as chain,
+        patch.object(g, "_load_profile_and_settings"),
+    ):
+        g.login(str(link))
+
+    chain.assert_called_once()  # loading through the symlink failed closed
+    assert not any(attacker_dir.iterdir())  # nothing written into the target
+
+
+def test_login_refuses_auth_state_injection_via_symlink(tmp_path, make_symlink):
+    """An attacker-seeded token file inside a symlinked tokenstore target
+    must not be adopted by Garmin.login().
+    """
+    attacker_dir = tmp_path / "attacker_controlled"
+    attacker_dir.mkdir()
+    (attacker_dir / "garmin_tokens.json").write_text(
+        json.dumps(
+            {
+                "di_token": "ATTACKER_TOKEN",
+                "di_refresh_token": "ATTACKER_REFRESH",
+                "di_client_id": "c",
+            }
+        )
+    )
+    link = tmp_path / "victim-tokenstore"
+    make_symlink(attacker_dir, link)
+
+    g = garminconnect.Garmin("e@x.com", "pw")
+    with (
+        patch.object(g.client, "login", return_value=(None, None)) as chain,
+        patch.object(g, "_load_profile_and_settings"),
+    ):
+        g.login(str(link))
+
+    # Credential login ran instead of silently adopting the attacker's tokens.
+    chain.assert_called_once()
+    assert g.client.di_token != "ATTACKER_TOKEN"
 
 
 def test_load_reads_regular_file(tmp_path):

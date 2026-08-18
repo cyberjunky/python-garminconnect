@@ -679,10 +679,16 @@ class Garmin:
                         # Token data is provided directly as string
                         self.client.loads(tokenstore)
                     else:
-                        # Tokenstore is a path - normalize it for cross-platform compatibility
-                        # This fixes Windows path issues where ~ expansion or path separators
-                        # might cause token extraction to not find all token files correctly
-                        tokenstore_path = str(Path(tokenstore).expanduser().resolve())
+                        # Tokenstore is a path - expand ~ for cross-platform
+                        # compatibility. Deliberately NOT .resolve()d: resolve()
+                        # follows symlinks, which would let a pre-planted
+                        # tokenstore symlink reach client.load()/dump() as an
+                        # ordinary path with the symlink already gone, bypassing
+                        # token_file_path()'s anti-symlink check entirely.
+                        # token_file_path() expands and validates the raw path
+                        # itself; logout() already relies on that instead of
+                        # resolving here.
+                        tokenstore_path = str(Path(tokenstore).expanduser())
                         normalized_path = tokenstore_path
                         logger.debug(
                             f"Loading tokens from normalized path: {normalized_path}"
