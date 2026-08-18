@@ -17,6 +17,7 @@ import math
 import os
 import random
 import re
+import secrets
 import threading
 import time
 from collections.abc import Iterator, Mapping
@@ -209,14 +210,14 @@ def _iter_file_objects(kwargs: dict[str, Any]) -> Iterator[Any]:
     files = kwargs.get("files")
     if isinstance(files, Mapping):
         values = list(files.values())
-    elif isinstance(files, (list, tuple)):
+    elif isinstance(files, list | tuple):
         values = [v for _, v in files]
     else:
         values = []
     for value in values:
         # requests accepts fileobj or (name, fileobj[, content_type[, headers]])
         fileobj = (
-            value[1] if isinstance(value, (tuple, list)) and len(value) >= 2 else value
+            value[1] if isinstance(value, tuple | list) and len(value) >= 2 else value
         )
         if hasattr(fileobj, "read"):
             yield fileobj
@@ -1518,12 +1519,16 @@ class Client:
         # exists; chmod enforces 0o700 unconditionally.
         with contextlib.suppress(OSError):
             p.parent.chmod(0o700)
-        # Open with O_CREAT mode 0o600 (and O_NOFOLLOW where available so a
-        # pre-planted symlink can't redirect the write) instead of write_text,
-        # which would create the file under the umask first.
-        tmp = p.with_name(p.name + ".tmp")
+        # Open with O_CREAT|O_EXCL mode 0o600 (and O_NOFOLLOW where available)
+        # instead of write_text, which would create the file under the umask
+        # first. The temp name is unpredictable and O_EXCL is required (not
+        # just O_TRUNC): a fixed sibling name is guessable, and without
+        # O_EXCL a pre-planted file's inode would be reused for the write
+        # instead of a fresh one being created, letting whoever holds a
+        # descriptor on that pre-planted inode observe the token payload.
+        tmp = p.with_name(f".{p.name}.{secrets.token_hex(8)}.tmp")
         try:
-            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
             if hasattr(os, "O_NOFOLLOW"):
                 flags |= os.O_NOFOLLOW
             fd = os.open(tmp, flags, 0o600)
