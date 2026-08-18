@@ -50,7 +50,7 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 143+ unique endpoints (snapshot)
+- **Total API Methods**: 144+ unique endpoints (snapshot)
 - **Categories**: 13 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 10 methods (today's health data plus daily calories, resting HR and sleep ranges)
@@ -62,7 +62,7 @@ Make your selection:
 - **Device & Technical**: 7 methods (device info, settings)
 - **Gear & Equipment**: 7 methods (gear management, tracking)
 - **Hydration & Wellness**: 12 methods (hydration, nutrition, blood pressure, menstrual)
-- **System & Export**: 4 methods (reporting, logout, GraphQL)
+- **System & Export**: 5 methods (reporting, logout, GraphQL, health snapshot download)
 - **Training Plans**: 3 methods (plans, plan by ID, adaptive plan by ID)
 - **Golf**: 5 methods (scorecard summary, scorecard detail, shot data, club stats, user stats)
 

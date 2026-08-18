@@ -591,6 +591,10 @@ menu_categories = {
             },
             "3": {"desc": "Disconnect from Garmin Connect", "key": "disconnect"},
             "4": {"desc": "Execute GraphQL query", "key": "query_garmin_graphql"},
+            "5": {
+                "desc": "Download Health Snapshot ZIP for today",
+                "key": "download_health_snapshot",
+            },
         },
     },
     "b": {
@@ -4665,6 +4669,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "create_health_report": lambda: DataExporter.create_health_report(api),
             "remove_tokens": remove_stored_tokens,
             "disconnect": lambda: disconnect_api(api),
+            "download_health_snapshot": lambda: download_health_snapshot_file(api),
             # GraphQL Queries
             "query_garmin_graphql": lambda: query_garmin_graphql_data(api),
         }
@@ -4696,6 +4701,23 @@ def disconnect_api(api: Garmin):
     """Disconnect from Garmin Connect."""
     api.logout()
     print("✅ Disconnected from Garmin Connect")
+
+
+def download_health_snapshot_file(api: Garmin):
+    """Download today's Health Snapshot ZIP and save it to the export directory."""
+    requested_date = config.today.isoformat()
+    try:
+        content = api.download_health_snapshot(requested_date)
+        if not content:
+            print("❌ No Health Snapshot content available for this date")
+            return
+        safe_date = _safe_filename_component(requested_date)
+        filepath = config.export_dir / f"{safe_date}_HEALTH_SNAPSHOT.zip"
+        with _open_private(filepath, "wb") as f:
+            f.write(content)
+        print(f"✅ Health Snapshot saved to: {filepath}")
+    except Exception as e:
+        print(f"❌ Error downloading Health Snapshot: {e}")
 
 
 def init_api(email: str | None = None, password: str | None = None) -> Garmin | None:
