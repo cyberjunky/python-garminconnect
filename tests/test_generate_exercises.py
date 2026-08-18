@@ -1,4 +1,4 @@
-"""Regression tests for scripts/generate_exercises.py (report #4024)."""
+"""Regression tests for scripts/generate_exercises.py."""
 
 import importlib.util
 from pathlib import Path
