@@ -560,6 +560,9 @@ class Garmin:
         self.garmin_connect_fitnessage = "/fitnessage-service/fitnessage"
 
         self.garmin_connect_fit_download = "/download-service/files/activity"
+        self.garmin_connect_health_snapshot_download = (
+            "/download-service/files/wellness"
+        )
         self.garmin_connect_tcx_download = "/download-service/export/tcx/activity"
         self.garmin_connect_gpx_download = "/download-service/export/gpx/activity"
         self.garmin_connect_kml_download = "/download-service/export/kml/activity"
@@ -2855,6 +2858,15 @@ class Garmin:
         url = urls[dl_fmt]
 
         logger.debug("Downloading activity from %s", url)
+
+        return self.download(url)
+
+    def download_health_snapshot(self, requested_date: str) -> bytes:
+        """Download the Health Snapshot ZIP file for a calendar date."""
+        requested_date = _validate_date_format(requested_date, "requested_date")
+        url = f"{self.garmin_connect_health_snapshot_download}/{requested_date}"
+
+        logger.debug("Downloading Health Snapshot from %s", url)
 
         return self.download(url)
 

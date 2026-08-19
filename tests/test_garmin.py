@@ -157,6 +157,19 @@ def test_download_activity(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
+def test_download_health_snapshot(garmin: garminconnect.Garmin) -> None:
+    garmin.login()
+
+    try:
+        snapshot = garmin.download_health_snapshot(DATE)
+        assert isinstance(snapshot, bytes)
+        assert snapshot
+    except garminconnect.GarminConnectConnectionError as e:
+        assert any(code in str(e) for code in ("403", "404", "Forbidden", "Not Found"))
+        pytest.skip("Health Snapshot unavailable for this date")
+
+
+@pytest.mark.vcr
 def test_all_day_stress(garmin: garminconnect.Garmin) -> None:
     garmin.login()
     all_day_stress = garmin.get_all_day_stress(DATE)
