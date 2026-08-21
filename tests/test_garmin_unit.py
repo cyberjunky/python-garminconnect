@@ -643,6 +643,37 @@ class TestResumeLogin:
         mock_complete.assert_called_once_with("123456")
         mock_verify.assert_not_called()
 
+    def test_client_resume_login_keeps_session_on_wrong_code_for_retry(self):
+        """A failed verification code must not wipe the pending MFA session —
+        otherwise a retry with the correct code can never succeed (issue 416).
+        """
+        c = client_mod.Client(verify_login=False)
+        c._mfa_pending = True
+        c._mfa_session = object()
+        c._mfa_flow = "portal"
+        c._mfa_method = "email"
+
+        with (
+            patch.object(
+                c,
+                "_complete_mfa",
+                side_effect=garminconnect.GarminConnectAuthenticationError("bad code"),
+            ),
+            pytest.raises(garminconnect.GarminConnectAuthenticationError),
+        ):
+            c.resume_login({}, "000000")
+
+        assert c._mfa_pending is True
+        assert c._mfa_session is not None
+        assert c._mfa_flow == "portal"
+        assert c._mfa_method == "email"
+
+        # Retry with the correct code on the same instance now succeeds.
+        with patch.object(c, "_complete_mfa") as mock_complete:
+            assert c.resume_login({}, "123456") == (None, None)
+        mock_complete.assert_called_once_with("123456")
+        assert c._mfa_pending is False
+
     def test_garmin_resume_login_propagates_profile_load_failure(self):
         g = garminconnect.Garmin("user@example.com", "secret")
         with (
