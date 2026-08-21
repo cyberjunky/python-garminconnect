@@ -1242,13 +1242,14 @@ class Client:
                 self._establish_session(ticket, sess=sess, service_url=svc_url)
                 return
 
-            # Non-success JSON response — could be auth failure. Log the full
-            # response at DEBUG but keep exception messages free of sensitive
-            # SSO metadata such as serviceTicketId, customerGuid, or URLs.
-            _LOGGER.debug("MFA verify non-success response from %s: %s", mfa_url, res)
+            # Non-success JSON response — could be auth failure. Log only the
+            # status, not the raw body: it may echo back request fields.
             status = res.get("responseStatus", {}).get("type") or res.get(
                 "error", {}
             ).get("status-code", "unknown")
+            _LOGGER.debug(
+                "MFA verify non-success response from %s: status=%s", mfa_url, status
+            )
             failures.append(f"{mfa_url}: {status}")
 
         # All endpoints failed
