@@ -394,6 +394,18 @@ class Client:
         self.csrf_token = None
         if not keep_tokenstore_path:
             self._tokenstore_path = None
+        self._clear_mfa_pending_state()
+        # Drop any SSO / CAS / JWT_WEB cookies so a stale session cannot be
+        # silently refreshed after logout.
+        self.cs.cookies.clear()
+
+    def _clear_mfa_pending_state(self) -> None:
+        """Clear MFA-in-progress bookkeeping only — leaves auth tokens alone.
+
+        Used both by ``_clear_auth_state()`` (as part of a full reset) and by
+        ``resume_login()`` on success, where the just-obtained tokens must
+        survive.
+        """
         self._mfa_pending = False
         for attr in (
             "_mfa_session",
@@ -405,9 +417,6 @@ class Client:
             "_widget_last_resp",
         ):
             setattr(self, attr, None)
-        # Drop any SSO / CAS / JWT_WEB cookies so a stale session cannot be
-        # silently refreshed after logout.
-        self.cs.cookies.clear()
 
     def _verify_token(self) -> bool:
         """Check that the current token is actually accepted by the API tier.
@@ -1143,7 +1152,10 @@ class Client:
         For portal/ios flows, tries both /portal and /mobile MFA verify
         endpoints as they may be on different rate-limit buckets.
         """
-        flow = getattr(self, "_mfa_flow", "portal")
+        # getattr's default only applies when the attribute is absent, not
+        # when it's present-but-None (e.g. right after a state reset) — the
+        # `or` catches that case too.
+        flow = getattr(self, "_mfa_flow", None) or "portal"
         if flow == "widget":
             self._complete_mfa_widget(mfa_code)
             return
@@ -1230,10 +1242,10 @@ class Client:
                 self._establish_session(ticket, sess=sess, service_url=svc_url)
                 return
 
-            # Non-success JSON response — could be auth failure. Log the full
-            # response at DEBUG but keep exception messages free of sensitive
-            # SSO metadata such as serviceTicketId, customerGuid, or URLs.
-            _LOGGER.debug("MFA verify non-success response from %s: %s", mfa_url, res)
+            # Non-success JSON response — could be auth failure. The status is
+            # captured in `failures` below for the eventual exception message;
+            # no separate debug log here (data flowing through this function
+            # trips code-scanning's clear-text-logging heuristic).
             status = res.get("responseStatus", {}).get("type") or res.get(
                 "error", {}
             ).get("status-code", "unknown")
@@ -1606,29 +1618,19 @@ class Client:
         return resp
 
     def resume_login(self, _client_state: Any, mfa_code: str) -> tuple[str | None, Any]:
-        """Complete a previously initiated MFA login."""
-        try:
-            self._complete_mfa(mfa_code)
-            if self.verify_login and not self._verify_token():
-                self._clear_auth_state()
-                raise GarminConnectConnectionError(
-                    "token rejected by API tier after MFA"
-                )
-            return None, None
-        finally:
-            # Always clear the pending MFA flag and per-attempt state so a new
-            # login can start after resume_login() finishes (success or failure).
-            self._mfa_pending = False
-            for attr in (
-                "_mfa_session",
-                "_mfa_login_params",
-                "_mfa_post_headers",
-                "_mfa_service_url",
-                "_mfa_flow",
-                "_mfa_method",
-                "_widget_last_resp",
-            ):
-                setattr(self, attr, None)
+        """Complete a previously initiated MFA login.
+
+        A failed verification code (or a rate-limited attempt) leaves the
+        pending MFA session intact so the caller can retry with a corrected
+        code on the same instance. Only success, or a non-retryable failure
+        after MFA itself succeeded, clears the pending state.
+        """
+        self._complete_mfa(mfa_code)
+        if self.verify_login and not self._verify_token():
+            self._clear_auth_state()
+            raise GarminConnectConnectionError("token rejected by API tier after MFA")
+        self._clear_mfa_pending_state()
+        return None, None
 
     def download(self, path: str, **kwargs: Any) -> bytes:
         if "headers" not in kwargs:
