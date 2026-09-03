@@ -2124,8 +2124,8 @@ def get_activity_exercise_sets_data(api: Garmin) -> None:
     try:
         activities = api.get_activities(
             0, 1, activitytype="fitness_equipment", activitysubtype="strength_training"
-        )  # Get more activities to find a strength training one
-        strength_activity = activities[0] if activities else None
+        )
+        strength_activity = activities[0] if activities and isinstance(activities, list) else None
 
         if strength_activity:
             activity_id = strength_activity["activityId"]
@@ -3614,7 +3614,7 @@ def set_activity_exercise_sets_data(api: Garmin) -> None:
         activities = api.get_activities(
             0, 1, activitytype="fitness_equipment", activitysubtype="strength_training"
         )
-        strength_activity = activities[0] if activities else None
+        strength_activity = activities[0] if activities and isinstance(activities, list) else None
 
         if not strength_activity:
             print("ℹ️ No strength training activities found")
