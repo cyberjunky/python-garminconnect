@@ -2336,11 +2336,13 @@ class Garmin:
         start: int = 0,
         limit: int = 20,
         activitytype: str | None = None,
+        activitysubtype: str | None = None,
     ) -> dict[str, Any] | list[Any]:
         """Return available activities.
         :param start: Starting activity offset, where 0 means the most recent activity
         :param limit: Number of activities to return
         :param activitytype: (Optional) Filter activities by type
+        :param activitysubtype: (Optional) Filter activities further by sub-type.
         :return: List of activities from Garmin.
         """
         # Validate inputs
@@ -2354,6 +2356,9 @@ class Garmin:
         params = {"start": str(start), "limit": str(limit)}
         if activitytype:
             params["activityType"] = activitytype
+
+            if activitysubtype:
+                params["activitySubType"] = activitysubtype
 
         logger.debug("Requesting activities from %d with limit %d", start, limit)
 

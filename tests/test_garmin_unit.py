@@ -1524,6 +1524,19 @@ class TestParameterLimits:
         params = mock.call_args.kwargs["params"]
         assert params["activityType"] == "running"
 
+    def test_get_activities_passes_activitysubtype(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "connectapi", return_value=[]) as mock:
+            garmin.get_activities(
+                start=0,
+                limit=5,
+                activitytype="fitness_equipment",
+                activitysubtype="strength_training",
+            )
+
+            params = mock.call_args.kwargs["params"]
+            assert params["activityType"] == "fitness_equipment"
+            assert params["activitySubType"] == "strength_training"
+
     def test_get_activities_returns_empty_list_when_api_returns_none(
         self, garmin: garminconnect.Garmin
     ):
