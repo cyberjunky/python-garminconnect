@@ -2123,17 +2123,14 @@ def get_activity_exercise_sets_data(api: Garmin) -> None:
     """Get exercise sets for strength training activities."""
     try:
         activities = api.get_activities(
-            0, 20
-        )  # Get more activities to find a strength training one
-        strength_activity = None
-
-        # Find strength training activities
-        for activity in activities:
-            activity_type = activity.get("activityType", {})
-            type_key = activity_type.get("typeKey", "")
-            if "strength" in type_key.lower() or "training" in type_key.lower():
-                strength_activity = activity
-                break
+            0, 1, activitytype="fitness_equipment", activitysubtype="strength_training"
+        )
+        activity_list = (
+            activities.get("activityList", [])
+            if isinstance(activities, dict)
+            else activities
+        )
+        strength_activity = activity_list[0] if activity_list else None
 
         if strength_activity:
             activity_id = strength_activity["activityId"]
@@ -3619,13 +3616,15 @@ def set_activity_exercise_sets_data(api: Garmin) -> None:
     is a safe no-op that proves the endpoint without altering the activity.
     """
     try:
-        activities = api.get_activities(0, 20)
-        strength_activity = None
-        for activity in activities:
-            type_key = activity.get("activityType", {}).get("typeKey", "")
-            if "strength" in type_key.lower() or "training" in type_key.lower():
-                strength_activity = activity
-                break
+        activities = api.get_activities(
+            0, 1, activitytype="fitness_equipment", activitysubtype="strength_training"
+        )
+        activity_list = (
+            activities.get("activityList", [])
+            if isinstance(activities, dict)
+            else activities
+        )
+        strength_activity = activity_list[0] if activity_list else None
 
         if not strength_activity:
             print("ℹ️ No strength training activities found")
