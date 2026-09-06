@@ -2397,6 +2397,118 @@ class TestIdentifierValidation:
 
 
 # ---------------------------------------------------------------------------
+# create_gear: matches the payload captured from Garmin Connect's "Add Gear"
+# ---------------------------------------------------------------------------
+
+
+class TestCreateGear:
+    def test_builds_payload_matching_captured_request(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin.client, "post") as mock_post:
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+                usage_type="DISTANCE",
+                max_usage_distance_km=650,
+                notes="My notes",
+                activity_type_keys=["running"],
+            )
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload == {
+            "uuid": None,
+            "gearType": "SHOES",
+            "brand": "Anta",
+            "model": "A-Flash",
+            "name": "Test",
+            "firstUseDate": "2026-09-06",
+            "maxUsageDate": None,
+            "maxUsageDistanceMeters": 650000,
+            "maxUsageDurationSeconds": 0,
+            "usageType": "DISTANCE",
+            "notes": "My notes",
+            "associatedActivityTypes": [
+                {"activityTypeKey": "running", "defaultGear": True, "preferredGear": False}
+            ],
+        }
+        url = mock_post.call_args[0][1]
+        assert url.endswith("/gear-service/gear/v2")
+
+    def test_normalizes_lowercase_gear_and_usage_type(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin.client, "post") as mock_post:
+            garmin.create_gear(
+                gear_type="shoes",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+                usage_type="distance",
+            )
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["gearType"] == "SHOES"
+        assert payload["usageType"] == "DISTANCE"
+
+    def test_does_not_uppercase_activity_type_key(self, garmin: garminconnect.Garmin):
+        """activityTypeKey is lowercase in the confirmed payload — unlike
+        set_gear_default()'s uppercase activityType convention.
+        """
+        with patch.object(garmin.client, "post") as mock_post:
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+                activity_type_keys=["running"],
+            )
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["associatedActivityTypes"][0]["activityTypeKey"] == "running"
+
+    def test_rejects_invalid_first_use_date(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="YYYY-MM-DD"):
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="not-a-date",
+            )
+
+    def test_rejects_empty_brand(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="brand"):
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+            )
+
+    def test_omits_activity_types_by_default(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin.client, "post") as mock_post:
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+            )
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["associatedActivityTypes"] == []
+        assert payload["maxUsageDistanceMeters"] == 0
+        assert payload["maxUsageDurationSeconds"] == 0
+
+
+# ---------------------------------------------------------------------------
 # Activity upload filename handling
 # ---------------------------------------------------------------------------
 
