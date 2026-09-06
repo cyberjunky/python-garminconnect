@@ -449,14 +449,53 @@ class TestUrlConstruction:
         assert "%3F" in encoded
         assert "%23" in encoded
 
-    def test_require_display_name_raises_when_not_set(
+    def test_require_display_name_raises_when_reload_fails(
         self, garmin: garminconnect.Garmin
     ):
         garmin.display_name = None
-        with pytest.raises(
-            garminconnect.GarminConnectConnectionError, match="Display name is not set"
+        with (
+            patch.object(garmin.client, "connectapi", side_effect=Exception("boom")),
+            patch("garminconnect.time.sleep"),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError, match="social profile"
+            ),
         ):
             garmin._require_display_name()
+
+    def test_require_display_name_reloads_profile_when_not_set(
+        self, garmin: garminconnect.Garmin
+    ):
+        garmin.display_name = None
+        with patch.object(
+            garmin.client, "connectapi", return_value={"displayName": "a b"}
+        ):
+            assert garmin._require_display_name() == "a%20b"
+        assert garmin.display_name == "a b"
+
+    def test_load_social_profile_retries_when_display_name_missing(
+        self, garmin: garminconnect.Garmin
+    ):
+        with (
+            patch.object(
+                garmin.client, "connectapi", side_effect=[{}, {"displayName": "x"}]
+            ) as mock,
+            patch("garminconnect.time.sleep"),
+        ):
+            garmin._load_social_profile()
+        assert garmin.display_name == "x"
+        assert mock.call_count == 2
+
+    def test_load_social_profile_raises_after_three_incomplete_responses(
+        self, garmin: garminconnect.Garmin
+    ):
+        garmin.display_name = None
+        with (
+            patch.object(garmin.client, "connectapi", side_effect=[{}, None, []]),
+            patch("garminconnect.time.sleep"),
+            pytest.raises(garminconnect.GarminConnectAuthenticationError),
+        ):
+            garmin._load_social_profile()
+        assert garmin.display_name is None
 
     @pytest.mark.parametrize(
         "method_name,args,expected_suffix",

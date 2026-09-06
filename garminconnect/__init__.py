@@ -839,29 +839,39 @@ class Garmin:
             logger.debug("Login failed: %s", e)
             raise GarminConnectConnectionError(f"Login failed: {e}") from e
 
+    def _load_social_profile(self) -> str:
+        """Fetch the social profile, populating display name and full name.
+
+        A response without a ``displayName`` is treated as a failed attempt:
+        the display name is required to build most API URLs, so accepting an
+        incomplete profile would leave the client unusable. Raises
+        ``GarminConnectAuthenticationError`` after three failed attempts,
+        otherwise returns the display name.
+        """
+        last_error: Exception | None = None
+        for attempt in range(3):
+            try:
+                prof = self.client.connectapi("/userprofile-service/socialProfile")
+                if isinstance(prof, dict) and prof.get("displayName"):
+                    self.display_name = prof["displayName"]
+                    self.full_name = prof.get("fullName", "")
+                    return self.display_name
+                logger.debug("Social profile has no displayName: %r", prof)
+            except Exception as e:
+                last_error = e
+                logger.debug("Retrying social profile fetch: %s", e)
+            if attempt < 2:
+                time.sleep(1)
+        raise GarminConnectAuthenticationError(
+            "Failed to retrieve a social profile with a display name"
+        ) from last_error
+
     def _load_profile_and_settings(self) -> None:
         """Fetch social profile and user settings, populating display name,
         full name and unit system. Raises ``GarminConnectAuthenticationError``
         if either cannot be retrieved (e.g. the token is rejected).
         """
-        prof = None
-        for attempt in range(3):
-            try:
-                prof = self.client.connectapi("/userprofile-service/socialProfile")
-                if isinstance(prof, dict):
-                    break
-            except Exception as e:
-                if attempt == 2:
-                    raise GarminConnectAuthenticationError(
-                        "Failed to retrieve social profile"
-                    ) from e
-                logger.debug("Retrying social profile fetch: %s", e)
-                time.sleep(1)
-        else:
-            raise GarminConnectAuthenticationError("Invalid profile data found")
-
-        self.display_name = prof.get("displayName", self.username)
-        self.full_name = prof.get("fullName", "")
+        self._load_social_profile()
 
         settings = None
         for attempt in range(3):
@@ -895,24 +905,27 @@ class Garmin:
         return mfa_status, _legacy_token
 
     def _require_display_name(self) -> str:
-        """Return display_name, URL-encoded, or raise if not set.
+        """Return display_name, URL-encoded, reloading the profile if unset.
 
-        New/empty Garmin profiles may not have a displayName, which
-        would cause 'None' to be interpolated into API URLs and
-        result in 403 Forbidden errors.
+        A missing displayName would cause 'None' to be interpolated into
+        API URLs and result in 403 Forbidden errors, so one reload is
+        attempted before giving up.
 
         Encoding the value before it enters a URL path prevents a
         compromised or malicious server response from injecting path
         separators or query/fragment characters via displayName.
         """
-        if not self.display_name:
-            raise GarminConnectConnectionError(
-                "Display name is not set. This usually means your "
-                "Garmin profile is incomplete (new account with no "
-                "display name configured). Please set a display name "
-                "at https://connect.garmin.com and try again."
-            )
-        return quote(self.display_name, safe="")
+        display_name = self.display_name
+        if not display_name:
+            try:
+                display_name = self._load_social_profile()
+            except Exception as e:
+                raise GarminConnectConnectionError(
+                    "Could not load the Garmin social profile, so the display "
+                    "name required for this request is unavailable. "
+                    "Please log in again."
+                ) from e
+        return quote(display_name, safe="")
 
     def get_full_name(self) -> str | None:
         """Return full name of the authenticated user."""
