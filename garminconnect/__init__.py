@@ -857,7 +857,9 @@ class Garmin:
                     self.display_name = name
                     self.full_name = prof.get("fullName", "")
                     return name
-                logger.debug("Social profile has no usable displayName: %r", prof)
+                logger.debug(
+                    "Social profile has no usable displayName (attempt %d)", attempt + 1
+                )
             except Exception as e:
                 last_error = e
                 logger.debug("Retrying social profile fetch: %s", e)
