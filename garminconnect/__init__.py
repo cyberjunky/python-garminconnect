@@ -852,11 +852,12 @@ class Garmin:
         for attempt in range(3):
             try:
                 prof = self.client.connectapi("/userprofile-service/socialProfile")
-                if isinstance(prof, dict) and prof.get("displayName"):
-                    self.display_name = prof["displayName"]
+                name = prof.get("displayName") if isinstance(prof, dict) else None
+                if isinstance(name, str) and name.strip():
+                    self.display_name = name
                     self.full_name = prof.get("fullName", "")
-                    return self.display_name
-                logger.debug("Social profile has no displayName: %r", prof)
+                    return name
+                logger.debug("Social profile has no usable displayName: %r", prof)
             except Exception as e:
                 last_error = e
                 logger.debug("Retrying social profile fetch: %s", e)

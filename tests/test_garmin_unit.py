@@ -485,12 +485,19 @@ class TestUrlConstruction:
         assert garmin.display_name == "x"
         assert mock.call_count == 2
 
-    def test_load_social_profile_raises_after_three_incomplete_responses(
-        self, garmin: garminconnect.Garmin
+    @pytest.mark.parametrize(
+        "responses",
+        [
+            [{}, None, []],
+            [{"displayName": 123}, {"displayName": ""}, {"displayName": "  "}],
+        ],
+    )
+    def test_load_social_profile_raises_after_three_unusable_responses(
+        self, garmin: garminconnect.Garmin, responses: list[Any]
     ):
         garmin.display_name = None
         with (
-            patch.object(garmin.client, "connectapi", side_effect=[{}, None, []]),
+            patch.object(garmin.client, "connectapi", side_effect=responses),
             patch("garminconnect.time.sleep"),
             pytest.raises(garminconnect.GarminConnectAuthenticationError),
         ):
