@@ -449,12 +449,82 @@ class TestUrlConstruction:
         assert "%3F" in encoded
         assert "%23" in encoded
 
-    def test_require_display_name_raises_when_not_set(
+    def test_require_display_name_raises_when_reload_fails(
         self, garmin: garminconnect.Garmin
     ):
         garmin.display_name = None
-        with pytest.raises(
-            garminconnect.GarminConnectConnectionError, match="Display name is not set"
+        with (
+            patch.object(garmin.client, "connectapi", side_effect=Exception("boom")),
+            patch("garminconnect.time.sleep"),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError, match="social profile"
+            ),
+        ):
+            garmin._require_display_name()
+
+    def test_require_display_name_reloads_profile_when_not_set(
+        self, garmin: garminconnect.Garmin
+    ):
+        garmin.display_name = None
+        with patch.object(
+            garmin.client, "connectapi", return_value={"displayName": "a b"}
+        ):
+            assert garmin._require_display_name() == "a%20b"
+        assert garmin.display_name == "a b"
+
+    def test_load_social_profile_retries_when_display_name_missing(
+        self, garmin: garminconnect.Garmin
+    ):
+        with (
+            patch.object(
+                garmin.client, "connectapi", side_effect=[{}, {"displayName": "x"}]
+            ) as mock,
+            patch("garminconnect.time.sleep"),
+        ):
+            garmin._load_social_profile()
+        assert garmin.display_name == "x"
+        assert mock.call_count == 2
+
+    def test_load_social_profile_falls_back_to_username_after_retries(
+        self, garmin: garminconnect.Garmin
+    ):
+        garmin.display_name = None
+        with (
+            patch.object(
+                garmin.client,
+                "connectapi",
+                side_effect=[{}, {"displayName": 123}, {"displayName": " "}],
+            ) as mock,
+            patch("garminconnect.time.sleep"),
+        ):
+            garmin._load_social_profile()
+        assert garmin.display_name == "test@example.com"
+        assert mock.call_count == 3
+
+    def test_load_social_profile_raises_without_dict_response(
+        self, garmin: garminconnect.Garmin
+    ):
+        garmin.display_name = None
+        with (
+            patch.object(garmin.client, "connectapi", side_effect=[None, "x", []]),
+            patch("garminconnect.time.sleep"),
+            pytest.raises(garminconnect.GarminConnectAuthenticationError),
+        ):
+            garmin._load_social_profile()
+        assert garmin.display_name is None
+
+    def test_require_display_name_raises_when_profile_has_none(
+        self, garmin: garminconnect.Garmin
+    ):
+        garmin.username = None
+        garmin.display_name = None
+        with (
+            patch.object(garmin.client, "connectapi", return_value={}),
+            patch("garminconnect.time.sleep"),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError,
+                match="Display name is not set",
+            ),
         ):
             garmin._require_display_name()
 
