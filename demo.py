@@ -469,7 +469,10 @@ menu_categories = {
     "7": {
         "name": "🏆 Goals & Achievements",
         "options": {
-            "1": {"desc": "Get personal records", "key": "get_personal_records"},
+            "1": {
+                "desc": "Get personal records (decodes running typeId, interactive)",
+                "key": "get_personal_records",
+            },
             "2": {"desc": "Get earned badges", "key": "get_earned_badges"},
             "3": {"desc": "Get adhoc challenges", "key": "get_adhoc_challenges"},
             "4": {
@@ -3607,6 +3610,83 @@ def create_gear_data(api: Garmin) -> None:
         print(f"❌ Error creating gear: {e}")
 
 
+def get_personal_records_data(api: Garmin) -> None:
+    """Get personal records, decoding running typeId and optionally looking
+    up the source activity's details (needed for longest-run duration,
+    which isn't included in the personal-record entry itself).
+
+    Only the running typeId mapping (1-7) is confirmed; other activity
+    types' typeId values are shown as-is, undecoded.
+    """
+    running_type_labels = {
+        1: "1 km",
+        2: "1 mile",
+        3: "5 km",
+        4: "10 km",
+        5: "Half marathon",
+        6: "Marathon",
+        7: "Longest run",
+    }
+    try:
+        success, records = call_and_display(
+            api.get_personal_record,
+            method_name="get_personal_record",
+            api_call_desc="api.get_personal_record()",
+        )
+        if not success or not records:
+            return
+
+        entries = records if isinstance(records, list) else [records]
+        if not entries:
+            print("ℹ️ No personal records found")
+            return
+
+        print("\nPersonal records:")
+        for i, entry in enumerate(entries):
+            type_id = entry.get("typeId")
+            activity_type = entry.get("activityType")
+            label = (
+                running_type_labels.get(type_id) if activity_type == "running" else None
+            )
+            desc = f"typeId={type_id}"
+            if label:
+                desc += f" ({label})"
+            print(
+                f"{i}: {desc} activityType={activity_type!r} value={entry.get('value')}"
+            )
+
+        choice = input(
+            "\nEnter index to look up the source activity's details (blank to skip): "
+        ).strip()
+        if not choice:
+            return
+
+        try:
+            idx = int(choice)
+            if not (0 <= idx < len(entries)):
+                print("❌ Invalid index")
+                return
+        except ValueError:
+            print("❌ Invalid index")
+            return
+
+        activity_id = entries[idx].get("activityId") or entries[idx].get(
+            "activityIdInt"
+        )
+        if not activity_id:
+            print("ℹ️ This record entry has no activityId to look up")
+            return
+
+        call_and_display(
+            api.get_activity,
+            str(activity_id),
+            method_name="get_activity",
+            api_call_desc=f"api.get_activity('{activity_id}')",
+        )
+    except Exception as e:
+        print(f"❌ Error getting personal records: {e}")
+
+
 def set_activity_name_data(api: Garmin) -> None:
     """Set activity name."""
     try:
@@ -4580,11 +4660,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "delete_weigh_ins": lambda: delete_weigh_ins_data(api),
             "delete_weigh_in": lambda: delete_weigh_in_data(api),
             # Goals & Achievements
-            "get_personal_records": lambda: call_and_display(
-                api.get_personal_record,
-                method_name="get_personal_record",
-                api_call_desc="api.get_personal_record()",
-            ),
+            "get_personal_records": lambda: get_personal_records_data(api),
             "get_earned_badges": lambda: call_and_display(
                 api.get_earned_badges,
                 method_name="get_earned_badges",
