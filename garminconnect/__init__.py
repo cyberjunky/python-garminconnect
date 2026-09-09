@@ -1793,7 +1793,19 @@ class Garmin:
         return self.connectapi(url, params={"calendarDate": cdate})
 
     def get_personal_record(self) -> dict[str, Any]:
-        """Return personal records for current user."""
+        """Return personal records for current user.
+
+        Returns raw personal record entries from Garmin Connect.
+        For running records (activityType == 'running'), typeId maps to:
+          - 1: 1 km
+          - 2: 1 mile
+          - 3: 5 km
+          - 4: 10 km
+          - 5: Half marathon
+          - 6: Marathon
+          - 7: Longest run (distance in meters; duration requires
+            calling activity-service/activity/{activityId})
+        """
         url = (
             f"{self.garmin_connect_personal_record_url}/{self._require_display_name()}"
         )
