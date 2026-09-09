@@ -3610,22 +3610,76 @@ def create_gear_data(api: Garmin) -> None:
         print(f"❌ Error creating gear: {e}")
 
 
-def get_personal_records_data(api: Garmin) -> None:
-    """Get personal records, decoding running typeId and optionally looking
-    up the source activity's details (needed for longest-run duration,
-    which isn't included in the personal-record entry itself).
+def _format_record_duration(seconds: float) -> str:
+    """Format a personal-record time value (seconds) as h:mm:ss or m:ss."""
+    total = round(seconds)
+    hours, remainder = divmod(total, 3600)
+    minutes, secs = divmod(remainder, 60)
+    if hours:
+        return f"{hours}:{minutes:02d}:{secs:02d}"
+    return f"{minutes}:{secs:02d}"
 
-    Only the running typeId mapping (1-7) is confirmed; other activity
-    types' typeId values are shown as-is, undecoded.
+
+def _format_record_distance(meters: float) -> str:
+    """Format a personal-record distance value (meters) as km."""
+    return f"{meters / 1000:.2f} km"
+
+
+def _format_record_count(value: float) -> str:
+    """Format a personal-record count value (e.g. steps) with thousands separators."""
+    return f"{round(value):,}"
+
+
+def _format_record_days(value: float) -> str:
+    """Format a personal-record day-count value (e.g. a goal streak)."""
+    days = round(value)
+    return f"{days} day" if days == 1 else f"{days} days"
+
+
+_RECORD_FORMATTERS = {
+    "time": _format_record_duration,
+    "distance": _format_record_distance,
+    "count": _format_record_count,
+    "days": _format_record_days,
+}
+
+
+def get_personal_records_data(api: Garmin) -> None:
+    """Get personal records, decoding typeId into a human-readable label
+    and value, and optionally looking up the source activity's details
+    (needed for longest-run duration, which isn't included in the
+    personal-record entry itself).
+
+    Two typeId ranges are confirmed against a real account's Garmin
+    Connect "Personal Records" page:
+      - activityType == "running": typeIds 1-6 are best-time records for
+        a fixed distance (value is a duration in seconds), typeId 7 is a
+        distance record (value is meters).
+      - activityType is None: typeIds 12-14 are step counts (day/week/
+        month), 15-16 are goal-streak day counts.
+    Anything else is shown as an unconfirmed raw value — check the Garmin
+    Connect "Personal Records" page for what it actually is rather than
+    trusting a guess here.
     """
-    running_type_labels = {
-        1: "1 km",
-        2: "1 mile",
-        3: "5 km",
-        4: "10 km",
-        5: "Half marathon",
-        6: "Marathon",
-        7: "Longest run",
+    # (label, formatter key) — see _RECORD_FORMATTERS. Confirmed against a
+    # real account; see docstring.
+    running_type_info = {
+        1: ("1 km", "time"),
+        2: ("1 mile", "time"),
+        3: ("5 km", "time"),
+        4: ("10 km", "time"),
+        5: ("Half marathon", "time"),
+        6: ("Marathon", "time"),
+        7: ("Longest run", "distance"),
+    }
+    # activityType is None for these — steps/streak records, not tied to a
+    # specific sport.
+    other_type_info = {
+        12: ("Most steps in a day", "count"),
+        13: ("Most steps in a week", "count"),
+        14: ("Most steps in a month", "count"),
+        15: ("Longest goal streak", "days"),
+        16: ("Current goal streak", "days"),
     }
     try:
         success, records = call_and_display(
@@ -3645,15 +3699,25 @@ def get_personal_records_data(api: Garmin) -> None:
         for i, entry in enumerate(entries):
             type_id = entry.get("typeId")
             activity_type = entry.get("activityType")
-            label = (
-                running_type_labels.get(type_id) if activity_type == "running" else None
-            )
-            desc = f"typeId={type_id}"
-            if label:
-                desc += f" ({label})"
-            print(
-                f"{i}: {desc} activityType={activity_type!r} value={entry.get('value')}"
-            )
+            value = entry.get("value")
+            if activity_type == "running":
+                info = running_type_info.get(type_id)
+            elif activity_type is None:
+                info = other_type_info.get(type_id)
+            else:
+                info = None
+
+            if info is not None and isinstance(value, int | float):
+                label, kind = info
+                formatted = _RECORD_FORMATTERS[kind](value)
+                print(
+                    f"{i}: {label} — {formatted}  (typeId={type_id}, raw value={value})"
+                )
+            else:
+                print(
+                    f"{i}: Unconfirmed record type "
+                    f"(typeId={type_id}, activityType={activity_type!r}, raw value={value})"
+                )
 
         choice = input(
             "\nEnter index to look up the source activity's details (blank to skip): "
