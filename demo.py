@@ -3515,8 +3515,12 @@ def get_activities_filtered_data(api: Garmin) -> None:
         activitytype = None
         if type_index:
             try:
-                activitytype = activity_types[int(type_index)]["typeKey"]
-            except (ValueError, IndexError):
+                idx = int(type_index)
+                if 0 <= idx < len(activity_types):
+                    activitytype = activity_types[idx]["typeKey"]
+                else:
+                    print("❌ Invalid index, no type filter applied")
+            except ValueError:
                 print("❌ Invalid index, no type filter applied")
 
         activitysubtype = None
@@ -3575,7 +3579,7 @@ def create_gear_data(api: Garmin) -> None:
         try:
             max_usage_distance_km = float(max_km) if max_km else None
 
-            call_and_display(
+            success, _ = call_and_display(
                 api.create_gear,
                 gear_type=gear_type,
                 brand=brand,
@@ -3595,7 +3599,8 @@ def create_gear_data(api: Garmin) -> None:
                     f"activity_type_keys={activity_type_keys})"
                 ),
             )
-            print("✅ Gear created!")
+            if success:
+                print("✅ Gear created!")
         except ValueError:
             print("❌ Invalid numeric input")
     except Exception as e:

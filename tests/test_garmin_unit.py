@@ -2507,6 +2507,67 @@ class TestCreateGear:
         assert payload["maxUsageDistanceMeters"] == 0
         assert payload["maxUsageDurationSeconds"] == 0
 
+    def test_rejects_non_finite_max_usage_distance(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="finite"):
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+                max_usage_distance_km=float("inf"),
+            )
+
+    def test_rejects_non_finite_max_usage_duration(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="finite"):
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+                max_usage_duration_min=float("nan"),
+            )
+
+    def test_rejects_sub_meter_max_usage_distance(self, garmin: garminconnect.Garmin):
+        """A positive value that rounds to 0 meters would silently collide
+        with the 'no threshold' sentinel instead of applying a threshold.
+        """
+        with pytest.raises(ValueError, match="max_usage_distance_km"):
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+                max_usage_distance_km=0.0001,
+            )
+
+    def test_rejects_sub_second_max_usage_duration(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="max_usage_duration_min"):
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+                max_usage_duration_min=0.001,
+            )
+
+    def test_rejects_string_activity_type_keys(self, garmin: garminconnect.Garmin):
+        """A bare string is iterable — without a container-type check this
+        would silently create one bogus association per character.
+        """
+        with pytest.raises(ValueError, match="activity_type_keys"):
+            garmin.create_gear(
+                gear_type="SHOES",
+                brand="Anta",
+                model="A-Flash",
+                name="Test",
+                first_use_date="2026-09-06",
+                activity_type_keys="running",
+            )
+
 
 # ---------------------------------------------------------------------------
 # Activity upload filename handling

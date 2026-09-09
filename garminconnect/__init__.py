@@ -3,6 +3,7 @@
 import contextlib
 import functools
 import logging
+import math
 import numbers
 import os
 import random
@@ -95,12 +96,15 @@ def _validate_date_range(start: str, end: str) -> tuple[str, str]:
 def _validate_positive_number(
     value: int | float, param_name: str = "value"
 ) -> int | float:
-    """Validate that a number is positive."""
+    """Validate that a number is positive and finite."""
     if not isinstance(value, numbers.Real):
         raise ValueError(f"{param_name} must be a number")
 
     if isinstance(value, bool):
         raise ValueError(f"{param_name} must be a number, not bool")
+
+    if not math.isfinite(value):
+        raise ValueError(f"{param_name} must be finite, got: {value}")
 
     if value <= 0:
         raise ValueError(f"{param_name} must be positive, got: {value}")
@@ -2833,6 +2837,12 @@ class Garmin:
                 )
                 * 1000
             )
+            if max_usage_distance_meters < 1:
+                raise ValueError(
+                    "max_usage_distance_km must be at least 0.001 (1 meter) — "
+                    "a smaller value would round down to 0, which means "
+                    "'no threshold' rather than the value requested"
+                )
 
         max_usage_duration_seconds = 0
         if max_usage_duration_min is not None:
@@ -2842,6 +2852,15 @@ class Garmin:
                 )
                 * 60
             )
+            if max_usage_duration_seconds < 1:
+                raise ValueError(
+                    "max_usage_duration_min must be at least 1/60 (1 second) — "
+                    "a smaller value would round down to 0, which means "
+                    "'no threshold' rather than the value requested"
+                )
+
+        if activity_type_keys is not None and not isinstance(activity_type_keys, list):
+            raise ValueError("activity_type_keys must be a list of strings")
 
         associated_activity_types = []
         for key in activity_type_keys or []:
