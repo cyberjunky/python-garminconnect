@@ -147,7 +147,6 @@ class Config:
         self.start_badge = 1  # Badge related calls start counting at 1
 
         # Activity settings
-        self.activitytype = ""  # Possible values: cycling, running, swimming, multi_sport, fitness_equipment, hiking, walking, other
         self.activityfile = "test_data/*.gpx"  # Supported file types: .fit .gpx .tcx
         self.workoutfile = "test_data/sample_workout.json"  # Sample workout JSON file
 
@@ -434,6 +433,10 @@ menu_categories = {
                 "desc": "Upload typed hiking workout (sample)",
                 "key": "upload_hiking_workout",
             },
+            "A": {
+                "desc": "Get activities filtered by type/subtype (interactive)",
+                "key": "get_activities_filtered",
+            },
         },
     },
     "6": {
@@ -531,6 +534,10 @@ menu_categories = {
             "7": {
                 "desc": "Add and remove gear to/from activity (interactive)",
                 "key": "add_and_remove_gear_to_activity",
+            },
+            "8": {
+                "desc": "Create new gear, e.g. shoes (interactive)",
+                "key": "create_gear",
             },
         },
     },
@@ -3491,6 +3498,115 @@ def add_and_remove_gear_to_activity(api: Garmin) -> None:
         print(f"❌ Error adding gear: {e}")
 
 
+def get_activities_filtered_data(api: Garmin) -> None:
+    """Get activities filtered by type/subtype, picked from the account's own activity type list."""
+    try:
+        activity_types = api.get_activity_types()
+        print("\nAvailable activity types:")
+        for i, activity_type in enumerate(activity_types):
+            print(
+                f"{i}: {activity_type.get('typeKey', 'Unknown')} - {activity_type.get('display', 'No description')}"
+            )
+
+        type_index = input(
+            "\nEnter activity type index to filter by (blank for no filter): "
+        ).strip()
+
+        activitytype = None
+        if type_index:
+            try:
+                idx = int(type_index)
+                if 0 <= idx < len(activity_types):
+                    activitytype = activity_types[idx]["typeKey"]
+                else:
+                    print("❌ Invalid index, no type filter applied")
+            except ValueError:
+                print("❌ Invalid index, no type filter applied")
+
+        activitysubtype = None
+        if activitytype:
+            hint = (
+                " (e.g. 'strength_training')"
+                if activitytype == "fitness_equipment"
+                else ""
+            )
+            activitysubtype = (
+                input(f"Activity subtype{hint} (blank for none): ").strip() or None
+            )
+
+        call_and_display(
+            api.get_activities,
+            config.start,
+            config.default_limit,
+            activitytype=activitytype,
+            activitysubtype=activitysubtype,
+            method_name="get_activities_filtered",
+            api_call_desc=(
+                f"api.get_activities({config.start}, {config.default_limit}, "
+                f"activitytype={activitytype!r}, activitysubtype={activitysubtype!r})"
+            ),
+        )
+    except Exception as e:
+        print(f"❌ Error getting filtered activities: {e}")
+
+
+def create_gear_data(api: Garmin) -> None:
+    """Create a new piece of gear, e.g. a pair of shoes."""
+    try:
+        print("Creating new gear...")
+        print("Enter gear details (press Enter for defaults):")
+
+        gear_type = input("Gear type [SHOES]: ").strip() or "SHOES"
+        brand = input("Brand [Anta]: ").strip() or "Anta"
+        model = input("Model [A-Flash]: ").strip() or "A-Flash"
+        name = input("Nickname [Test]: ").strip() or "Test"
+        first_use_date = (
+            input(f"First use date [{config.today.isoformat()}]: ").strip()
+            or config.today.isoformat()
+        )
+        usage_type = input("Usage tracking type [DISTANCE]: ").strip() or "DISTANCE"
+        max_km = input("Max use threshold in km (blank for none): ").strip()
+        activity_types_input = input(
+            "Default activity types, comma-separated [running]: "
+        ).strip()
+        activity_type_keys = [
+            key.strip()
+            for key in (activity_types_input or "running").split(",")
+            if key.strip()
+        ]
+        notes = input("Notes (blank for none): ").strip()
+
+        try:
+            max_usage_distance_km = float(max_km) if max_km else None
+
+            success, _ = call_and_display(
+                api.create_gear,
+                gear_type=gear_type,
+                brand=brand,
+                model=model,
+                name=name,
+                first_use_date=first_use_date,
+                usage_type=usage_type,
+                max_usage_distance_km=max_usage_distance_km,
+                notes=notes,
+                activity_type_keys=activity_type_keys,
+                method_name="create_gear",
+                api_call_desc=(
+                    f"api.create_gear(gear_type='{gear_type}', brand='{brand}', "
+                    f"model='{model}', name='{name}', "
+                    f"first_use_date='{first_use_date}', usage_type='{usage_type}', "
+                    f"max_usage_distance_km={max_usage_distance_km}, "
+                    f"activity_type_keys={activity_type_keys})"
+                ),
+            )
+            if success:
+                print("✅ Gear created!")
+        except ValueError:
+            print("❌ Invalid numeric input")
+    except Exception as e:
+        print(f"❌ Error creating gear: {e}")
+
+
 def set_activity_name_data(api: Garmin) -> None:
     """Set activity name."""
     try:
@@ -4351,6 +4467,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 method_name="get_activities",
                 api_call_desc=f"api.get_activities({config.start}, {config.default_limit})",
             ),
+            "get_activities_filtered": lambda: get_activities_filtered_data(api),
             "get_last_activity": lambda: call_and_display(
                 api.get_last_activity,
                 method_name="get_last_activity",
@@ -4596,6 +4713,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "add_and_remove_gear_to_activity": lambda: add_and_remove_gear_to_activity(
                 api
             ),
+            "create_gear": lambda: create_gear_data(api),
             # Hydration & Wellness
             "get_hydration_data": lambda: call_and_display(
                 api.get_hydration_data,
@@ -4899,7 +5017,7 @@ def main():
                 # Handle category menu options
                 if option == "q":
                     current_category = None  # Back to main menu
-                elif option in "0123456789abcdefghijklmnopqrstuvwxyz":
+                elif option in "0123456789abcdefghijklmnopqrstuvwxyzA":
                     try:
                         category_data = menu_categories[current_category]
                         category_options = category_data["options"]

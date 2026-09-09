@@ -3,6 +3,7 @@
 import contextlib
 import functools
 import logging
+import math
 import numbers
 import os
 import random
@@ -95,12 +96,15 @@ def _validate_date_range(start: str, end: str) -> tuple[str, str]:
 def _validate_positive_number(
     value: int | float, param_name: str = "value"
 ) -> int | float:
-    """Validate that a number is positive."""
+    """Validate that a number is positive and finite."""
     if not isinstance(value, numbers.Real):
         raise ValueError(f"{param_name} must be a number")
 
     if isinstance(value, bool):
         raise ValueError(f"{param_name} must be a number, not bool")
+
+    if not math.isfinite(value):
+        raise ValueError(f"{param_name} must be finite, got: {value}")
 
     if value <= 0:
         raise ValueError(f"{param_name} must be positive, got: {value}")
@@ -2814,6 +2818,114 @@ class Garmin:
         logger.debug("Requesting gear for user %s", userProfileNumber)
 
         return self.connectapi(url, params={"userProfilePk": userProfileNumber})
+
+    def create_gear(
+        self,
+        gear_type: str,
+        brand: str,
+        model: str,
+        name: str,
+        first_use_date: str,
+        usage_type: str = "DISTANCE",
+        max_usage_distance_km: float | None = None,
+        max_usage_duration_min: float | None = None,
+        notes: str = "",
+        activity_type_keys: list[str] | None = None,
+    ) -> Any:
+        """Create a new piece of gear (e.g. a pair of shoes) and return it.
+
+        Mirrors the payload the Garmin Connect web "Add Gear" form sends to
+        ``gear-service/gear/v2``. Only ``gear_type="SHOES"`` and
+        ``usage_type="DISTANCE"`` have been confirmed against a real
+        account; other gear/usage type values are almost certainly also
+        SCREAMING_SNAKE_CASE (e.g. "BIKE", "TIME") but are unverified — if
+        one is rejected, check the "Gear Type"/"Usage Tracking" dropdown
+        option values on the Garmin Connect "Add Gear" page.
+
+        :param gear_type: Gear category, e.g. "SHOES".
+        :param brand: Brand/make name, e.g. "Anta".
+        :param model: Model name, e.g. "A-Flash".
+        :param name: Nickname shown in Garmin Connect, e.g. "Test".
+        :param first_use_date: Date gear was first used, "YYYY-MM-DD".
+        :param usage_type: How usage is tracked, e.g. "DISTANCE" or "TIME".
+        :param max_usage_distance_km: Optional retirement threshold in km.
+        :param max_usage_duration_min: Optional retirement threshold in minutes.
+        :param notes: Optional free-text notes.
+        :param activity_type_keys: Optional activity type keys (e.g.
+            ["running"], lowercase — matching :meth:`get_activities`'
+            ``activitytype``, not :meth:`set_gear_default`'s uppercase
+            convention) to associate as default gear for those activities.
+        :return: The created gear record from Garmin.
+        """
+        gear_type = _validate_sport_key(gear_type, "gear_type")
+        usage_type = _validate_sport_key(usage_type, "usage_type")
+        if not isinstance(brand, str) or not brand.strip():
+            raise ValueError("brand must be a non-empty string")
+        if not isinstance(model, str) or not model.strip():
+            raise ValueError("model must be a non-empty string")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("name must be a non-empty string")
+        first_use_date = _validate_date_format(first_use_date, "first_use_date")
+
+        max_usage_distance_meters = 0
+        if max_usage_distance_km is not None:
+            max_usage_distance_meters = round(
+                _validate_positive_number(
+                    max_usage_distance_km, "max_usage_distance_km"
+                )
+                * 1000
+            )
+            if max_usage_distance_meters < 1:
+                raise ValueError(
+                    "max_usage_distance_km must be at least 0.001 (1 meter) — "
+                    "a smaller value would round down to 0, which means "
+                    "'no threshold' rather than the value requested"
+                )
+
+        max_usage_duration_seconds = 0
+        if max_usage_duration_min is not None:
+            max_usage_duration_seconds = round(
+                _validate_positive_number(
+                    max_usage_duration_min, "max_usage_duration_min"
+                )
+                * 60
+            )
+            if max_usage_duration_seconds < 1:
+                raise ValueError(
+                    "max_usage_duration_min must be at least 1/60 (1 second) — "
+                    "a smaller value would round down to 0, which means "
+                    "'no threshold' rather than the value requested"
+                )
+
+        if activity_type_keys is not None and not isinstance(activity_type_keys, list):
+            raise ValueError("activity_type_keys must be a list of strings")
+
+        associated_activity_types = []
+        for key in activity_type_keys or []:
+            if not isinstance(key, str) or not key.strip():
+                raise ValueError("activity_type_keys entries must be non-empty strings")
+            associated_activity_types.append(
+                {"activityTypeKey": key, "defaultGear": True, "preferredGear": False}
+            )
+
+        payload = {
+            "uuid": None,
+            "gearType": gear_type,
+            "brand": brand,
+            "model": model,
+            "name": name,
+            "firstUseDate": first_use_date,
+            "maxUsageDate": None,
+            "maxUsageDistanceMeters": max_usage_distance_meters,
+            "maxUsageDurationSeconds": max_usage_duration_seconds,
+            "usageType": usage_type,
+            "notes": notes,
+            "associatedActivityTypes": associated_activity_types,
+        }
+
+        url = f"{self.garmin_connect_gear_baseurl}/v2"
+        logger.debug("Creating gear: %s", payload)
+        return self.client.post("connectapi", url, json=payload, api=True)
 
     def get_gear_stats(self, gearUUID: str) -> dict[str, Any]:
         """Return statistics (e.g. distance) for specific gear UUID."""
