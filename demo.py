@@ -437,6 +437,10 @@ menu_categories = {
                 "desc": "Get activities filtered by type/subtype (interactive)",
                 "key": "get_activities_filtered",
             },
+            "B": {
+                "desc": "Get the earliest upcoming scheduled workout (today or later)",
+                "key": "get_next_scheduled_workout",
+            },
         },
     },
     "6": {
@@ -2773,6 +2777,18 @@ def get_scheduled_workouts(api: Garmin) -> None:
         print(f"❌ Error getting scheduled workouts by year and month: {e}")
 
 
+def get_next_scheduled_workout_data(api: Garmin) -> None:
+    """Get the earliest upcoming scheduled workout (today or later)."""
+    try:
+        call_and_display(
+            api.get_next_scheduled_workout,
+            method_name="get_next_scheduled_workout",
+            api_call_desc="api.get_next_scheduled_workout()",
+        )
+    except Exception as e:
+        print(f"❌ Error getting next scheduled workout: {e}")
+
+
 def get_scheduled_workout_by_id_data(api: Garmin) -> None:
     """Get scheduled workout by ID."""
     try:
@@ -4612,6 +4628,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 api_call_desc=f"api.get_activities({config.start}, {config.default_limit})",
             ),
             "get_activities_filtered": lambda: get_activities_filtered_data(api),
+            "get_next_scheduled_workout": lambda: get_next_scheduled_workout_data(api),
             "get_last_activity": lambda: call_and_display(
                 api.get_last_activity,
                 method_name="get_last_activity",

@@ -3608,6 +3608,42 @@ class Garmin:
         logger.debug("Requesting scheduled workout by id %d", scheduled_workout_id)
         return self.connectapi(url)
 
+    def get_next_scheduled_workout(self) -> dict[str, Any]:
+        """Return the earliest upcoming scheduled workout (today or later).
+
+        Checks the current and next calendar month via
+        ``get_scheduled_workouts`` and returns the first calendar item
+        with ``itemType == "workout"`` whose date is today or later, or
+        an empty dict if none is scheduled.
+
+        Note: Garmin's calendar-service only returns workouts it has
+        already committed to the visible calendar. For adaptive/Coach
+        plans, the Garmin Connect app can show upcoming sessions this
+        won't -- that fuller view lives behind a different,
+        session-cookie-authenticated API this client doesn't use.
+        """
+        today = date.today()
+        next_month = today.month + 1 if today.month < 12 else 1
+        next_month_year = today.year if today.month < 12 else today.year + 1
+
+        this_month = self.get_scheduled_workouts(today.year, today.month) or {}
+        next_month_data = self.get_scheduled_workouts(next_month_year, next_month) or {}
+        calendar_items = (this_month.get("calendarItems") or []) + (
+            next_month_data.get("calendarItems") or []
+        )
+
+        today_str = today.isoformat()
+        workouts = sorted(
+            (
+                item
+                for item in calendar_items
+                if item.get("itemType") == "workout"
+                and (item.get("date") or "") >= today_str
+            ),
+            key=lambda item: item.get("date") or "",
+        )
+        return workouts[0] if workouts else {}
+
     def schedule_workout(self, workout_id: int | str, date_str: str) -> dict[str, Any]:
         """Schedule a workout on a specific date in the Garmin calendar.
 
