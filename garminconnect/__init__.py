@@ -1415,11 +1415,15 @@ class Garmin:
         self,
         systolic: int,
         diastolic: int,
-        pulse: int,
+        pulse: int | None = None,
         timestamp: str = "",
         notes: str = "",
     ) -> dict[str, Any]:
-        """Add blood pressure measurement."""
+        """Add blood pressure measurement.
+
+        pulse is optional - Garmin Connect's own UI accepts a blood
+        pressure entry without a heart rate value (#426).
+        """
         url = f"{self.garmin_connect_set_blood_pressure_endpoint}"
         dt = datetime.fromisoformat(timestamp) if timestamp else datetime.now()
         # Apply timezone offset to get UTC/GMT time
@@ -1429,15 +1433,17 @@ class Garmin:
             "measurementTimestampGMT": _fmt_ts(dtGMT),
             "systolic": systolic,
             "diastolic": diastolic,
-            "pulse": pulse,
             "sourceType": "MANUAL",
             "notes": notes,
         }
-        for name, val, lo, hi in (
+        checks = [
             ("systolic", systolic, 70, 260),
             ("diastolic", diastolic, 40, 150),
-            ("pulse", pulse, 20, 250),
-        ):
+        ]
+        if pulse is not None:
+            checks.append(("pulse", pulse, 20, 250))
+            payload["pulse"] = pulse
+        for name, val, lo, hi in checks:
             if not isinstance(val, int) or not (lo <= val <= hi):
                 raise ValueError(f"{name} must be an int in [{lo}, {hi}]")
         logger.debug("Adding blood pressure")

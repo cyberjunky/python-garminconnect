@@ -2551,6 +2551,36 @@ class TestGetNextScheduledWorkout:
 
 
 # ---------------------------------------------------------------------------
+# set_blood_pressure: pulse is optional, matching Garmin Connect's own UI (#426)
+# ---------------------------------------------------------------------------
+
+
+class TestSetBloodPressure:
+    def test_includes_pulse_when_given(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin.client, "post") as mock_post:
+            mock_post.return_value.json.return_value = {"success": True}
+            garmin.set_blood_pressure(120, 80, pulse=65)
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["systolic"] == 120
+        assert payload["diastolic"] == 80
+        assert payload["pulse"] == 65
+
+    def test_omits_pulse_when_not_given(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin.client, "post") as mock_post:
+            mock_post.return_value.json.return_value = {"success": True}
+            result = garmin.set_blood_pressure(120, 80)
+
+        assert result == {"success": True}
+        payload = mock_post.call_args.kwargs["json"]
+        assert "pulse" not in payload
+
+    def test_rejects_out_of_range_pulse(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="pulse"):
+            garmin.set_blood_pressure(120, 80, pulse=300)
+
+
+# ---------------------------------------------------------------------------
 # create_gear: matches the payload captured from Garmin Connect's "Add Gear"
 # ---------------------------------------------------------------------------
 
