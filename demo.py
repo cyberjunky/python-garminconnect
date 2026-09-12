@@ -4294,25 +4294,27 @@ def set_blood_pressure_data(api: Garmin) -> None:
         diastolic_input = input("Diastolic pressure [80]: ").strip()
         diastolic = int(diastolic_input) if diastolic_input else 80
 
-        # Get pulse
-        pulse_input = input("Pulse rate [60]: ").strip()
-        pulse = int(pulse_input) if pulse_input else 60
+        # Get pulse (optional - Garmin Connect's own UI allows omitting it)
+        pulse_input = input("Pulse rate (optional, press Enter to omit): ").strip()
+        pulse = int(pulse_input) if pulse_input else None
 
         # Get notes (optional)
         notes = input("Notes (optional): ").strip() or "Added via demo.py"
 
-        # Validate ranges
-        if not (50 <= systolic <= 300):
-            print("❌ Invalid systolic pressure (should be between 50-300)")
+        # Validate ranges (must match Garmin.set_blood_pressure's own checks,
+        # so a value the demo accepts never gets rejected by the API call)
+        if not (70 <= systolic <= 260):
+            print("❌ Invalid systolic pressure (should be between 70-260)")
             return
-        if not (30 <= diastolic <= 200):
-            print("❌ Invalid diastolic pressure (should be between 30-200)")
+        if not (40 <= diastolic <= 150):
+            print("❌ Invalid diastolic pressure (should be between 40-150)")
             return
-        if not (30 <= pulse <= 250):
-            print("❌ Invalid pulse rate (should be between 30-250)")
+        if pulse is not None and not (20 <= pulse <= 250):
+            print("❌ Invalid pulse rate (should be between 20-250)")
             return
 
-        print(f"📊 Recording: {systolic}/{diastolic} mmHg, pulse {pulse} bpm")
+        pulse_desc = f"pulse {pulse} bpm" if pulse is not None else "no pulse"
+        print(f"📊 Recording: {systolic}/{diastolic} mmHg, {pulse_desc}")
 
         call_and_display(
             api.set_blood_pressure,
