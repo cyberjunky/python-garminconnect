@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **145+ API methods** organized into **14 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **146+ API methods** organized into **14 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -114,7 +114,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[example]"
 
 python3 ./example.py   # simple getting-started example
-python3 ./demo.py      # comprehensive demo (145+ API methods)
+python3 ./demo.py      # comprehensive demo (146+ API methods)
 ```
 
 ## 🛠️ Development
@@ -460,7 +460,7 @@ user_stats = client.get_golf_user_stats()
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 145+ API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 146+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
