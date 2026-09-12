@@ -23,6 +23,7 @@ import logging
 import threading
 import time
 from contextlib import ExitStack, contextmanager
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 from unittest.mock import call, patch
@@ -2464,6 +2465,61 @@ class TestIdentifierValidation:
     def test_delete_blood_pressure_validates_date(self, garmin: garminconnect.Garmin):
         with pytest.raises(ValueError, match="YYYY-MM-DD"):
             garmin.delete_blood_pressure("1", "not-a-date")
+
+
+# ---------------------------------------------------------------------------
+# get_next_scheduled_workout: earliest upcoming workout across this + next month
+# ---------------------------------------------------------------------------
+
+
+class TestGetNextScheduledWorkout:
+    def test_returns_earliest_upcoming_workout_across_both_months(
+        self, garmin: garminconnect.Garmin
+    ):
+        today = date.today()
+        today_str = today.isoformat()
+        later_str = (today + timedelta(days=10)).isoformat()
+
+        def fake_get_scheduled_workouts(year, month):
+            if (year, month) == (today.year, today.month):
+                return {
+                    "calendarItems": [
+                        {"itemType": "weight", "date": today_str},
+                        {"itemType": "workout", "date": later_str, "title": "Long run"},
+                    ]
+                }
+            return {
+                "calendarItems": [
+                    {
+                        "itemType": "workout",
+                        "date": later_str,
+                        "title": "Should not win",
+                    }
+                ]
+            }
+
+        garmin.get_scheduled_workouts = fake_get_scheduled_workouts  # type: ignore[method-assign]
+
+        result = garmin.get_next_scheduled_workout()
+        assert result["title"] == "Long run"
+        assert result["date"] == later_str
+
+    def test_ignores_past_workouts(self, garmin: garminconnect.Garmin):
+        today = date.today()
+        past_str = (today - timedelta(days=1)).isoformat()
+
+        garmin.get_scheduled_workouts = lambda year, month: {  # type: ignore[method-assign]
+            "calendarItems": [{"itemType": "workout", "date": past_str}]
+        }
+
+        assert garmin.get_next_scheduled_workout() == {}
+
+    def test_returns_empty_dict_when_nothing_scheduled(
+        self, garmin: garminconnect.Garmin
+    ):
+        garmin.get_scheduled_workouts = lambda year, month: {"calendarItems": []}  # type: ignore[method-assign]
+
+        assert garmin.get_next_scheduled_workout() == {}
 
 
 # ---------------------------------------------------------------------------
