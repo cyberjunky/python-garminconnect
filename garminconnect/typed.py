@@ -214,7 +214,7 @@ class DailySleepDTO(_BaseResponse):
     avg_sleep_hrv: float | None = Field(default=None, alias="avgSleepHRV")
     avg_spo2: float | None = Field(default=None, alias="avgSpO2")
     avg_respiration_value: float | None = Field(
-        default=None, alias="avgRespirationValue"
+        default=None, alias="averageRespirationValue"
     )
     lowest_respiration_value: float | None = Field(
         default=None, alias="lowestRespirationValue"
