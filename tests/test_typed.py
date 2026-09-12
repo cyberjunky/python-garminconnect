@@ -91,7 +91,7 @@ SAMPLE_SLEEP_DATA: dict = {
         "sleepEndTimestampGMT": 1761125400000,
         "avgSleepHRV": 52.3,
         "avgSpO2": 96.0,
-        "avgRespirationValue": 14.2,
+        "averageRespirationValue": 14.2,
         "sleepScores": {
             "overall": {"value": 84, "qualifierKey": "GOOD"},
             "totalDuration": {"value": 90, "qualifierKey": "EXCELLENT"},
@@ -242,6 +242,7 @@ def test_get_sleep_data_returns_nested_dto(garmin: garminconnect.Garmin) -> None
     assert sleep.daily_sleep_dto.sleep_time_seconds == 25200
     assert sleep.daily_sleep_dto.deep_sleep_seconds == 5400
     assert sleep.daily_sleep_dto.avg_sleep_hrv == 52.3
+    assert sleep.daily_sleep_dto.avg_respiration_value == 14.2
     # Nested scores are also typed
     assert sleep.daily_sleep_dto.sleep_scores is not None
     assert sleep.daily_sleep_dto.sleep_scores.overall is not None
