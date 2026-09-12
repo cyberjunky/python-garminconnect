@@ -2473,27 +2473,50 @@ class TestIdentifierValidation:
 
 
 class TestGetNextScheduledWorkout:
-    def test_returns_earliest_upcoming_workout_across_both_months(
+    def test_returns_earliest_upcoming_workout_in_current_month(
         self, garmin: garminconnect.Garmin
     ):
         today = date.today()
         today_str = today.isoformat()
         later_str = (today + timedelta(days=10)).isoformat()
 
+        garmin.get_scheduled_workouts = lambda year, month: {  # type: ignore[method-assign]
+            "calendarItems": [
+                {"itemType": "weight", "date": today_str},
+                {"itemType": "workout", "date": later_str, "title": "Long run"},
+            ]
+        }
+
+        result = garmin.get_next_scheduled_workout()
+        assert result["title"] == "Long run"
+        assert result["date"] == later_str
+
+    def test_falls_back_to_next_month_when_current_month_has_none(
+        self, garmin: garminconnect.Garmin
+    ):
+        """Current month has no eligible workout, so the result must come
+        from next month, not just whichever month happens first in the
+        merged list (issue: both months previously used the same date,
+        so a stable sort could pick the wrong month's item for the wrong
+        reason and the test wouldn't catch it).
+        """
+        today = date.today()
+        next_month = today.month + 1 if today.month < 12 else 1
+        next_month_year = today.year if today.month < 12 else today.year + 1
+        next_month_date = date(next_month_year, next_month, 15).isoformat()
+
+        requested_months: list[tuple[int, int]] = []
+
         def fake_get_scheduled_workouts(year, month):
+            requested_months.append((year, month))
             if (year, month) == (today.year, today.month):
-                return {
-                    "calendarItems": [
-                        {"itemType": "weight", "date": today_str},
-                        {"itemType": "workout", "date": later_str, "title": "Long run"},
-                    ]
-                }
+                return {"calendarItems": []}
             return {
                 "calendarItems": [
                     {
                         "itemType": "workout",
-                        "date": later_str,
-                        "title": "Should not win",
+                        "date": next_month_date,
+                        "title": "Next month's run",
                     }
                 ]
             }
@@ -2501,8 +2524,13 @@ class TestGetNextScheduledWorkout:
         garmin.get_scheduled_workouts = fake_get_scheduled_workouts  # type: ignore[method-assign]
 
         result = garmin.get_next_scheduled_workout()
-        assert result["title"] == "Long run"
-        assert result["date"] == later_str
+
+        assert requested_months == [
+            (today.year, today.month),
+            (next_month_year, next_month),
+        ]
+        assert result["title"] == "Next month's run"
+        assert result["date"] == next_month_date
 
     def test_ignores_past_workouts(self, garmin: garminconnect.Garmin):
         today = date.today()

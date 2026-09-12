@@ -50,7 +50,7 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 146+ unique endpoints (snapshot)
+- **Total API Methods**: 146+ methods (snapshot)
 - **Categories**: 14 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 10 methods (today's health data plus daily calories, resting HR and sleep ranges)
