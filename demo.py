@@ -5173,10 +5173,14 @@ def main():
                 print_category_menu(current_category)
                 option = safe_readkey()
 
-                # Handle category menu options
+                # Handle category menu options. Validity is decided solely by
+                # membership in the current category's own options dict —
+                # no separate hardcoded character whitelist to keep in sync
+                # whenever a new option key (e.g. an uppercase letter) is
+                # added to menu_categories.
                 if option == "q":
                     current_category = None  # Back to main menu
-                elif option in "0123456789abcdefghijklmnopqrstuvwxyzA":
+                else:
                     try:
                         category_data = menu_categories[current_category]
                         category_options = category_data["options"]
@@ -5190,10 +5194,6 @@ def main():
                             )
                     except Exception as e:
                         print(f"❌ Error processing option {option}: {e}")
-                else:
-                    print(
-                        "❌ Invalid selection. Use numbers/letters for options or 'q' to go back/quit"
-                    )
 
         except KeyboardInterrupt:
             print("\nInterrupted by user. Press q to quit.")
