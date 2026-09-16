@@ -4467,7 +4467,10 @@ def update_menstrual_settings_entry(api: Garmin) -> None:
     try:
         if not _confirm_menstrual_write("Update menstrual tracking settings"):
             return
-        print("Paste a JSON object for userMenstrualCycleSettings.")
+        print(
+            "Paste a JSON object of fields to change. "
+            "Other menstrual settings are kept."
+        )
         raw = input("Settings JSON: ").strip()
         settings = json.loads(raw)
         call_and_display(

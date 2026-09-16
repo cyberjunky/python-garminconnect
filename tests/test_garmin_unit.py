@@ -2948,24 +2948,56 @@ class TestMenstrualCycle:
         url = mock_post.call_args[0][1]
         assert url.endswith("/periodichealth-service/menstrualcycle/2026-09-08")
 
-    def test_update_settings_puts_user_menstrual_cycle_settings(
+    def test_update_settings_merges_with_current_profile(
         self, garmin: garminconnect.Garmin
     ):
-        settings = {
-            "menstrualCycleType": "REGULAR",
-            "flowTracking": True,
-            "physicalSymptomsTracking": True,
+        current = {
+            "id": 99,
+            "userMenstrualCycleSettings": {
+                "menstrualCycleType": "REGULAR",
+                "flowTracking": True,
+                "physicalSymptomsTracking": True,
+            },
         }
-        with patch.object(garmin.client, "put", return_value={}) as mock_put:
-            garmin.update_menstrual_settings(settings, user_settings_id=99)
+        with (
+            patch.object(garmin, "get_user_profile", return_value=current),
+            patch.object(garmin.client, "put", return_value={}) as mock_put,
+        ):
+            garmin.update_menstrual_settings({"flowTracking": False})
 
         assert mock_put.call_args.kwargs["json"] == {
             "id": 99,
-            "userMenstrualCycleSettings": settings,
+            "userMenstrualCycleSettings": {
+                "menstrualCycleType": "REGULAR",
+                "flowTracking": False,
+                "physicalSymptomsTracking": True,
+            },
         }
         url = mock_put.call_args[0][1]
         assert url.endswith("/userprofile-service/userprofile/user-settings")
         assert mock_put.call_args.kwargs["api"] is True
+
+    def test_update_settings_keeps_explicit_user_settings_id(
+        self, garmin: garminconnect.Garmin
+    ):
+        current = {
+            "id": 11,
+            "userMenstrualCycleSettings": {"flowTracking": True},
+        }
+        with (
+            patch.object(garmin, "get_user_profile", return_value=current),
+            patch.object(garmin.client, "put", return_value={}) as mock_put,
+        ):
+            garmin.update_menstrual_settings(
+                {"moodTracking": True}, user_settings_id=99
+            )
+
+        payload = mock_put.call_args.kwargs["json"]
+        assert payload["id"] == 99
+        assert payload["userMenstrualCycleSettings"] == {
+            "flowTracking": True,
+            "moodTracking": True,
+        }
 
     def test_last_confirmed_and_summary_urls(self, garmin: garminconnect.Garmin):
         with patch.object(garmin, "connectapi", return_value={}) as mock:

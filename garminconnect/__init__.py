@@ -4157,9 +4157,9 @@ class Garmin:
     ) -> dict[str, Any]:
         """Update ``userMenstrualCycleSettings`` on the user profile.
 
-        ``settings`` is the Garmin object (cycle type, average lengths, and
-        tracking flags). Pregnancy-only fields are not modeled here. Pass the
-        current settings with your edits; this is a snapshot PUT, not a merge.
+        ``settings`` overlays the current menstrual settings from
+        :meth:`get_user_profile`. Omitted keys are preserved; passed keys
+        replace stored values. Pregnancy-only fields are not modeled here.
         """
         if not isinstance(settings, dict) or not settings:
             raise ValueError("settings must be a non-empty dictionary")
@@ -4168,7 +4168,20 @@ class Garmin:
                 user_settings_id, "user_settings_id"
             )
 
-        payload: dict[str, Any] = {"userMenstrualCycleSettings": settings}
+        profile = self.get_user_profile()
+        current: dict[str, Any] = {}
+        if isinstance(profile, dict):
+            stored = profile.get("userMenstrualCycleSettings")
+            if isinstance(stored, dict):
+                current = dict(stored)
+            if user_settings_id is None:
+                profile_settings_id = profile.get("id")
+                if isinstance(profile_settings_id, int) and not isinstance(
+                    profile_settings_id, bool
+                ):
+                    user_settings_id = profile_settings_id
+
+        payload: dict[str, Any] = {"userMenstrualCycleSettings": current | settings}
         if user_settings_id is not None:
             payload["id"] = user_settings_id
 
