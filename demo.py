@@ -593,6 +593,38 @@ menu_categories = {
                 "desc": f"Get nutrition daily settings for '{config.today.isoformat()}'",
                 "key": "get_nutrition_daily_settings",
             },
+            "d": {
+                "desc": f"Get last confirmed menstrual cycle for '{config.today.isoformat()}'",
+                "key": "get_menstrual_last_confirmed",
+            },
+            "e": {
+                "desc": f"Get menstrual cycle summary for '{config.today.isoformat()}'",
+                "key": "get_menstrual_cycle_summary",
+            },
+            "f": {
+                "desc": f"Get menstrual reports (6 cycles) ending '{config.today.isoformat()}'",
+                "key": "get_menstrual_reports",
+            },
+            "g": {
+                "desc": "Update menstrual daily log (writes; type YES)",
+                "key": "update_menstrual_daily_log",
+            },
+            "h": {
+                "desc": "Update menstrual calendar (writes; type YES)",
+                "key": "update_menstrual_calendar",
+            },
+            "i": {
+                "desc": "Initialize menstrual cycle setup (writes; type YES)",
+                "key": "init_menstrual_cycle_setup",
+            },
+            "j": {
+                "desc": "Confirm menstrual period start (writes; type YES)",
+                "key": "confirm_menstrual_period_start",
+            },
+            "k": {
+                "desc": "Update menstrual tracking settings (writes; type YES)",
+                "key": "update_menstrual_settings",
+            },
         },
     },
     "a": {
@@ -2429,7 +2461,9 @@ def upload_workout_data(api: Garmin) -> None:
 
     except FileNotFoundError:
         print(f"❌ File not found: {config.workoutfile}")
-        print("ℹ️ Please ensure the workout JSON file exists in the test_data directory")
+        print(
+            "ℹ️ Please ensure the workout JSON file exists in the test_data directory"
+        )
     except json.JSONDecodeError as e:
         print(f"❌ Invalid JSON format in {config.workoutfile}: {e}")
         print("ℹ️ Please check the JSON file format")
@@ -4280,6 +4314,172 @@ def add_hydration_data_entry(api: Garmin) -> None:
         print(f"❌ Error adding hydration data: {e}")
 
 
+def _confirm_menstrual_write(action: str) -> bool:
+    """Require an explicit YES before mutating menstrual data."""
+    print(f"⚠️  {action}")
+    print("This writes health data to Garmin Connect. It is not a merge.")
+    answer = input("Type YES to continue: ").strip()
+    if answer != "YES":
+        print("❌ Cancelled")
+        return False
+    return True
+
+
+def _parse_csv_enums(raw: str) -> list[str] | None:
+    raw = raw.strip()
+    if not raw:
+        return None
+    return [part.strip() for part in raw.split(",") if part.strip()]
+
+
+def update_menstrual_daily_log_entry(api: Garmin) -> None:
+    """Write a menstrual daily-log snapshot after an explicit YES."""
+    try:
+        if not _confirm_menstrual_write("Update menstrual daily log"):
+            return
+        print("Omitted lists/scalars are cleared. Omitted notes are kept.")
+        print("Use a single '-' for notes to clear existing notes.")
+        calendar_date = (
+            input(f"Date [{config.today.isoformat()}]: ").strip()
+            or config.today.isoformat()
+        )
+        symptoms = _parse_csv_enums(input("Symptoms (comma-separated): "))
+        moods = _parse_csv_enums(input("Moods (comma-separated): "))
+        flow = input("Flow [LIGHT|MEDIUM|HEAVY, empty omit]: ").strip() or None
+        discharge = _parse_csv_enums(input("Discharge (comma-separated): "))
+        sex_drive = input("Sex drive [LOW|AVERAGE|HIGH, empty omit]: ").strip() or None
+        sexual_activity = (
+            input("Sexual activity [PROTECTED|UNPROTECTED, empty omit]: ").strip()
+            or None
+        )
+        notes_raw = input("Notes (empty keep, '-' clear): ")
+        if notes_raw == "":
+            notes = None
+        elif notes_raw.strip() == "-":
+            notes = ""
+        else:
+            notes = notes_raw
+        ovulation_raw = input("Ovulation day? [y/N]: ").strip().lower()
+        ovulation_day = True if ovulation_raw == "y" else None
+
+        call_and_display(
+            api.update_menstrual_daily_log,
+            calendar_date,
+            symptoms=symptoms,
+            moods=moods,
+            flow=flow,
+            discharge=discharge,
+            sex_drive=sex_drive,
+            sexual_activity=sexual_activity,
+            notes=notes,
+            ovulation_day=ovulation_day,
+            method_name="update_menstrual_daily_log",
+            api_call_desc=(f"api.update_menstrual_daily_log('{calendar_date}', ...)"),
+        )
+    except Exception as e:
+        print(f"❌ Error updating menstrual daily log: {e}")
+
+
+def update_menstrual_calendar_entry(api: Garmin) -> None:
+    """Replace period dates on the menstrual calendar after an explicit YES."""
+    try:
+        if not _confirm_menstrual_write("Update menstrual calendar"):
+            return
+        print("Do not post predicted cycles as confirmed period dates.")
+        print("Enter period groups as comma-separated dates, groups separated by ';'.")
+        startdate = input("Start date (YYYY-MM-DD): ").strip()
+        enddate = input("End date (YYYY-MM-DD): ").strip()
+        raw_groups = input("Period date groups: ").strip()
+        cycle_dates_lists = [
+            [day.strip() for day in group.split(",") if day.strip()]
+            for group in raw_groups.split(";")
+            if group.strip()
+        ]
+        call_and_display(
+            api.update_menstrual_calendar,
+            startdate,
+            enddate,
+            cycle_dates_lists,
+            method_name="update_menstrual_calendar",
+            api_call_desc=(
+                "api.update_menstrual_calendar("
+                f"'{startdate}', '{enddate}', {cycle_dates_lists})"
+            ),
+        )
+    except Exception as e:
+        print(f"❌ Error updating menstrual calendar: {e}")
+
+
+def init_menstrual_cycle_setup_entry(api: Garmin) -> None:
+    """Initialize menstrual cycle tracking after an explicit YES."""
+    try:
+        if not _confirm_menstrual_write(
+            "Initialize menstrual cycle setup (first-run only)"
+        ):
+            return
+        period_start_date = input("Period start date (YYYY-MM-DD): ").strip()
+        period_length = int(input("Period length (days): ").strip())
+        cycle_length = int(input("Cycle length (days): ").strip())
+        call_and_display(
+            api.init_menstrual_cycle_setup,
+            period_start_date,
+            period_length,
+            cycle_length,
+            method_name="init_menstrual_cycle_setup",
+            api_call_desc=(
+                "api.init_menstrual_cycle_setup("
+                f"'{period_start_date}', {period_length}, {cycle_length})"
+            ),
+        )
+    except Exception as e:
+        print(f"❌ Error initializing menstrual cycle setup: {e}")
+
+
+def confirm_menstrual_period_start_entry(api: Garmin) -> None:
+    """Confirm a period start date after an explicit YES."""
+    try:
+        if not _confirm_menstrual_write(
+            "Confirm menstrual period start (may confirm a prediction)"
+        ):
+            return
+        period_start_date = input("Period start date (YYYY-MM-DD): ").strip()
+        period_length = int(input("Period length (days): ").strip())
+        cycle_length = int(input("Cycle length (days): ").strip())
+        predicted = input("Predicted cycle? [y/N]: ").strip().lower() == "y"
+        call_and_display(
+            api.confirm_menstrual_period_start,
+            period_start_date,
+            period_length,
+            cycle_length,
+            predicted_cycle=predicted,
+            method_name="confirm_menstrual_period_start",
+            api_call_desc=(
+                "api.confirm_menstrual_period_start("
+                f"'{period_start_date}', {period_length}, {cycle_length})"
+            ),
+        )
+    except Exception as e:
+        print(f"❌ Error confirming menstrual period start: {e}")
+
+
+def update_menstrual_settings_entry(api: Garmin) -> None:
+    """PUT menstrual tracking settings after an explicit YES."""
+    try:
+        if not _confirm_menstrual_write("Update menstrual tracking settings"):
+            return
+        print("Paste a JSON object for userMenstrualCycleSettings.")
+        raw = input("Settings JSON: ").strip()
+        settings = json.loads(raw)
+        call_and_display(
+            api.update_menstrual_settings,
+            settings,
+            method_name="update_menstrual_settings",
+            api_call_desc="api.update_menstrual_settings({...})",
+        )
+    except Exception as e:
+        print(f"❌ Error updating menstrual settings: {e}")
+
+
 def set_blood_pressure_data(api: Garmin) -> None:
     """Set blood pressure (and pulse) data."""
     try:
@@ -4906,6 +5106,38 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 method_name="get_menstrual_calendar_data",
                 api_call_desc=f"api.get_menstrual_calendar_data('{config.week_start.isoformat()}', '{config.today.isoformat()}')",
             ),
+            "get_menstrual_last_confirmed": lambda: call_and_display(
+                api.get_menstrual_last_confirmed,
+                config.today.isoformat(),
+                method_name="get_menstrual_last_confirmed",
+                api_call_desc=(
+                    f"api.get_menstrual_last_confirmed('{config.today.isoformat()}')"
+                ),
+            ),
+            "get_menstrual_cycle_summary": lambda: call_and_display(
+                api.get_menstrual_cycle_summary,
+                config.today.isoformat(),
+                method_name="get_menstrual_cycle_summary",
+                api_call_desc=(
+                    f"api.get_menstrual_cycle_summary('{config.today.isoformat()}')"
+                ),
+            ),
+            "get_menstrual_reports": lambda: call_and_display(
+                api.get_menstrual_reports,
+                config.today.isoformat(),
+                6,
+                method_name="get_menstrual_reports",
+                api_call_desc=(
+                    f"api.get_menstrual_reports('{config.today.isoformat()}', 6)"
+                ),
+            ),
+            "update_menstrual_daily_log": lambda: update_menstrual_daily_log_entry(api),
+            "update_menstrual_calendar": lambda: update_menstrual_calendar_entry(api),
+            "init_menstrual_cycle_setup": lambda: init_menstrual_cycle_setup_entry(api),
+            "confirm_menstrual_period_start": (
+                lambda: confirm_menstrual_period_start_entry(api)
+            ),
+            "update_menstrual_settings": lambda: update_menstrual_settings_entry(api),
             # Nutrition
             "get_nutrition_daily_food_log": lambda: call_and_display(
                 api.get_nutrition_daily_food_log,
