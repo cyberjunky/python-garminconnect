@@ -1853,7 +1853,7 @@ class TestResponseHandling:
             [],
         ]
 
-        def fake_connectapi(url, params=None):
+        def fake_connectapi(url, params=None, headers=None):
             starts.append(params["start"])
             return pages.pop(0)
 
@@ -1863,6 +1863,13 @@ class TestResponseHandling:
         assert len(result) == 40
         assert mock.call_count == 3
         assert starts == ["0", "30", "60"]
+
+    def test_get_goals_sends_sec_fetch_site_header(self, garmin: garminconnect.Garmin):
+        """goal-service silently returns [] without this header (#431)."""
+        with patch.object(garmin, "connectapi", return_value=[]) as mock:
+            garmin.get_goals()
+
+        assert mock.call_args.kwargs["headers"] == {"Sec-Fetch-Site": "same-origin"}
 
 
 # ---------------------------------------------------------------------------
