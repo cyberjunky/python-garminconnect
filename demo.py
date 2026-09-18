@@ -606,23 +606,23 @@ menu_categories = {
                 "key": "get_menstrual_reports",
             },
             "g": {
-                "desc": "Update menstrual daily log (writes; type YES)",
+                "desc": "Update menstrual daily log (interactive)",
                 "key": "update_menstrual_daily_log",
             },
             "h": {
-                "desc": "Update menstrual calendar (writes; type YES)",
+                "desc": "Update menstrual calendar (interactive)",
                 "key": "update_menstrual_calendar",
             },
             "i": {
-                "desc": "Initialize menstrual cycle setup (writes; type YES)",
+                "desc": "Initialize menstrual cycle setup (interactive)",
                 "key": "init_menstrual_cycle_setup",
             },
             "j": {
-                "desc": "Confirm menstrual period start (writes; type YES)",
+                "desc": "Confirm menstrual period start (interactive)",
                 "key": "confirm_menstrual_period_start",
             },
             "k": {
-                "desc": "Update menstrual tracking settings (writes; type YES)",
+                "desc": "Update menstrual tracking settings (interactive)",
                 "key": "update_menstrual_settings",
             },
         },
@@ -4312,17 +4312,6 @@ def add_hydration_data_entry(api: Garmin) -> None:
         print(f"❌ Error adding hydration data: {e}")
 
 
-def _confirm_menstrual_write(action: str) -> bool:
-    """Require an explicit YES before mutating menstrual data."""
-    print(f"⚠️  {action}")
-    print("This writes health data to Garmin Connect. It is not a merge.")
-    answer = input("Type YES to continue: ").strip()
-    if answer != "YES":
-        print("❌ Cancelled")
-        return False
-    return True
-
-
 def _parse_csv_enums(raw: str) -> list[str] | None:
     raw = raw.strip()
     if not raw:
@@ -4331,10 +4320,8 @@ def _parse_csv_enums(raw: str) -> list[str] | None:
 
 
 def update_menstrual_daily_log_entry(api: Garmin) -> None:
-    """Write a menstrual daily-log snapshot after an explicit YES."""
+    """Write a menstrual daily-log snapshot."""
     try:
-        if not _confirm_menstrual_write("Update menstrual daily log"):
-            return
         print("Omitted lists/scalars are cleared. Omitted notes are kept.")
         print("Use a single '-' for notes to clear existing notes.")
         calendar_date = (
@@ -4379,10 +4366,8 @@ def update_menstrual_daily_log_entry(api: Garmin) -> None:
 
 
 def update_menstrual_calendar_entry(api: Garmin) -> None:
-    """Replace period dates on the menstrual calendar after an explicit YES."""
+    """Replace period dates on the menstrual calendar."""
     try:
-        if not _confirm_menstrual_write("Update menstrual calendar"):
-            return
         print("Do not post predicted cycles as confirmed period dates.")
         print("Enter period groups as comma-separated dates, groups separated by ';'.")
         startdate = input("Start date (YYYY-MM-DD): ").strip()
@@ -4409,12 +4394,8 @@ def update_menstrual_calendar_entry(api: Garmin) -> None:
 
 
 def init_menstrual_cycle_setup_entry(api: Garmin) -> None:
-    """Initialize menstrual cycle tracking after an explicit YES."""
+    """Initialize menstrual cycle tracking (first-run only)."""
     try:
-        if not _confirm_menstrual_write(
-            "Initialize menstrual cycle setup (first-run only)"
-        ):
-            return
         period_start_date = input("Period start date (YYYY-MM-DD): ").strip()
         period_length = int(input("Period length (days): ").strip())
         cycle_length = int(input("Cycle length (days): ").strip())
@@ -4434,12 +4415,8 @@ def init_menstrual_cycle_setup_entry(api: Garmin) -> None:
 
 
 def confirm_menstrual_period_start_entry(api: Garmin) -> None:
-    """Confirm a period start date after an explicit YES."""
+    """Confirm a period start date (may confirm a prediction)."""
     try:
-        if not _confirm_menstrual_write(
-            "Confirm menstrual period start (may confirm a prediction)"
-        ):
-            return
         period_start_date = input("Period start date (YYYY-MM-DD): ").strip()
         period_length = int(input("Period length (days): ").strip())
         cycle_length = int(input("Cycle length (days): ").strip())
@@ -4461,10 +4438,8 @@ def confirm_menstrual_period_start_entry(api: Garmin) -> None:
 
 
 def update_menstrual_settings_entry(api: Garmin) -> None:
-    """PUT menstrual tracking settings after an explicit YES."""
+    """PUT menstrual tracking settings."""
     try:
-        if not _confirm_menstrual_write("Update menstrual tracking settings"):
-            return
         print(
             "Paste a JSON object of fields to change. "
             "Other menstrual settings are kept."
