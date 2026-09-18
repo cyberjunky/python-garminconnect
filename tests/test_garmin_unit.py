@@ -245,7 +245,13 @@ class TestUrlConstruction:
     @pytest.mark.parametrize(
         ("start", "end", "sport", "aggregation", "message"),
         [
-            ("2025-06-30", "2025-06-01", "CYCLING", "daily", "start date cannot be after end date"),
+            (
+                "2025-06-30",
+                "2025-06-01",
+                "CYCLING",
+                "daily",
+                "start date cannot be after end date",
+            ),
             ("2025-06-01", "2025-06-30", "cycling/running", "daily", "sport must"),
             ("2025-06-01", "2025-06-30", "CYCLING", "hourly", "aggregation"),
         ],
@@ -484,6 +490,7 @@ class TestUrlConstruction:
         ):
             garmin._load_social_profile()
         assert garmin.display_name == "x"
+        assert garmin.profile_id is None
         assert mock.call_count == 2
 
     def test_load_social_profile_falls_back_to_username_after_retries(
@@ -501,6 +508,22 @@ class TestUrlConstruction:
             garmin._load_social_profile()
         assert garmin.display_name == "test@example.com"
         assert mock.call_count == 3
+
+    def test_load_social_profile_stores_integer_profile_id(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(
+            garmin.client,
+            "connectapi",
+            return_value={
+                "displayName": "x",
+                "fullName": "X",
+                "profileId": 99,
+            },
+        ):
+            garmin._load_social_profile()
+        assert garmin.profile_id == 99
+        assert garmin.full_name == "X"
 
     def test_load_social_profile_raises_without_dict_response(
         self, garmin: garminconnect.Garmin
@@ -532,8 +555,16 @@ class TestUrlConstruction:
     @pytest.mark.parametrize(
         "method_name,args,expected_suffix",
         [
-            ("get_heart_rates", ("2026-03-15",), "/wellness-service/wellness/dailyHeartRate"),
-            ("get_sleep_data", ("2026-03-15",), "/wellness-service/wellness/dailySleepData"),
+            (
+                "get_heart_rates",
+                ("2026-03-15",),
+                "/wellness-service/wellness/dailyHeartRate",
+            ),
+            (
+                "get_sleep_data",
+                ("2026-03-15",),
+                "/wellness-service/wellness/dailySleepData",
+            ),
         ],
     )
     def test_display_name_is_url_encoded_in_path(
@@ -658,9 +689,7 @@ class TestCredentialLifecycle:
         assert g.password is None
 
     def test_password_retained_when_login_returns_for_mfa(self):
-        g = garminconnect.Garmin(
-            "user@example.com", "secret", return_on_mfa=True
-        )
+        g = garminconnect.Garmin("user@example.com", "secret", return_on_mfa=True)
         with patch.object(
             g.client, "login", return_value=("mfa_status", "legacy_token")
         ):
@@ -697,7 +726,10 @@ class TestResumeLogin:
             patch.object(c, "_complete_mfa"),
             patch.object(c, "_verify_token", return_value=False),
             patch.object(c, "_clear_auth_state") as mock_clear,
-            pytest.raises(garminconnect.GarminConnectConnectionError, match="token rejected by API tier after MFA"),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError,
+                match="token rejected by API tier after MFA",
+            ),
         ):
             c.resume_login({}, "123456")
 
@@ -752,9 +784,7 @@ class TestResumeLogin:
             patch.object(
                 g,
                 "_load_profile_and_settings",
-                side_effect=garminconnect.GarminConnectAuthenticationError(
-                    "bad token"
-                ),
+                side_effect=garminconnect.GarminConnectAuthenticationError("bad token"),
             ) as mock_load,
             pytest.raises(
                 garminconnect.GarminConnectAuthenticationError, match="bad token"
@@ -1108,7 +1138,9 @@ class TestSanitizedLoginErrors:
             "customerGuid": "guid-123",
             "serviceUrl": "https://internal-sso.garmin.com/secret",
         }
-        sess = type("Sess", (), {"post": lambda *a, **k: self._json_response(200, sensitive)})()
+        sess = type(
+            "Sess", (), {"post": lambda *a, **k: self._json_response(200, sensitive)}
+        )()
         c = client_mod.Client(verify_login=False)
         with pytest.raises(
             garminconnect.GarminConnectConnectionError, match="responseStatus=LOCKED"
@@ -1215,6 +1247,7 @@ class TestLogout:
         g.display_name = "test-user"
         g.full_name = "Test User"
         g.unit_system = "metric"
+        g.profile_id = 12345
 
         g.logout()
 
@@ -1223,6 +1256,7 @@ class TestLogout:
         assert g.display_name is None
         assert g.full_name is None
         assert g.unit_system is None
+        assert g.profile_id is None
 
     def test_logout_skips_unlinking_inline_token_json(self):
         g = garminconnect.Garmin("user@example.com", "secret")
@@ -1966,9 +2000,7 @@ class TestHttpErrorMapping:
             "foo\\..\\bar",
         ],
     )
-    def test_rejects_path_with_traversal_or_query(
-        self, monkeypatch, bad_path: str
-    ):
+    def test_rejects_path_with_traversal_or_query(self, monkeypatch, bad_path: str):
         c = self._client(monkeypatch, _FakeResp(200, {}))
         with pytest.raises(ValueError, match="Invalid API path"):
             c._run_request("GET", bad_path)
@@ -1992,9 +2024,7 @@ class TestHttpErrorMapping:
 
     def test_accepts_legitimate_path(self, monkeypatch):
         c = self._client(monkeypatch, _FakeResp(200, {"ok": True}))
-        resp = c._run_request(
-            "GET", "/userprofile-service/socialProfile"
-        )
+        resp = c._run_request("GET", "/userprofile-service/socialProfile")
         assert resp.status_code == 200
 
 
@@ -2029,9 +2059,7 @@ class Test401RetryFileRewind:
     def test_retry_rewinds_file_body(self, monkeypatch):
         read_sizes: list[int] = []
         responses = [_FakeResp(401, {}), _FakeResp(200, {"ok": True})]
-        c = self._client(
-            monkeypatch, self._consuming_request(responses, read_sizes)
-        )
+        c = self._client(monkeypatch, self._consuming_request(responses, read_sizes))
         payload = b"FITDATA" * 100
         resp = c._run_request(
             "POST", "upload", files={"file": ("a.fit", io.BytesIO(payload))}
@@ -2043,9 +2071,7 @@ class Test401RetryFileRewind:
     def test_retry_restores_initial_position_not_zero(self, monkeypatch):
         read_sizes: list[int] = []
         responses = [_FakeResp(401, {}), _FakeResp(200, {"ok": True})]
-        c = self._client(
-            monkeypatch, self._consuming_request(responses, read_sizes)
-        )
+        c = self._client(monkeypatch, self._consuming_request(responses, read_sizes))
         stream = io.BytesIO(b"HEADER" + b"BODY" * 10)
         stream.seek(6)  # caller intentionally skips a prefix
         c._run_request("POST", "upload", files={"file": ("a.fit", stream)})
@@ -2079,9 +2105,7 @@ class Test401RetryFileRewind:
 
         read_sizes: list[int] = []
         responses = [_FakeResp(401, {}), _FakeResp(200, {"ok": True})]
-        c = self._client(
-            monkeypatch, self._consuming_request(responses, read_sizes)
-        )
+        c = self._client(monkeypatch, self._consuming_request(responses, read_sizes))
         payload = b"FITDATA" * 100
         files = MappingProxyType({"file": ("a.fit", io.BytesIO(payload))})
         resp = c._run_request("POST", "upload", files=files)
@@ -2183,11 +2207,7 @@ class TestErrorMessageSanitization:
 
 
 def _b64url(data: dict[str, Any]) -> str:
-    return (
-        base64.urlsafe_b64encode(json.dumps(data).encode())
-        .decode()
-        .rstrip("=")
-    )
+    return base64.urlsafe_b64encode(json.dumps(data).encode()).decode().rstrip("=")
 
 
 def _make_jwt(header: dict[str, Any], payload: dict[str, Any]) -> str:
@@ -2214,42 +2234,32 @@ class TestJwtHandling:
 
     def test_token_expires_soon_rejects_alg_none(self):
         c = client_mod.Client(verify_login=False)
-        token = _make_jwt(
-            {"alg": "none"}, {"exp": int(time.time()) + 60}
-        )
+        token = _make_jwt({"alg": "none"}, {"exp": int(time.time()) + 60})
         c.di_token = token
         assert c._token_expires_soon() is False
 
     def test_token_expires_soon_true_when_close_to_expiry(self):
         c = client_mod.Client(verify_login=False)
-        token = _make_jwt(
-            {"alg": "RS256"}, {"exp": int(time.time()) + 60}
-        )
+        token = _make_jwt({"alg": "RS256"}, {"exp": int(time.time()) + 60})
         c.di_token = token
         assert c._token_expires_soon() is True
 
     def test_token_expires_soon_false_when_far_from_expiry(self):
         c = client_mod.Client(verify_login=False)
-        token = _make_jwt(
-            {"alg": "RS256"}, {"exp": int(time.time()) + 3600}
-        )
+        token = _make_jwt({"alg": "RS256"}, {"exp": int(time.time()) + 3600})
         c.di_token = token
         assert c._token_expires_soon() is False
 
     def test_token_expires_soon_falls_back_to_jwt_web(self):
         c = client_mod.Client(verify_login=False)
-        token = _make_jwt(
-            {"alg": "RS256"}, {"exp": int(time.time()) + 60}
-        )
+        token = _make_jwt({"alg": "RS256"}, {"exp": int(time.time()) + 60})
         c.jwt_web = token
         assert c._token_expires_soon() is True
 
     def test_token_expires_soon_accepts_numeric_string_exp(self):
         # Some tokens encode 'exp' as a numeric string; it must still parse.
         c = client_mod.Client(verify_login=False)
-        token = _make_jwt(
-            {"alg": "RS256"}, {"exp": str(int(time.time()) + 60)}
-        )
+        token = _make_jwt({"alg": "RS256"}, {"exp": str(int(time.time()) + 60)})
         c.di_token = token
         assert c._token_expires_soon() is True
 
@@ -2257,18 +2267,18 @@ class TestJwtHandling:
         "exp",
         [
             "not-a-number",  # non-numeric string -> would raise ValueError
-            {"a": 1},        # non-empty dict     -> would raise TypeError
-            [1],             # non-empty list     -> would raise TypeError
-            None,            # missing / null
-            "",              # empty string
-            {},              # empty dict
-            [],              # empty list
-            True,            # bool is an int subclass; must be rejected
+            {"a": 1},  # non-empty dict     -> would raise TypeError
+            [1],  # non-empty list     -> would raise TypeError
+            None,  # missing / null
+            "",  # empty string
+            {},  # empty dict
+            [],  # empty list
+            True,  # bool is an int subclass; must be rejected
             False,
-            "inf",           # non-finite string  -> parses, must be rejected
+            "inf",  # non-finite string  -> parses, must be rejected
             "-inf",
             "nan",
-            10**400,         # huge JSON int      -> would raise OverflowError
+            10**400,  # huge JSON int      -> would raise OverflowError
         ],
     )
     def test_token_expires_soon_survives_malformed_exp(self, exp: Any):
@@ -2623,7 +2633,11 @@ class TestCreateGear:
             "usageType": "DISTANCE",
             "notes": "My notes",
             "associatedActivityTypes": [
-                {"activityTypeKey": "running", "defaultGear": True, "preferredGear": False}
+                {
+                    "activityTypeKey": "running",
+                    "defaultGear": True,
+                    "preferredGear": False,
+                }
             ],
         }
         url = mock_post.call_args[0][1]
@@ -2758,6 +2772,275 @@ class TestCreateGear:
                 first_use_date="2026-09-06",
                 activity_type_keys="running",
             )
+
+
+# ---------------------------------------------------------------------------
+# Menstrual cycle writes / supporting reads
+# ---------------------------------------------------------------------------
+
+MENSTRUAL_TS = "2026-09-16T12:00:00.000"
+
+
+class TestMenstrualCycle:
+    def test_daily_log_posts_cleaned_snapshot(self, garmin: garminconnect.Garmin):
+        garmin.profile_id = 99
+        with (
+            patch.object(
+                garmin.client,
+                "post",
+                return_value={"calendarDate": "2026-09-01"},
+            ) as mock_post,
+            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+        ):
+            garmin.update_menstrual_daily_log(
+                "2026-09-01",
+                symptoms=["cramps", "FATIGUE"],
+                moods=["FINE"],
+                flow="medium",
+                discharge=["CREAMY"],
+                sex_drive="low",
+                sexual_activity="protected",
+                notes="hello",
+                ovulation_day=True,
+            )
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload == {
+            "calendarDate": "2026-09-01",
+            "symptoms": ["CRAMPS", "FATIGUE"],
+            "moods": ["FINE"],
+            "flow": "MEDIUM",
+            "discharge": ["CREAMY"],
+            "sexDrive": "LOW",
+            "sexualActivity": "PROTECTED",
+            "notes": "hello",
+            "ovulationDay": True,
+            "reportTimestamp": MENSTRUAL_TS,
+            "userProfilePk": 99,
+        }
+        url = mock_post.call_args[0][1]
+        assert url.endswith(
+            "/periodichealth-service/menstrualcycle/dailylog/2026-09-01"
+        )
+        assert mock_post.call_args.kwargs["api"] is True
+
+    def test_daily_log_omits_empty_lists_and_keeps_empty_notes(
+        self, garmin: garminconnect.Garmin
+    ):
+        with (
+            patch.object(garmin.client, "post", return_value={}) as mock_post,
+            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+        ):
+            garmin.update_menstrual_daily_log(
+                "2026-09-01",
+                symptoms=[],
+                moods=[],
+                discharge=[],
+                notes="",
+            )
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert "symptoms" not in payload
+        assert "moods" not in payload
+        assert "discharge" not in payload
+        assert "flow" not in payload
+        assert payload["notes"] == ""
+        assert payload["ovulationDay"] is False
+        assert "userProfilePk" not in payload
+
+    def test_daily_log_rejects_call_with_no_fields(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="at least one daily-log field"):
+            garmin.update_menstrual_daily_log("2026-09-01")
+
+    def test_daily_log_rejects_unknown_flow(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="flow must be one of"):
+            garmin.update_menstrual_daily_log("2026-09-01", flow="SPOTTING")
+
+    def test_daily_log_rejects_no_discharge_with_other_values(
+        self, garmin: garminconnect.Garmin
+    ):
+        with pytest.raises(ValueError, match="NO_DISCHARGE"):
+            garmin.update_menstrual_daily_log(
+                "2026-09-01", discharge=["NO_DISCHARGE", "CREAMY"]
+            )
+
+    def test_daily_log_rejects_pregnancy_symptom(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="symptoms\\[0\\]"):
+            garmin.update_menstrual_daily_log("2026-09-01", symptoms=["HEARTBURN"])
+
+    def test_calendar_posts_cycle_dates_lists(self, garmin: garminconnect.Garmin):
+        garmin.profile_id = 99
+        with (
+            patch.object(garmin.client, "post", return_value={}) as mock_post,
+            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+        ):
+            garmin.update_menstrual_calendar(
+                "2026-09-01",
+                "2026-09-10",
+                [["2026-09-01", "2026-09-02"], ["2026-09-08"]],
+                today_calendar_date="2026-09-16",
+            )
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload == {
+            "userProfilePk": 99,
+            "todayCalendarDate": "2026-09-16",
+            "startDate": "2026-09-01",
+            "endDate": "2026-09-10",
+            "reportTimestamp": MENSTRUAL_TS,
+            "cycleDatesLists": [
+                ["2026-09-01", "2026-09-02"],
+                ["2026-09-08"],
+            ],
+            "futureEditsByFE": True,
+        }
+        url = mock_post.call_args[0][1]
+        assert url.endswith("/periodichealth-service/menstrualcycle/calendarupdates")
+        assert "arrayOfCycles" not in payload
+
+    def test_calendar_rejects_nonconsecutive_group(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="consecutive"):
+            garmin.update_menstrual_calendar(
+                "2026-09-01",
+                "2026-09-10",
+                [["2026-09-01", "2026-09-03"]],
+            )
+
+    def test_calendar_rejects_dates_outside_range(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="within startdate and enddate"):
+            garmin.update_menstrual_calendar(
+                "2026-09-01",
+                "2026-09-05",
+                [["2026-09-08"]],
+            )
+
+    def test_init_cycle_setup_posts_frontend_shape(self, garmin: garminconnect.Garmin):
+        garmin.profile_id = 99
+        with (
+            patch.object(garmin.client, "post", return_value={}) as mock_post,
+            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+        ):
+            garmin.init_menstrual_cycle_setup("2026-08-01", 5, 28)
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload == {
+            "userProfilePk": 99,
+            "periodStartDate": "2026-08-01",
+            "periodLength": 5,
+            "cycleLength": 28,
+            "reportTimestamp": MENSTRUAL_TS,
+        }
+        url = mock_post.call_args[0][1]
+        assert url.endswith("/periodichealth-service/menstrualcycle/initCycleSetup")
+
+    def test_confirm_period_start_posts_to_period_date(
+        self, garmin: garminconnect.Garmin
+    ):
+        with (
+            patch.object(garmin.client, "post", return_value={}) as mock_post,
+            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+        ):
+            garmin.confirm_menstrual_period_start(
+                "2026-09-08",
+                4,
+                28,
+                predicted_cycle=True,
+            )
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["periodStartDate"] == "2026-09-08"
+        assert payload["predictedCycle"] is True
+        assert payload["hasSpecifiedPeriodLength"] is True
+        assert payload["hasSpecifiedCycleLength"] is True
+        url = mock_post.call_args[0][1]
+        assert url.endswith("/periodichealth-service/menstrualcycle/2026-09-08")
+
+    def test_update_settings_merges_with_current_profile(
+        self, garmin: garminconnect.Garmin
+    ):
+        current = {
+            "id": 99,
+            "userMenstrualCycleSettings": {
+                "menstrualCycleType": "REGULAR",
+                "flowTracking": True,
+                "physicalSymptomsTracking": True,
+            },
+        }
+        with (
+            patch.object(garmin, "get_user_profile", return_value=current),
+            patch.object(garmin.client, "put", return_value={}) as mock_put,
+        ):
+            garmin.update_menstrual_settings({"flowTracking": False})
+
+        assert mock_put.call_args.kwargs["json"] == {
+            "id": 99,
+            "userMenstrualCycleSettings": {
+                "menstrualCycleType": "REGULAR",
+                "flowTracking": False,
+                "physicalSymptomsTracking": True,
+            },
+        }
+        url = mock_put.call_args[0][1]
+        assert url.endswith("/userprofile-service/userprofile/user-settings")
+        assert mock_put.call_args.kwargs["api"] is True
+
+    def test_update_settings_keeps_explicit_user_settings_id(
+        self, garmin: garminconnect.Garmin
+    ):
+        current = {
+            "id": 11,
+            "userMenstrualCycleSettings": {"flowTracking": True},
+        }
+        with (
+            patch.object(garmin, "get_user_profile", return_value=current),
+            patch.object(garmin.client, "put", return_value={}) as mock_put,
+        ):
+            garmin.update_menstrual_settings(
+                {"moodTracking": True}, user_settings_id=99
+            )
+
+        payload = mock_put.call_args.kwargs["json"]
+        assert payload["id"] == 99
+        assert payload["userMenstrualCycleSettings"] == {
+            "flowTracking": True,
+            "moodTracking": True,
+        }
+
+    def test_last_confirmed_and_summary_urls(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "connectapi", return_value={}) as mock:
+            garmin.get_menstrual_last_confirmed("2026-09-16")
+        assert mock.call_args[0][0].endswith(
+            "/periodichealth-service/menstrualcycle/lastconfirmed/2026-09-16"
+        )
+        with patch.object(garmin, "connectapi", return_value={}) as mock:
+            garmin.get_menstrual_cycle_summary("2026-09-16")
+        assert mock.call_args[0][0].endswith(
+            "/periodichealth-service/menstrualcycle/summary/2026-09-16"
+        )
+
+    def test_reports_rejects_unsupported_cycle_count(
+        self, garmin: garminconnect.Garmin
+    ):
+        with pytest.raises(ValueError, match="number_of_cycles"):
+            garmin.get_menstrual_reports("2026-09-16", 2)
+
+    def test_reports_builds_query(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "connectapi", return_value={}) as mock:
+            garmin.get_menstrual_reports(
+                "2026-09-16",
+                6,
+                next_report=True,
+                today_calendar_date="2026-09-16",
+            )
+        url = mock.call_args[0][0]
+        assert url.endswith(
+            "/periodichealth-service/reports/menstrualcycle/6/2026-09-16"
+        )
+        assert mock.call_args.kwargs["params"] == {
+            "next": "true",
+            "reportType": "CYCLE",
+            "todayCalendarDate": "2026-09-16",
+        }
 
 
 # ---------------------------------------------------------------------------
