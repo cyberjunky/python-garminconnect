@@ -3906,8 +3906,7 @@ class Garmin:
             today_calendar_date, "today_calendar_date"
         )
         url = (
-            f"{self.garmin_connect_menstrual_reports_url}/"
-            f"{number_of_cycles}/{fordate}"
+            f"{self.garmin_connect_menstrual_reports_url}/{number_of_cycles}/{fordate}"
         )
         params = {
             "next": str(next_report).lower(),
