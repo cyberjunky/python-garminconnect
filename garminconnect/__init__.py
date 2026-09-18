@@ -2793,6 +2793,12 @@ class Garmin:
             "limit": str(limit),
             "sortOrder": "asc",
         }
+        # goal-service silently returns [] for newer goal types (custom
+        # accumulation goals with a date range, created via the current
+        # Connect UI) unless this fetch-metadata header is present - #431.
+        # Browsers always send it on a same-origin XHR; this client doesn't
+        # send any Sec-Fetch-* headers otherwise, so it has to be explicit.
+        headers = {"Sec-Fetch-Site": "same-origin"}
 
         logger.debug("Requesting %s goals", status)
         for _ in range(MAX_PAGINATED_REQUESTS):
@@ -2800,7 +2806,7 @@ class Garmin:
             logger.debug(
                 "Requesting %s goals %d to %d", status, start, start + limit - 1
             )
-            goals_json = self.connectapi(url, params=params)
+            goals_json = self.connectapi(url, params=params, headers=headers)
             if goals_json:
                 goals.extend(goals_json)
                 start = start + limit
