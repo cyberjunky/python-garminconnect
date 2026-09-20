@@ -33,7 +33,7 @@ def local_timezone(
         "2026-06-30T20:00:00-07:00",
     ],
 )
-def test_aware_datetimes_encode_the_same_instant(value: str) -> None:
+def test_aware_datetimes_encode_the_same_instant(value: str):
     expected = (
         datetime(2026, 7, 1, 3, tzinfo=UTC) - datetime(1989, 12, 31, tzinfo=UTC)
     ).total_seconds()
@@ -42,12 +42,12 @@ def test_aware_datetimes_encode_the_same_instant(value: str) -> None:
 
 @pytest.mark.usefixtures("local_timezone")
 @pytest.mark.parametrize("month", [1, 7])
-def test_naive_datetimes_remain_local_time(month: int) -> None:
+def test_naive_datetimes_remain_local_time(month: int):
     value = datetime(2026, month, 1, 12, 30)
     expected = time.mktime(value.timetuple()) - 631065600
     assert FitEncoder().timestamp(value) == expected
 
 
 @pytest.mark.parametrize("value", [631065600, 631065601.5])
-def test_numeric_unix_timestamps(value: float) -> None:
+def test_numeric_unix_timestamps(value: float):
     assert FitEncoder().timestamp(value) == value - 631065600
