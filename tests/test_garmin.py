@@ -36,6 +36,36 @@ def test_user_summary(garmin: garminconnect.Garmin) -> None:
 
 
 @pytest.mark.vcr
+def test_get_goals(garmin: garminconnect.Garmin) -> None:
+    garmin.login()
+    goals = garmin.get_goals()
+    assert isinstance(goals, list)
+    if not goals:
+        pytest.skip("No active goals on this account")
+    assert all(isinstance(goal, dict) for goal in goals)
+
+
+@pytest.mark.vcr
+def test_get_future_goals(garmin: garminconnect.Garmin) -> None:
+    garmin.login()
+    goals = garmin.get_goals(status="future")
+    assert isinstance(goals, list)
+    if not goals:
+        pytest.skip("No future goals on this account")
+    assert all(isinstance(goal, dict) for goal in goals)
+
+
+@pytest.mark.vcr
+def test_get_past_goals(garmin: garminconnect.Garmin) -> None:
+    garmin.login()
+    goals = garmin.get_goals(status="past")
+    assert isinstance(goals, list)
+    if not goals:
+        pytest.skip("No past goals on this account")
+    assert all(isinstance(goal, dict) for goal in goals)
+
+
+@pytest.mark.vcr
 def test_steps_data(garmin: garminconnect.Garmin) -> None:
     garmin.login()
     steps = garmin.get_steps_data(DATE)
