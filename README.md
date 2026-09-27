@@ -117,6 +117,25 @@ python3 ./example.py   # simple getting-started example
 python3 ./demo.py      # comprehensive demo (154+ API methods)
 ```
 
+### Language / Localization
+
+The demo interface uses English by default. Select Brazilian Portuguese with a
+CLI option or the `GARMIN_LANG` environment variable:
+
+```bash
+python3 demo.py --lang pt-BR
+python3 demo.py -l pt-BR
+GARMIN_LANG=pt-BR python3 demo.py
+```
+
+The precedence is `--lang`/`-l`, then `GARMIN_LANG`, then the saved preference,
+then English (`en`). The aliases `pt_BR`, `pt-br`, and `pt_BR.UTF-8` are
+accepted. The main menu also allows changing the language during a session;
+that choice is saved in `~/.garminconnect/demo_config.json`. CLI and environment
+overrides do not change the saved preference. To add another language, extend
+the stable-key catalog in `garminconnect/i18n.py` and keep English as the
+fallback.
+
 ## 🛠️ Development
 
 This project uses [PDM](https://pdm.fming.dev/) for dependency management and task automation.

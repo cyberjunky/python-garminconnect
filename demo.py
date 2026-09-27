@@ -16,6 +16,8 @@ export GARMIN_PASSWORD=<your garmin password>
 export GARMINTOKENS=<path to token storage>
 """
 
+import argparse
+import builtins
 import datetime
 import html
 import json
@@ -23,6 +25,7 @@ import logging
 import os
 import re
 import sys
+import tempfile
 import time
 from contextlib import suppress
 from datetime import timedelta
@@ -42,6 +45,14 @@ from garminconnect import (
     parse_activity_detail_metrics,
 )
 from garminconnect.client import token_file_path
+from garminconnect.i18n import (
+    UnsupportedLanguageError,
+    get_language,
+    normalize_language,
+    resolve_language,
+    set_language,
+    translate,
+)
 
 # Debug mode: enable with --debug / -d CLI flag or DEMO_DEBUG=1 env var.
 # When active, shows timestamped DEBUG logs from garminconnect and the
@@ -116,14 +127,14 @@ def safe_readkey() -> str:
 
     """
     if not sys.stdin.isatty():
-        print("WARNING: stdin is not a TTY. Falling back to input().")
-        user_input = input("Enter a key (then press Enter): ")
+        print(translate("demo.not_tty"))
+        user_input = input(translate("demo.enter_key"))
         return user_input[0] if user_input else ""
     try:
         return readchar.readkey()
     except Exception as e:
-        print(f"readkey() failed: {e}")
-        user_input = input("Enter a key (then press Enter): ")
+        print(translate("demo.readkey_failed", error=e))
+        user_input = input(translate("demo.enter_key"))
         return user_input[0] if user_input else ""
 
 
@@ -160,546 +171,710 @@ class Config:
 # Initialize configuration
 config = Config()
 
+
+def _demo_config_path() -> Path:
+    """Return the path used for demo-only preferences."""
+    return Path.home() / ".garminconnect" / "demo_config.json"
+
+
+def load_persisted_language() -> str | None:
+    """Load a valid persisted language without affecting authentication data."""
+    try:
+        with _demo_config_path().open(encoding="utf-8") as config_file:
+            stored_config = json.load(config_file)
+    except (OSError, json.JSONDecodeError, TypeError, ValueError):
+        return None
+
+    if not isinstance(stored_config, dict):
+        return None
+    language = stored_config.get("language")
+    if not isinstance(language, str):
+        return None
+    try:
+        return normalize_language(language)
+    except UnsupportedLanguageError:
+        return None
+
+
+def save_persisted_language(language: str) -> bool:
+    """Persist only the demo language preference, using an atomic replacement."""
+    path = _demo_config_path()
+    temporary_path: Path | None = None
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=path.parent,
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as temporary_file:
+            json.dump({"language": normalize_language(language)}, temporary_file)
+            temporary_file.write("\n")
+            temporary_file.flush()
+            os.fsync(temporary_file.fileno())
+            temporary_path = Path(temporary_file.name)
+        os.replace(temporary_path, path)
+        return True
+    except (OSError, UnsupportedLanguageError, ValueError, TypeError):
+        if temporary_path is not None:
+            with suppress(OSError):
+                temporary_path.unlink()
+        return False
+
+
 # Organized menu categories
 menu_categories = {
     "1": {
-        "name": "👤 User & Profile",
+        "name_key": "menu.user_profile",
         "options": {
-            "1": {"desc": "Get full name", "key": "get_full_name"},
-            "2": {"desc": "Get unit system", "key": "get_unit_system"},
-            "3": {"desc": "Get user profile", "key": "get_user_profile"},
+            "1": {"desc_key": "menu.get_full_name", "key": "get_full_name"},
+            "2": {"desc_key": "menu.get_unit_system", "key": "get_unit_system"},
+            "3": {"desc_key": "menu.get_user_profile", "key": "get_user_profile"},
             "4": {
-                "desc": "Get userprofile settings",
+                "desc_key": "menu.get_userprofile_settings",
                 "key": "get_userprofile_settings",
             },
         },
     },
     "2": {
-        "name": "📊 Daily Health & Activity",
+        "name_key": "menu.daily_health",
         "options": {
             "1": {
-                "desc": f"Get activity data for '{config.today.isoformat()}'",
+                "desc_key": "menu.activity_data",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_stats",
             },
             "2": {
-                "desc": f"Get user summary for '{config.today.isoformat()}'",
+                "desc_key": "menu.user_summary",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_user_summary",
             },
             "3": {
-                "desc": f"Get stats and body composition for '{config.today.isoformat()}'",
+                "desc_key": "menu.stats_body",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_stats_and_body",
             },
             "4": {
-                "desc": f"Get steps data for '{config.today.isoformat()}'",
+                "desc_key": "menu.steps_data",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_steps_data",
             },
             "5": {
-                "desc": f"Get heart rate data for '{config.today.isoformat()}'",
+                "desc_key": "menu.heart_rate",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_heart_rates",
             },
             "6": {
-                "desc": f"Get resting heart rate from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.resting_heart_rate",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_rhr_daily",
             },
             "7": {
-                "desc": f"Get daily sleep summaries from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.sleep_summaries",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_sleep_daily",
             },
             "8": {
-                "desc": f"Get stress data for '{config.today.isoformat()}'",
+                "desc_key": "menu.stress_data",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_all_day_stress",
             },
             "9": {
-                "desc": f"Get lifestyle logging data for '{config.today.isoformat()}'",
+                "desc_key": "menu.lifestyle",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_lifestyle_logging_data",
             },
             "a": {
-                "desc": f"Get daily calories from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.daily_calories",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_calories_daily",
             },
         },
     },
     "3": {
-        "name": "🔬 Advanced Health Metrics",
+        "name_key": "menu.advanced_health",
         "options": {
             "1": {
-                "desc": f"Get training readiness for '{config.today.isoformat()}'",
+                "desc_key": "menu.training_readiness",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_training_readiness",
             },
             "2": {
-                "desc": f"Get morning training readiness for '{config.today.isoformat()}'",
+                "desc_key": "menu.morning_training_readiness",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_morning_training_readiness",
             },
             "3": {
-                "desc": f"Get training status for '{config.today.isoformat()}'",
+                "desc_key": "menu.training_status",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_training_status",
             },
             "4": {
-                "desc": f"Get respiration data for '{config.today.isoformat()}'",
+                "desc_key": "menu.respiration",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_respiration_data",
             },
             "5": {
-                "desc": f"Get SpO2 data for '{config.today.isoformat()}'",
+                "desc_key": "menu.spo2",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_spo2_data",
             },
             "6": {
-                "desc": f"Get max metrics (VO2, fitness age) from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.max_metrics",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_max_metrics_range",
             },
             "7": {
-                "desc": f"Get Heart Rate Variability (HRV) from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.hrv",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_hrv_data_range",
             },
             "8": {
-                "desc": f"Get Fitness Age data for '{config.today.isoformat()}'",
+                "desc_key": "menu.fitness_age",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_fitnessage_data",
             },
             "9": {
-                "desc": f"Get stress data for '{config.today.isoformat()}'",
+                "desc_key": "menu.stress_data",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_stress_data",
             },
-            "0": {"desc": "Get lactate threshold data", "key": "get_lactate_threshold"},
+            "0": {"desc_key": "menu.lactate", "key": "get_lactate_threshold"},
             "a": {
-                "desc": f"Get intensity minutes for '{config.today.isoformat()}'",
+                "desc_key": "menu.intensity",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_intensity_minutes_data",
             },
             "b": {
-                "desc": f"Get running tolerance from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.running_tolerance",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_running_tolerance",
             },
             "c": {
-                "desc": "Get configured heart rate zones",
+                "desc_key": "menu.heart_rate_zones",
                 "key": "get_heart_rate_zones",
             },
             "d": {
-                "desc": "Get configured power zones for all sports",
+                "desc_key": "menu.power_zones",
                 "key": "get_power_zones",
             },
             "e": {
-                "desc": "Get configured cycling power zones",
+                "desc_key": "menu.cycling_power_zones",
                 "key": "get_power_zones_for_sport",
             },
             "f": {
-                "desc": f"Get functional threshold power range from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.ftp_range",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_functional_threshold_power_range",
             },
         },
     },
     "4": {
-        "name": "📈 Historical Data & Trends",
+        "name_key": "menu.historical",
         "options": {
             "1": {
-                "desc": f"Get daily steps from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.daily_steps",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_daily_steps",
             },
             "2": {
-                "desc": f"Get body battery from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.body_battery",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_body_battery",
             },
             "3": {
-                "desc": f"Get floors data for '{config.week_start.isoformat()}'",
+                "desc_key": "menu.floors",
+                "desc_values": {"start": config.week_start.isoformat()},
                 "key": "get_floors",
             },
             "4": {
-                "desc": f"Get blood pressure from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.blood_pressure",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_blood_pressure",
             },
             "5": {
-                "desc": f"Get progress summary from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.progress",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_progress_summary_between_dates",
             },
             "6": {
-                "desc": f"Get body battery events for '{config.week_start.isoformat()}'",
+                "desc_key": "menu.body_battery_events",
+                "desc_values": {"start": config.week_start.isoformat()},
                 "key": "get_body_battery_events",
             },
             "7": {
-                "desc": f"Get weekly steps (52 weeks ending '{config.today.isoformat()}')",
+                "desc_key": "menu.weekly_steps",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_weekly_steps",
             },
             "8": {
-                "desc": f"Get weekly stress (52 weeks ending '{config.today.isoformat()}')",
+                "desc_key": "menu.weekly_stress",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_weekly_stress",
             },
             "9": {
-                "desc": f"Get weekly intensity minutes from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.weekly_intensity",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_weekly_intensity_minutes",
             },
         },
     },
     "5": {
-        "name": "🏃 Activities & Workouts",
+        "name_key": "menu.activities",
         "options": {
             "1": {
-                "desc": f"Get recent activities (limit {config.default_limit})",
+                "desc_key": "menu.recent_activities",
+                "desc_values": {"limit": config.default_limit},
                 "key": "get_activities",
             },
-            "2": {"desc": "Get last activity", "key": "get_last_activity"},
+            "2": {"desc_key": "menu.last_activity", "key": "get_last_activity"},
             "3": {
-                "desc": f"Get activities for today '{config.today.isoformat()}'",
+                "desc_key": "menu.activities_today",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_activities_fordate",
             },
             "4": {
-                "desc": f"Download activities by date range '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.download_activities",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "download_activities",
             },
             "5": {
-                "desc": "Get all activity types and statistics",
+                "desc_key": "menu.activity_types",
                 "key": "get_activity_types",
             },
             "6": {
-                "desc": f"Upload activity data from {config.activityfile}",
+                "desc_key": "menu.upload_activity",
+                "desc_values": {"file": config.activityfile},
                 "key": "upload_activity",
             },
-            "7": {"desc": "Get workouts", "key": "get_workouts"},
-            "8": {"desc": "Get activity splits (laps)", "key": "get_activity_splits"},
+            "7": {"desc_key": "menu.get_workouts", "key": "get_workouts"},
+            "8": {"desc_key": "menu.activity_splits", "key": "get_activity_splits"},
             "9": {
-                "desc": "Get activity typed splits",
+                "desc_key": "menu.typed_splits",
                 "key": "get_activity_typed_splits",
             },
             "0": {
-                "desc": "Get activity split summaries",
+                "desc_key": "menu.split_summaries",
                 "key": "get_activity_split_summaries",
             },
-            "a": {"desc": "Get activity weather data", "key": "get_activity_weather"},
+            "a": {"desc_key": "menu.activity_weather", "key": "get_activity_weather"},
             "b": {
-                "desc": "Get activity heart rate zones",
+                "desc_key": "menu.activity_hr_zones",
                 "key": "get_activity_hr_in_timezones",
             },
             "c": {
-                "desc": "Get activity power zones",
+                "desc_key": "menu.activity_power_zones",
                 "key": "get_activity_power_in_timezones",
             },
             "d": {
-                "desc": "Get cycling FTP (Functional Threshold Power)",
+                "desc_key": "menu.cycling_ftp",
                 "key": "get_cycling_ftp",
             },
             "e": {
-                "desc": "Get detailed activity information",
+                "desc_key": "menu.activity_details",
                 "key": "get_activity_details",
             },
-            "f": {"desc": "Get activity gear information", "key": "get_activity_gear"},
-            "g": {"desc": "Get single activity data", "key": "get_activity"},
+            "f": {"desc_key": "menu.activity_gear", "key": "get_activity_gear"},
+            "g": {"desc_key": "menu.single_activity", "key": "get_activity"},
             "h": {
-                "desc": "Get strength training exercise sets",
+                "desc_key": "menu.strength_sets",
                 "key": "get_activity_exercise_sets",
             },
-            "i": {"desc": "Get workout by ID", "key": "get_workout_by_id"},
-            "j": {"desc": "Download workout to .FIT file", "key": "download_workout"},
+            "i": {"desc_key": "menu.workout_by_id", "key": "get_workout_by_id"},
+            "j": {"desc_key": "menu.download_fit", "key": "download_workout"},
             "k": {
-                "desc": f"Upload workout from {config.workoutfile}",
+                "desc_key": "menu.upload_workout",
+                "desc_values": {"file": config.workoutfile},
                 "key": "upload_workout",
             },
             "l": {
-                "desc": f"Get activities by date range '{config.today.isoformat()}'",
+                "desc_key": "menu.activities_by_date",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_activities_by_date",
             },
-            "m": {"desc": "Set activity name", "key": "set_activity_name"},
-            "n": {"desc": "Set activity type", "key": "set_activity_type"},
-            "o": {"desc": "Create manual activity", "key": "create_manual_activity"},
-            "p": {"desc": "Delete activity", "key": "delete_activity"},
+            "m": {"desc_key": "menu.set_activity_name", "key": "set_activity_name"},
+            "n": {"desc_key": "menu.set_activity_type", "key": "set_activity_type"},
+            "o": {"desc_key": "menu.manual_activity", "key": "create_manual_activity"},
+            "p": {"desc_key": "menu.delete_activity", "key": "delete_activity"},
             "r": {
-                "desc": "Count activities for current user",
+                "desc_key": "menu.count_activities",
                 "key": "count_activities",
             },
             "s": {
-                "desc": "Schedule a workout on a date (interactive)",
+                "desc_key": "menu.schedule_workout",
                 "key": "scheduled_workout",
             },
             "t": {
-                "desc": f"Import activity (no Strava re-export) from {config.activityfile}",
+                "desc_key": "menu.import_activity",
+                "desc_values": {"file": config.activityfile},
                 "key": "import_activity",
             },
             "u": {
-                "desc": "Get scheduled workouts by year and month",
+                "desc_key": "menu.scheduled_workouts",
                 "key": "get_scheduled_workouts",
             },
             "v": {
-                "desc": "Upload typed running workout (sample)",
+                "desc_key": "menu.typed_running",
                 "key": "upload_running_workout",
             },
             "w": {
-                "desc": "Upload typed cycling workout (sample)",
+                "desc_key": "menu.typed_cycling",
                 "key": "upload_cycling_workout",
             },
             "x": {
-                "desc": "Upload typed swimming workout (sample)",
+                "desc_key": "menu.typed_swimming",
                 "key": "upload_swimming_workout",
             },
             "y": {
-                "desc": "Upload typed walking workout (sample)",
+                "desc_key": "menu.typed_walking",
                 "key": "upload_walking_workout",
             },
             "z": {
-                "desc": "Upload typed hiking workout (sample)",
+                "desc_key": "menu.typed_hiking",
                 "key": "upload_hiking_workout",
             },
             "A": {
-                "desc": "Get activities filtered by type/subtype (interactive)",
+                "desc_key": "menu.filtered_activities",
                 "key": "get_activities_filtered",
             },
             "B": {
-                "desc": "Get the earliest upcoming scheduled workout (today or later)",
+                "desc_key": "menu.next_workout",
                 "key": "get_next_scheduled_workout",
             },
         },
     },
     "6": {
-        "name": "⚖️  Body Composition & Weight",
+        "name_key": "menu.body_composition_category",
         "options": {
             "1": {
-                "desc": f"Get body composition for '{config.today.isoformat()}'",
+                "desc_key": "menu.body_composition",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_body_composition",
             },
             "2": {
-                "desc": f"Get weigh-ins from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.weigh_ins",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_weigh_ins",
             },
             "3": {
-                "desc": f"Get daily weigh-ins for '{config.today.isoformat()}'",
+                "desc_key": "menu.daily_weigh_ins",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_daily_weigh_ins",
             },
-            "4": {"desc": "Add a weigh-in (interactive)", "key": "add_weigh_in"},
+            "4": {"desc_key": "menu.add_weigh_in", "key": "add_weigh_in"},
             "5": {
-                "desc": f"Add body composition for '{config.today.isoformat()}' (interactive)",
+                "desc_key": "menu.add_body_composition",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "add_body_composition",
             },
             "6": {
-                "desc": f"Delete all weigh-ins for '{config.today.isoformat()}'",
+                "desc_key": "menu.delete_weigh_ins",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "delete_weigh_ins",
             },
-            "7": {"desc": "Delete specific weigh-in", "key": "delete_weigh_in"},
+            "7": {"desc_key": "menu.delete_weigh_in", "key": "delete_weigh_in"},
         },
     },
     "7": {
-        "name": "🏆 Goals & Achievements",
+        "name_key": "menu.goals",
         "options": {
             "1": {
-                "desc": "Get personal records (decodes running typeId, interactive)",
+                "desc_key": "menu.personal_records",
                 "key": "get_personal_records",
             },
-            "2": {"desc": "Get earned badges", "key": "get_earned_badges"},
-            "3": {"desc": "Get adhoc challenges", "key": "get_adhoc_challenges"},
+            "2": {"desc_key": "menu.earned_badges", "key": "get_earned_badges"},
+            "3": {"desc_key": "menu.adhoc_challenges", "key": "get_adhoc_challenges"},
             "4": {
-                "desc": "Get available badge challenges",
+                "desc_key": "menu.available_badge_challenges",
                 "key": "get_available_badge_challenges",
             },
-            "5": {"desc": "Get active goals", "key": "get_active_goals"},
-            "6": {"desc": "Get future goals", "key": "get_future_goals"},
-            "7": {"desc": "Get past goals", "key": "get_past_goals"},
-            "8": {"desc": "Get badge challenges", "key": "get_badge_challenges"},
+            "5": {"desc_key": "menu.active_goals", "key": "get_active_goals"},
+            "6": {"desc_key": "menu.future_goals", "key": "get_future_goals"},
+            "7": {"desc_key": "menu.past_goals", "key": "get_past_goals"},
+            "8": {"desc_key": "menu.badge_challenges", "key": "get_badge_challenges"},
             "9": {
-                "desc": "Get non-completed badge challenges",
+                "desc_key": "menu.incomplete_badges",
                 "key": "get_non_completed_badge_challenges",
             },
             "0": {
-                "desc": "Get virtual challenges in progress",
+                "desc_key": "menu.virtual_challenges",
                 "key": "get_inprogress_virtual_challenges",
             },
-            "a": {"desc": "Get race predictions", "key": "get_race_predictions"},
+            "a": {"desc_key": "menu.race_predictions", "key": "get_race_predictions"},
             "b": {
-                "desc": f"Get hill score from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.hill_score",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_hill_score",
             },
             "c": {
-                "desc": f"Get endurance score from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.endurance_score",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_endurance_score",
             },
-            "d": {"desc": "Get available badges", "key": "get_available_badges"},
-            "e": {"desc": "Get badges in progress", "key": "get_in_progress_badges"},
+            "d": {"desc_key": "menu.available_badges", "key": "get_available_badges"},
+            "e": {"desc_key": "menu.badges_progress", "key": "get_in_progress_badges"},
         },
     },
     "8": {
-        "name": "⌚ Device & Technical",
+        "name_key": "menu.device",
         "options": {
-            "1": {"desc": "Get all device information", "key": "get_devices"},
-            "2": {"desc": "Get device alarms", "key": "get_device_alarms"},
-            "3": {"desc": "Get solar data from your devices", "key": "get_solar_data"},
+            "1": {"desc_key": "menu.devices", "key": "get_devices"},
+            "2": {"desc_key": "menu.device_alarms", "key": "get_device_alarms"},
+            "3": {"desc_key": "menu.solar", "key": "get_solar_data"},
             "4": {
-                "desc": f"Request data reload (epoch) for '{config.today.isoformat()}'",
+                "desc_key": "menu.reload",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "request_reload",
             },
-            "5": {"desc": "Get device settings", "key": "get_device_settings"},
-            "6": {"desc": "Get device last used", "key": "get_device_last_used"},
+            "5": {"desc_key": "menu.device_settings", "key": "get_device_settings"},
+            "6": {"desc_key": "menu.device_last_used", "key": "get_device_last_used"},
             "7": {
-                "desc": "Get primary training device",
+                "desc_key": "menu.primary_device",
                 "key": "get_primary_training_device",
             },
         },
     },
     "9": {
-        "name": "🎽 Gear & Equipment",
+        "name_key": "menu.gear",
         "options": {
-            "1": {"desc": "Get user gear list", "key": "get_gear"},
-            "2": {"desc": "Get gear defaults", "key": "get_gear_defaults"},
-            "3": {"desc": "Get gear statistics", "key": "get_gear_stats"},
-            "4": {"desc": "Get gear activities", "key": "get_gear_activities"},
-            "5": {"desc": "Set gear default", "key": "set_gear_default"},
+            "1": {"desc_key": "menu.gear_list", "key": "get_gear"},
+            "2": {"desc_key": "menu.gear_defaults", "key": "get_gear_defaults"},
+            "3": {"desc_key": "menu.gear_stats", "key": "get_gear_stats"},
+            "4": {"desc_key": "menu.gear_activities", "key": "get_gear_activities"},
+            "5": {"desc_key": "menu.gear_default", "key": "set_gear_default"},
             "6": {
-                "desc": "Track gear usage (total time used)",
+                "desc_key": "menu.track_gear",
                 "key": "track_gear_usage",
             },
             "7": {
-                "desc": "Add and remove gear to/from activity (interactive)",
+                "desc_key": "menu.activity_gear_edit",
                 "key": "add_and_remove_gear_to_activity",
             },
             "8": {
-                "desc": "Create new gear, e.g. shoes (interactive)",
+                "desc_key": "menu.create_gear",
                 "key": "create_gear",
             },
         },
     },
     "0": {
-        "name": "💧 Hydration & Wellness",
+        "name_key": "menu.hydration_category",
         "options": {
             "1": {
-                "desc": f"Get hydration data for '{config.today.isoformat()}'",
+                "desc_key": "menu.hydration",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_hydration_data",
             },
-            "2": {"desc": "Add hydration data", "key": "add_hydration_data"},
+            "2": {"desc_key": "menu.add_hydration", "key": "add_hydration_data"},
             "3": {
-                "desc": "Set blood pressure and pulse (interactive)",
+                "desc_key": "menu.set_blood_pressure",
                 "key": "set_blood_pressure",
             },
-            "4": {"desc": "Get pregnancy summary data", "key": "get_pregnancy_summary"},
+            "4": {"desc_key": "menu.pregnancy", "key": "get_pregnancy_summary"},
             "5": {
-                "desc": f"Get all day events for '{config.week_start.isoformat()}'",
+                "desc_key": "menu.all_day_events",
+                "desc_values": {"start": config.week_start.isoformat()},
                 "key": "get_all_day_events",
             },
             "6": {
-                "desc": f"Get body battery events for '{config.week_start.isoformat()}'",
+                "desc_key": "menu.body_battery_events",
+                "desc_values": {"start": config.week_start.isoformat()},
                 "key": "get_body_battery_events",
             },
             "7": {
-                "desc": f"Get menstrual data for '{config.today.isoformat()}'",
+                "desc_key": "menu.menstrual_date",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_menstrual_data_for_date",
             },
             "8": {
-                "desc": f"Get menstrual calendar from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc_key": "menu.menstrual_calendar",
+                "desc_values": {
+                    "start": config.week_start.isoformat(),
+                    "end": config.today.isoformat(),
+                },
                 "key": "get_menstrual_calendar_data",
             },
             "9": {
-                "desc": "Delete blood pressure entry",
+                "desc_key": "menu.delete_blood_pressure",
                 "key": "delete_blood_pressure",
             },
             "a": {
-                "desc": f"Get nutrition daily food log for '{config.today.isoformat()}'",
+                "desc_key": "menu.nutrition_log",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_nutrition_daily_food_log",
             },
             "b": {
-                "desc": f"Get nutrition daily meals for '{config.today.isoformat()}'",
+                "desc_key": "menu.nutrition_meals",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_nutrition_daily_meals",
             },
             "c": {
-                "desc": f"Get nutrition daily settings for '{config.today.isoformat()}'",
+                "desc_key": "menu.nutrition_settings",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_nutrition_daily_settings",
             },
             "d": {
-                "desc": f"Get last confirmed menstrual cycle for '{config.today.isoformat()}'",
+                "desc_key": "menu.last_cycle",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_menstrual_last_confirmed",
             },
             "e": {
-                "desc": f"Get menstrual cycle summary for '{config.today.isoformat()}'",
+                "desc_key": "menu.cycle_summary",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_menstrual_cycle_summary",
             },
             "f": {
-                "desc": f"Get menstrual reports (6 cycles) ending '{config.today.isoformat()}'",
+                "desc_key": "menu.menstrual_reports",
+                "desc_values": {"date": config.today.isoformat()},
                 "key": "get_menstrual_reports",
             },
             "g": {
-                "desc": "Update menstrual daily log (interactive)",
+                "desc_key": "menu.update_menstrual_log",
                 "key": "update_menstrual_daily_log",
             },
             "h": {
-                "desc": "Update menstrual calendar (interactive)",
+                "desc_key": "menu.update_menstrual_calendar",
                 "key": "update_menstrual_calendar",
             },
             "i": {
-                "desc": "Initialize menstrual cycle setup (interactive)",
+                "desc_key": "menu.init_cycle",
                 "key": "init_menstrual_cycle_setup",
             },
             "j": {
-                "desc": "Confirm menstrual period start (interactive)",
+                "desc_key": "menu.confirm_period",
                 "key": "confirm_menstrual_period_start",
             },
             "k": {
-                "desc": "Update menstrual tracking settings (interactive)",
+                "desc_key": "menu.update_menstrual_settings",
                 "key": "update_menstrual_settings",
             },
         },
     },
     "a": {
-        "name": "🔧 System & Export",
+        "name_key": "menu.system",
         "options": {
-            "1": {"desc": "Create sample health report", "key": "create_health_report"},
+            "1": {"desc_key": "menu.health_report", "key": "create_health_report"},
             "2": {
-                "desc": "Remove stored login tokens (logout)",
+                "desc_key": "menu.remove_tokens",
                 "key": "remove_tokens",
             },
-            "3": {"desc": "Disconnect from Garmin Connect", "key": "disconnect"},
-            "4": {"desc": "Execute GraphQL query", "key": "query_garmin_graphql"},
+            "3": {"desc_key": "menu.disconnect", "key": "disconnect"},
+            "4": {"desc_key": "menu.graphql", "key": "query_garmin_graphql"},
             "5": {
-                "desc": "Download Health Snapshot ZIP for today",
+                "desc_key": "menu.health_snapshot",
                 "key": "download_health_snapshot",
             },
         },
     },
     "b": {
-        "name": "📅 Training Plans",
+        "name_key": "menu.training_plans_category",
         "options": {
-            "1": {"desc": "Get training plans", "key": "get_training_plans"},
-            "2": {"desc": "Get training plan by ID", "key": "get_training_plan_by_id"},
+            "1": {"desc_key": "menu.get_training_plans", "key": "get_training_plans"},
+            "2": {
+                "desc_key": "menu.training_plan_by_id",
+                "key": "get_training_plan_by_id",
+            },
             "3": {
-                "desc": "Upload typed strength workout (sample)",
+                "desc_key": "menu.typed_strength",
                 "key": "upload_strength_workout",
             },
             "4": {
-                "desc": "Search exercise catalog",
+                "desc_key": "menu.exercise_catalog",
                 "key": "search_exercise_catalog",
             },
             "5": {
-                "desc": "Update workout in place (edit existing template)",
+                "desc_key": "menu.update_workout",
                 "key": "update_workout",
             },
             "6": {
-                "desc": "Push a workout to a device (interactive)",
+                "desc_key": "menu.push_workout",
                 "key": "push_workout_to_device",
             },
             "7": {
-                "desc": "Get scheduled workout by ID",
+                "desc_key": "menu.scheduled_workout_by_id",
                 "key": "get_scheduled_workout_by_id",
             },
             "8": {
-                "desc": "Delete a workout template (interactive)",
+                "desc_key": "menu.delete_workout",
                 "key": "delete_workout",
             },
             "9": {
-                "desc": "Unschedule a scheduled workout",
+                "desc_key": "menu.unschedule_workout",
                 "key": "unschedule_workout",
             },
         },
     },
     "c": {
-        "name": "⛳ Golf",
+        "name_key": "menu.golf",
         "options": {
-            "1": {"desc": "Get golf scorecard summary", "key": "get_golf_summary"},
-            "2": {"desc": "Get golf scorecard by ID", "key": "get_golf_scorecard"},
+            "1": {"desc_key": "menu.golf_summary", "key": "get_golf_summary"},
+            "2": {"desc_key": "menu.golf_scorecard", "key": "get_golf_scorecard"},
             "3": {
-                "desc": "Get golf shot data by scorecard ID",
+                "desc_key": "menu.golf_shots",
                 "key": "get_golf_shot_data",
             },
-            "4": {"desc": "Get golf club stats", "key": "get_golf_club_stats"},
-            "5": {"desc": "Get golf user stats", "key": "get_golf_user_stats"},
+            "4": {"desc_key": "menu.golf_club_stats", "key": "get_golf_club_stats"},
+            "5": {"desc_key": "menu.golf_user_stats", "key": "get_golf_user_stats"},
         },
     },
     "d": {
-        "name": "✏️  Activity Editing",
+        "name_key": "menu.editing",
         "options": {
             "1": {
-                "desc": "Set activity description (latest activity)",
+                "desc_key": "menu.activity_description",
                 "key": "set_activity_description",
             },
             "2": {
-                "desc": "Set activity exercise sets (strength activity)",
+                "desc_key": "menu.activity_exercise_sets",
                 "key": "set_activity_exercise_sets",
             },
         },
@@ -712,18 +887,20 @@ current_category = None
 def print_main_menu():
     """Print the main category menu."""
     print("\n" + "=" * 50)
-    print("🚴 Full-blown Garmin Connect API Demo - Main Menu")
+    print(translate("demo.title"))
     print("=" * 50)
-    print("Select a category:")
+    print(translate("demo.select_category"))
     print()
 
     for key, category in menu_categories.items():
-        print(f"  [{key}] {category['name']}")
+        name = translate(category["name_key"], **category.get("name_values", {}))
+        print(translate("ui.indexed_item", index=key, name=name))
 
     print()
-    print("  [q] Exit program")
+    print(translate("language.main_option"))
+    print(translate("demo.exit"))
     print()
-    print("Make your selection: ", end="", flush=True)
+    print(translate("demo.selection"), end="", flush=True)
 
 
 def print_category_menu(category_key: str):
@@ -732,22 +909,77 @@ def print_category_menu(category_key: str):
         return False
 
     category = menu_categories[category_key]
-    print(f"\n📋 #{category_key} {category['name']} - Options")
+    category_name = translate(category["name_key"], **category.get("name_values", {}))
+    print(
+        translate(
+            "ui.category_header",
+            category_key=category_key,
+            category_name=category_name,
+        )
+    )
     print("-" * 40)
 
     for key, option in category["options"].items():
-        print(f"  [{key}] {option['desc']}")
+        description = translate(option["desc_key"], **option.get("desc_values", {}))
+        print(translate("ui.indexed_item", index=key, name=description))
 
     print()
-    print("  [q] Back to main menu")
+    print(translate("demo.back"))
     print()
-    print("Make your selection: ", end="", flush=True)
+    print(translate("demo.selection"), end="", flush=True)
     return True
+
+
+def _language_name(language: str) -> str:
+    """Return the localized display name for a canonical language tag."""
+    return translate(
+        "language.option_en" if language == "en" else "language.option_pt_br"
+    )
+
+
+def select_language() -> None:
+    """Show the language submenu and apply a selection immediately."""
+    while True:
+        print()
+        print(translate("language.select"))
+        print(
+            translate(
+                "ui.indexed_item",
+                index="1",
+                name=translate("language.option_en"),
+            )
+        )
+        print(
+            translate(
+                "ui.indexed_item",
+                index="2",
+                name=translate("language.option_pt_br"),
+            )
+        )
+        print(translate("language.back"))
+        print(translate("demo.selection"), end="", flush=True)
+
+        option = safe_readkey()
+        if option == "q":
+            return
+        if option not in {"1", "2"}:
+            print(translate("demo.invalid_selection"))
+            continue
+
+        selected_language = "en" if option == "1" else "pt-BR"
+        set_language(selected_language)
+        display_name = _language_name(selected_language)
+        print(translate("language.changed", language=display_name))
+        if save_persisted_language(selected_language):
+            print(translate("language.saved"))
+        else:
+            print(translate("language.save_failed"))
+        return
 
 
 def get_mfa() -> str:
     """Get MFA token."""
-    return input("MFA one-time code: ")
+    return input(translate("demo.mfa_code"))
 
 
 class DataExporter:
@@ -769,7 +1001,10 @@ class DataExporter:
         """Create a comprehensive health report in JSON and HTML formats."""
         report_data = {
             "generated_at": datetime.datetime.now().isoformat(),
-            "user_info": {"full_name": "N/A", "unit_system": "N/A"},
+            "user_info": {
+                "full_name": translate("report.not_available"),
+                "unit_system": translate("report.not_available"),
+            },
             "today_summary": {},
             "recent_activities": [],
             "health_metrics": {},
@@ -780,10 +1015,10 @@ class DataExporter:
         try:
             # Basic user info
             report_data["user_info"]["full_name"] = (
-                api_instance.get_full_name() or "N/A"
+                api_instance.get_full_name() or translate("report.not_available")
             )
             report_data["user_info"]["unit_system"] = (
-                api_instance.get_unit_system() or "N/A"
+                api_instance.get_unit_system() or translate("report.not_available")
             )
 
             # Today's summary
@@ -804,7 +1039,7 @@ class DataExporter:
                         report_data["weekly_data"].append(daily_data)
                 except Exception as e:
                     print(
-                        f"Skipping data for {date.isoformat()}: {e}"
+                        translate("ui.skipping", date=date.isoformat(), error=e)
                     )  # Skip if data not available
 
             # Health metrics for today
@@ -837,12 +1072,12 @@ class DataExporter:
                 report_data["device_info"] = []
 
         except Exception as e:
-            print(f"Error creating health report: {e}")
+            print(translate("ui.error_health_report", error=e))
 
         # Create HTML version
         html_filepath = DataExporter.create_readable_health_report(report_data)
 
-        print(f"📊 Report created: {html_filepath}")
+        print(translate("demo.report_created", path=html_filepath))
 
         return html_filepath
 
@@ -853,16 +1088,18 @@ class DataExporter:
         html_filename = f"health_report_{timestamp}.html"
 
         # Extract key information
-        user_name = report_data.get("user_info", {}).get("full_name", "Unknown User")
-        generated_at = report_data.get("generated_at", "Unknown")
+        user_name = report_data.get("user_info", {}).get(
+            "full_name", translate("report.unknown_user")
+        )
+        generated_at = report_data.get("generated_at", translate("report.unknown"))
 
         # Create HTML content with complete styling
         html_content = f"""<!DOCTYPE html>
-<html lang="en">
+<html lang="{get_language()}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garmin Health Report - {_html(user_name)}</title>
+    <title>{translate("report.title", user=_html(user_name))}</title>
     <style>
         body {{
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -974,13 +1211,13 @@ class DataExporter:
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏃 Garmin Health Report</h1>
+            <h1>🏃 {translate("report.heading")}</h1>
             <p><strong>{_html(user_name)}</strong></p>
         </div>
 
         <div class="meta-info">
-            <p><strong>Generated:</strong> {_html(generated_at)}</p>
-            <p><strong>Date:</strong> {_html(config.today.isoformat())}</p>
+            <p><strong>{translate("report.generated")}</strong> {_html(generated_at)}</p>
+            <p><strong>{translate("report.date")}</strong> {_html(config.today.isoformat())}</p>
         </div>
 """
 
@@ -998,51 +1235,55 @@ class DataExporter:
 
             html_content += f"""
         <div class="section">
-            <h2>📈 Today's Activity Summary</h2>
+            <h2>📈 {translate("report.today_activity_summary")}</h2>
             <div class="metric-grid">
                 <div class="metric-card">
-                    <h4>👟 Steps</h4>
-                    <div class="metric-value">{_html(f"{steps:,}")} <span class="metric-unit">steps</span></div>
+                    <h4>👟 {translate("report.steps")}</h4>
+                    <div class="metric-value">{_html(f"{steps:,}")} <span class="metric-unit">{translate("report.steps_unit")}</span></div>
                 </div>
                 <div class="metric-card">
-                    <h4>🔥 Calories</h4>
-                    <div class="metric-value">{_html(f"{calories:,}")} <span class="metric-unit">total</span></div>
-                    <div style="margin-top: 10px;">{_html(f"{active_calories:,}")} active</div>
+                    <h4>🔥 {translate("report.calories")}</h4>
+                    <div class="metric-value">{_html(f"{calories:,}")} <span class="metric-unit">{translate("report.total")}</span></div>
+                    <div style="margin-top: 10px;">{_html(f"{active_calories:,}")} {translate("report.active")}</div>
                 </div>
                 <div class="metric-card">
-                    <h4>📏 Distance</h4>
+                    <h4>📏 {translate("report.distance")}</h4>
                     <div class="metric-value">{_html(distance)} <span class="metric-unit">km</span></div>
                 </div>
             </div>
         </div>
 """
         else:
-            html_content += """
+            html_content += f"""
         <div class="section">
-            <h2>📈 Today's Activity Summary</h2>
-            <div class="no-data">No activity data available for today</div>
+            <h2>📈 {translate("report.today_activity_summary")}</h2>
+            <div class="no-data">{translate("report.no_activity_today")}</div>
         </div>
 """
 
         # Health Metrics Section
         health_metrics = report_data.get("health_metrics", {})
         if health_metrics and any(health_metrics.values()):
-            html_content += """
+            html_content += f"""
         <div class="section">
-            <h2>❤️ Health Metrics</h2>
+            <h2>❤️ {translate("report.health_metrics")}</h2>
             <div class="metric-grid">
 """
 
             # Heart Rate
             heart_rate = health_metrics.get("heart_rate", {})
             if heart_rate and isinstance(heart_rate, dict):
-                resting_hr = heart_rate.get("restingHeartRate", "N/A")
-                max_hr = heart_rate.get("maxHeartRate", "N/A")
+                resting_hr = heart_rate.get(
+                    "restingHeartRate", translate("report.not_available")
+                )
+                max_hr = heart_rate.get(
+                    "maxHeartRate", translate("report.not_available")
+                )
                 html_content += f"""
                 <div class="metric-card">
-                    <h4>💓 Heart Rate</h4>
-                    <div class="metric-value">{_html(resting_hr)} <span class="metric-unit">bpm (resting)</span></div>
-                    <div style="margin-top: 10px;">Max: {_html(max_hr)} bpm</div>
+                    <h4>💓 {translate("report.heart_rate")}</h4>
+                    <div class="metric-value">{_html(resting_hr)} <span class="metric-unit">{translate("report.resting_bpm")}</span></div>
+                    <div style="margin-top: 10px;">{translate("report.max")} {_html(max_hr)} bpm</div>
                 </div>
 """
 
@@ -1060,9 +1301,9 @@ class DataExporter:
 
                 html_content += f"""
                 <div class="metric-card">
-                    <h4>😴 Sleep</h4>
-                    <div class="metric-value">{_html(sleep_hours)} <span class="metric-unit">hours</span></div>
-                    <div style="margin-top: 10px;">Deep Sleep: {_html(deep_hours)} hours</div>
+                    <h4>😴 {translate("report.sleep")}</h4>
+                    <div class="metric-value">{_html(sleep_hours)} <span class="metric-unit">{translate("report.hours")}</span></div>
+                    <div style="margin-top: 10px;">{translate("report.deep_sleep")} {_html(deep_hours)} {translate("report.hours")}</div>
                 </div>
 """
 
@@ -1073,22 +1314,26 @@ class DataExporter:
                 goal = steps_data.get("dailyStepGoal", 10000)
                 html_content += f"""
                 <div class="metric-card">
-                    <h4>🎯 Step Goal</h4>
-                    <div class="metric-value">{_html(f"{total_steps:,}")} <span class="metric-unit">of {_html(f"{goal:,}")}</span></div>
-                    <div style="margin-top: 10px;">Goal: {_html(round((total_steps / goal) * 100) if goal else 0)}%</div>
+                    <h4>🎯 {translate("report.step_goal")}</h4>
+                    <div class="metric-value">{_html(f"{total_steps:,}")} <span class="metric-unit">{translate("report.of")} {_html(f"{goal:,}")}</span></div>
+                    <div style="margin-top: 10px;">{translate("report.goal")} {_html(round((total_steps / goal) * 100) if goal else 0)}%</div>
                 </div>
 """
 
             # Stress Data
             stress_data = health_metrics.get("stress", {})
             if stress_data and isinstance(stress_data, dict):
-                avg_stress = stress_data.get("avgStressLevel", "N/A")
-                max_stress = stress_data.get("maxStressLevel", "N/A")
+                avg_stress = stress_data.get(
+                    "avgStressLevel", translate("report.not_available")
+                )
+                max_stress = stress_data.get(
+                    "maxStressLevel", translate("report.not_available")
+                )
                 html_content += f"""
                 <div class="metric-card">
-                    <h4>😰 Stress Level</h4>
-                    <div class="metric-value">{_html(avg_stress)} <span class="metric-unit">avg</span></div>
-                    <div style="margin-top: 10px;">Max: {_html(max_stress)}</div>
+                    <h4>😰 {translate("report.stress_level")}</h4>
+                    <div class="metric-value">{_html(avg_stress)} <span class="metric-unit">{translate("report.avg")}</span></div>
+                    <div style="margin-top: 10px;">{translate("report.max")} {_html(max_stress)}</div>
                 </div>
 """
 
@@ -1096,35 +1341,35 @@ class DataExporter:
             body_battery = health_metrics.get("body_battery", [])
             if body_battery and isinstance(body_battery, list) and body_battery:
                 latest_bb = body_battery[-1] if body_battery else {}
-                charged = latest_bb.get("charged", "N/A")
-                drained = latest_bb.get("drained", "N/A")
+                charged = latest_bb.get("charged", translate("report.not_available"))
+                drained = latest_bb.get("drained", translate("report.not_available"))
                 html_content += f"""
                 <div class="metric-card">
-                    <h4>🔋 Body Battery</h4>
-                    <div class="metric-value">+{_html(charged)} <span class="metric-unit">charged</span></div>
-                    <div style="margin-top: 10px;">-{_html(drained)} drained</div>
+                    <h4>🔋 {translate("report.body_battery")}</h4>
+                    <div class="metric-value">+{_html(charged)} <span class="metric-unit">{translate("report.charged")}</span></div>
+                    <div style="margin-top: 10px;">-{_html(drained)} {translate("report.drained")}</div>
                 </div>
 """
 
             html_content += "            </div>\n        </div>\n"
         else:
-            html_content += """
+            html_content += f"""
         <div class="section">
-            <h2>❤️ Health Metrics</h2>
-            <div class="no-data">No health metrics data available</div>
+            <h2>❤️ {translate("report.health_metrics")}</h2>
+            <div class="no-data">{translate("report.no_health_metrics")}</div>
         </div>
 """
 
         # Weekly Trends Section
         weekly_data = report_data.get("weekly_data", [])
         if weekly_data:
-            html_content += """
+            html_content += f"""
         <div class="section">
-            <h2>📊 Weekly Trends (Last 7 Days)</h2>
+            <h2>📊 {translate("report.weekly_trends")}</h2>
             <div class="metric-grid">
 """
             for daily in weekly_data[:7]:  # Show last 7 days
-                date = daily.get("date", "Unknown")
+                date = daily.get("date", translate("report.unknown"))
                 steps = daily.get("totalSteps", 0)
                 calories = daily.get("totalKilocalories", 0)
                 distance = (
@@ -1136,7 +1381,7 @@ class DataExporter:
                 html_content += f"""
                 <div class="metric-card">
                     <h4>📅 {_html(date)}</h4>
-                    <div class="metric-value">{_html(f"{steps:,}")} <span class="metric-unit">steps</span></div>
+                    <div class="metric-value">{_html(f"{steps:,}")} <span class="metric-unit">{translate("report.steps_unit")}</span></div>
                     <div style="margin-top: 10px;">
                         <div>{_html(f"{calories:,}")} kcal</div>
                         <div>{_html(distance)} km</div>
@@ -1148,19 +1393,21 @@ class DataExporter:
         # Recent Activities Section
         activities = report_data.get("recent_activities", [])
         if activities:
-            html_content += """
+            html_content += f"""
         <div class="section">
-            <h2>🏃 Recent Activities</h2>
+            <h2>🏃 {translate("report.recent_activities")}</h2>
 """
             for activity in activities[:5]:  # Show last 5 activities
-                name = activity.get("activityName", "Unknown Activity")
+                name = activity.get(
+                    "activityName", translate("report.unknown_activity")
+                )
                 activity_type = activity.get("activityType", {}).get(
-                    "typeKey", "Unknown"
+                    "typeKey", translate("report.unknown")
                 )
                 date = (
                     activity.get("startTimeLocal", "").split("T")[0]
                     if activity.get("startTimeLocal")
-                    else "Unknown"
+                    else translate("report.unknown")
                 )
                 duration = activity.get("duration", 0)
                 duration_min = round(duration / 60, 1) if duration else 0
@@ -1176,41 +1423,45 @@ class DataExporter:
                 <div class="activity-item">
                     <h4>{_html(name)} ({_html(activity_type)})</h4>
                     <div class="activity-details">
-                        <div><strong>Date:</strong> {_html(date)}</div>
-                        <div><strong>Duration:</strong> {_html(duration_min)} min</div>
-                        <div><strong>Distance:</strong> {_html(distance)} km</div>
-                        <div><strong>Calories:</strong> {_html(calories)}</div>
-                        <div><strong>Avg HR:</strong> {_html(avg_hr)} bpm</div>
+                        <div><strong>{translate("report.date")}</strong> {_html(date)}</div>
+                        <div><strong>{translate("report.duration")}</strong> {_html(duration_min)} min</div>
+                        <div><strong>{translate("report.distance")}</strong> {_html(distance)} km</div>
+                        <div><strong>{translate("report.calories")}</strong> {_html(calories)}</div>
+                        <div><strong>{translate("report.avg_hr")}</strong> {_html(avg_hr)} bpm</div>
                     </div>
                 </div>
 """
             html_content += "        </div>\n"
         else:
-            html_content += """
+            html_content += f"""
         <div class="section">
-            <h2>🏃 Recent Activities</h2>
-            <div class="no-data">No recent activities found</div>
+            <h2>🏃 {translate("report.recent_activities")}</h2>
+            <div class="no-data">{translate("report.no_recent_activities")}</div>
         </div>
 """
 
         # Device Information
         device_info = report_data.get("device_info", [])
         if device_info:
-            html_content += """
+            html_content += f"""
         <div class="section">
-            <h2>⌚ Device Information</h2>
+            <h2>⌚ {translate("report.device_information")}</h2>
             <div class="metric-grid">
 """
             for device in device_info:
-                device_name = device.get("displayName", "Unknown Device")
-                model = device.get("productDisplayName", "Unknown Model")
-                version = device.get("softwareVersion", "Unknown")
+                device_name = device.get(
+                    "displayName", translate("report.unknown_device")
+                )
+                model = device.get(
+                    "productDisplayName", translate("report.unknown_model")
+                )
+                version = device.get("softwareVersion", translate("report.unknown"))
 
                 html_content += f"""
                 <div class="metric-card">
                     <h4>{_html(device_name)}</h4>
-                    <div><strong>Model:</strong> {_html(model)}</div>
-                    <div><strong>Software:</strong> {_html(version)}</div>
+                    <div><strong>{translate("report.model")}</strong> {_html(model)}</div>
+                    <div><strong>{translate("report.software")}</strong> {_html(version)}</div>
                 </div>
 """
             html_content += "            </div>\n        </div>\n"
@@ -1218,8 +1469,8 @@ class DataExporter:
         # Footer
         html_content += f"""
         <div class="footer">
-            <p>Generated by Garmin Connect API Demo on {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
-            <p>This report is for informational purposes only. Consult healthcare professionals for medical advice.</p>
+            <p>{translate("report.footer_generated", timestamp=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))}</p>
+            <p>{translate("report.footer_disclaimer")}</p>
         </div>
     </div>
 </body>
@@ -1271,10 +1522,8 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
             (time.perf_counter() - t0) * 1000,
             e,
         )
-        error_msg = (
-            "Endpoint not found (404) - This feature may have been moved or removed"
-        )
-        print(f"⚠️ {method_name} failed: {error_msg}")
+        error_msg = translate("error.endpoint_not_found")
+        print(translate("ui.api_method_error", method=method_name, error=error_msg))
         return False, None, error_msg
 
     except GarminConnectConnectionError as e:
@@ -1294,34 +1543,30 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
 
         # Handle specific status codes
         if status_code == 400 or ("400" in error_str and "Bad Request" in error_str):
-            error_msg = "Endpoint not available (400 Bad Request) - This feature may not be enabled for your account or region"
+            error_msg = translate("error.endpoint_not_available")
             # Don't print for 400 errors as they're often expected for unavailable features
         elif status_code == 401 or "401" in error_str:
-            error_msg = (
-                "Authentication required (401 Unauthorized) - Please re-authenticate"
-            )
-            print(f"⚠️ {method_name} failed: {error_msg}")
+            error_msg = translate("error.authentication_required")
+            print(translate("ui.api_method_error", method=method_name, error=error_msg))
         elif status_code == 403 or "403" in error_str:
-            error_msg = "Access denied (403 Forbidden) - Your account may not have permission for this feature"
-            print(f"⚠️ {method_name} failed: {error_msg}")
+            error_msg = translate("error.access_denied")
+            print(translate("ui.api_method_error", method=method_name, error=error_msg))
         elif status_code == 410 or "410" in error_str:
-            error_msg = "Resource no longer available (410 Gone) - This data does not exist or the endpoint has been retired"
-            print(f"⚠️ {method_name} failed: {error_msg}")
+            error_msg = translate("error.resource_unavailable")
+            print(translate("ui.api_method_error", method=method_name, error=error_msg))
         elif status_code == 429 or "429" in error_str:
-            error_msg = (
-                "Rate limit exceeded (429) - Please wait before making more requests"
-            )
-            print(f"⚠️ {method_name} failed: {error_msg}")
+            error_msg = translate("error.rate_limit_exceeded")
+            print(translate("ui.api_method_error", method=method_name, error=error_msg))
         elif status_code == 500 or "500" in error_str:
-            error_msg = "Server error (500) - Garmin's servers are experiencing issues"
-            print(f"⚠️ {method_name} failed: {error_msg}")
+            error_msg = translate("error.server_error")
+            print(translate("ui.api_method_error", method=method_name, error=error_msg))
         elif status_code == 503 or "503" in error_str:
-            error_msg = "Service unavailable (503) - Garmin's servers are temporarily unavailable"
-            print(f"⚠️ {method_name} failed: {error_msg}")
+            error_msg = translate("error.service_unavailable")
+            print(translate("ui.api_method_error", method=method_name, error=error_msg))
         else:
-            error_msg = f"HTTP error: {e}"
+            error_msg = translate("error.http", error=str(e))
 
-        print(f"⚠️ {method_name} failed: {error_msg}")
+        print(translate("ui.api_method_error", method=method_name, error=error_msg))
         return False, None, error_msg
 
     except GarminConnectAuthenticationError as e:
@@ -1331,8 +1576,8 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
             (time.perf_counter() - t0) * 1000,
             e,
         )
-        error_msg = f"Authentication issue: {e}"
-        print(f"⚠️ {method_name} failed: {error_msg}")
+        error_msg = translate("error.authentication_issue", error=str(e))
+        print(translate("ui.api_method_error", method=method_name, error=error_msg))
         return False, None, error_msg
 
     except GarminConnectConnectionError as e:  # noqa: B025
@@ -1345,16 +1590,14 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
         error_str = str(e)
         # Extract a clean message by detecting common HTTP status codes
         if "410" in error_str:
-            error_msg = "Resource no longer available (410 Gone) - This data does not exist or the endpoint has been retired"
+            error_msg = translate("error.resource_unavailable")
         elif "403" in error_str:
-            error_msg = "Access denied (403 Forbidden) - Your account may not have permission for this feature"
+            error_msg = translate("error.access_denied")
         elif "404" in error_str:
-            error_msg = (
-                "Endpoint not found (404) - This feature may have been moved or removed"
-            )
+            error_msg = translate("error.endpoint_not_found")
         else:
-            error_msg = f"Connection issue: {e}"
-        print(f"⚠️ {method_name} failed: {error_msg}")
+            error_msg = translate("error.connection_issue", error=str(e))
+        print(translate("ui.api_method_error", method=method_name, error=error_msg))
         return False, None, error_msg
 
     except Exception as e:
@@ -1364,8 +1607,8 @@ def safe_api_call(api_method, *args, method_name: str | None = None, **kwargs):
             (time.perf_counter() - t0) * 1000,
             e,
         )
-        error_msg = f"Unexpected error: {e}"
-        print(f"⚠️ {method_name} failed: {error_msg}")
+        error_msg = translate("error.unexpected", error=str(e))
+        print(translate("ui.api_method_error", method=method_name, error=error_msg))
         return False, None, error_msg
 
 
@@ -1435,11 +1678,11 @@ def call_and_display(
 
 def _display_single(api_call: str, output: Any):
     """Internal function to display single API response."""
-    print(f"\n📡 API Call: {api_call}")
+    print(translate("demo.api_call", call=api_call))
     print("-" * 50)
 
     if output is None:
-        print("No data returned")
+        print(translate("demo.no_data"))
         # Save empty JSON to response.json in the export directory
         response_file = config.export_dir / "response.json"
         with _open_private(response_file, "w", encoding="utf-8") as f:
@@ -1466,24 +1709,24 @@ def _display_single(api_call: str, output: Any):
         print("-" * 77)
 
     except Exception as e:
-        print(f"Error formatting output: {e}")
+        print(translate("ui.format_error", error=e))
         print(output)
 
 
 def _display_group(group_name: str, api_responses: list[tuple[str, Any]]):
     """Internal function to display grouped API responses."""
-    print(f"\n📡 API Group: {group_name}")
+    print(translate("demo.api_group", group=group_name))
 
     # Collect all responses for saving
     all_responses = {}
     response_content_parts = []
 
     for api_call, output in api_responses:
-        print(f"\n📋 {api_call}")
+        print(translate("demo.api_method_header", call=api_call))
         print("-" * 50)
 
         if output is None:
-            print("No data returned")
+            print(translate("demo.no_data"))
             formatted_output = "{}"
         else:
             try:
@@ -1493,7 +1736,7 @@ def _display_group(group_name: str, api_responses: list[tuple[str, Any]]):
                     formatted_output = str(output)
                 print(formatted_output)
             except Exception as e:
-                print(f"Error formatting output: {e}")
+                print(translate("ui.format_error", error=e))
                 formatted_output = str(output)
                 print(output)
 
@@ -1514,11 +1757,11 @@ def _display_group(group_name: str, api_responses: list[tuple[str, Any]]):
         with _open_private(response_file, "w", encoding="utf-8") as f:
             f.write(grouped_content)
 
-        print(f"\n✅ Grouped responses saved to: {response_file}")
+        print(translate("demo.group_saved", path=response_file))
         print("=" * 77)
 
     except Exception as e:
-        print(f"Error saving grouped responses: {e}")
+        print(translate("ui.save_group_error", error=e))
 
 
 def format_timedelta(td):
@@ -1568,7 +1811,7 @@ def safe_call_for_group(
 
 def get_solar_data(api: Garmin) -> None:
     """Get solar data from all Garmin devices using centralized error handling."""
-    print("☀️ Getting solar data from devices...")
+    print(translate("demo.solar_loading"))
 
     # Collect all API responses for grouped display
     api_responses = []
@@ -1603,7 +1846,7 @@ def get_solar_data(api: Garmin) -> None:
             if device_id:
                 device_name = device.get("displayName", f"Device {device_id}")
                 print(
-                    f"\n☀️ Getting solar data for device: {device_name} (ID: {device_id})"
+                    translate("ui.solar_device", name=device_name, device_id=device_id)
                 )
 
                 # Use centralized wrapper for each device's solar data
@@ -1617,7 +1860,7 @@ def get_solar_data(api: Garmin) -> None:
                     )
                 )
     else:
-        print("ℹ️ No devices found or error retrieving devices")
+        print(translate("demo.device_missing"))
 
     # Display all responses as a group
     call_and_display(group_name="Solar Data Collection", api_responses=api_responses)
@@ -1630,25 +1873,27 @@ def import_activity_file(api: Garmin) -> None:
     try:
         activity_files = glob.glob(config.activityfile)
         if not activity_files:
-            print("❌ No activity files found in test_data directory.")
-            print("ℹ️ Please add FIT/GPX/TCX files to test_data before importing.")
+            print(translate("demo.activity_file_missing"))
+            print(translate("demo.add_activity_files"))
             return
 
-        print("Select a file to import (will NOT be re-exported to Strava):")
+        print(translate("demo.import_select"))
         for idx, fname in enumerate(activity_files, 1):
-            print(f"  {idx}. {fname}")
+            print(translate("ui.file_number", index=idx, name=fname))
 
         while True:
             try:
-                choice = int(input(f"Enter number (1-{len(activity_files)}): "))
+                choice = int(
+                    input(translate("prompt.enter_number", maximum=len(activity_files)))
+                )
                 if 1 <= choice <= len(activity_files):
                     selected_file = activity_files[choice - 1]
                     break
-                print("Invalid selection. Try again.")
+                print(translate("demo.invalid_selection"))
             except ValueError:
-                print("Please enter a valid number.")
+                print(translate("demo.valid_number"))
 
-        print(f"📥 Importing activity from file: {selected_file}")
+        print(translate("demo.activity_imported", path=selected_file))
 
         call_and_display(
             api.import_activity,
@@ -1658,12 +1903,12 @@ def import_activity_file(api: Garmin) -> None:
         )
 
     except FileNotFoundError:
-        print(f"❌ File not found: {selected_file}")
+        print(translate("demo.file_not_found", path=selected_file))
     except Exception as e:
         if "409" in str(e) or "duplicate" in str(e).lower():
-            print("⚠️ Activity already exists (duplicate)")
+            print(translate("demo.activity_duplicate"))
         else:
-            print(f"❌ Import failed: {e}")
+            print(translate("ui.import_error", error=e))
 
 
 def upload_activity_file(api: Garmin) -> None:
@@ -1674,25 +1919,27 @@ def upload_activity_file(api: Garmin) -> None:
         # List all .gpx files in test_data
         gpx_files = glob.glob(config.activityfile)
         if not gpx_files:
-            print("❌ No .gpx files found in test_data directory.")
-            print("ℹ️ Please add GPX files to test_data before uploading.")
+            print(translate("ui.gpx_missing"))
+            print(translate("demo.add_gpx_files"))
             return
 
-        print("Select a GPX file to upload:")
+        print(translate("demo.gpx_select"))
         for idx, fname in enumerate(gpx_files, 1):
-            print(f"  {idx}. {fname}")
+            print(translate("ui.file_number", index=idx, name=fname))
 
         while True:
             try:
-                choice = int(input(f"Enter number (1-{len(gpx_files)}): "))
+                choice = int(
+                    input(translate("prompt.enter_number", maximum=len(gpx_files)))
+                )
                 if 1 <= choice <= len(gpx_files):
                     selected_file = gpx_files[choice - 1]
                     break
-                print("Invalid selection. Try again.")
+                print(translate("demo.invalid_selection"))
             except ValueError:
-                print("Please enter a valid number.")
+                print(translate("demo.valid_number"))
 
-        print(f"📤 Uploading activity from file: {selected_file}")
+        print(translate("demo.activity_uploaded", path=selected_file))
 
         call_and_display(
             api.upload_activity,
@@ -1702,92 +1949,76 @@ def upload_activity_file(api: Garmin) -> None:
         )
 
     except FileNotFoundError:
-        print(f"❌ File not found: {selected_file}")
-        print("ℹ️ Please ensure the activity file exists in the current directory")
+        print(translate("demo.file_not_found", path=selected_file))
+        print(translate("demo.activity_file_current_dir"))
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 409:
-            print(
-                "⚠️ Activity already exists: This activity has already been uploaded to Garmin Connect"
-            )
-            print("ℹ️ Garmin Connect prevents duplicate activities from being uploaded")
-            print(
-                "💡 Try modifying the activity timestamps or creating a new activity file"
-            )
+            print(translate("error.duplicate_full"))
+            print(translate("error.duplicate_info"))
+            print(translate("error.modify_file"))
         elif e.response.status_code == 413:
-            print(
-                "❌ File too large: The activity file exceeds Garmin Connect's size limit"
-            )
-            print("💡 Try compressing the file or reducing the number of data points")
+            print(translate("error.file_too_large"))
+            print(translate("error.compress_file"))
         elif e.response.status_code == 422:
-            print(
-                "❌ Invalid file format: The activity file format is not supported or corrupted"
-            )
-            print("ℹ️ Supported formats: FIT, GPX, TCX")
-            print("💡 Try converting to a different format or check file integrity")
+            print(translate("error.file_format"))
+            print(translate("error.supported_formats"))
+            print(translate("ui.retry_file_format"))
         elif e.response.status_code == 400:
-            print("❌ Bad request: Invalid activity data or malformed file")
-            print(
-                "💡 Check if the activity file contains valid GPS coordinates and timestamps"
-            )
+            print(translate("error.bad_request"))
+            print(translate("error.check_gps"))
         elif e.response.status_code == 401:
-            print("❌ Authentication failed: Please login again")
-            print("💡 Your session may have expired")
+            print(translate("ui.auth_failed_error"))
+            print(translate("error.session_expired"))
         elif e.response.status_code == 429:
-            print("❌ Rate limit exceeded: Too many upload requests")
-            print("💡 Please wait a few minutes before trying again")
+            print(translate("error.rate_limit_upload"))
+            print(translate("error.wait"))
         else:
-            print(f"❌ HTTP Error {e.response.status_code}: {e}")
+            print(translate("ui.http_error", status=e.response.status_code, error=e))
     except GarminConnectAuthenticationError as e:
-        print(f"❌ Authentication error: {e}")
-        print("💡 Please check your login credentials and try again")
+        print(translate("error.authentication", error=e))
+        print(translate("ui.check_credentials"))
     except GarminConnectConnectionError as e:
-        print(f"❌ Connection error: {e}")
-        print("💡 Please check your internet connection and try again")
+        print(translate("error.connection", error=e))
+        print(translate("ui.check_connection"))
     except GarminConnectTooManyRequestsError as e:
-        print(f"❌ Too many requests: {e}")
-        print("💡 Please wait a few minutes before trying again")
+        print(translate("error.too_many_requests", error=e))
+        print(translate("error.wait"))
     except Exception as e:
         error_str = str(e)
         if "409 Client Error: Conflict" in error_str:
-            print(
-                "⚠️ Activity already exists: This activity has already been uploaded to Garmin Connect"
-            )
-            print("ℹ️ Garmin Connect prevents duplicate activities from being uploaded")
-            print(
-                "💡 Try modifying the activity timestamps or creating a new activity file"
-            )
+            print(translate("error.duplicate_full"))
+            print(translate("error.duplicate_info"))
+            print(translate("error.modify_file"))
         elif "413" in error_str and "Request Entity Too Large" in error_str:
-            print(
-                "❌ File too large: The activity file exceeds Garmin Connect's size limit"
-            )
-            print("💡 Try compressing the file or reducing the number of data points")
+            print(translate("error.file_too_large"))
+            print(translate("error.compress_file"))
         elif "422" in error_str and "Unprocessable Entity" in error_str:
-            print(
-                "❌ Invalid file format: The activity file format is not supported or corrupted"
-            )
-            print("ℹ️ Supported formats: FIT, GPX, TCX")
-            print("💡 Try converting to a different format or check file integrity")
+            print(translate("error.file_format"))
+            print(translate("error.supported_formats"))
+            print(translate("ui.retry_file_format"))
         elif "400" in error_str and "Bad Request" in error_str:
-            print("❌ Bad request: Invalid activity data or malformed file")
-            print(
-                "💡 Check if the activity file contains valid GPS coordinates and timestamps"
-            )
+            print(translate("error.bad_request"))
+            print(translate("error.check_gps"))
         elif "401" in error_str and "Unauthorized" in error_str:
-            print("❌ Authentication failed: Please login again")
-            print("💡 Your session may have expired")
+            print(translate("ui.auth_failed_error"))
+            print(translate("error.session_expired"))
         elif "429" in error_str and "Too Many Requests" in error_str:
-            print("❌ Rate limit exceeded: Too many upload requests")
-            print("💡 Please wait a few minutes before trying again")
+            print(translate("error.rate_limit_upload"))
+            print(translate("error.wait"))
         else:
-            print(f"❌ Unexpected error uploading activity: {e}")
-            print("💡 Please check the file format and try again")
+            print(translate("ui.upload_error", error=e))
+            print(translate("ui.check_format"))
 
 
 def download_activities_by_date(api: Garmin) -> None:
     """Download activities by date range in multiple formats."""
     try:
         print(
-            f"📥 Downloading activities by date range ({config.week_start.isoformat()} to {config.today.isoformat()})..."
+            translate(
+                "result.activity_download",
+                start=config.week_start.isoformat(),
+                end=config.today.isoformat(),
+            )
         )
 
         # Get activities for the date range (last 7 days as default)
@@ -1796,10 +2027,10 @@ def download_activities_by_date(api: Garmin) -> None:
         )
 
         if not activities:
-            print("ℹ️ No activities found in the specified date range")
+            print(translate("error.no_data_range"))
             return
 
-        print(f"📊 Found {len(activities)} activities to download")
+        print(translate("result.activities_found", count=len(activities)))
 
         # Download each activity in multiple formats
         for activity in activities:
@@ -1810,7 +2041,11 @@ def download_activities_by_date(api: Garmin) -> None:
             if not activity_id:
                 continue
 
-            print(f"📥 Downloading: {activity_name} (ID: {activity_id})")
+            print(
+                translate(
+                    "ui.download_item", name=activity_name, activity_id=activity_id
+                )
+            )
 
             # Download formats: GPX, TCX, ORIGINAL, CSV
             formats = ["GPX", "TCX", "ORIGINAL", "CSV"]
@@ -1832,7 +2067,11 @@ def download_activities_by_date(api: Garmin) -> None:
                             import json
 
                             json.dump(activity_details, f, indent=2, ensure_ascii=False)
-                        print(f"  ✅ {fmt}: {filename}")
+                        print(
+                            translate(
+                                "ui.download_success", format=fmt, filename=filename
+                            )
+                        )
                     else:
                         # Download the file from Garmin using proper enum values
                         format_mapping = {
@@ -1847,52 +2086,56 @@ def download_activities_by_date(api: Garmin) -> None:
                         if content:
                             with _open_private(filepath, "wb") as f:
                                 f.write(content)
-                            print(f"  ✅ {fmt}: {filename}")
+                            print(
+                                translate(
+                                    "ui.download_success", format=fmt, filename=filename
+                                )
+                            )
                         else:
-                            print(f"  ❌ {fmt}: No content available")
+                            print(translate("ui.workout_no_content", format=fmt))
 
                 except Exception as e:
-                    print(f"  ❌ {fmt}: Error downloading - {e}")
+                    print(translate("ui.download_format_error", format=fmt, error=e))
 
-        print(f"✅ Activity downloads completed! Files saved to: {config.export_dir}")
+        print(translate("result.download_complete", path=config.export_dir))
 
     except Exception as e:
-        print(f"❌ Error downloading activities: {e}")
+        print(translate("error.download_activities", error=e))
 
 
 def add_weigh_in_data(api: Garmin) -> None:
     """Add a weigh-in with timestamps."""
     try:
         # Get weight input from user
-        print("⚖️ Adding weigh-in entry")
+        print(translate("ui.weigh_in_loading"))
         print("-" * 30)
 
         # Weight input with validation
         while True:
             try:
-                weight_str = input("Enter weight (30-300, default: 85.1): ").strip()
+                weight_str = input(translate("prompt.enter_weight")).strip()
                 if not weight_str:
                     weight = 85.1
                     break
                 weight = float(weight_str)
                 if 30 <= weight <= 300:
                     break
-                print("❌ Weight must be between 30 and 300")
+                print(translate("error.weight"))
             except ValueError:
-                print("❌ Please enter a valid number")
+                print(translate("error.invalid_number"))
 
         # Unit selection
         while True:
-            unit_input = input("Enter unit (kg/lbs, default: kg): ").strip().lower()
+            unit_input = input(translate("prompt.enter_unit")).strip().lower()
             if not unit_input:
                 weight_unit = "kg"
                 break
             if unit_input in ["kg", "lbs"]:
                 weight_unit = unit_input
                 break
-            print("❌ Please enter 'kg' or 'lbs'")
+            print(translate("error.kg_lbs"))
 
-        print(f"⚖️ Adding weigh-in: {weight} {weight_unit}")
+        print(translate("ui.weighing", weight=weight, unit=weight_unit))
 
         # Collect all API responses for grouped display
         api_responses = []
@@ -1929,10 +2172,10 @@ def add_weigh_in_data(api: Garmin) -> None:
         # Display all responses as a group
         call_and_display(group_name="Weigh-in Data Entry", api_responses=api_responses)
 
-        print("✅ Weigh-in data added successfully!")
+        print(translate("result.weigh_in_added"))
 
     except Exception as e:
-        print(f"❌ Error adding weigh-in: {e}")
+        print(translate("error.add_weigh_in_error", error=e))
 
 
 # Helper functions for the new API methods
@@ -1967,7 +2210,7 @@ def get_lactate_threshold_data(api: Garmin) -> None:
         )
 
     except Exception as e:
-        print(f"❌ Error getting lactate threshold data: {e}")
+        print(translate("ui.lactate_error", error=e))
 
 
 def get_activity_splits_data(api: Garmin) -> None:
@@ -1983,9 +2226,9 @@ def get_activity_splits_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_activity_splits({activity_id})",
             )
         else:
-            print("ℹ️ No activities found")
+            print(translate("demo.no_activities"))
     except Exception as e:
-        print(f"❌ Error getting activity splits: {e}")
+        print(translate("ui.activity_splits_error", error=e))
 
 
 def get_activity_typed_splits_data(api: Garmin) -> None:
@@ -2001,9 +2244,9 @@ def get_activity_typed_splits_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_activity_typed_splits({activity_id})",
             )
         else:
-            print("ℹ️ No activities found")
+            print(translate("demo.no_activities"))
     except Exception as e:
-        print(f"❌ Error getting activity typed splits: {e}")
+        print(translate("ui.typed_splits_error", error=e))
 
 
 def get_activity_split_summaries_data(api: Garmin) -> None:
@@ -2019,9 +2262,9 @@ def get_activity_split_summaries_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_activity_split_summaries({activity_id})",
             )
         else:
-            print("ℹ️ No activities found")
+            print(translate("demo.no_activities"))
     except Exception as e:
-        print(f"❌ Error getting activity split summaries: {e}")
+        print(translate("ui.split_summaries_error", error=e))
 
 
 def get_activity_weather_data(api: Garmin) -> None:
@@ -2037,9 +2280,9 @@ def get_activity_weather_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_activity_weather({activity_id})",
             )
         else:
-            print("ℹ️ No activities found")
+            print(translate("demo.no_activities"))
     except Exception as e:
-        print(f"❌ Error getting activity weather: {e}")
+        print(translate("ui.activity_weather_error", error=e))
 
 
 def get_activity_hr_timezones_data(api: Garmin) -> None:
@@ -2055,9 +2298,9 @@ def get_activity_hr_timezones_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_activity_hr_in_timezones({activity_id})",
             )
         else:
-            print("ℹ️ No activities found")
+            print(translate("demo.no_activities"))
     except Exception as e:
-        print(f"❌ Error getting activity HR timezones: {e}")
+        print(translate("ui.activity_hr_error", error=e))
 
 
 def get_activity_power_timezones_data(api: Garmin) -> None:
@@ -2073,9 +2316,9 @@ def get_activity_power_timezones_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_activity_power_in_timezones({activity_id})",
             )
         else:
-            print("ℹ️ No activities found")
+            print(translate("demo.no_activities"))
     except Exception as e:
-        print(f"❌ Error getting activity power timezones: {e}")
+        print(translate("ui.activity_power_error", error=e))
 
 
 def get_cycling_ftp_data(api: Garmin) -> None:
@@ -2124,9 +2367,9 @@ def get_activity_details_data(api: Garmin) -> None:
                     ),
                 )
         else:
-            print("ℹ️ No activities found")
+            print(translate("demo.no_activities"))
     except Exception as e:
-        print(f"❌ Error getting activity details: {e}")
+        print(translate("ui.activity_details_error", error=e))
 
 
 def get_activity_gear_data(api: Garmin) -> None:
@@ -2142,9 +2385,9 @@ def get_activity_gear_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_activity_gear({activity_id})",
             )
         else:
-            print("ℹ️ No activities found")
+            print(translate("demo.no_activities"))
     except Exception as e:
-        print(f"❌ Error getting activity gear: {e}")
+        print(translate("ui.activity_gear_error", error=e))
 
 
 def get_single_activity_data(api: Garmin) -> None:
@@ -2160,9 +2403,9 @@ def get_single_activity_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_activity({activity_id})",
             )
         else:
-            print("ℹ️ No activities found")
+            print(translate("demo.no_activities"))
     except Exception as e:
-        print(f"❌ Error getting single activity: {e}")
+        print(translate("ui.single_activity_error", error=e))
 
 
 def get_activity_exercise_sets_data(api: Garmin) -> None:
@@ -2188,9 +2431,9 @@ def get_activity_exercise_sets_data(api: Garmin) -> None:
             )
         else:
             # Return empty JSON response
-            print("ℹ️ No strength training activities found")
+            print(translate("demo.no_strength"))
     except Exception:
-        print("ℹ️ No activity exercise sets available")
+        print(translate("demo.no_exercise_sets"))
 
 
 def get_golf_scorecard_data(api: Garmin) -> None:
@@ -2199,7 +2442,7 @@ def get_golf_scorecard_data(api: Garmin) -> None:
         # First get summary to find valid IDs
         summary = api.get_golf_summary(limit=20)
         if not summary:
-            print("❌ No golf scorecards found")
+            print(translate("demo.no_golf"))
             return
 
         scorecards = (
@@ -2208,16 +2451,24 @@ def get_golf_scorecard_data(api: Garmin) -> None:
             else summary.get("scorecardList", summary.get("items", [summary]))
         )
         if isinstance(scorecards, list) and scorecards:
-            print("\n⛳ Recent golf scorecards:")
+            print(translate("demo.recent_golf"))
             for i, sc in enumerate(scorecards[:10], 1):
                 sc_id = sc.get("scorecardId", sc.get("id", "?"))
                 course = sc.get("courseName", sc.get("golfCourseName", "Unknown"))
                 sc_date = sc.get("startTime", sc.get("date", "?"))
-                print(f"  [{i}] ID={sc_id} - {course} ({sc_date})")
+                print(
+                    translate(
+                        "ui.scorecard_row_with_date",
+                        index=i,
+                        scorecard_id=sc_id,
+                        course=course,
+                        date=sc_date,
+                    )
+                )
 
-        scorecard_id = input("\nEnter scorecard ID: ").strip()
+        scorecard_id = input(translate("demo.scorecard_id")).strip()
         if not scorecard_id:
-            print("❌ No scorecard ID provided")
+            print(translate("demo.no_scorecard_id"))
             return
 
         call_and_display(
@@ -2227,7 +2478,7 @@ def get_golf_scorecard_data(api: Garmin) -> None:
             api_call_desc=f"api.get_golf_scorecard({scorecard_id})",
         )
     except Exception as e:
-        print(f"❌ Error getting golf scorecard: {e}")
+        print(translate("ui.golf_scorecard_error", error=e))
 
 
 def get_golf_shot_data_entry(api: Garmin) -> None:
@@ -2236,7 +2487,7 @@ def get_golf_shot_data_entry(api: Garmin) -> None:
         # First get summary to find valid IDs
         summary = api.get_golf_summary(limit=20)
         if not summary:
-            print("❌ No golf scorecards found")
+            print(translate("demo.no_golf"))
             return
 
         scorecards = (
@@ -2245,21 +2496,25 @@ def get_golf_shot_data_entry(api: Garmin) -> None:
             else summary.get("scorecardList", summary.get("items", [summary]))
         )
         if isinstance(scorecards, list) and scorecards:
-            print("\n⛳ Recent golf scorecards:")
+            print(translate("demo.recent_golf"))
             for i, sc in enumerate(scorecards[:10], 1):
                 sc_id = sc.get("scorecardId", sc.get("id", "?"))
                 course = sc.get("courseName", sc.get("golfCourseName", "Unknown"))
-                print(f"  [{i}] ID={sc_id} - {course}")
+                print(
+                    translate(
+                        "ui.scorecard_short_row",
+                        index=i,
+                        scorecard_id=sc_id,
+                        course=course,
+                    )
+                )
 
-        scorecard_id = input("\nEnter scorecard ID: ").strip()
+        scorecard_id = input(translate("demo.scorecard_id")).strip()
         if not scorecard_id:
-            print("❌ No scorecard ID provided")
+            print(translate("demo.no_scorecard_id"))
             return
 
-        holes = input(
-            "Enter hole numbers 1-9, comma/dash separated "
-            "(10-18 cannot be fetched with a filter; the API returns all 18 holes, or Enter for all): "
-        ).strip()
+        holes = input(translate("prompt.holes")).strip()
         holes = holes or None
 
         call_and_display(
@@ -2270,7 +2525,7 @@ def get_golf_shot_data_entry(api: Garmin) -> None:
             api_call_desc=f"api.get_golf_shot_data({scorecard_id}, hole_numbers={holes!r})",
         )
     except Exception as e:
-        print(f"❌ Error getting golf shot data: {e}")
+        print(translate("ui.golf_shot_error", error=e))
 
 
 def get_training_plan_by_id_data(api: Garmin) -> None:
@@ -2279,10 +2534,10 @@ def get_training_plan_by_id_data(api: Garmin) -> None:
     training_plans = resp.get("trainingPlanList") or []
 
     if not training_plans:
-        print("ℹ️ No training plans found in your list")
-        prompt_text = "Enter training plan ID: "
+        print(translate("demo.no_training_plans"))
+        prompt_text = translate("demo.training_plan_id")
     else:
-        prompt_text = "Enter training plan ID (press Enter for most recent): "
+        prompt_text = translate("demo.training_plan_id_recent")
 
     user_input = input(prompt_text).strip()
     selected = None
@@ -2298,9 +2553,7 @@ def get_training_plan_by_id_data(api: Garmin) -> None:
                 None,
             )
             if not selected:
-                print(
-                    f"ℹ️ Plan ID {wanted_id} not found in your plans; attempting fetch anyway"
-                )
+                print(translate("ui.plan_missing", plan_id=wanted_id))
                 plan_id = wanted_id
                 plan_name = f"Plan {wanted_id}"
                 plan_category = None
@@ -2309,11 +2562,11 @@ def get_training_plan_by_id_data(api: Garmin) -> None:
                 plan_name = selected.get("name", str(plan_id))
                 plan_category = selected.get("trainingPlanCategory")
         except ValueError:
-            print("❌ Invalid plan ID")
+            print(translate("error.invalid_plan"))
             return
     else:
         if not training_plans:
-            print("❌ No training plans available and no ID provided")
+            print(translate("ui.no_plans_id"))
             return
         selected = training_plans[-1]
         plan_id = int(selected["trainingPlanId"])
@@ -2350,9 +2603,9 @@ def get_workout_by_id_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_workout_by_id({workout_id}) - {workout_name}",
             )
         else:
-            print("ℹ️ No workouts found")
+            print(translate("demo.no_workouts"))
     except Exception as e:
-        print(f"❌ Error getting workout by ID: {e}")
+        print(translate("ui.workout_by_id_error", error=e))
 
 
 def download_workout_data(api: Garmin) -> None:
@@ -2363,7 +2616,7 @@ def download_workout_data(api: Garmin) -> None:
             workout_id = workouts[-1]["workoutId"]
             workout_name = workouts[-1]["workoutName"]
 
-            print(f"📥 Downloading workout: {workout_name}")
+            print(translate("ui.plan_download", name=workout_name))
             workout_data = api.download_workout(workout_id)
 
             if workout_data:
@@ -2372,26 +2625,24 @@ def download_workout_data(api: Garmin) -> None:
                 output_file = config.export_dir / f"{safe_name}_{safe_id}.fit"
                 with _open_private(output_file, "wb") as f:
                     f.write(workout_data)
-                print(f"✅ Workout downloaded to: {output_file}")
+                print(translate("result.workout_downloaded", path=output_file))
             else:
-                print("❌ No workout data available")
+                print(translate("result.no_workout_data"))
         else:
-            print("ℹ️ No workouts found")
+            print(translate("demo.no_workouts"))
     except Exception as e:
-        print(f"❌ Error downloading workout: {e}")
+        print(translate("error.workout_download_error", error=e))
 
 
 def upload_workout_data(api: Garmin) -> None:
     """Upload workout from JSON file."""
     try:
-        print(f"📤 Uploading workout from file: {config.workoutfile}")
+        print(translate("ui.workout_file_upload", path=config.workoutfile))
 
         # Check if file exists
         if not os.path.exists(config.workoutfile):
-            print(f"❌ File not found: {config.workoutfile}")
-            print(
-                "ℹ️ Please ensure the workout JSON file exists in the test_data directory"
-            )
+            print(translate("demo.file_not_found", path=config.workoutfile))
+            print(translate("ui.workout_json_missing"))
             return
 
         # Load the workout JSON data
@@ -2444,41 +2695,41 @@ def upload_workout_data(api: Garmin) -> None:
             f"Uploaded {original_name} - {current_time.strftime('%Y-%m-%d %H:%M:%S')}"
         )
 
-        print(f"📤 Uploading workout: {workout_data['workoutName']}")
+        print(translate("ui.workout_uploading", name=workout_data["workoutName"]))
 
         # Upload the workout
         result = api.upload_workout(workout_data)
 
         if result:
-            print("✅ Workout uploaded successfully!")
+            print(translate("result.workout_uploaded"))
             call_and_display(
                 lambda: result,  # Use a lambda to pass the result
                 method_name="upload_workout",
                 api_call_desc="api.upload_workout(workout_data)",
             )
         else:
-            print(f"❌ Failed to upload workout from {config.workoutfile}")
+            print(translate("ui.upload_workout_failed", path=config.workoutfile))
 
     except FileNotFoundError:
-        print(f"❌ File not found: {config.workoutfile}")
-        print("ℹ️ Please ensure the workout JSON file exists in the test_data directory")
+        print(translate("demo.file_not_found", path=config.workoutfile))
+        print(translate("ui.workout_json_missing"))
     except json.JSONDecodeError as e:
-        print(f"❌ Invalid JSON format in {config.workoutfile}: {e}")
-        print("ℹ️ Please check the JSON file format")
+        print(translate("ui.json_error", path=config.workoutfile, error=e))
+        print(translate("ui.check_json"))
     except Exception as e:
-        print(f"❌ Error uploading workout: {e}")
+        print(translate("error.workout_upload_error", error=e))
         # Check for common upload errors
         error_str = str(e)
         if "400" in error_str:
-            print("💡 The workout data may be invalid or malformed")
+            print(translate("error.workout_invalid"))
         elif "401" in error_str:
-            print("💡 Authentication failed - please login again")
+            print(translate("error.auth_upload"))
         elif "403" in error_str:
-            print("💡 Permission denied - check account permissions")
+            print(translate("error.permission"))
         elif "409" in error_str:
-            print("💡 Workout may already exist")
+            print(translate("error.workout_exists"))
         elif "422" in error_str:
-            print("💡 Workout data validation failed")
+            print(translate("error.workout_validation"))
 
 
 def upload_running_workout_data(api: Garmin) -> None:
@@ -2494,28 +2745,26 @@ def upload_running_workout_data(api: Garmin) -> None:
 
         from sample_running_workout import create_sample_running_workout
 
-        print("🏃 Creating and uploading running workout...")
+        print(translate("ui.running_upload"))
         workout = create_sample_running_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
+        print(translate("ui.workout_uploading", name=workout.workoutName))
 
         result = api.upload_running_workout(workout)
 
         if result:
-            print("✅ Running workout uploaded successfully!")
+            print(translate("ui.running_uploaded"))
             call_and_display(
                 lambda: result,
                 method_name="upload_running_workout",
                 api_call_desc="api.upload_running_workout(workout)",
             )
         else:
-            print("❌ Failed to upload running workout")
+            print(translate("ui.running_failed"))
     except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
+        print(translate("ui.generic_error", error=e))
+        print(translate("error.pydantic"))
     except Exception as e:
-        print(f"❌ Error uploading running workout: {e}")
+        print(translate("ui.running_upload_error", error=e))
 
 
 def upload_cycling_workout_data(api: Garmin) -> None:
@@ -2531,28 +2780,26 @@ def upload_cycling_workout_data(api: Garmin) -> None:
 
         from sample_cycling_workout import create_sample_cycling_workout
 
-        print("🚴 Creating and uploading cycling workout...")
+        print(translate("ui.cycling_upload"))
         workout = create_sample_cycling_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
+        print(translate("ui.workout_uploading", name=workout.workoutName))
 
         result = api.upload_cycling_workout(workout)
 
         if result:
-            print("✅ Cycling workout uploaded successfully!")
+            print(translate("ui.cycling_uploaded"))
             call_and_display(
                 lambda: result,
                 method_name="upload_cycling_workout",
                 api_call_desc="api.upload_cycling_workout(workout)",
             )
         else:
-            print("❌ Failed to upload cycling workout")
+            print(translate("ui.cycling_failed"))
     except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
+        print(translate("ui.generic_error", error=e))
+        print(translate("error.pydantic"))
     except Exception as e:
-        print(f"❌ Error uploading cycling workout: {e}")
+        print(translate("ui.cycling_upload_error", error=e))
 
 
 def upload_swimming_workout_data(api: Garmin) -> None:
@@ -2568,28 +2815,26 @@ def upload_swimming_workout_data(api: Garmin) -> None:
 
         from sample_swimming_workout import create_sample_swimming_workout
 
-        print("🏊 Creating and uploading swimming workout...")
+        print(translate("ui.swimming_upload"))
         workout = create_sample_swimming_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
+        print(translate("ui.workout_uploading", name=workout.workoutName))
 
         result = api.upload_swimming_workout(workout)
 
         if result:
-            print("✅ Swimming workout uploaded successfully!")
+            print(translate("ui.swimming_uploaded"))
             call_and_display(
                 lambda: result,
                 method_name="upload_swimming_workout",
                 api_call_desc="api.upload_swimming_workout(workout)",
             )
         else:
-            print("❌ Failed to upload swimming workout")
+            print(translate("ui.swimming_failed"))
     except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
+        print(translate("ui.generic_error", error=e))
+        print(translate("error.pydantic"))
     except Exception as e:
-        print(f"❌ Error uploading swimming workout: {e}")
+        print(translate("ui.swimming_upload_error", error=e))
 
 
 def upload_walking_workout_data(api: Garmin) -> None:
@@ -2605,28 +2850,26 @@ def upload_walking_workout_data(api: Garmin) -> None:
 
         from sample_walking_workout import create_sample_walking_workout
 
-        print("🚶 Creating and uploading walking workout...")
+        print(translate("ui.walking_upload"))
         workout = create_sample_walking_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
+        print(translate("ui.workout_uploading", name=workout.workoutName))
 
         result = api.upload_walking_workout(workout)
 
         if result:
-            print("✅ Walking workout uploaded successfully!")
+            print(translate("ui.walking_uploaded"))
             call_and_display(
                 lambda: result,
                 method_name="upload_walking_workout",
                 api_call_desc="api.upload_walking_workout(workout)",
             )
         else:
-            print("❌ Failed to upload walking workout")
+            print(translate("ui.walking_failed"))
     except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
+        print(translate("ui.generic_error", error=e))
+        print(translate("error.pydantic"))
     except Exception as e:
-        print(f"❌ Error uploading walking workout: {e}")
+        print(translate("ui.walking_upload_error", error=e))
 
 
 def upload_hiking_workout_data(api: Garmin) -> None:
@@ -2642,28 +2885,26 @@ def upload_hiking_workout_data(api: Garmin) -> None:
 
         from sample_hiking_workout import create_sample_hiking_workout
 
-        print("🥾 Creating and uploading hiking workout...")
+        print(translate("ui.hiking_upload"))
         workout = create_sample_hiking_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
+        print(translate("ui.workout_uploading", name=workout.workoutName))
 
         result = api.upload_hiking_workout(workout)
 
         if result:
-            print("✅ Hiking workout uploaded successfully!")
+            print(translate("ui.hiking_uploaded"))
             call_and_display(
                 lambda: result,
                 method_name="upload_hiking_workout",
                 api_call_desc="api.upload_hiking_workout(workout)",
             )
         else:
-            print("❌ Failed to upload hiking workout")
+            print(translate("ui.hiking_failed"))
     except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
+        print(translate("ui.generic_error", error=e))
+        print(translate("error.pydantic"))
     except Exception as e:
-        print(f"❌ Error uploading hiking workout: {e}")
+        print(translate("ui.hiking_upload_error", error=e))
 
 
 def search_exercise_catalog_data(api: Garmin) -> None:
@@ -2671,26 +2912,37 @@ def search_exercise_catalog_data(api: Garmin) -> None:
     from garminconnect import exercises
 
     _ = api
-    term = input("Enter exercise name or search term: ").strip()
+    term = input(translate("prompt.exercise")).strip()
     if not term:
-        print("ℹ️ No search term entered")
+        print(translate("demo.no_search_term"))
         return
 
     exact = exercises.resolve(term)
     if exact:
-        print(f"✅ Exact match for '{term}':")
-        print(f"   category={exact['category']!r} exercise={exact['exercise']!r}")
+        print(translate("ui.exact_exercise", term=term))
+        print(
+            translate(
+                "ui.exercise_location",
+                category=repr(exact["category"]),
+                exercise=repr(exact["exercise"]),
+            )
+        )
         return
 
     matches = exercises.find(term)
     if not matches:
-        print(f"❌ No exercises found matching '{term}'")
+        print(translate("ui.no_exercises", term=term))
         return
 
-    print(f"🔍 {len(matches)} exercise(s) matching '{term}' (showing up to 20):")
+    print(translate("ui.exercise_matches", count=len(matches), term=term))
     for e in matches[:20]:
         print(
-            f"   {e['name']!r}: category={e['category']!r} exercise={e['exercise']!r}"
+            translate(
+                "ui.exercise_item",
+                name=repr(e["name"]),
+                category=repr(e["category"]),
+                exercise=repr(e["exercise"]),
+            )
         )
 
 
@@ -2707,28 +2959,26 @@ def upload_strength_workout_data(api: Garmin) -> None:
 
         from sample_strength_workout import create_sample_strength_workout
 
-        print("🏋️ Creating and uploading strength workout...")
+        print(translate("ui.strength_upload"))
         workout = create_sample_strength_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
+        print(translate("ui.workout_uploading", name=workout.workoutName))
 
         result = api.upload_strength_workout(workout)
 
         if result:
-            print("✅ Strength workout uploaded successfully!")
+            print(translate("ui.strength_uploaded"))
             call_and_display(
                 lambda: result,
                 method_name="upload_strength_workout",
                 api_call_desc="api.upload_strength_workout(workout)",
             )
         else:
-            print("❌ Failed to upload strength workout")
+            print(translate("ui.strength_failed"))
     except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
+        print(translate("ui.generic_error", error=e))
+        print(translate("error.pydantic"))
     except Exception as e:
-        print(f"❌ Error uploading strength workout: {e}")
+        print(translate("ui.strength_upload_error", error=e))
 
 
 def schedule_workout_data(api: Garmin) -> None:
@@ -2736,27 +2986,34 @@ def schedule_workout_data(api: Garmin) -> None:
     try:
         workouts = api.get_workouts()
         if not workouts:
-            print("ℹ️ No workouts found")
+            print(translate("demo.no_workouts"))
             return
 
-        print("\nAvailable workouts (most recent):")
+        print(translate("demo.available_workouts"))
         for i, workout in enumerate(workouts[:10]):
             workout_id = workout.get("workoutId")
             workout_name = workout.get("workoutName", "Unknown")
-            print(f"  [{i}] {workout_name} (ID: {workout_id})")
+            print(
+                translate(
+                    "ui.indexed_workout",
+                    index=i,
+                    name=workout_name,
+                    workout_id=workout_id,
+                )
+            )
 
         try:
             index_input = input(
-                f"\nEnter workout index (0-{min(9, len(workouts) - 1)}, or 'q' to cancel): "
+                translate("prompt.workout_index", maximum=min(9, len(workouts) - 1))
             ).strip()
 
             if index_input.lower() == "q":
-                print("❌ Cancelled")
+                print(translate("error.cancelled"))
                 return
 
             workout_index = int(index_input)
             if not (0 <= workout_index < min(10, len(workouts))):
-                print("❌ Invalid index")
+                print(translate("error.invalid_index"))
                 return
 
             selected_workout = workouts[workout_index]
@@ -2764,7 +3021,7 @@ def schedule_workout_data(api: Garmin) -> None:
             workout_name = selected_workout.get("workoutName", "Unknown")
 
             date_input = input(
-                f"Enter date to schedule '{workout_name}' (YYYY-MM-DD, default: today): "
+                translate("prompt.schedule_date", name=workout_name)
             ).strip()
             schedule_date = date_input if date_input else config.today.isoformat()
 
@@ -2776,23 +3033,23 @@ def schedule_workout_data(api: Garmin) -> None:
                 api_call_desc=f"api.schedule_workout({workout_id}, '{schedule_date}') - {workout_name}",
             )
 
-            print("✅ Workout scheduled successfully!")
+            print(translate("result.workout_scheduled"))
 
         except ValueError:
-            print("❌ Invalid input")
+            print(translate("error.invalid_input"))
 
     except Exception as e:
-        print(f"❌ Error scheduling workout: {e}")
+        print(translate("ui.schedule_error", error=e))
 
 
 def get_scheduled_workouts(api: Garmin) -> None:
     """Get scheduled workout by year and month."""
     try:
-        year_input = input("Enter year (YYYY): ").strip()
-        month_input = input("Enter month (1-12): ").strip()
+        year_input = input(translate("prompt.year")).strip()
+        month_input = input(translate("prompt.month")).strip()
 
         if not year_input or not month_input:
-            print("❌ Year and month are required")
+            print(translate("ui.year_month_required"))
             return
 
         year = int(year_input)
@@ -2806,7 +3063,7 @@ def get_scheduled_workouts(api: Garmin) -> None:
             api_call_desc=f"api.get_scheduled_workouts({year}, {month})",
         )
     except Exception as e:
-        print(f"❌ Error getting scheduled workouts by year and month: {e}")
+        print(translate("ui.scheduled_by_month_error", error=e))
 
 
 def get_next_scheduled_workout_data(api: Garmin) -> None:
@@ -2818,16 +3075,16 @@ def get_next_scheduled_workout_data(api: Garmin) -> None:
             api_call_desc="api.get_next_scheduled_workout()",
         )
     except Exception as e:
-        print(f"❌ Error getting next scheduled workout: {e}")
+        print(translate("ui.next_workout_error", error=e))
 
 
 def get_scheduled_workout_by_id_data(api: Garmin) -> None:
     """Get scheduled workout by ID."""
     try:
-        scheduled_workout_id = input("Enter scheduled workout ID: ").strip()
+        scheduled_workout_id = input(translate("prompt.scheduled_id")).strip()
 
         if not scheduled_workout_id:
-            print("❌ Scheduled workout ID is required")
+            print(translate("ui.scheduled_id_required"))
             return
 
         call_and_display(
@@ -2837,7 +3094,7 @@ def get_scheduled_workout_by_id_data(api: Garmin) -> None:
             api_call_desc=f"api.get_scheduled_workout_by_id({scheduled_workout_id})",
         )
     except Exception as e:
-        print(f"❌ Error getting scheduled workout by ID: {e}")
+        print(translate("ui.scheduled_by_id_error", error=e))
 
 
 def delete_workout_data(api: Garmin) -> None:
@@ -2845,27 +3102,36 @@ def delete_workout_data(api: Garmin) -> None:
     try:
         workouts = api.get_workouts()
         if not workouts:
-            print("ℹ️ No workouts found")
+            print(translate("demo.no_workouts"))
             return
 
-        print("\nAvailable workouts (most recent):")
+        print(translate("demo.available_workouts"))
         for i, workout in enumerate(workouts[:10]):
             workout_id = workout.get("workoutId")
             workout_name = workout.get("workoutName", "Unknown")
-            print(f"  [{i}] {workout_name} (ID: {workout_id})")
+            print(
+                translate(
+                    "ui.indexed_workout",
+                    index=i,
+                    name=workout_name,
+                    workout_id=workout_id,
+                )
+            )
 
         try:
             index_input = input(
-                f"\nEnter workout index to delete (0-{min(9, len(workouts) - 1)}, or 'q' to cancel): "
+                translate(
+                    "prompt.delete_workout_index", maximum=min(9, len(workouts) - 1)
+                )
             ).strip()
 
             if index_input.lower() == "q":
-                print("❌ Cancelled")
+                print(translate("error.cancelled"))
                 return
 
             workout_index = int(index_input)
             if not (0 <= workout_index < min(10, len(workouts))):
-                print("❌ Invalid index")
+                print(translate("error.invalid_index"))
                 return
 
             selected_workout = workouts[workout_index]
@@ -2873,10 +3139,12 @@ def delete_workout_data(api: Garmin) -> None:
             workout_name = selected_workout.get("workoutName", "Unknown")
 
             confirm = input(
-                f"Delete '{workout_name}' (ID: {workout_id})? (y/N): "
+                translate(
+                    "prompt.delete_workout", name=workout_name, workout_id=workout_id
+                )
             ).strip()
             if confirm.lower() != "y":
-                print("❌ Cancelled")
+                print(translate("error.cancelled"))
                 return
 
             call_and_display(
@@ -2885,13 +3153,13 @@ def delete_workout_data(api: Garmin) -> None:
                 method_name="delete_workout",
                 api_call_desc=f"api.delete_workout({workout_id}) - {workout_name}",
             )
-            print("✅ Workout deleted successfully!")
+            print(translate("result.workout_deleted"))
 
         except ValueError:
-            print("❌ Invalid input")
+            print(translate("error.invalid_input"))
 
     except Exception as e:
-        print(f"❌ Error deleting workout: {e}")
+        print(translate("error.delete_workout_error", error=e))
 
 
 def update_workout_data(api: Garmin) -> None:
@@ -2899,27 +3167,36 @@ def update_workout_data(api: Garmin) -> None:
     try:
         workouts = api.get_workouts()
         if not workouts:
-            print("ℹ️ No workouts found")
+            print(translate("demo.no_workouts"))
             return
 
-        print("\nAvailable workouts (most recent):")
+        print(translate("demo.available_workouts"))
         for i, workout in enumerate(workouts[:10]):
             workout_id = workout.get("workoutId")
             workout_name = workout.get("workoutName", "Unknown")
-            print(f"  [{i}] {workout_name} (ID: {workout_id})")
+            print(
+                translate(
+                    "ui.indexed_workout",
+                    index=i,
+                    name=workout_name,
+                    workout_id=workout_id,
+                )
+            )
 
         try:
             index_input = input(
-                f"\nEnter workout index to update (0-{min(9, len(workouts) - 1)}, or 'q' to cancel): "
+                translate(
+                    "prompt.update_workout_index", maximum=min(9, len(workouts) - 1)
+                )
             ).strip()
 
             if index_input.lower() == "q":
-                print("❌ Cancelled")
+                print(translate("error.cancelled"))
                 return
 
             workout_index = int(index_input)
             if not (0 <= workout_index < min(10, len(workouts))):
-                print("❌ Invalid index")
+                print(translate("error.invalid_index"))
                 return
 
             selected_workout = workouts[workout_index]
@@ -2931,7 +3208,7 @@ def update_workout_data(api: Garmin) -> None:
             original_name = workout_data.get("workoutName", "Workout")
 
             new_name = input(
-                f"New name for '{original_name}' (blank to keep): "
+                translate("prompt.new_workout_name", name=original_name)
             ).strip()
             if new_name:
                 workout_data["workoutName"] = new_name
@@ -2943,13 +3220,13 @@ def update_workout_data(api: Garmin) -> None:
                 method_name="update_workout",
                 api_call_desc=f"api.update_workout({workout_id}, workout_data)",
             )
-            print("✅ Workout updated successfully!")
+            print(translate("result.workout_updated"))
 
         except ValueError:
-            print("❌ Invalid input")
+            print(translate("error.invalid_input"))
 
     except Exception as e:
-        print(f"❌ Error updating workout: {e}")
+        print(translate("error.update_workout_error", error=e))
 
 
 def push_workout_to_device_data(api: Garmin) -> None:
@@ -2957,22 +3234,28 @@ def push_workout_to_device_data(api: Garmin) -> None:
     try:
         workouts = api.get_workouts()
         if not workouts:
-            print("ℹ️ No workouts found")
+            print(translate("demo.no_workouts"))
             return
 
-        print("\nAvailable workouts (most recent):")
+        print(translate("demo.available_workouts"))
         for i, workout in enumerate(workouts[:10]):
             workout_id = workout.get("workoutId")
             workout_name = workout.get("workoutName", "Unknown")
-            print(f"  [{i}] {workout_name} (ID: {workout_id})")
+            print(
+                translate(
+                    "ui.indexed_workout",
+                    index=i,
+                    name=workout_name,
+                    workout_id=workout_id,
+                )
+            )
 
         index_input = input(
-            f"\nEnter workout index to push (0-{min(9, len(workouts) - 1)}, "
-            "blank for last workout, or 'q' to cancel): "
+            translate("prompt.push_workout_index", maximum=min(9, len(workouts) - 1))
         ).strip()
 
         if index_input.lower() == "q":
-            print("❌ Cancelled")
+            print(translate("error.cancelled"))
             return
 
         workout_id = None
@@ -2980,34 +3263,37 @@ def push_workout_to_device_data(api: Garmin) -> None:
             try:
                 workout_index = int(index_input)
             except ValueError:
-                print("❌ Invalid input")
+                print(translate("error.invalid_input"))
                 return
             if not (0 <= workout_index < min(10, len(workouts))):
-                print("❌ Invalid index")
+                print(translate("error.invalid_index"))
                 return
             workout_id = workouts[workout_index]["workoutId"]
 
         devices = api.get_devices()
         device_id = None
         if devices:
-            print("\nAvailable devices:")
+            print(translate("demo.available_devices"))
             for i, device in enumerate(devices):
                 d_id = device.get("deviceId")
                 d_name = device.get("displayName", "Unknown")
-                print(f"  [{i}] {d_name} (ID: {d_id})")
+                print(
+                    translate(
+                        "ui.indexed_workout", index=i, name=d_name, workout_id=d_id
+                    )
+                )
 
             device_input = input(
-                f"\nEnter device index (0-{len(devices) - 1}, "
-                "blank for last used device): "
+                translate("prompt.device_index", maximum=len(devices) - 1)
             ).strip()
             if device_input:
                 try:
                     device_index = int(device_input)
                 except ValueError:
-                    print("❌ Invalid input")
+                    print(translate("error.invalid_input"))
                     return
                 if not (0 <= device_index < len(devices)):
-                    print("❌ Invalid index")
+                    print(translate("error.invalid_index"))
                     return
                 device_id = devices[device_index]["deviceId"]
 
@@ -3018,19 +3304,19 @@ def push_workout_to_device_data(api: Garmin) -> None:
             method_name="push_workout_to_device",
             api_call_desc=f"api.push_workout_to_device({workout_id}, {device_id})",
         )
-        print("✅ Workout pushed to device successfully!")
+        print(translate("result.workout_pushed"))
 
     except Exception as e:
-        print(f"❌ Error pushing workout to device: {e}")
+        print(translate("ui.push_error", error=e))
 
 
 def unschedule_workout_data(api: Garmin) -> None:
     """Remove a scheduled workout from the calendar."""
     try:
-        scheduled_id = input("Enter scheduled workout ID to unschedule: ").strip()
+        scheduled_id = input(translate("prompt.unschedule_id")).strip()
 
         if not scheduled_id:
-            print("❌ Scheduled workout ID is required")
+            print(translate("ui.scheduled_id_required"))
             return
 
         call_and_display(
@@ -3039,33 +3325,31 @@ def unschedule_workout_data(api: Garmin) -> None:
             method_name="unschedule_workout",
             api_call_desc=f"api.unschedule_workout({scheduled_id})",
         )
-        print("✅ Workout unscheduled successfully!")
+        print(translate("result.workout_unscheduled"))
 
     except Exception as e:
-        print(f"❌ Error unscheduling workout: {e}")
+        print(translate("ui.unschedule_error", error=e))
 
 
 def add_body_composition_data(api: Garmin) -> None:
     """Add body composition data."""
     try:
-        print(f"⚖️ Adding body composition data for {config.today.isoformat()}")
+        print(translate("ui.body_composition_loading", date=config.today.isoformat()))
         print("-" * 50)
 
         # Get weight input from user
         while True:
             try:
-                weight_str = input(
-                    "Enter weight in kg (30-300, default: 85.1): "
-                ).strip()
+                weight_str = input(translate("prompt.enter_weight_kg")).strip()
                 if not weight_str:
                     weight = 85.1
                     break
                 weight = float(weight_str)
                 if 30 <= weight <= 300:
                     break
-                print("❌ Weight must be between 30 and 300 kg")
+                print(translate("error.weight_kg"))
             except ValueError:
-                print("❌ Please enter a valid number")
+                print(translate("error.invalid_number"))
 
         call_and_display(
             api.add_body_composition,
@@ -3085,9 +3369,9 @@ def add_body_composition_data(api: Garmin) -> None:
             method_name="add_body_composition",
             api_call_desc=f"api.add_body_composition({config.today.isoformat()}, weight={weight}, ...)",
         )
-        print("✅ Body composition data added successfully!")
+        print(translate("result.body_added"))
     except Exception as e:
-        print(f"❌ Error adding body composition: {e}")
+        print(translate("error.body_error", error=e))
 
 
 def delete_weigh_ins_data(api: Garmin) -> None:
@@ -3100,9 +3384,9 @@ def delete_weigh_ins_data(api: Garmin) -> None:
             method_name="delete_weigh_ins",
             api_call_desc=f"api.delete_weigh_ins({config.today.isoformat()}, delete_all=True)",
         )
-        print("✅ Weigh-ins deleted successfully!")
+        print(translate("result.weigh_ins_deleted"))
     except Exception as e:
-        print(f"❌ Error deleting weigh-ins: {e}")
+        print(translate("error.delete_weigh_error", error=e))
 
 
 def delete_weigh_in_data(api: Garmin) -> None:
@@ -3111,7 +3395,7 @@ def delete_weigh_in_data(api: Garmin) -> None:
         all_weigh_ins = []
 
         # Find weigh-ins
-        print(f"🔍 Checking daily weigh-ins for today ({config.today.isoformat()})...")
+        print(translate("ui.daily_weigh_loading", date=config.today.isoformat()))
         try:
             daily_weigh_ins = api.get_daily_weigh_ins(config.today.isoformat())
 
@@ -3120,18 +3404,18 @@ def delete_weigh_in_data(api: Garmin) -> None:
                 for weigh_in in weight_list:
                     if isinstance(weigh_in, dict):
                         all_weigh_ins.append(weigh_in)
-                print(f"📊 Found {len(all_weigh_ins)} weigh-in(s) for today")
+                print(translate("ui.stats_weighings", count=len(all_weigh_ins)))
             else:
-                print("📊 No weigh-in data found in response")
+                print(translate("ui.no_weigh_response"))
         except Exception as e:
-            print(f"⚠️ Could not fetch daily weigh-ins: {e}")
+            print(translate("ui.stats_weighings_error", error=e))
 
         if not all_weigh_ins:
-            print("ℹ️ No weigh-ins found for today")
-            print("💡 You can add a test weigh-in using menu option [4]")
+            print(translate("error.no_weigh_today"))
+            print(translate("ui.add_test_weigh"))
             return
 
-        print(f"\n⚖️ Found {len(all_weigh_ins)} weigh-in(s) available for deletion:")
+        print(translate("ui.weighings_for_delete", count=len(all_weigh_ins)))
         print("-" * 70)
 
         # Display weigh-ins for user selection
@@ -3175,16 +3459,23 @@ def delete_weigh_in_data(api: Garmin) -> None:
             else:
                 time_str = "Unknown time"
 
-            print(f"  [{i}] {weight} {unit} on {date} at {time_str}")
+            print(
+                translate(
+                    "ui.weighing_row",
+                    index=i,
+                    weight=weight,
+                    unit=unit,
+                    date=date,
+                    time=time_str,
+                )
+            )
 
         print()
         try:
-            selection = input(
-                "Enter the index of the weigh-in to delete (or 'q' to cancel): "
-            ).strip()
+            selection = input(translate("prompt.weigh_in_delete")).strip()
 
             if selection.lower() == "q":
-                print("❌ Delete cancelled")
+                print(translate("ui.delete_cancelled"))
                 return
 
             weigh_in_index = int(selection)
@@ -3216,7 +3507,12 @@ def delete_weigh_in_data(api: Garmin) -> None:
 
                     # Confirm deletion
                     confirm = input(
-                        f"Delete weigh-in {weight} {unit} from {date}? (yes/no): "
+                        translate(
+                            "prompt.delete_weigh_in_confirm",
+                            weight=weight,
+                            unit=unit,
+                            date=date,
+                        )
                     ).lower()
                     if confirm == "yes":
                         call_and_display(
@@ -3226,19 +3522,19 @@ def delete_weigh_in_data(api: Garmin) -> None:
                             method_name="delete_weigh_in",
                             api_call_desc=f"api.delete_weigh_in({weigh_in_id}, {config.today.isoformat()})",
                         )
-                        print("✅ Weigh-in deleted successfully!")
+                        print(translate("ui.weigh_deleted"))
                     else:
-                        print("❌ Delete cancelled")
+                        print(translate("ui.delete_cancelled"))
                 else:
-                    print("❌ No weigh-in ID found for selected entry")
+                    print(translate("ui.no_weigh_id"))
             else:
-                print("❌ Invalid selection")
+                print(translate("error.invalid_selection"))
 
         except ValueError:
-            print("❌ Invalid input - please enter a number")
+            print(translate("ui.number_required"))
 
     except Exception as e:
-        print(f"❌ Error deleting weigh-in: {e}")
+        print(translate("error.delete_single_weigh_error", error=e))
 
 
 def get_device_settings_data(api: Garmin) -> None:
@@ -3257,16 +3553,18 @@ def get_device_settings_data(api: Garmin) -> None:
                         api_call_desc=f"api.get_device_settings({device_id}) - {device_name}",
                     )
                 except Exception as e:
-                    print(f"❌ Error getting settings for device {device_name}: {e}")
+                    print(
+                        translate("ui.gear_settings_error", device=device_name, error=e)
+                    )
         else:
-            print("ℹ️ No devices found")
+            print(translate("error.no_devices"))
     except Exception as e:
-        print(f"❌ Error getting device settings: {e}")
+        print(translate("ui.device_settings_error", error=e))
 
 
 def get_gear_data(api: Garmin) -> None:
     """Get user gear list."""
-    print("🔄 Fetching user gear list...")
+    print(translate("ui.fetch_gear"))
 
     api_responses = []
 
@@ -3296,14 +3594,14 @@ def get_gear_data(api: Garmin) -> None:
                 )
             )
         else:
-            print("❌ Could not get user profile number")
+            print(translate("error.no_profile"))
 
     call_and_display(group_name="User Gear List", api_responses=api_responses)
 
 
 def get_gear_defaults_data(api: Garmin) -> None:
     """Get gear defaults."""
-    print("🔄 Fetching gear defaults...")
+    print(translate("ui.fetch_gear_defaults"))
 
     api_responses = []
 
@@ -3333,14 +3631,14 @@ def get_gear_defaults_data(api: Garmin) -> None:
                 )
             )
         else:
-            print("❌ Could not get user profile number")
+            print(translate("error.no_profile"))
 
     call_and_display(group_name="Gear Defaults", api_responses=api_responses)
 
 
 def get_gear_stats_data(api: Garmin) -> None:
     """Get gear statistics."""
-    print("🔄 Fetching comprehensive gear statistics...")
+    print(translate("ui.fetch_gear_stats"))
 
     api_responses = []
 
@@ -3391,16 +3689,16 @@ def get_gear_stats_data(api: Garmin) -> None:
                             )
                         )
             else:
-                print("ℹ️ No gear found")
+                print(translate("error.no_gear"))
         else:
-            print("❌ Could not get user profile number")
+            print(translate("error.no_profile"))
 
     call_and_display(group_name="Gear Statistics", api_responses=api_responses)
 
 
 def get_gear_activities_data(api: Garmin) -> None:
     """Get gear activities."""
-    print("🔄 Fetching gear activities...")
+    print(translate("ui.fetch_gear_activities"))
 
     api_responses = []
 
@@ -3451,11 +3749,11 @@ def get_gear_activities_data(api: Garmin) -> None:
                         )
                     )
                 else:
-                    print("❌ No gear UUID found")
+                    print(translate("error.no_gear_uuid"))
             else:
-                print("ℹ️ No gear found")
+                print(translate("error.no_gear"))
         else:
-            print("❌ Could not get user profile number")
+            print(translate("error.no_profile"))
 
     call_and_display(group_name="Gear Activities", api_responses=api_responses)
 
@@ -3482,15 +3780,15 @@ def set_gear_default_data(api: Garmin) -> None:
                         method_name="set_gear_default",
                         api_call_desc=f"api.set_gear_default({activity_type}, '{gear_uuid}', True) - {gear_name} for running",
                     )
-                    print("✅ Gear default set successfully!")
+                    print(translate("result.gear_default"))
                 else:
-                    print("❌ No gear UUID found")
+                    print(translate("error.no_gear_uuid"))
             else:
-                print("ℹ️ No gear found")
+                print(translate("error.no_gear"))
         else:
-            print("❌ Could not get user profile number")
+            print(translate("error.no_profile"))
     except Exception as e:
-        print(f"❌ Error setting gear default: {e}")
+        print(translate("error.gear_default_error", error=e))
 
 
 def add_and_remove_gear_to_activity(api: Garmin) -> None:
@@ -3520,12 +3818,10 @@ def add_and_remove_gear_to_activity(api: Garmin) -> None:
                             method_name="add_gear_to_activity",
                             api_call_desc=f"api.add_gear_to_activity('{gear_uuid}', {activity_id}) - Add {gear_name} to {activity_name}",
                         )
-                        print("✅ Gear added successfully!")
+                        print(translate("result.gear_added"))
 
                         # Wait for user to check gear, then continue
-                        input(
-                            "Go check Garmin to confirm, then press Enter to continue"
-                        )
+                        input(translate("ui.confirm_garmin"))
 
                         # Remove gear from an activity
                         # Correct method signature: remove_gear_from_activity(gearUUID, activity_id)
@@ -3536,32 +3832,35 @@ def add_and_remove_gear_to_activity(api: Garmin) -> None:
                             method_name="remove_gear_from_activity",
                             api_call_desc=f"api.remove_gear_from_activity('{gear_uuid}', {activity_id}) - Remove {gear_name} from {activity_name}",
                         )
-                        print("✅ Gear removed successfully!")
+                        print(translate("result.gear_removed"))
                     else:
-                        print("❌ No activities found")
+                        print(translate("ui.no_activity_error"))
                 else:
-                    print("❌ No gear UUID found")
+                    print(translate("error.no_gear_uuid"))
             else:
-                print("ℹ️ No gear found")
+                print(translate("error.no_gear"))
         else:
-            print("❌ Could not get user profile number")
+            print(translate("error.no_profile"))
     except Exception as e:
-        print(f"❌ Error adding gear: {e}")
+        print(translate("error.gear_add_error", error=e))
 
 
 def get_activities_filtered_data(api: Garmin) -> None:
     """Get activities filtered by type/subtype, picked from the account's own activity type list."""
     try:
         activity_types = api.get_activity_types()
-        print("\nAvailable activity types:")
+        print(translate("demo.available_activity_types"))
         for i, activity_type in enumerate(activity_types):
             print(
-                f"{i}: {activity_type.get('typeKey', 'Unknown')} - {activity_type.get('display', 'No description')}"
+                translate(
+                    "ui.activity_type_row",
+                    index=i,
+                    type_key=activity_type.get("typeKey", "Unknown"),
+                    display=activity_type.get("display", "No description"),
+                )
             )
 
-        type_index = input(
-            "\nEnter activity type index to filter by (blank for no filter): "
-        ).strip()
+        type_index = input(translate("prompt.activity_type_index")).strip()
 
         activitytype = None
         if type_index:
@@ -3570,9 +3869,9 @@ def get_activities_filtered_data(api: Garmin) -> None:
                 if 0 <= idx < len(activity_types):
                     activitytype = activity_types[idx]["typeKey"]
                 else:
-                    print("❌ Invalid index, no type filter applied")
+                    print(translate("ui.invalid_type_filter"))
             except ValueError:
-                print("❌ Invalid index, no type filter applied")
+                print(translate("ui.invalid_type_filter"))
 
         activitysubtype = None
         if activitytype:
@@ -3582,7 +3881,7 @@ def get_activities_filtered_data(api: Garmin) -> None:
                 else ""
             )
             activitysubtype = (
-                input(f"Activity subtype{hint} (blank for none): ").strip() or None
+                input(translate("prompt.activity_subtype", hint=hint)).strip() or None
             )
 
         call_and_display(
@@ -3598,34 +3897,32 @@ def get_activities_filtered_data(api: Garmin) -> None:
             ),
         )
     except Exception as e:
-        print(f"❌ Error getting filtered activities: {e}")
+        print(translate("error.gear_filter_error", error=e))
 
 
 def create_gear_data(api: Garmin) -> None:
     """Create a new piece of gear, e.g. a pair of shoes."""
     try:
-        print("Creating new gear...")
-        print("Enter gear details (press Enter for defaults):")
+        print(translate("demo.new_gear"))
+        print(translate("demo.gear_details"))
 
-        gear_type = input("Gear type [SHOES]: ").strip() or "SHOES"
-        brand = input("Brand [Anta]: ").strip() or "Anta"
-        model = input("Model [A-Flash]: ").strip() or "A-Flash"
-        name = input("Nickname [Test]: ").strip() or "Test"
+        gear_type = input(translate("prompt.gear_type")).strip() or "SHOES"
+        brand = input(translate("prompt.brand")).strip() or "Anta"
+        model = input(translate("prompt.model")).strip() or "A-Flash"
+        name = input(translate("prompt.nickname")).strip() or "Test"
         first_use_date = (
-            input(f"First use date [{config.today.isoformat()}]: ").strip()
+            input(translate("prompt.first_use", date=config.today.isoformat())).strip()
             or config.today.isoformat()
         )
-        usage_type = input("Usage tracking type [DISTANCE]: ").strip() or "DISTANCE"
-        max_km = input("Max use threshold in km (blank for none): ").strip()
-        activity_types_input = input(
-            "Default activity types, comma-separated [running]: "
-        ).strip()
+        usage_type = input(translate("prompt.usage_type")).strip() or "DISTANCE"
+        max_km = input(translate("prompt.gear_threshold")).strip()
+        activity_types_input = input(translate("prompt.default_types")).strip()
         activity_type_keys = [
             key.strip()
             for key in (activity_types_input or "running").split(",")
             if key.strip()
         ]
-        notes = input("Notes (blank for none): ").strip()
+        notes = input(translate("prompt.gear_notes")).strip()
 
         try:
             max_usage_distance_km = float(max_km) if max_km else None
@@ -3651,11 +3948,11 @@ def create_gear_data(api: Garmin) -> None:
                 ),
             )
             if success:
-                print("✅ Gear created!")
+                print(translate("result.gear_created"))
         except ValueError:
-            print("❌ Invalid numeric input")
+            print(translate("error.invalid_numeric"))
     except Exception as e:
-        print(f"❌ Error creating gear: {e}")
+        print(translate("error.gear_create_error", error=e))
 
 
 def _format_record_duration(seconds: float) -> str:
@@ -3740,10 +4037,10 @@ def get_personal_records_data(api: Garmin) -> None:
 
         entries = records if isinstance(records, list) else [records]
         if not entries:
-            print("ℹ️ No personal records found")
+            print(translate("error.no_records"))
             return
 
-        print("\nPersonal records:")
+        print(translate("demo.personal_records"))
         for i, entry in enumerate(entries):
             type_id = entry.get("typeId")
             activity_type = entry.get("activityType")
@@ -3759,34 +4056,44 @@ def get_personal_records_data(api: Garmin) -> None:
                 label, kind = info
                 formatted = _RECORD_FORMATTERS[kind](value)
                 print(
-                    f"{i}: {label} — {formatted}  (typeId={type_id}, raw value={value})"
+                    translate(
+                        "ui.record_row",
+                        index=i,
+                        label=label,
+                        formatted=formatted,
+                        type_id=type_id,
+                        value=value,
+                    )
                 )
             else:
                 print(
-                    f"{i}: Unconfirmed record type "
-                    f"(typeId={type_id}, activityType={activity_type!r}, raw value={value})"
+                    translate(
+                        "ui.unconfirmed_record",
+                        index=i,
+                        type_id=type_id,
+                        activity_type=repr(activity_type),
+                        value=value,
+                    )
                 )
 
-        choice = input(
-            "\nEnter index to look up the source activity's details (blank to skip): "
-        ).strip()
+        choice = input(translate("ui.source_activity")).strip()
         if not choice:
             return
 
         try:
             idx = int(choice)
             if not (0 <= idx < len(entries)):
-                print("❌ Invalid index")
+                print(translate("error.invalid_index"))
                 return
         except ValueError:
-            print("❌ Invalid index")
+            print(translate("error.invalid_index"))
             return
 
         activity_id = entries[idx].get("activityId") or entries[idx].get(
             "activityIdInt"
         )
         if not activity_id:
-            print("ℹ️ This record entry has no activityId to look up")
+            print(translate("error.no_activity_id"))
             return
 
         call_and_display(
@@ -3796,7 +4103,7 @@ def get_personal_records_data(api: Garmin) -> None:
             api_call_desc=f"api.get_activity('{activity_id}')",
         )
     except Exception as e:
-        print(f"❌ Error getting personal records: {e}")
+        print(translate("error.record_error", error=e))
 
 
 def set_activity_name_data(api: Garmin) -> None:
@@ -3805,11 +4112,15 @@ def set_activity_name_data(api: Garmin) -> None:
         activities = api.get_activities(0, 1)
         if activities:
             activity_id = activities[0]["activityId"]
-            print(f"Current name of fetched activity: {activities[0]['activityName']}")
-            new_name = input("Enter new activity name: (or 'q' to cancel): ").strip()
+            print(
+                translate(
+                    "ui.current_activity_name", name=activities[0]["activityName"]
+                )
+            )
+            new_name = input(translate("prompt.new_activity_name")).strip()
 
             if new_name.lower() == "q":
-                print("❌ Rename cancelled")
+                print(translate("ui.rename_cancelled"))
                 return
 
             if new_name:
@@ -3820,13 +4131,13 @@ def set_activity_name_data(api: Garmin) -> None:
                     method_name="set_activity_name",
                     api_call_desc=f"api.set_activity_name({activity_id}, '{new_name}')",
                 )
-                print("✅ Activity name updated!")
+                print(translate("result.activity_name_updated"))
             else:
-                print("❌ No name provided")
+                print(translate("ui.no_name"))
         else:
-            print("❌ No activities found")
+            print(translate("ui.no_activity_error"))
     except Exception as e:
-        print(f"❌ Error setting activity name: {e}")
+        print(translate("error.activity_name_error", error=e))
 
 
 def set_activity_type_data(api: Garmin) -> None:
@@ -3838,22 +4149,29 @@ def set_activity_type_data(api: Garmin) -> None:
             activity_types = api.get_activity_types()
 
             # Show available types
-            print("\nAvailable activity types: (limit=10)")
+            print(translate("ui.limit_activity_types"))
             for i, activity_type in enumerate(activity_types[:10]):  # Show first 10
                 print(
-                    f"{i}: {activity_type.get('typeKey', 'Unknown')} - {activity_type.get('display', 'No description')}"
+                    translate(
+                        "ui.activity_type_row",
+                        index=i,
+                        type_key=activity_type.get("typeKey", "Unknown"),
+                        display=activity_type.get("display", "No description"),
+                    )
                 )
 
             try:
                 print(
-                    f"Current type of fetched activity '{activities[0]['activityName']}': {activities[0]['activityType']['typeKey']}"
+                    translate(
+                        "ui.current_activity_type",
+                        name=activities[0]["activityName"],
+                        activity_type=activities[0]["activityType"]["typeKey"],
+                    )
                 )
-                type_index = input(
-                    "Enter activity type index: (or 'q' to cancel): "
-                ).strip()
+                type_index = input(translate("prompt.activity_type")).strip()
 
                 if type_index.lower() == "q":
-                    print("❌ Type change cancelled")
+                    print(translate("ui.type_cancelled"))
                     return
 
                 type_index = int(type_index)
@@ -3874,15 +4192,15 @@ def set_activity_type_data(api: Garmin) -> None:
                         method_name="set_activity_type",
                         api_call_desc=f"api.set_activity_type({activity_id}, {type_id}, '{type_key}', {parent_type_id})",
                     )
-                    print("✅ Activity type updated!")
+                    print(translate("result.activity_type_updated"))
                 else:
-                    print("❌ Invalid index")
+                    print(translate("error.invalid_index"))
             except ValueError:
-                print("❌ Invalid input")
+                print(translate("error.invalid_input"))
         else:
-            print("❌ No activities found")
+            print(translate("ui.no_activity_error"))
     except Exception as e:
-        print(f"❌ Error setting activity type: {e}")
+        print(translate("error.activity_type_error", error=e))
 
 
 def set_activity_description_data(api: Garmin) -> None:
@@ -3890,18 +4208,24 @@ def set_activity_description_data(api: Garmin) -> None:
     try:
         activities = api.get_activities(0, 1)
         if not activities:
-            print("❌ No activities found")
+            print(translate("ui.no_activity_error"))
             return
 
         activity = activities[0]
         activity_id = activity["activityId"]
         current = activity.get("description") or "(none)"
-        print(f"Activity: {activity.get('activityName')} (id {activity_id})")
-        print(f"Current description: {current}")
+        print(
+            translate(
+                "ui.activity_summary",
+                name=activity.get("activityName"),
+                activity_id=activity_id,
+            )
+        )
+        print(translate("ui.current_description", description=current))
 
-        new_desc = input("Enter new description (or 'q' to cancel): ").strip()
+        new_desc = input(translate("prompt.new_description")).strip()
         if new_desc.lower() == "q":
-            print("❌ Cancelled")
+            print(translate("error.cancelled"))
             return
 
         call_and_display(
@@ -3911,9 +4235,9 @@ def set_activity_description_data(api: Garmin) -> None:
             method_name="set_activity_description",
             api_call_desc=f"api.set_activity_description({activity_id}, '{new_desc}')",
         )
-        print("✅ Activity description updated!")
+        print(translate("result.description_updated"))
     except Exception as e:
-        print(f"❌ Error setting activity description: {e}")
+        print(translate("error.description_error", error=e))
 
 
 def set_activity_exercise_sets_data(api: Garmin) -> None:
@@ -3935,24 +4259,21 @@ def set_activity_exercise_sets_data(api: Garmin) -> None:
         strength_activity = activity_list[0] if activity_list else None
 
         if not strength_activity:
-            print("ℹ️ No strength training activities found")
+            print(translate("demo.no_strength"))
             return
 
         activity_id = strength_activity["activityId"]
         current = api.get_activity_exercise_sets(activity_id)
         sets = current.get("exerciseSets") if isinstance(current, dict) else None
         if not sets:
-            print(f"ℹ️ Activity {activity_id} has no exercise sets to replace")
+            print(translate("ui.no_sets", activity_id=activity_id))
             return
 
-        print(f"Activity {activity_id} has {len(sets)} exercise set(s).")
-        print(
-            "⚠️  This REPLACES all exercise sets (replace-all). The demo re-submits "
-            "the same payload unchanged, so nothing actually changes."
-        )
-        confirm = input("Re-submit current sets? (yes/no): ").strip().lower()
+        print(translate("ui.exercise_count", activity_id=activity_id, count=len(sets)))
+        print(translate("ui.replace_sets"))
+        confirm = input(translate("prompt.resubmit_sets")).strip().lower()
         if confirm != "yes":
-            print("❌ Cancelled")
+            print(translate("error.cancelled"))
             return
 
         call_and_display(
@@ -3965,24 +4286,24 @@ def set_activity_exercise_sets_data(api: Garmin) -> None:
                 f"{{'exerciseSets': <{len(sets)} sets>}})"
             ),
         )
-        print("✅ Exercise sets submitted!")
+        print(translate("result.exercise_sets_submitted"))
     except Exception as e:
-        print(f"❌ Error setting exercise sets: {e}")
+        print(translate("error.exercise_sets_error", error=e))
 
 
 def create_manual_activity_data(api: Garmin) -> None:
     """Create manual activity."""
     try:
-        print("Creating manual activity...")
-        print("Enter activity details (press Enter for defaults):")
+        print(translate("demo.manual_activity"))
+        print(translate("demo.activity_details"))
 
         activity_name = (
-            input("Activity name [Manual Activity]: ").strip() or "Manual Activity"
+            input(translate("prompt.activity_name")).strip() or "Manual Activity"
         )
-        type_key = input("Activity type key [running]: ").strip() or "running"
-        duration_min = input("Duration in minutes [60]: ").strip() or "60"
-        distance_km = input("Distance in kilometers [5]: ").strip() or "5"
-        timezone = input("Timezone [UTC]: ").strip() or "UTC"
+        type_key = input(translate("prompt.activity_type_key")).strip() or "running"
+        duration_min = input(translate("prompt.duration")).strip() or "60"
+        distance_km = input(translate("prompt.distance")).strip() or "5"
+        timezone = input(translate("prompt.timezone")).strip() or "UTC"
 
         try:
             duration_min = float(duration_min)
@@ -4004,11 +4325,11 @@ def create_manual_activity_data(api: Garmin) -> None:
                 method_name="create_manual_activity",
                 api_call_desc=f"api.create_manual_activity(start_datetime='{start_datetime}', time_zone='{timezone}', type_key='{type_key}', distance_km={distance_km}, duration_min={duration_min}, activity_name='{activity_name}')",
             )
-            print("✅ Manual activity created!")
+            print(translate("result.manual_created"))
         except ValueError:
-            print("❌ Invalid numeric input")
+            print(translate("error.invalid_numeric"))
     except Exception as e:
-        print(f"❌ Error creating manual activity: {e}")
+        print(translate("error.manual_error", error=e))
 
 
 def delete_activity_data(api: Garmin) -> None:
@@ -4016,20 +4337,26 @@ def delete_activity_data(api: Garmin) -> None:
     try:
         activities = api.get_activities(0, 5)
         if activities:
-            print("\nRecent activities:")
+            print(translate("ui.recent_activities"))
             for i, activity in enumerate(activities):
                 activity_name = activity.get("activityName", "Unnamed")
                 activity_id = activity.get("activityId")
                 start_time = activity.get("startTimeLocal", "Unknown time")
-                print(f"{i}: {activity_name} ({activity_id}) - {start_time}")
+                print(
+                    translate(
+                        "ui.activity_item",
+                        index=i,
+                        name=activity_name,
+                        activity_id=activity_id,
+                        start_time=start_time,
+                    )
+                )
 
             try:
-                activity_index = input(
-                    "Enter activity index to delete: (or 'q' to cancel): "
-                ).strip()
+                activity_index = input(translate("prompt.delete_activity")).strip()
 
                 if activity_index.lower() == "q":
-                    print("❌ Delete cancelled")
+                    print(translate("ui.delete_cancelled"))
                     return
                 activity_index = int(activity_index)
                 if 0 <= activity_index < len(activities):
@@ -4038,7 +4365,9 @@ def delete_activity_data(api: Garmin) -> None:
                         "activityName", "Unnamed"
                     )
 
-                    confirm = input(f"Delete '{activity_name}'? (yes/no): ").lower()
+                    confirm = input(
+                        translate("prompt.delete_activity_confirm", name=activity_name)
+                    ).lower()
                     if confirm == "yes":
                         call_and_display(
                             api.delete_activity,
@@ -4046,17 +4375,17 @@ def delete_activity_data(api: Garmin) -> None:
                             method_name="delete_activity",
                             api_call_desc=f"api.delete_activity({activity_id})",
                         )
-                        print("✅ Activity deleted!")
+                        print(translate("result.activity_deleted"))
                     else:
-                        print("❌ Delete cancelled")
+                        print(translate("ui.delete_cancelled"))
                 else:
-                    print("❌ Invalid index")
+                    print(translate("error.invalid_index"))
             except ValueError:
-                print("❌ Invalid input")
+                print(translate("error.invalid_input"))
         else:
-            print("❌ No activities found")
+            print(translate("ui.no_activity_error"))
     except Exception as e:
-        print(f"❌ Error deleting activity: {e}")
+        print(translate("error.activity_delete_error", error=e))
 
 
 def delete_blood_pressure_data(api: Garmin) -> None:
@@ -4114,25 +4443,30 @@ def delete_blood_pressure_data(api: Garmin) -> None:
                             )
 
         if entry_list:
-            print(f"\n📊 Found {len(entry_list)} blood pressure entries:")
+            print(translate("ui.bp_entries", count=len(entry_list)))
             print("-" * 70)
             for i, (entry_id, display_text, _measurement_date) in enumerate(entry_list):
-                print(f"  [{i}] {display_text} (ID: {entry_id})")
+                print(
+                    translate(
+                        "ui.indexed_workout",
+                        index=i,
+                        name=display_text,
+                        workout_id=entry_id,
+                    )
+                )
 
             try:
-                entry_index = input(
-                    "\nEnter entry index to delete: (or 'q' to cancel): "
-                ).strip()
+                entry_index = input(translate("prompt.delete_entry")).strip()
 
                 if entry_index.lower() == "q":
-                    print("❌ Entry deletion cancelled")
+                    print(translate("ui.entry_cancelled"))
                     return
 
                 entry_index = int(entry_index)
                 if 0 <= entry_index < len(entry_list):
                     entry_id, display_text, measurement_date = entry_list[entry_index]
                     confirm = input(
-                        f"Delete entry '{display_text}'? (yes/no): "
+                        translate("prompt.delete_entry_confirm", entry=display_text)
                     ).lower()
                     if confirm == "yes":
                         call_and_display(
@@ -4142,44 +4476,44 @@ def delete_blood_pressure_data(api: Garmin) -> None:
                             method_name="delete_blood_pressure",
                             api_call_desc=f"api.delete_blood_pressure('{entry_id}', '{measurement_date}')",
                         )
-                        print("✅ Blood pressure entry deleted!")
+                        print(translate("result.bp_deleted"))
                     else:
-                        print("❌ Delete cancelled")
+                        print(translate("ui.delete_cancelled"))
                 else:
-                    print("❌ Invalid index")
+                    print(translate("error.invalid_index"))
             except ValueError:
-                print("❌ Invalid input")
+                print(translate("error.invalid_input"))
         else:
-            print("❌ No blood pressure entries found for past week")
-            print("💡 You can add a test measurement using menu option [3]")
+            print(translate("error.no_blood_pressure"))
+            print(translate("ui.add_test_measurement"))
 
     except Exception as e:
-        print(f"❌ Error deleting blood pressure: {e}")
+        print(translate("error.blood_pressure_delete_error", error=e))
 
 
 def query_garmin_graphql_data(api: Garmin) -> None:
     """Execute GraphQL query with a menu of available queries."""
     try:
-        print("Available GraphQL queries:")
-        print("  [1] Activities (recent activities with details)")
-        print("  [2] Health Snapshot (comprehensive health data)")
-        print("  [3] Weight Data (weight measurements)")
-        print("  [4] Blood Pressure (blood pressure data)")
-        print("  [5] Sleep Summaries (sleep analysis)")
-        print("  [6] Heart Rate Variability (HRV data)")
-        print("  [7] User Daily Summary (comprehensive daily stats)")
-        print("  [8] Training Readiness (training readiness metrics)")
-        print("  [9] Training Status (training status data)")
-        print("  [10] Activity Stats (aggregated activity statistics)")
-        print("  [11] VO2 Max (VO2 max data)")
-        print("  [12] Endurance Score (endurance scoring)")
-        print("  [13] User Goals (current goals)")
-        print("  [14] Stress Data (epoch chart with stress)")
-        print("  [15] Badge Challenges (available challenges)")
-        print("  [16] Adhoc Challenges (adhoc challenges)")
-        print("  [c] Custom query")
+        print(translate("demo.graphql_queries"))
+        print(translate("ui.graphql_activities"))
+        print(translate("ui.graphql_health"))
+        print(translate("ui.graphql_weight"))
+        print(translate("ui.graphql_bp"))
+        print(translate("ui.graphql_sleep"))
+        print(translate("ui.graphql_hrv"))
+        print(translate("ui.graphql_summary"))
+        print(translate("ui.graphql_readiness"))
+        print(translate("ui.graphql_status"))
+        print(translate("ui.graphql_activity_stats"))
+        print(translate("ui.graphql_vo2"))
+        print(translate("ui.graphql_endurance"))
+        print(translate("ui.graphql_goals"))
+        print(translate("ui.graphql_stress"))
+        print(translate("ui.graphql_badges"))
+        print(translate("ui.graphql_adhoc"))
+        print(translate("demo.custom_query"))
 
-        choice = input("\nEnter choice (1-16, c): ").strip()
+        choice = input(translate("prompt.query_choice")).strip()
 
         # Use today's date and date range for queries that need them
         today = config.today.isoformat()
@@ -4224,11 +4558,11 @@ def query_garmin_graphql_data(api: Garmin) -> None:
         elif choice == "16":
             query = "query{adhocChallengesScalar}"
         elif choice.lower() == "c":
-            print("\nEnter your custom GraphQL query:")
-            print("Example: query{userGoalsScalar}")
-            query = input("Query: ").strip()
+            print(translate("prompt.custom_query"))
+            print(translate("demo.graphql_example"))
+            query = input(translate("prompt.query")).strip()
         else:
-            print("❌ Invalid choice")
+            print(translate("error.invalid_choice"))
             return
 
         if query:
@@ -4241,14 +4575,14 @@ def query_garmin_graphql_data(api: Garmin) -> None:
                 api_call_desc=f"api.query_garmin_graphql({graphql_payload})",
             )
         else:
-            print("❌ No query provided")
+            print(translate("error.no_query"))
     except Exception as e:
-        print(f"❌ Error executing GraphQL query: {e}")
+        print(translate("error.graphql_error", error=e))
 
 
 def get_virtual_challenges_data(api: Garmin) -> None:
     """Get virtual challenges data with centralized error handling."""
-    print("🏆 Attempting to get virtual challenges data...")
+    print(translate("ui.virtual_loading"))
 
     # Try in-progress virtual challenges - this endpoint often returns 400 for accounts
     # that don't have virtual challenges enabled, so handle it quietly
@@ -4257,7 +4591,7 @@ def get_virtual_challenges_data(api: Garmin) -> None:
             config.start_badge, config.default_limit
         )
         if challenges:
-            print("✅ Virtual challenges data retrieved successfully")
+            print(translate("result.virtual_challenges"))
             call_and_display(
                 api.get_inprogress_virtual_challenges,
                 config.start_badge,
@@ -4266,7 +4600,7 @@ def get_virtual_challenges_data(api: Garmin) -> None:
                 api_call_desc=f"api.get_inprogress_virtual_challenges({config.start_badge}, {config.default_limit})",
             )
             return
-        print("ℹ️ No in-progress virtual challenges found")
+        print(translate("demo.no_virtual_challenges"))
         return
     except GarminConnectConnectionError as e:
         # Handle the common 400 error case quietly - this is expected for many accounts
@@ -4274,18 +4608,18 @@ def get_virtual_challenges_data(api: Garmin) -> None:
         if "400" in error_str and (
             "Bad Request" in error_str or "API client error" in error_str
         ):
-            print("ℹ️ Virtual challenges are not available for your account")
+            print(translate("error.virtual_unavailable"))
         else:
             # For unexpected connection errors, show them
-            print(f"⚠️ Connection error accessing virtual challenges: {error_str}")
+            print(translate("ui.connection_virtual", error=error_str))
     except Exception as e:
-        print(f"⚠️ Unexpected error accessing virtual challenges: {e}")
+        print(translate("ui.unexpected_virtual", error=e))
 
     # Since virtual challenges failed or returned no data, suggest alternatives
-    print("💡 You can try other challenge-related endpoints instead:")
-    print("   - Badge challenges (menu option 7-8)")
-    print("   - Available badge challenges (menu option 7-4)")
-    print("   - Adhoc challenges (menu option 7-3)")
+    print(translate("ui.challenge_alternatives"))
+    print(translate("ui.badge_menu"))
+    print(translate("ui.available_badge_menu"))
+    print(translate("ui.adhoc_menu"))
 
 
 def add_hydration_data_entry(api: Garmin) -> None:
@@ -4307,9 +4641,9 @@ def add_hydration_data_entry(api: Garmin) -> None:
             method_name="add_hydration_data",
             api_call_desc=f"api.add_hydration_data(value_in_ml={value_in_ml}, cdate='{cdate}', timestamp='{timestamp}')",
         )
-        print("✅ Hydration data added successfully!")
+        print(translate("demo.hydration_added"))
     except Exception as e:
-        print(f"❌ Error adding hydration data: {e}")
+        print(translate("error.hydration_error", error=e))
 
 
 def _parse_csv_enums(raw: str) -> list[str] | None:
@@ -4322,29 +4656,26 @@ def _parse_csv_enums(raw: str) -> list[str] | None:
 def update_menstrual_daily_log_entry(api: Garmin) -> None:
     """Write a menstrual daily-log snapshot."""
     try:
-        print("Omitted lists/scalars are cleared. Omitted notes are kept.")
-        print("Use a single '-' for notes to clear existing notes.")
+        print(translate("demo.menstrual_notes"))
+        print(translate("demo.clear_notes"))
         calendar_date = (
-            input(f"Date [{config.today.isoformat()}]: ").strip()
+            input(translate("prompt.date", date=config.today.isoformat())).strip()
             or config.today.isoformat()
         )
-        symptoms = _parse_csv_enums(input("Symptoms (comma-separated): "))
-        moods = _parse_csv_enums(input("Moods (comma-separated): "))
-        flow = input("Flow [LIGHT|MEDIUM|HEAVY, empty omit]: ").strip() or None
-        discharge = _parse_csv_enums(input("Discharge (comma-separated): "))
-        sex_drive = input("Sex drive [LOW|AVERAGE|HIGH, empty omit]: ").strip() or None
-        sexual_activity = (
-            input("Sexual activity [PROTECTED|UNPROTECTED, empty omit]: ").strip()
-            or None
-        )
-        notes_raw = input("Notes (empty keep, '-' clear): ")
+        symptoms = _parse_csv_enums(input(translate("prompt.symptoms")))
+        moods = _parse_csv_enums(input(translate("prompt.moods")))
+        flow = input(translate("prompt.flow")).strip() or None
+        discharge = _parse_csv_enums(input(translate("prompt.discharge")))
+        sex_drive = input(translate("prompt.sex_drive")).strip() or None
+        sexual_activity = input(translate("prompt.sexual_activity")).strip() or None
+        notes_raw = input(translate("prompt.notes"))
         if notes_raw == "":
             notes = None
         elif notes_raw.strip() == "-":
             notes = ""
         else:
             notes = notes_raw
-        ovulation_raw = input("Ovulation day? [y/N]: ").strip().lower()
+        ovulation_raw = input(translate("prompt.ovulation")).strip().lower()
         ovulation_day = True if ovulation_raw == "y" else None
 
         call_and_display(
@@ -4362,17 +4693,17 @@ def update_menstrual_daily_log_entry(api: Garmin) -> None:
             api_call_desc=(f"api.update_menstrual_daily_log('{calendar_date}', ...)"),
         )
     except Exception as e:
-        print(f"❌ Error updating menstrual daily log: {e}")
+        print(translate("error.menstrual_log_error", error=e))
 
 
 def update_menstrual_calendar_entry(api: Garmin) -> None:
     """Replace period dates on the menstrual calendar."""
     try:
-        print("Do not post predicted cycles as confirmed period dates.")
-        print("Enter period groups as comma-separated dates, groups separated by ';'.")
-        startdate = input("Start date (YYYY-MM-DD): ").strip()
-        enddate = input("End date (YYYY-MM-DD): ").strip()
-        raw_groups = input("Period date groups: ").strip()
+        print(translate("demo.period_warning"))
+        print(translate("demo.period_groups"))
+        startdate = input(translate("prompt.start_date")).strip()
+        enddate = input(translate("prompt.end_date")).strip()
+        raw_groups = input(translate("prompt.period_groups")).strip()
         cycle_dates_lists = [
             [day.strip() for day in group.split(",") if day.strip()]
             for group in raw_groups.split(";")
@@ -4390,15 +4721,15 @@ def update_menstrual_calendar_entry(api: Garmin) -> None:
             ),
         )
     except Exception as e:
-        print(f"❌ Error updating menstrual calendar: {e}")
+        print(translate("error.menstrual_calendar_error", error=e))
 
 
 def init_menstrual_cycle_setup_entry(api: Garmin) -> None:
     """Initialize menstrual cycle tracking (first-run only)."""
     try:
-        period_start_date = input("Period start date (YYYY-MM-DD): ").strip()
-        period_length = int(input("Period length (days): ").strip())
-        cycle_length = int(input("Cycle length (days): ").strip())
+        period_start_date = input(translate("prompt.period_start")).strip()
+        period_length = int(input(translate("prompt.period_length")).strip())
+        cycle_length = int(input(translate("prompt.cycle_length")).strip())
         call_and_display(
             api.init_menstrual_cycle_setup,
             period_start_date,
@@ -4411,16 +4742,16 @@ def init_menstrual_cycle_setup_entry(api: Garmin) -> None:
             ),
         )
     except Exception as e:
-        print(f"❌ Error initializing menstrual cycle setup: {e}")
+        print(translate("error.cycle_init_error", error=e))
 
 
 def confirm_menstrual_period_start_entry(api: Garmin) -> None:
     """Confirm a period start date (may confirm a prediction)."""
     try:
-        period_start_date = input("Period start date (YYYY-MM-DD): ").strip()
-        period_length = int(input("Period length (days): ").strip())
-        cycle_length = int(input("Cycle length (days): ").strip())
-        predicted = input("Predicted cycle? [y/N]: ").strip().lower() == "y"
+        period_start_date = input(translate("prompt.period_start")).strip()
+        period_length = int(input(translate("prompt.period_length")).strip())
+        cycle_length = int(input(translate("prompt.cycle_length")).strip())
+        predicted = input(translate("prompt.predicted_cycle")).strip().lower() == "y"
         call_and_display(
             api.confirm_menstrual_period_start,
             period_start_date,
@@ -4434,17 +4765,14 @@ def confirm_menstrual_period_start_entry(api: Garmin) -> None:
             ),
         )
     except Exception as e:
-        print(f"❌ Error confirming menstrual period start: {e}")
+        print(translate("error.period_confirm_error", error=e))
 
 
 def update_menstrual_settings_entry(api: Garmin) -> None:
     """PUT menstrual tracking settings."""
     try:
-        print(
-            "Paste a JSON object of fields to change. "
-            "Other menstrual settings are kept."
-        )
-        raw = input("Settings JSON: ").strip()
+        print(translate("demo.settings_json"))
+        raw = input(translate("prompt.settings_json")).strip()
         settings = json.loads(raw)
         call_and_display(
             api.update_menstrual_settings,
@@ -4453,44 +4781,51 @@ def update_menstrual_settings_entry(api: Garmin) -> None:
             api_call_desc="api.update_menstrual_settings({...})",
         )
     except Exception as e:
-        print(f"❌ Error updating menstrual settings: {e}")
+        print(translate("error.menstrual_settings_error", error=e))
 
 
 def set_blood_pressure_data(api: Garmin) -> None:
     """Set blood pressure (and pulse) data."""
     try:
-        print("🩸 Adding blood pressure (and pulse) measurement")
-        print("Enter blood pressure values (press Enter for defaults):")
+        print(translate("demo.blood_pressure"))
+        print(translate("demo.blood_pressure_values"))
 
         # Get systolic pressure
-        systolic_input = input("Systolic pressure [120]: ").strip()
+        systolic_input = input(translate("prompt.systolic")).strip()
         systolic = int(systolic_input) if systolic_input else 120
 
         # Get diastolic pressure
-        diastolic_input = input("Diastolic pressure [80]: ").strip()
+        diastolic_input = input(translate("prompt.diastolic")).strip()
         diastolic = int(diastolic_input) if diastolic_input else 80
 
         # Get pulse (optional - Garmin Connect's own UI allows omitting it)
-        pulse_input = input("Pulse rate (optional, press Enter to omit): ").strip()
+        pulse_input = input(translate("prompt.pulse")).strip()
         pulse = int(pulse_input) if pulse_input else None
 
         # Get notes (optional)
-        notes = input("Notes (optional): ").strip() or "Added via demo.py"
+        notes = input(translate("prompt.notes_optional")).strip() or "Added via demo.py"
 
         # Validate ranges (must match Garmin.set_blood_pressure's own checks,
         # so a value the demo accepts never gets rejected by the API call)
         if not (70 <= systolic <= 260):
-            print("❌ Invalid systolic pressure (should be between 70-260)")
+            print(translate("ui.bp_range"))
             return
         if not (40 <= diastolic <= 150):
-            print("❌ Invalid diastolic pressure (should be between 40-150)")
+            print(translate("ui.bp_diastolic_range"))
             return
         if pulse is not None and not (20 <= pulse <= 250):
-            print("❌ Invalid pulse rate (should be between 20-250)")
+            print(translate("ui.pulse_range"))
             return
 
         pulse_desc = f"pulse {pulse} bpm" if pulse is not None else "no pulse"
-        print(f"📊 Recording: {systolic}/{diastolic} mmHg, {pulse_desc}")
+        print(
+            translate(
+                "ui.recording_bp",
+                systolic=systolic,
+                diastolic=diastolic,
+                pulse=pulse_desc,
+            )
+        )
 
         call_and_display(
             api.set_blood_pressure,
@@ -4501,12 +4836,12 @@ def set_blood_pressure_data(api: Garmin) -> None:
             method_name="set_blood_pressure",
             api_call_desc=f"api.set_blood_pressure({systolic}, {diastolic}, {pulse}, notes='{notes}')",
         )
-        print("✅ Blood pressure data set successfully!")
+        print(translate("result.bp_set"))
 
     except ValueError:
-        print("❌ Invalid input - please enter numeric values")
+        print(translate("ui.numeric_values"))
     except Exception as e:
-        print(f"❌ Error setting blood pressure: {e}")
+        print(translate("error.blood_pressure_error", error=e))
 
 
 def track_gear_usage_data(api: Garmin) -> None:
@@ -4521,42 +4856,53 @@ def track_gear_usage_data(api: Garmin) -> None:
                 first_gear = gear_list[0]
                 gear_uuid = first_gear.get("uuid")
                 gear_name = first_gear.get("displayName", "Unknown")
-                print(f"Tracking usage for gear: {gear_name} (UUID: {gear_uuid})")
+                print(translate("ui.tracking_gear", name=gear_name, uuid=gear_uuid))
                 activityList = api.get_gear_activities(gear_uuid)
                 if len(activityList) == 0:
-                    print("No activities found for the given gear uuid.")
+                    print(translate("error.no_activities_gear"))
                 else:
-                    print("Found " + str(len(activityList)) + " activities.")
+                    print(translate("demo.activity_count", count=len(activityList)))
 
                 D = 0
                 for a in activityList:
                     print(
-                        "Activity: "
-                        + a["startTimeLocal"]
-                        + (" | " + a["activityName"] if a["activityName"] else "")
+                        translate(
+                            "demo.activity_gear_row",
+                            start_time=a["startTimeLocal"],
+                            activity_name=(
+                                " | " + a["activityName"] if a["activityName"] else ""
+                            ),
+                        )
                     )
                     print(
-                        "  Duration: "
-                        + format_timedelta(datetime.timedelta(seconds=a["duration"]))
+                        translate(
+                            "demo.activity_gear_duration",
+                            duration=format_timedelta(
+                                datetime.timedelta(seconds=a["duration"])
+                            ),
+                        )
                     )
                     D += a["duration"]
                 print("")
                 print(
-                    "Total Duration: " + format_timedelta(datetime.timedelta(seconds=D))
+                    translate(
+                        "demo.total_duration",
+                        duration=format_timedelta(datetime.timedelta(seconds=D)),
+                    )
                 )
                 print("")
             else:
-                print("No gear found for this user.")
+                print(translate("error.no_gear_user"))
         else:
-            print("❌ Could not get user profile number")
+            print(translate("error.no_profile"))
     except Exception as e:
-        print(f"❌ Error getting gear for track_gear_usage_data: {e}")
+        print(translate("ui.profile_action_error", error=e))
 
 
 def execute_api_call(api: Garmin, key: str) -> None:
     """Execute an API call based on the key."""
     if not api:
-        print("API not available")
+        print(translate("demo.api_unavailable"))
         return
 
     try:
@@ -5159,13 +5505,13 @@ def execute_api_call(api: Garmin, key: str) -> None:
         }
 
         if key in api_methods:
-            print(f"\n🔄 Executing: {key}")
+            print(translate("ui.executing", key=key))
             api_methods[key]()
         else:
-            print(f"❌ API method '{key}' not implemented yet. You can add it later!")
+            print(translate("ui.not_implemented", key=key))
 
     except Exception as e:
-        print(f"❌ Error executing {key}: {e}")
+        print(translate("ui.error_execute", key=key, error=e))
 
 
 def remove_stored_tokens():
@@ -5173,18 +5519,18 @@ def remove_stored_tokens():
     try:
         token_file = token_file_path(config.tokenstore)
         if not token_file.exists():
-            print("ℹ️ No stored login tokens found")
+            print(translate("ui.no_tokens"))
             return
         Garmin().logout(config.tokenstore)
-        print("✅ Stored login token file removed")
+        print(translate("demo.tokens_removed"))
     except Exception as e:
-        print(f"❌ Error removing stored login tokens: {e}")
+        print(translate("error.token_remove_error", error=e))
 
 
 def disconnect_api(api: Garmin):
     """Disconnect from Garmin Connect."""
     api.logout()
-    print("✅ Disconnected from Garmin Connect")
+    print(translate("ui.disconnected"))
 
 
 def download_health_snapshot_file(api: Garmin):
@@ -5193,30 +5539,30 @@ def download_health_snapshot_file(api: Garmin):
     try:
         content = api.download_health_snapshot(requested_date)
         if not content:
-            print("❌ No Health Snapshot content available for this date")
+            print(translate("ui.no_snapshot"))
             return
         safe_date = _safe_filename_component(requested_date)
         filepath = config.export_dir / f"{safe_date}_HEALTH_SNAPSHOT.zip"
         with _open_private(filepath, "wb") as f:
             f.write(content)
-        print(f"✅ Health Snapshot saved to: {filepath}")
+        print(translate("demo.snapshot_saved", path=filepath))
     except Exception as e:
-        print(f"❌ Error downloading Health Snapshot: {e}")
+        print(translate("error.snapshot_error", error=e))
 
 
 def init_api(email: str | None = None, password: str | None = None) -> Garmin | None:
     """Initialize Garmin API with smart error handling and recovery."""
     # First try to login with stored tokens
     try:
-        print(f"Attempting to login using stored tokens from: {config.tokenstore}")
+        print(translate("demo.login_tokens", path=config.tokenstore))
 
         garmin = Garmin()
         garmin.login(config.tokenstore)
-        print("Successfully logged in using stored tokens!")
+        print(translate("demo.login_tokens_success"))
         return garmin
 
     except GarminConnectTooManyRequestsError as err:
-        print(f"\n❌ {err}")
+        print(translate("ui.login_error", error=err))
         sys.exit(1)
 
     except (
@@ -5224,17 +5570,17 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
         GarminConnectAuthenticationError,
         GarminConnectConnectionError,
     ):
-        print("No valid tokens found. Requesting fresh login credentials.")
+        print(translate("demo.fresh_login"))
 
     # Loop for credential entry with retry on auth failure
     while True:
         try:
             # Get credentials if not provided
             if not email or not password:
-                email = input("Email address: ").strip()
-                password = getpass("Password: ")
+                email = input(translate("prompt.email")).strip()
+                password = getpass(translate("demo.password"))
 
-            print("Logging in with credentials...")
+            print(translate("demo.logging_in"))
             garmin = Garmin(
                 email=email, password=password, is_cn=False, return_on_mfa=True
             )
@@ -5243,44 +5589,44 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
             result1, result2 = garmin.login()
 
             if result1 == "needs_mfa":
-                print("Multi-factor authentication required")
+                print(translate("demo.mfa_required"))
 
                 mfa_code = get_mfa()
-                print("🔄 Submitting MFA code...")
+                print(translate("demo.mfa_submit"))
 
                 try:
                     garmin.resume_login(result2, mfa_code)
-                    print("✅ MFA authentication successful!")
+                    print(translate("demo.mfa_success"))
 
                 except GarminConnectTooManyRequestsError:
-                    print("❌ Too many MFA attempts")
-                    print("💡 Please wait 30 minutes before trying again")
+                    print(translate("demo.mfa_too_many"))
+                    print(translate("demo.mfa_wait"))
                     sys.exit(1)
                 except GarminConnectAuthenticationError as mfa_error:
                     # Handle specific errors from MFA
                     error_str = str(mfa_error)
-                    print(f"🔍 Debug: MFA error details: {error_str}")
+                    print(translate("ui.mfa_debug", error=error_str))
                     if "401" in error_str or "403" in error_str:
-                        print("❌ Invalid MFA code")
-                        print("💡 Please verify your MFA code and try again")
+                        print(translate("demo.mfa_invalid"))
+                        print(translate("demo.mfa_check"))
                         continue
                     # Other HTTP errors - don't retry
-                    print(f"❌ MFA authentication failed: {mfa_error}")
+                    print(translate("ui.mfa_error", error=mfa_error))
                     sys.exit(1)
 
             # Save tokens for future use
             garmin.client.dump(config.tokenstore)
-            print(f"Login successful! Tokens saved to: {config.tokenstore}")
+            print(translate("ui.login_saved", path=config.tokenstore))
 
             return garmin
 
         except GarminConnectTooManyRequestsError as err:
-            print(f"\n❌ {err}")
+            print(translate("ui.login_error", error=err))
             sys.exit(1)
 
         except GarminConnectAuthenticationError as err:
-            print(f"\n❌ {err}")
-            print("💡 Please check your username and password and try again")
+            print(translate("ui.login_error", error=err))
+            print(translate("ui.credentials_check"))
             # Clear the provided credentials to force re-entry
             email = None
             password = None
@@ -5291,20 +5637,50 @@ def init_api(email: str | None = None, password: str | None = None) -> Garmin | 
             GarminConnectConnectionError,
             requests.exceptions.HTTPError,
         ) as err:
-            print(f"❌ Connection error: {err}")
-            print("💡 Please check your internet connection and try again")
+            print(translate("error.connection", error=err))
+            print(translate("ui.check_connection"))
             return None
 
         except KeyboardInterrupt:
-            print("\nLogin cancelled by user")
+            print(translate("demo.login_cancelled"))
             return None
 
 
-def main():
+def _parse_args(argv: list[str] | None = None) -> argparse.Namespace | None:
+    """Parse demo-only options and configure the selected interface language."""
+    parser = argparse.ArgumentParser(
+        description="Interactive Garmin Connect API demo",
+    )
+    parser.add_argument(
+        "-l",
+        "--lang",
+        metavar="LANGUAGE",
+        help="Interface language (default: en)",
+    )
+    args = parser.parse_args(argv)
+
+    try:
+        set_language(
+            resolve_language(
+                args.lang,
+                os.getenv("GARMIN_LANG"),
+                load_persisted_language(),
+            )
+        )
+    except UnsupportedLanguageError as error:
+        builtins.print(str(error), file=sys.stderr)
+        return None
+    return args
+
+
+def main(argv: list[str] | None = None) -> int:
     """Main program loop with funny health status in menu prompt."""
+    if _parse_args(argv) is None:
+        return 2
+
     # Display export directory information on startup
-    print(f"📁 Exported data will be saved to the directory: '{config.export_dir}'")
-    print("📄 All API responses are written to: 'response.json'")
+    print(translate("prompt.exported", path=config.export_dir))
+    print(translate("prompt.responses_file"))
 
     api_instance = init_api(config.email, config.password)
     current_category = None
@@ -5326,7 +5702,10 @@ def main():
                         calories = summary.get("totalKilocalories") or 0
 
                         # Build stats string with hydration if available
-                        stats_parts = [f"{steps:,} steps", f"{calories} kcal"]
+                        stats_parts = [
+                            translate("stats.steps", value=f"{steps:,}"),
+                            translate("stats.kcal", value=calories),
+                        ]
 
                         if hydration_data and hydration_data.get("valueInML"):
                             hydration_ml = int(hydration_data.get("valueInML", 0))
@@ -5338,25 +5717,33 @@ def main():
                                     (hydration_ml / hydration_goal) * 100
                                 )
                                 stats_parts.append(
-                                    f"{hydration_ml}ml water ({hydration_percent}% of goal)"
+                                    translate(
+                                        "stats.water_goal",
+                                        value=hydration_ml,
+                                        percent=hydration_percent,
+                                    )
                                 )
                             else:
                                 stats_parts.append(
-                                    f"{hydration_ml}ml water ({hydration_cups} cups)"
+                                    translate(
+                                        "stats.water_cups",
+                                        value=hydration_ml,
+                                        cups=hydration_cups,
+                                    )
                                 )
 
                         stats_string = " | ".join(stats_parts)
-                        print(f"\n📊 Your Stats Today: {stats_string}")
+                        print(translate("stats.today", stats=stats_string))
 
                         if steps < 5000:
-                            print("🐌 Time to get those legs moving!")
+                            print(translate("ui.move_legs"))
                         elif steps > 15000:
-                            print("🏃‍♂️ You're crushing it today!")
+                            print(translate("ui.crushing_it"))
                         else:
-                            print("👍 Nice progress! Keep it up!")
+                            print(translate("ui.nice_progress"))
                 except Exception as e:
                     print(
-                        f"Unable to fetch stats for display: {e}"
+                        translate("ui.stats_unavailable", error=e)
                     )  # Silently skip if stats can't be fetched
 
             # Display appropriate menu
@@ -5366,15 +5753,19 @@ def main():
 
                 # Handle main menu options
                 if option == "q":
-                    print(
-                        "Be active, generate some data to play with next time ;-) Bye!"
-                    )
+                    print(translate("demo.exit_message"))
                     break
+                if option == "l":
+                    select_language()
+                    continue
                 if option in menu_categories:
                     current_category = option
                 else:
                     print(
-                        f"❌ Invalid selection. Use {', '.join(menu_categories.keys())} for categories or 'q' to quit"
+                        translate(
+                            "ui.invalid_selection_categories",
+                            categories=", ".join(menu_categories.keys()),
+                        )
                     )
             else:
                 # In a category - show category menu
@@ -5397,17 +5788,19 @@ def main():
                             execute_api_call(api_instance, api_key)
                         else:
                             valid_keys = ", ".join(category_options.keys())
-                            print(
-                                f"❌ Invalid option selection. Valid options: {valid_keys}"
-                            )
+                            print(translate("ui.invalid_option", options=valid_keys))
                     except Exception as e:
-                        print(f"❌ Error processing option {option}: {e}")
+                        print(
+                            translate("ui.error_execute_option", option=option, error=e)
+                        )
 
         except KeyboardInterrupt:
-            print("\nInterrupted by user. Press q to quit.")
+            print(translate("demo.interrupted"))
         except Exception as e:
-            print(f"Unexpected error: {e}")
+            print(translate("ui.unexpected", error=e))
+
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
