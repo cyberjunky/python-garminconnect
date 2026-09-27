@@ -21,21 +21,21 @@ def reset_language() -> None:
     i18n.set_language("en")
 
 
-def test_english_is_the_deterministic_default() -> None:
+def test_english_is_the_deterministic_default():
     assert i18n.resolve_language() == "en"
     assert i18n.translate("menu.user_profile") == "👤 User & Profile"
 
 
-def test_explicit_english_selection() -> None:
+def test_explicit_english_selection():
     assert i18n.resolve_language("en") == "en"
     assert i18n.translate("menu.user_profile", "en") == "👤 User & Profile"
 
 
-def test_portuguese_translation() -> None:
+def test_portuguese_translation():
     assert i18n.translate("menu.user_profile", "pt-BR") == "👤 Usuário e Perfil"
 
 
-def test_environment_language(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_environment_language(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("GARMIN_LANG", "pt-BR")
     assert i18n.resolve_language(env="pt-BR") == "pt-BR"
     assert demo._parse_args([]) is not None
@@ -44,7 +44,7 @@ def test_environment_language(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_cli_language_has_precedence_over_environment(
     monkeypatch: pytest.MonkeyPatch,
-) -> None:
+):
     monkeypatch.setenv("GARMIN_LANG", "pt-BR")
     assert i18n.resolve_language("en", "pt-BR") == "en"
 
@@ -52,7 +52,7 @@ def test_cli_language_has_precedence_over_environment(
     assert i18n.get_language() == "en"
 
 
-def test_short_cli_language_option() -> None:
+def test_short_cli_language_option():
     assert demo._parse_args(["-l", "pt-BR"]) is not None
     assert i18n.get_language() == "pt-BR"
 
@@ -62,7 +62,7 @@ def test_persisted_language_is_used_when_no_override(
     saved_language: str,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-) -> None:
+):
     config_path = tmp_path / "demo_config.json"
     config_path.write_text(json.dumps({"language": saved_language}), encoding="utf-8")
     monkeypatch.setattr(demo, "_demo_config_path", lambda: config_path)
@@ -80,7 +80,7 @@ def test_invalid_or_missing_persisted_language_falls_back_to_english(
     config_contents: str | None,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-) -> None:
+):
     config_path = tmp_path / "demo_config.json"
     if config_contents is not None:
         config_path.write_text(config_contents, encoding="utf-8")
@@ -94,7 +94,7 @@ def test_invalid_or_missing_persisted_language_falls_back_to_english(
 def test_language_precedence_is_cli_then_environment_then_saved(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-) -> None:
+):
     config_path = tmp_path / "demo_config.json"
     config_path.write_text('{"language": "pt-BR"}', encoding="utf-8")
     monkeypatch.setattr(demo, "_demo_config_path", lambda: config_path)
@@ -111,7 +111,7 @@ def test_language_preference_can_be_saved_and_reloaded(
     language: str,
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-) -> None:
+):
     config_path = tmp_path / ".garminconnect" / "demo_config.json"
     monkeypatch.setattr(demo, "_demo_config_path", lambda: config_path)
 
@@ -123,7 +123,7 @@ def test_language_preference_can_be_saved_and_reloaded(
 def test_cli_and_environment_overrides_do_not_change_saved_preference(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-) -> None:
+):
     config_path = tmp_path / "demo_config.json"
     original = {"language": "pt-BR"}
     config_path.write_text(json.dumps(original), encoding="utf-8")
@@ -152,7 +152,7 @@ def test_language_selection_changes_runtime_menu_and_persists(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     config_path = tmp_path / "demo_config.json"
     monkeypatch.setattr(demo, "_demo_config_path", lambda: config_path)
     i18n.set_language(initial)
@@ -176,7 +176,7 @@ def test_language_selection_changes_runtime_menu_and_persists(
 def test_language_submenu_back_does_not_change_or_persist(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-) -> None:
+):
     config_path = tmp_path / "demo_config.json"
     monkeypatch.setattr(demo, "_demo_config_path", lambda: config_path)
     i18n.set_language("pt-BR")
@@ -191,7 +191,7 @@ def test_language_submenu_back_does_not_change_or_persist(
 def test_language_save_failure_keeps_runtime_change(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     i18n.set_language("en")
     monkeypatch.setattr(demo, "safe_readkey", lambda: "2")
     monkeypatch.setattr(demo, "save_persisted_language", lambda language: False)
@@ -204,7 +204,7 @@ def test_language_save_failure_keeps_runtime_change(
 
 def test_language_menu_has_one_l_option_and_preserves_categories(
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     expected_categories = set("1234567890abcd")
     assert set(demo.menu_categories) == expected_categories
 
@@ -215,11 +215,11 @@ def test_language_menu_has_one_l_option_and_preserves_categories(
 
 
 @pytest.mark.parametrize("alias", ["pt_BR", "pt-br", "pt_BR.UTF-8"])
-def test_portuguese_aliases_are_normalized(alias: str) -> None:
+def test_portuguese_aliases_are_normalized(alias: str):
     assert i18n.normalize_language(alias) == "pt-BR"
 
 
-def test_unsupported_language_is_friendly() -> None:
+def test_unsupported_language_is_friendly():
     with pytest.raises(
         i18n.UnsupportedLanguageError, match="Available languages: en, pt-BR"
     ):
@@ -228,7 +228,7 @@ def test_unsupported_language_is_friendly() -> None:
 
 def test_invalid_cli_language_returns_nonzero_and_clear_message(
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     assert demo.main(["--lang", "fr"]) == 2
     captured = capsys.readouterr()
     assert "Unsupported language: fr" in captured.err
@@ -237,20 +237,36 @@ def test_invalid_cli_language_returns_nonzero_and_clear_message(
 
 def test_missing_translation_falls_back_to_english(
     monkeypatch: pytest.MonkeyPatch,
-) -> None:
+):
     monkeypatch.setitem(i18n._TRANSLATIONS["en"], "test.fallback", "English fallback")
     monkeypatch.delitem(i18n._TRANSLATIONS["pt-BR"], "test.fallback", raising=False)
     assert i18n.translate("test.fallback", "pt-BR") == "English fallback"
 
 
-def test_dynamic_translation_uses_named_interpolation() -> None:
+def test_dynamic_translation_uses_named_interpolation():
     assert (
         i18n.translate("menu.heart_rate", "pt-BR", date="2026-09-26")
         == "Obter dados de frequência cardíaca de '2026-09-26'"
     )
 
 
-def test_menu_is_rendered_in_portuguese(capsys: pytest.CaptureFixture[str]) -> None:
+def test_weight_prompts_use_float_compatible_decimal_separator():
+    assert i18n.translate("prompt.enter_weight", "pt-BR") == (
+        "Digite o peso (30-300, padrão: 85.1): "
+    )
+    assert i18n.translate("prompt.enter_weight_kg", "pt-BR") == (
+        "Digite o peso em kg (30-300, padrão: 85.1): "
+    )
+
+
+def test_graphql_example_uses_literal_braces():
+    example = i18n.translate("demo.graphql_example")
+    assert example == "Example: query{userGoalsScalar}"
+    assert "{{" not in example
+    assert "}}" not in example
+
+
+def test_menu_is_rendered_in_portuguese(capsys: pytest.CaptureFixture[str]):
     i18n.set_language("pt-BR")
     demo.print_main_menu()
     output = capsys.readouterr().out
@@ -260,7 +276,7 @@ def test_menu_is_rendered_in_portuguese(capsys: pytest.CaptureFixture[str]) -> N
 
 def test_prompt_is_rendered_in_portuguese(
     monkeypatch: pytest.MonkeyPatch,
-) -> None:
+):
     i18n.set_language("pt-BR")
     prompts: list[str] = []
     monkeypatch.setattr(
@@ -276,7 +292,7 @@ def test_api_data_json_filenames_and_user_values_are_not_translated(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Any,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     i18n.set_language("pt-BR")
     monkeypatch.setattr(demo.config, "export_dir", tmp_path)
     garmin_value = "User & Profile"
@@ -292,7 +308,7 @@ def test_api_data_json_filenames_and_user_values_are_not_translated(
     assert "Usuário e Perfil" not in output
 
 
-def test_print_input_and_getpass_are_not_overridden() -> None:
+def test_print_input_and_getpass_are_not_overridden():
     assert not hasattr(demo, "_localized_print")
     assert not hasattr(demo, "_localized_input")
     assert not hasattr(demo, "_localized_getpass")
@@ -301,7 +317,7 @@ def test_print_input_and_getpass_are_not_overridden() -> None:
     assert not hasattr(i18n, "translate_text")
 
 
-def test_menu_api_keys_are_not_translated() -> None:
+def test_menu_api_keys_are_not_translated():
     categories = cast("Any", demo.menu_categories)
     option = categories["3"]["options"]["1"]
     assert option["key"] == "get_training_readiness"
@@ -362,7 +378,7 @@ def _health_report_data() -> dict[str, Any]:
 def test_health_report_uses_english_labels_and_language_attribute(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-) -> None:
+):
     i18n.set_language("en")
     monkeypatch.setattr(demo.config, "export_dir", tmp_path)
 
@@ -383,7 +399,7 @@ def test_health_report_uses_english_labels_and_language_attribute(
 def test_health_report_uses_portuguese_labels_and_preserves_garmin_data(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-) -> None:
+):
     i18n.set_language("pt-BR")
     monkeypatch.setattr(demo.config, "export_dir", tmp_path)
 
@@ -424,7 +440,7 @@ def test_health_report_uses_portuguese_labels_and_preserves_garmin_data(
 def test_health_report_translates_empty_state_labels_and_fallbacks(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
-) -> None:
+):
     i18n.set_language("pt-BR")
     monkeypatch.setattr(demo.config, "export_dir", tmp_path)
 
@@ -461,7 +477,7 @@ def test_safe_api_call_localizes_fixed_error_and_preserves_exception(
     language: str,
     fixed_message: str,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     i18n.set_language(language)
     exception_message = "User & Profile"
 
@@ -484,7 +500,7 @@ def test_safe_api_call_localizes_fixed_error_and_preserves_exception(
 
 def test_safe_api_call_translates_fixed_not_found_message(
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     i18n.set_language("pt-BR")
 
     def missing_api_call() -> None:
@@ -507,7 +523,7 @@ def test_safe_api_call_translates_fixed_not_found_message(
 def test_translate_accepts_key_as_named_placeholder(
     language: str,
     expected: str,
-) -> None:
+):
     assert i18n.translate("ui.executing", language, key="get_full_name").strip() == (
         f"🔄 {expected}"
     )
@@ -526,7 +542,7 @@ def test_execute_menu_option_with_key_placeholder(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
     capsys: pytest.CaptureFixture[str],
-) -> None:
+):
     i18n.set_language(language)
     monkeypatch.setattr(demo.config, "export_dir", tmp_path)
 

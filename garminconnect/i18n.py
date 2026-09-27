@@ -807,11 +807,11 @@ _MESSAGES: dict[str, tuple[str, str | None]] = {
     ),
     "prompt.enter_weight": (
         "Enter weight (30-300, default: 85.1): ",
-        "Digite o peso (30-300, padrão: 85,1): ",
+        "Digite o peso (30-300, padrão: 85.1): ",
     ),
     "prompt.enter_weight_kg": (
         "Enter weight in kg (30-300, default: 85.1): ",
-        "Digite o peso em kg (30-300, padrão: 85,1): ",
+        "Digite o peso em kg (30-300, padrão: 85.1): ",
     ),
     "prompt.enter_unit": (
         "Enter unit (kg/lbs, default: kg): ",
@@ -2184,8 +2184,8 @@ _MESSAGES.update(
             "\n📋 {call}",
         ),
         "demo.graphql_example": (
-            "Example: query{{userGoalsScalar}}",
-            "Exemplo: query{{userGoalsScalar}}",
+            "Example: query{userGoalsScalar}",
+            "Exemplo: query{userGoalsScalar}",
         ),
         "demo.training_plan_id": (
             "Enter training plan ID: ",
