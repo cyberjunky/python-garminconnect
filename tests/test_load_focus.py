@@ -9,6 +9,7 @@ from garminconnect import Garmin
 
 @pytest.fixture
 def garmin():
+    """Return a Garmin client with connectapi mocked."""
     client = Garmin()
     client.connectapi = Mock()
     return client
@@ -22,6 +23,7 @@ def garmin():
     ],
 )
 def test_load_summary(garmin, method, path):
+    """Verify training-load summary endpoint construction."""
     response = {"load": 123}
     garmin.connectapi.return_value = response
     assert getattr(garmin, method)("2026-09-20") is response
@@ -41,6 +43,7 @@ def test_load_summary(garmin, method, path):
     ],
 )
 def test_invalid_dates_do_not_send_requests(garmin, method, args):
+    """Reject invalid date inputs before making requests."""
     with pytest.raises(ValueError):
         getattr(garmin, method)(*args)
     garmin.connectapi.assert_not_called()
@@ -65,6 +68,7 @@ def test_invalid_dates_do_not_send_requests(garmin, method, args):
 def test_activity_load_metrics_and_filter(
     garmin, metrics, expected_metrics, activitytype
 ):
+    """Verify activity load metric and activity-type query parameters."""
     response = [{"activityTrainingLoad": 123}]
     garmin.connectapi.return_value = response
     assert (
