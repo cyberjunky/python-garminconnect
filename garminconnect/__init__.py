@@ -2313,10 +2313,10 @@ class Garmin:
 
         return morning_entry
 
-    def get_training_monthly_load_balance(self, cdate: str) -> dict[str, Any]:
+    def get_training_four_week_load_balance(self, cdate: str) -> dict[str, Any]:
         """Return training load balance (load focus) data for the current user.
 
-        The date is the end of the one-month range.
+        The date identifies the end of the trailing four-week load-focus period.
         """
         cdate = _validate_date_format(cdate, "cdate")
         url = f"{self.garmin_connect_training_load_balance_url}/latest/{cdate}"
@@ -2963,8 +2963,7 @@ class Garmin:
         :param activitytype: optional activity type filter
         :return: list of activities with the requested metrics
         """
-        startdate = _validate_date_format(startdate, "startdate")
-        enddate = _validate_date_format(enddate, "enddate")
+        startdate, enddate = _validate_date_range(startdate, enddate)
         url = f"{self.garmin_connect_fitnessstats}/all"
         requested_metrics = (
             [
