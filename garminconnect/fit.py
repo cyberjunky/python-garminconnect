@@ -1,5 +1,4 @@
 # type: ignore  # Complex binary data handling - mypy errors expected
-import time
 from datetime import datetime
 from io import BytesIO
 from struct import pack, unpack
@@ -412,7 +411,7 @@ class FitEncoder(Fit):
         UTC 00:00 Dec 31 1989 (631065600).
         """
         if isinstance(t, datetime):
-            t = time.mktime(t.timetuple())
+            t = t.timestamp()
         return t - 631065600
 
 
