@@ -1902,6 +1902,21 @@ class TestResponseHandling:
         with pytest.raises(ValueError, match="positive integer"):
             garmin.get_goals(start=0)
 
+    @pytest.mark.parametrize(
+        "method",
+        [
+            "get_badge_challenges",
+            "get_available_badge_challenges",
+            "get_non_completed_badge_challenges",
+            "get_inprogress_virtual_challenges",
+        ],
+    )
+    def test_badge_challenges_reject_zero_start(
+        self, garmin: garminconnect.Garmin, method: str
+    ):
+        with pytest.raises(ValueError, match="positive integer"):
+            getattr(garmin, method)(0, 10)
+
     def test_get_goals_sends_sec_fetch_site_header(self, garmin: garminconnect.Garmin):
         """goal-service silently returns [] without this header (#431)."""
         with patch.object(garmin, "connectapi", return_value=[]) as mock:

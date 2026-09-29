@@ -144,7 +144,7 @@ class Config:
         # API call settings
         self.default_limit = 100
         self.start = 0
-        self.start_badge = 1  # Badge related calls start counting at 1
+        self.start_badge = 1  # Badge, challenge and goal calls start counting at 1
 
         # Activity settings
         self.activityfile = "test_data/*.gpx"  # Supported file types: .fit .gpx .tcx
@@ -4942,26 +4942,26 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_active_goals": lambda: call_and_display(
                 api.get_goals,
                 status="active",
-                start=config.start,
+                start=config.start_badge,
                 limit=config.default_limit,
                 method_name="get_goals",
-                api_call_desc=f"api.get_goals(status='active', start={config.start}, limit={config.default_limit})",
+                api_call_desc=f"api.get_goals(status='active', start={config.start_badge},limit={config.default_limit})",
             ),
             "get_future_goals": lambda: call_and_display(
                 api.get_goals,
                 status="future",
-                start=config.start,
+                start=config.start_badge,
                 limit=config.default_limit,
                 method_name="get_goals",
-                api_call_desc=f"api.get_goals(status='future', start={config.start}, limit={config.default_limit})",
+                api_call_desc=f"api.get_goals(status='future', start={config.start_badge},limit={config.default_limit})",
             ),
             "get_past_goals": lambda: call_and_display(
                 api.get_goals,
                 status="past",
-                start=config.start,
+                start=config.start_badge,
                 limit=config.default_limit,
                 method_name="get_goals",
-                api_call_desc=f"api.get_goals(status='past', start={config.start}, limit={config.default_limit})",
+                api_call_desc=f"api.get_goals(status='past', start={config.start_badge},limit={config.default_limit})",
             ),
             "get_badge_challenges": lambda: call_and_display(
                 api.get_badge_challenges,
