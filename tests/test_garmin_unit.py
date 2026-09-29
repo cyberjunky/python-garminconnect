@@ -1896,7 +1896,11 @@ class TestResponseHandling:
 
         assert len(result) == 40
         assert mock.call_count == 3
-        assert starts == ["0", "30", "60"]
+        assert starts == ["1", "31", "61"]
+
+    def test_get_goals_rejects_zero_start(self, garmin: garminconnect.Garmin):
+        with pytest.raises(ValueError, match="positive integer"):
+            garmin.get_goals(start=0)
 
     def test_get_goals_sends_sec_fetch_site_header(self, garmin: garminconnect.Garmin):
         """goal-service silently returns [] without this header (#431)."""
