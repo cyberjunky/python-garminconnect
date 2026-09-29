@@ -685,7 +685,7 @@ class Garmin:
         self.garmin_connect_training_load_balance_url = (
             "/metrics-service/metrics/trainingloadbalance"
         )
-        self.garmin_connect_weekly_training_load_url = (
+        self.garmin_connect_daily_training_status_url = (
             "/metrics-service/metrics/trainingstatus/daily"
         )
         self.garmin_connect_race_predictor_url = (
@@ -2324,14 +2324,15 @@ class Garmin:
 
         return self.connectapi(url)
 
-    def get_weekly_training_load(self, cdate: str) -> dict[str, Any]:
-        """Return training load data for the current user.
+    def get_daily_training_status(self, cdate: str) -> dict[str, Any]:
+        """Return the training status for a single day for the current user.
 
-        The date is the end of the one-week range.
+        Includes the training status phrase and the acute/chronic training
+        load (ACWR) as of the given date.
         """
         cdate = _validate_date_format(cdate, "cdate")
-        url = f"{self.garmin_connect_weekly_training_load_url}/{cdate}"
-        logger.debug("Requesting weekly training load data")
+        url = f"{self.garmin_connect_daily_training_status_url}/{cdate}"
+        logger.debug("Requesting daily training status data")
 
         return self.connectapi(url)
 

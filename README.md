@@ -54,7 +54,7 @@ Make your selection:
 - **Categories**: 14 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 10 methods (today's health data plus daily calories, resting HR and sleep ranges)
-- **Advanced Health Metrics**: 16 methods (fitness metrics, HRV, VO2, FTP range, training readiness, training zones, running tolerance)
+- **Advanced Health Metrics**: 19 methods (fitness metrics, HRV, VO2, FTP range, training readiness, training zones, running tolerance, training load balance, daily training status, activity training load)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
 - **Activities & Workouts**: 37 methods (comprehensive activity, workout management, typed workout uploads including strength, in-place edit, scheduling, push to device, import, activity type/subtype filtering, earliest-upcoming-workout lookup)
 - **Body Composition & Weight**: 7 methods (weight tracking, body composition)
