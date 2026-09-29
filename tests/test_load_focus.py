@@ -19,7 +19,7 @@ def garmin():
     "method,path",
     [
         ("get_training_four_week_load_balance", "trainingloadbalance/latest"),
-        ("get_weekly_training_load", "trainingstatus/daily"),
+        ("get_daily_training_status", "trainingstatus/daily"),
     ],
 )
 def test_load_summary(garmin, method, path):
@@ -36,7 +36,7 @@ def test_load_summary(garmin, method, path):
     "method,args",
     [
         ("get_training_four_week_load_balance", ("bad-date",)),
-        ("get_weekly_training_load", ("2026-02-30",)),
+        ("get_daily_training_status", ("2026-02-30",)),
         ("get_training_load_activities", ("bad-date", "2026-09-20")),
         ("get_training_load_activities", ("2026-09-01", "bad-date")),
         ("get_training_load_activities", ("2026-09-20", "2026-09-01")),

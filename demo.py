@@ -283,6 +283,18 @@ menu_categories = {
                 "desc": f"Get functional threshold power range from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
                 "key": "get_functional_threshold_power_range",
             },
+            "g": {
+                "desc": f"Get four-week training load balance for '{config.today.isoformat()}'",
+                "key": "get_training_four_week_load_balance",
+            },
+            "h": {
+                "desc": f"Get daily training status (acute/chronic load) for '{config.today.isoformat()}'",
+                "key": "get_daily_training_status",
+            },
+            "i": {
+                "desc": f"Get activity training load from '{config.month_start.isoformat()}' to '{config.today.isoformat()}'",
+                "key": "get_training_load_activities",
+            },
         },
     },
     "4": {
@@ -4664,6 +4676,25 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 config.today.isoformat(),
                 method_name="get_training_status",
                 api_call_desc=f"api.get_training_status('{config.today.isoformat()}')",
+            ),
+            "get_training_four_week_load_balance": lambda: call_and_display(
+                api.get_training_four_week_load_balance,
+                config.today.isoformat(),
+                method_name="get_training_four_week_load_balance",
+                api_call_desc=f"api.get_training_four_week_load_balance('{config.today.isoformat()}')",
+            ),
+            "get_daily_training_status": lambda: call_and_display(
+                api.get_daily_training_status,
+                config.today.isoformat(),
+                method_name="get_daily_training_status",
+                api_call_desc=f"api.get_daily_training_status('{config.today.isoformat()}')",
+            ),
+            "get_training_load_activities": lambda: call_and_display(
+                api.get_training_load_activities,
+                config.month_start.isoformat(),
+                config.today.isoformat(),
+                method_name="get_training_load_activities",
+                api_call_desc=f"api.get_training_load_activities('{config.month_start.isoformat()}', '{config.today.isoformat()}')",
             ),
             "get_respiration_data": lambda: call_and_display(
                 api.get_respiration_data,
