@@ -8,7 +8,7 @@ or: pip install garminconnect[workout]
 from __future__ import annotations
 
 from contextlib import suppress
-from typing import TYPE_CHECKING, Any, ClassVar, Literal, Protocol, Self
+from typing import TYPE_CHECKING, Any, ClassVar, Literal, Self
 
 if TYPE_CHECKING:
     from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -314,28 +314,12 @@ class StrengthWorkout(BaseWorkout):
     )
 
 
-class IntensityTarget(Protocol):
-    """Protocol for power, heart rate, speed and pace targets."""
-
-    target_type: ClassVar[int]
-    target_type_key: ClassVar[str]
-    zone_number: ClassVar[Literal[None]] = None
-    lower_limit: float
-    upper_limit: float
-
-
-class ZonedIntensityTarget(Protocol):
-    """Protocol for power zone and heart rate zone targets."""
-
-    target_type: ClassVar[int]
-    target_type_key: ClassVar[str]
-    upper_limit: ClassVar[Literal[None]] = None
-    lower_limit: ClassVar[Literal[None]] = None
-    zone_number: int
-
-
 class _RangeTarget(BaseModel):
-    zone_number: ClassVar = None
+    """Base for targets defined by a lower and upper limit."""
+
+    target_type: ClassVar[int]
+    target_type_key: ClassVar[str]
+    zone_number: ClassVar[None] = None
     lower_limit: float
     upper_limit: float
 
@@ -346,6 +330,16 @@ class _RangeTarget(BaseModel):
         return self
 
 
+class _ZoneTarget(BaseModel):
+    """Base for targets defined by one of the user's configured zones."""
+
+    target_type: ClassVar[int]
+    target_type_key: ClassVar[str]
+    lower_limit: ClassVar[None] = None
+    upper_limit: ClassVar[None] = None
+    zone_number: int
+
+
 class CadenceTarget(_RangeTarget):
     """Cadence target.
 
@@ -354,19 +348,13 @@ class CadenceTarget(_RangeTarget):
 
     target_type: ClassVar[int] = TargetType.CADENCE
     target_type_key: ClassVar[str] = "cadence"
-    zone_number: ClassVar = None
-    lower_limit: float
-    upper_limit: float
 
 
-class PowerZoneTarget(BaseModel):
+class PowerZoneTarget(_ZoneTarget):
     """Power Zone target."""
 
     target_type: ClassVar[int] = TargetType.POWER_ZONE
     target_type_key: ClassVar[str] = "power.zone"
-    upper_limit: ClassVar = None
-    lower_limit: ClassVar = None
-    zone_number: int
 
 
 class CustomPowerTarget(_RangeTarget):
@@ -377,19 +365,13 @@ class CustomPowerTarget(_RangeTarget):
 
     target_type: ClassVar[int] = TargetType.POWER_ZONE
     target_type_key: ClassVar[str] = "power.zone"
-    zone_number: ClassVar = None
-    lower_limit: float
-    upper_limit: float
 
 
-class HeartRateZoneTarget(BaseModel):
+class HeartRateZoneTarget(_ZoneTarget):
     """Heart Rate Zone target."""
 
     target_type: ClassVar[int] = TargetType.HEART_RATE_ZONE
     target_type_key: ClassVar[str] = "heart.rate.zone"
-    upper_limit: ClassVar = None
-    lower_limit: ClassVar = None
-    zone_number: int
 
 
 class CustomHeartRateTarget(_RangeTarget):
@@ -400,9 +382,6 @@ class CustomHeartRateTarget(_RangeTarget):
 
     target_type: ClassVar[int] = TargetType.HEART_RATE_ZONE
     target_type_key: ClassVar[str] = "heart.rate.zone"
-    zone_number: ClassVar = None
-    lower_limit: float
-    upper_limit: float
 
 
 class SpeedTarget(_RangeTarget):
@@ -413,22 +392,20 @@ class SpeedTarget(_RangeTarget):
 
     target_type: ClassVar[int] = TargetType.SPEED_ZONE
     target_type_key: ClassVar[str] = "speed.zone"
-    zone_number: ClassVar = None
-    lower_limit: float
-    upper_limit: float
 
 
 class PaceTarget(_RangeTarget):
     """Pace target.
 
-    upper and lower limits in m/s
+    upper and lower limits in m/s (use ``pace_to_mps``), so the slower pace is
+    the lower limit
     """
 
     target_type: ClassVar[int] = TargetType.PACE_ZONE
     target_type_key: ClassVar[str] = "pace.zone"
-    zone_number: ClassVar = None
-    lower_limit: float
-    upper_limit: float
+
+
+IntensityTarget = _RangeTarget | _ZoneTarget
 
 
 def pace_to_mps(minutes: int, seconds: int, units: Literal["km", "mi"]) -> float:
@@ -491,7 +468,7 @@ def create_interval_step(
         stepType={
             "stepTypeId": StepType.INTERVAL,
             "stepTypeKey": "interval",
-            "displayOrder": 1,
+            "displayOrder": 3,
         },
         endCondition={
             "conditionTypeId": ConditionType.TIME,
@@ -504,17 +481,12 @@ def create_interval_step(
         or {
             "workoutTargetTypeId": TargetType.NO_TARGET,
             "workoutTargetTypeKey": "no.target",
-            "displayOrder": 3,
+            "displayOrder": 1,
         },
         targetValueOne=target_value_one,
         targetValueTwo=target_value_two,
         zoneNumber=zone_number,
-        secondaryTargetType=secondary_target_type
-        or {
-            "workoutTargetTypeId": TargetType.NO_TARGET,
-            "workoutTargetTypeKey": "no.target",
-            "displayOrder": 4,
-        },
+        secondaryTargetType=secondary_target_type,
         secondaryTargetValueOne=secondary_target_value_one,
         secondaryTargetValueTwo=secondary_target_value_two,
         secondaryZoneNumber=secondary_zone_number,
@@ -522,8 +494,8 @@ def create_interval_step(
 
 
 def _target_kwargs(
-    target: IntensityTarget | ZonedIntensityTarget,
-    secondary_target: IntensityTarget | ZonedIntensityTarget | None,
+    target: IntensityTarget,
+    secondary_target: IntensityTarget | None,
 ) -> dict[str, Any]:
     kwargs: dict[str, Any] = {
         "target_type": {
@@ -552,17 +524,13 @@ def _target_kwargs(
 def create_targeted_interval_step(
     duration_seconds: float,
     step_order: int,
-    target: IntensityTarget | ZonedIntensityTarget,
-    secondary_target: IntensityTarget | ZonedIntensityTarget | None = None,
+    target: IntensityTarget,
+    secondary_target: IntensityTarget | None = None,
 ) -> ExecutableStep:
     """Create a targeted interval step."""
-    kwargs = {
-        "duration_seconds": duration_seconds,
-        "step_order": step_order,
-    }
-    kwargs |= _target_kwargs(target, secondary_target)
-
-    return create_interval_step(**kwargs)  # type: ignore[arg-type]
+    return create_interval_step(
+        duration_seconds, step_order, **_target_kwargs(target, secondary_target)
+    )
 
 
 def create_distance_interval_step(
@@ -583,7 +551,7 @@ def create_distance_interval_step(
         stepType={
             "stepTypeId": StepType.INTERVAL,
             "stepTypeKey": "interval",
-            "displayOrder": 1,
+            "displayOrder": 3,
         },
         endCondition={
             "conditionTypeId": ConditionType.DISTANCE,
@@ -596,17 +564,12 @@ def create_distance_interval_step(
         or {
             "workoutTargetTypeId": TargetType.NO_TARGET,
             "workoutTargetTypeKey": "no.target",
-            "displayOrder": 3,
+            "displayOrder": 1,
         },
         targetValueOne=target_value_one,
         targetValueTwo=target_value_two,
         zoneNumber=zone_number,
-        secondaryTargetType=secondary_target_type
-        or {
-            "workoutTargetTypeId": TargetType.NO_TARGET,
-            "workoutTargetTypeKey": "no.target",
-            "displayOrder": 4,
-        },
+        secondaryTargetType=secondary_target_type,
         secondaryTargetValueOne=secondary_target_value_one,
         secondaryTargetValueTwo=secondary_target_value_two,
         secondaryZoneNumber=secondary_zone_number,
@@ -616,17 +579,13 @@ def create_distance_interval_step(
 def create_targeted_distance_interval_step(
     distance_meters: float,
     step_order: int,
-    target: IntensityTarget | ZonedIntensityTarget,
-    secondary_target: IntensityTarget | ZonedIntensityTarget | None = None,
+    target: IntensityTarget,
+    secondary_target: IntensityTarget | None = None,
 ) -> ExecutableStep:
     """Create a targeted interval step that ends after a distance in meters."""
-    kwargs = {
-        "distance_meters": distance_meters,
-        "step_order": step_order,
-    }
-    kwargs |= _target_kwargs(target, secondary_target)
-
-    return create_distance_interval_step(**kwargs)  # type: ignore[arg-type]
+    return create_distance_interval_step(
+        distance_meters, step_order, **_target_kwargs(target, secondary_target)
+    )
 
 
 def create_recovery_step(
