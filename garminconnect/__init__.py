@@ -327,6 +327,26 @@ def _looks_like_json(value: str) -> bool:
     return stripped.startswith(("{", "["))
 
 
+def _is_legacy_garth_tokenstore(path: str) -> bool:
+    """Return True if path is a directory holding only old garth-format tokens.
+
+    Versions before 0.3 saved sessions with garth (oauth1_token.json and
+    oauth2_token.json). Those tokens cannot be converted, so callers use this
+    to explain why the tokenstore did not load instead of a generic error.
+    """
+    token_dir = Path(path).expanduser()
+    try:
+        return token_dir.is_dir() and (
+            not (token_dir / "garmin_tokens.json").exists()
+            and (
+                (token_dir / "oauth1_token.json").exists()
+                or (token_dir / "oauth2_token.json").exists()
+            )
+        )
+    except OSError:
+        return False
+
+
 def _extract_status_code(exc: BaseException) -> int | None:
     """Best-effort extraction of an HTTP status code from an exception.
 
@@ -891,6 +911,15 @@ class Garmin:
             if not tokens_loaded:
                 # Validate credentials before attempting login
                 if not self.username or not self.password:
+                    if tokenstore_path is not None and _is_legacy_garth_tokenstore(
+                        tokenstore_path
+                    ):
+                        raise GarminConnectAuthenticationError(
+                            "Found old garth-format tokens (oauth1_token.json/"
+                            "oauth2_token.json), which are no longer supported. "
+                            "Log in once with username and password to create "
+                            "new tokens."
+                        )
                     raise GarminConnectAuthenticationError(
                         "Username and password are required"
                     )
