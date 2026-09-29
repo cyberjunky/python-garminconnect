@@ -104,6 +104,20 @@ Install from PyPI:
 pip install --upgrade garminconnect curl_cffi
 ```
 
+### Upgrading from 0.2.x (garth)
+
+Since 0.3.0 this library no longer uses `garth`, which is deprecated.
+Sessions saved by older versions (`oauth1_token.json`/`oauth2_token.json`,
+created with `garth.save()`) cannot be converted, and assigning a resumed
+client to `Garmin().garth` no longer does anything. Log in once with your
+username and password; new tokens are saved to `garmin_tokens.json` in your
+tokenstore and are used for later logins:
+
+```python
+garmin = Garmin(email, password)
+garmin.login("~/.garminconnect")  # later runs: Garmin().login("~/.garminconnect")
+```
+
 ## Run demo software (recommended)
 
 Clone the repo, then:

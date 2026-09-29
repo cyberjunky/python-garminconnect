@@ -449,7 +449,9 @@ class Client:
 
     def get_api_headers(self) -> dict[str, str]:
         if not self.is_authenticated:
-            raise GarminConnectAuthenticationError("Not authenticated")
+            raise GarminConnectAuthenticationError(
+                "Not authenticated - call Garmin.login() first"
+            )
         if self.di_token:
             return _native_headers(
                 {

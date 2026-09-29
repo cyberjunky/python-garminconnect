@@ -3083,3 +3083,52 @@ class TestActivityUpload:
         assert filename == "activity.fit"
         assert not filename.startswith('"')
         assert not filename.endswith('"')
+
+
+# ---------------------------------------------------------------------------
+# Errors for old garth tokens and missing login
+# ---------------------------------------------------------------------------
+
+
+class TestLegacyTokenErrors:
+    """Upgraders from garth-based versions get an actionable error."""
+
+    @pytest.mark.parametrize("filename", ["oauth1_token.json", "oauth2_token.json"])
+    def test_garth_tokenstore_without_credentials_explains(self, tmp_path, filename):
+        (tmp_path / filename).write_text("{}")
+        g = garminconnect.Garmin()
+        with pytest.raises(
+            garminconnect.GarminConnectAuthenticationError, match="garth-format"
+        ):
+            g.login(str(tmp_path))
+
+    def test_garth_tokenstore_with_credentials_logs_in(self, tmp_path):
+        (tmp_path / "oauth1_token.json").write_text("{}")
+        g = garminconnect.Garmin("user@example.com", "secret")
+        with (
+            patch.object(g.client, "login", return_value=(None, None)) as mock_login,
+            patch.object(g.client, "dump"),
+            patch.object(g, "_load_profile_and_settings"),
+        ):
+            g.login(str(tmp_path))
+        mock_login.assert_called_once()
+
+    def test_empty_tokenstore_keeps_generic_error(self, tmp_path):
+        g = garminconnect.Garmin()
+        with pytest.raises(
+            garminconnect.GarminConnectAuthenticationError,
+            match="Username and password",
+        ):
+            g.login(str(tmp_path))
+
+    def test_new_tokens_next_to_garth_tokens_are_not_legacy(self, tmp_path):
+        (tmp_path / "oauth1_token.json").write_text("{}")
+        (tmp_path / "garmin_tokens.json").write_text("{}")
+        assert not garminconnect._is_legacy_garth_tokenstore(str(tmp_path))
+
+    def test_api_call_without_login_says_to_login(self):
+        g = garminconnect.Garmin()
+        with pytest.raises(
+            garminconnect.GarminConnectAuthenticationError, match=r"login\(\) first"
+        ):
+            g.client.get_api_headers()
