@@ -351,22 +351,41 @@ pip install garminconnect[workout]
 from garminconnect.workout import (
     RunningWorkout,
     WorkoutSegment,
+    PaceTarget,
     create_warmup_step,
     create_interval_step,
+    create_targeted_interval_step,
     create_distance_interval_step,
     create_cooldown_step,
     create_repeat_group,
+    pace_to_mps,
+)
+
+easy_pace = PaceTarget(
+    lower_limit=pace_to_mps(6, 11, 'km'),
+    upper_limit=pace_to_mps(6, 0, 'km')
 )
 
 # Create a structured running workout
 workout = RunningWorkout(
     workoutName="Easy Run",
-    estimatedDurationInSecs=1800,
+    estimatedDurationInSecs=900,
     workoutSegments=[
         WorkoutSegment(
             segmentOrder=1,
             sportType={"sportTypeId": 1, "sportTypeKey": "running"},
-            workoutSteps=[create_warmup_step(300.0)],
+            workoutSteps=[
+                create_warmup_step(300.0),
+                create_interval_step(  # No intensity target
+                    duration_seconds=400.0,
+                    step_order=2,
+                ),
+                create_targeted_interval_step(  # With target pace
+                    duration_seconds=200.0,
+                    step_order=3,
+                    target=easy_pace,
+                )
+            ],
         )
     ],
 )
@@ -426,7 +445,14 @@ workout = StrengthWorkout(
 client.upload_strength_workout(workout)
 ```
 
-**Helper functions:** `create_warmup_step`, `create_interval_step`, `create_distance_interval_step`, `create_recovery_step`, `create_cooldown_step`, `create_repeat_group`, `create_strength_exercise_step`, `create_strength_rest_step`, `create_strength_set`
+**Helper functions:** `create_warmup_step`, `create_interval_step`,
+`create_targeted_interval_step`, `create_distance_interval_step`,
+`create_targeted_distance_interval_step`, `create_recovery_step`,
+`create_cooldown_step`, `create_repeat_group`, `create_strength_exercise_step`,
+`create_strength_rest_step`, `create_strength_set`
+
+**Intensity Targets**: `CadenceTarget`, `PowerZoneTarget`, `CustomPowerTarget`,
+`HeartRateZoneTarget`, `CustomHeartRateTarget`, `SpeedTarget`, `PaceTarget`
 
 Use `create_distance_interval_step(600.0, step_order=1)` for interval steps that should end after a distance in meters instead of after a duration.
 
