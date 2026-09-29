@@ -2036,7 +2036,7 @@ class Garmin:
 
     def get_badge_challenges(self, start: int, limit: int) -> dict[str, Any]:
         """Return badge challenges for the current user."""
-        start = _validate_non_negative_integer(start, "start")
+        start = _validate_positive_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_badge_challenges_url
         params = {"start": str(start), "limit": str(limit)}
@@ -2046,7 +2046,7 @@ class Garmin:
 
     def get_available_badge_challenges(self, start: int, limit: int) -> dict[str, Any]:
         """Return available badge challenges."""
-        start = _validate_non_negative_integer(start, "start")
+        start = _validate_positive_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_available_badge_challenges_url
         params = {"start": str(start), "limit": str(limit)}
@@ -2058,7 +2058,7 @@ class Garmin:
         self, start: int, limit: int
     ) -> dict[str, Any]:
         """Return badge non-completed challenges for current user."""
-        start = _validate_non_negative_integer(start, "start")
+        start = _validate_positive_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_non_completed_badge_challenges_url
         params = {"start": str(start), "limit": str(limit)}
