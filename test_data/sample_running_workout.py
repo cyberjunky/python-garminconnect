@@ -1,13 +1,15 @@
 """Sample running workout data using typed workout models."""
 
 from garminconnect.workout import (
+    PaceTarget,
     RunningWorkout,
     WorkoutSegment,
     create_cooldown_step,
-    create_interval_step,
     create_recovery_step,
     create_repeat_group,
+    create_targeted_interval_step,
     create_warmup_step,
+    pace_to_mps,
 )
 
 
@@ -30,7 +32,16 @@ def create_sample_running_workout() -> RunningWorkout:
                     create_repeat_group(
                         iterations=6,
                         workout_steps=[
-                            create_interval_step(60.0, step_order=2),  # 1 min interval
+                            # 1 min interval at 4:30-4:50 min/km (limits in m/s,
+                            # so the slower pace is the lower limit)
+                            create_targeted_interval_step(
+                                60.0,
+                                step_order=2,
+                                target=PaceTarget(
+                                    lower_limit=pace_to_mps(4, 50, "km"),
+                                    upper_limit=pace_to_mps(4, 30, "km"),
+                                ),
+                            ),
                             create_recovery_step(60.0, step_order=3),  # 1 min recovery
                         ],
                         step_order=2,
