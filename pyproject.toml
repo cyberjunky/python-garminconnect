@@ -54,6 +54,7 @@ warn_unused_ignores = true
 module = [
     "test_garmin",
     "test_garmin_unit",
+    "test_load_focus",
     "test_retry_decorator",
     "test_workout_constants",
     "test_strength_workout",
