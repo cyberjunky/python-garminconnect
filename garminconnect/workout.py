@@ -175,6 +175,7 @@ class RepeatGroup(BaseModel):
     endConditionValue: float | None = None
     childStepId: int | None = None
     smartRepeat: bool = False
+    skipLastRestStep: bool | None = None
 
     model_config = ConfigDict(extra="allow")
 
@@ -650,8 +651,9 @@ def create_repeat_group(
     iterations: int,
     workout_steps: list[ExecutableStep | RepeatGroup],
     step_order: int,
+    skip_last_rest_step: bool | None = None,
 ) -> RepeatGroup:
-    """Create a repeat group."""
+    """Create a repeat group, optionally omitting its final recovery/rest step."""
     return RepeatGroup(
         stepOrder=step_order,
         stepType={
@@ -668,6 +670,7 @@ def create_repeat_group(
             "displayable": False,
         },
         endConditionValue=float(iterations),
+        skipLastRestStep=skip_last_rest_step,
     )
 
 

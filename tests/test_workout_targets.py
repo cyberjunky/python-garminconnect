@@ -18,6 +18,7 @@ from garminconnect.workout import (
     WorkoutSegment,
     create_distance_interval_step,
     create_interval_step,
+    create_repeat_group,
     create_targeted_distance_interval_step,
     create_targeted_interval_step,
     pace_to_mps,
@@ -200,3 +201,14 @@ def test_targets_survive_workout_serialization():
         85,
         95,
     )
+
+
+def test_repeat_group_can_skip_its_last_rest_step():
+    """Garmin's repeat editor supports skipping the final recovery/rest step."""
+    group = create_repeat_group(
+        3,
+        [create_interval_step(480.0, step_order=1)],
+        step_order=2,
+        skip_last_rest_step=True,
+    )
+    assert _dump(group)["skipLastRestStep"] is True
