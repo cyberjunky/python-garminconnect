@@ -1739,6 +1739,36 @@ class TestResponseHandling:
         params = mock.call_args.kwargs["params"]
         assert params == {"showExclusiveBadge": "true"}
 
+    def test_get_activity_images_returns_images_from_metadata(
+        self, garmin: garminconnect.Garmin
+    ):
+        images = [
+            {"imageId": "img-1", "url": "https://s3.example/1.jpg", "photoDate": None},
+            {"imageId": "img-2", "url": "https://s3.example/2.jpg", "photoDate": None},
+        ]
+        payload = {"activityId": 12345, "metadataDTO": {"activityImages": images}}
+        with patch.object(garmin, "get_activity", return_value=payload) as mock:
+            result = garmin.get_activity_images(12345)
+
+        mock.assert_called_once_with("12345")
+        assert result == images
+
+    def test_get_activity_images_returns_empty_without_metadata(
+        self, garmin: garminconnect.Garmin
+    ):
+        with patch.object(garmin, "get_activity", return_value={"activityId": 1}):
+            assert garmin.get_activity_images(1) == []
+
+        with patch.object(garmin, "get_activity", return_value={"metadataDTO": None}):
+            assert garmin.get_activity_images(1) == []
+
+        with patch.object(
+            garmin,
+            "get_activity",
+            return_value={"metadataDTO": {"activityImages": None}},
+        ):
+            assert garmin.get_activity_images(1) == []
+
     def test_get_morning_training_readiness_picks_after_wakeup_entry(
         self, garmin: garminconnect.Garmin
     ):

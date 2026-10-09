@@ -498,6 +498,22 @@ club_stats = client.get_golf_club_stats()
 user_stats = client.get_golf_user_stats()
 ```
 
+### Activity Photos
+
+Photos attached to an activity are available inside the `get_activity()`
+response at `metadataDTO.activityImages`; the `get_activity_images()`
+helper returns that list directly:
+
+```python
+# [{imageId, url, photoDate}, ...] or [] when the activity has no photos
+images = client.get_activity_images(activity_id)
+```
+
+The `url` values are presigned S3 links that expire after 24 hours, so
+download the images promptly instead of storing the URLs. The `hasImages`
+flag in `get_activities()` results is not a reliable indicator that an
+activity has photos attached.
+
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
 - **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 154+ API methods
