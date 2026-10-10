@@ -4482,7 +4482,7 @@ def update_menstrual_settings_entry(api: Garmin) -> None:
 
 
 JETLAG_FLIGHTS_EXAMPLE = (
-    '[{"originLocation": "Seattle, WA, United States", '
+    '[{"originLocation": "Portland, OR, United States", '
     '"originTimezone": "-07:00", "originTimestamp": "2026-10-04T15:20:00.00", '
     '"destinationLocation": "Melbourne, VIC 3004, Australia", '
     '"destinationTimezone": "+11:00", '

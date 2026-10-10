@@ -505,7 +505,7 @@ The library can list, create, replace, and delete Jet Lag Adviser trips. Garmin 
 ```python
 flights = [
     {
-        "originLocation": "Seattle, WA, United States",
+        "originLocation": "Portland, OR, United States",
         "originTimezone": "-07:00",
         "originTimestamp": "2026-10-04T15:20:00.00",
         "destinationLocation": "Melbourne, VIC 3004, Australia",

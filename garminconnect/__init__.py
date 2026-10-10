@@ -111,7 +111,7 @@ JETLAG_FLIGHT_KEYS = (
     "destinationTimezone",
     "destinationTimestamp",
 )
-UTC_OFFSET_REGEX = r"[+-]\d{2}:\d{2}"
+UTC_OFFSET_REGEX = r"^[+-]\d{2}:\d{2}$"
 
 
 # Add validation utilities
