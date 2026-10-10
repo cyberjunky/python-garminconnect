@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **158+ API methods** organized into **14 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **161+ API methods** organized into **14 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -50,7 +50,7 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 158+ methods (snapshot)
+- **Total API Methods**: 161+ methods (snapshot)
 - **Categories**: 14 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 10 methods (today's health data plus daily calories, resting HR and sleep ranges)
@@ -128,7 +128,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[example]"
 
 python3 ./example.py   # simple getting-started example
-python3 ./demo.py      # comprehensive demo (158+ API methods)
+python3 ./demo.py      # comprehensive demo (161+ API methods)
 ```
 
 ## 🛠️ Development
@@ -526,7 +526,7 @@ client.delete_jetlag_trip(trip["tripId"])
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 158+ API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 161+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
