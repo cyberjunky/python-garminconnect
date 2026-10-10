@@ -4374,7 +4374,10 @@ class Garmin:
         then MSP to ATL). Garmin does not check that the legs connect or
         that a leg changes timezone. It also accepts dates in the past and a
         ``start_date`` before the first flight, which the web page does not
-        allow.
+        allow. The web page names a trip after its first flight only, and
+        shows the first departure to the last arrival. Garmin deletes a trip
+        by itself after the trip ends and the user has adjusted to the home
+        timezone.
 
         Returns the trip with its new ``tripId`` and a ``flightId`` on each
         flight. ``dailyStatus``, the guidance that Garmin calculates, is not
