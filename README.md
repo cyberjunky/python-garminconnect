@@ -376,8 +376,7 @@ from garminconnect.workout import (
 )
 
 easy_pace = PaceTarget(
-    lower_limit=pace_to_mps(6, 11, 'km'),
-    upper_limit=pace_to_mps(6, 0, 'km')
+    lower_limit=pace_to_mps(6, 11, "km"), upper_limit=pace_to_mps(6, 0, "km")
 )
 
 # Create a structured running workout
@@ -398,7 +397,7 @@ workout = RunningWorkout(
                     duration_seconds=200.0,
                     step_order=3,
                     target=easy_pace,
-                )
+                ),
             ],
         )
     ],
@@ -420,6 +419,29 @@ client.unschedule_workout(scheduled_workout_id)
 # Push a workout to a device - defaults to the last workout / last used device
 client.push_workout_to_device(result["workoutId"], device_id)
 ```
+
+**Swimming CSS targets:** `SwimCssOffsetTarget` represents a signed offset from
+Critical Swim Speed, rather than an absolute pace range. Supply it as the
+secondary target; the primary target can be omitted (Garmin `no.target`):
+
+```python
+from garminconnect.workout import (
+    SwimCssOffsetTarget,
+    create_targeted_distance_interval_step,
+)
+
+step = create_targeted_distance_interval_step(
+    100.0,
+    step_order=1,
+    secondary_target=SwimCssOffsetTarget(offset_seconds=5.0),
+)
+```
+
+Positive offsets are slower than CSS; negative offsets are faster. The offset
+is serialized as `secondaryTargetValueOne`, with `secondaryTargetValueTwo=0`.
+The time-based targeted helper also accepts secondary-only targets. These
+helpers retain their existing interval step/end-condition behavior; swimming
+stroke, rest, and pool settings are configured separately.
 
 **Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `StrengthWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
 

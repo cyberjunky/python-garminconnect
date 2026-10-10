@@ -27,6 +27,7 @@ def test_target_type_ids() -> None:
     assert TargetType.HEART_RATE_LAP == 8
     assert TargetType.POWER_LAP == 9
     assert TargetType.RESISTANCE == 15
+    assert TargetType.SWIM_CSS_OFFSET == 17
 
 
 def test_step_type_ids() -> None:
