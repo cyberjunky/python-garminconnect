@@ -4370,8 +4370,16 @@ class Garmin:
         place without an offset, such as ``"2026-10-04T15:20:00.00"``. Garmin
         does not geocode the location, so the offset must be correct.
 
+        Each flight is one leg, so a connection is two flights (PDX to MSP,
+        then MSP to ATL). Garmin does not check that the legs connect or
+        that a leg changes timezone. It also accepts dates in the past and a
+        ``start_date`` before the first flight, which the web page does not
+        allow.
+
         Returns the trip with its new ``tripId`` and a ``flightId`` on each
-        flight.
+        flight. ``dailyStatus``, the guidance that Garmin calculates, is not
+        in this response. It appears in :meth:`get_jetlag_trips` only after
+        travel starts.
         """
         payload = self._jetlag_trip_payload(start_date, end_date, flights)
         logger.debug("Creating jet lag trip %s to %s", start_date, end_date)
