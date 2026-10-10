@@ -4377,7 +4377,8 @@ class Garmin:
         allow. The web page names a trip after its first flight only, and
         shows the first departure to the last arrival. Garmin deletes a trip
         by itself after the trip ends and the user has adjusted to the home
-        timezone.
+        timezone. Garmin can refuse a trip whose dates overlap an existing
+        trip, with HTTP 400 "A trip already exists for this date range".
 
         Returns the trip with its new ``tripId`` and a ``flightId`` on each
         flight. ``dailyStatus``, the guidance that Garmin calculates, is not
