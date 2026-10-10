@@ -502,7 +502,7 @@ user_stats = client.get_golf_user_stats()
 
 The library can list, create, replace, and delete Jet Lag Adviser trips. Garmin does not geocode a location: give each place its UTC offset on that date, and give each time as the local time at that place, without an offset.
 
-Each flight is one leg, so a connection is two flights. Garmin accepts any legs, including a leg that changes no timezone and a trip in the past, which the web page does not allow. Check this in your own code if you need it. Garmin deletes a trip by itself after the trip ends, so a sync job must not add an old trip again.
+Each flight is one arrival and destination, so you can include legs as part of a trip or not. Garmin accepts any legs, including a leg that changes no timezone and a trip in the past, which the web page does not allow. Garmin says it deletes a trip by itself after the trip ends.
 
 ```python
 flights = [
@@ -510,7 +510,7 @@ flights = [
         "originLocation": "Portland, OR, United States",
         "originTimezone": "-07:00",
         "originTimestamp": "2026-10-04T15:20:00.00",
-        "destinationLocation": "Melbourne, VIC 3004, Australia",
+        "destinationLocation": "Melbourne, VIC, Australia",
         "destinationTimezone": "+11:00",
         "destinationTimestamp": "2026-10-06T06:45:00.00",
     },
