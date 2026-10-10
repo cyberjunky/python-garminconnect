@@ -3063,6 +3063,126 @@ class TestMenstrualCycle:
 
 
 # ---------------------------------------------------------------------------
+# Jet Lag Adviser trips
+# ---------------------------------------------------------------------------
+
+
+def _jetlag_flight(**overrides: Any) -> dict[str, Any]:
+    return {
+        "originLocation": "Seattle, WA, United States",
+        "originTimezone": "-07:00",
+        "originTimestamp": "2026-10-04T15:20:00.00",
+        "destinationLocation": "Melbourne, VIC 3004, Australia",
+        "destinationTimezone": "+11:00",
+        "destinationTimestamp": "2026-10-06T06:45:00.00",
+    } | overrides
+
+
+class TestJetLagTrips:
+    """Jet Lag Adviser trips live under /jetlag-service/jetlag/trip."""
+
+    def test_get_trips_requests_all(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "connectapi", return_value=[]) as mock:
+            assert garmin.get_jetlag_trips() == []
+        mock.assert_called_once_with("/jetlag-service/jetlag/trip/all")
+
+    def test_add_posts_trip_with_user_id(self, garmin: garminconnect.Garmin):
+        garmin.profile_id = 99
+        flight = _jetlag_flight()
+        with patch.object(garmin, "client") as client:
+            client.post.return_value = {"tripId": 7}
+            result = garmin.add_jetlag_trip("2026-10-04", "2026-10-09", [flight])
+
+        args, kwargs = client.post.call_args
+        assert args == ("connectapi", "/jetlag-service/jetlag/trip")
+        assert kwargs["api"] is True
+        assert kwargs["json"] == {
+            "startDate": "2026-10-04",
+            "endDate": "2026-10-09",
+            "flights": [flight],
+            "userId": 99,
+        }
+        assert result == {"tripId": 7}
+
+    def test_add_omits_user_id_without_profile(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "client") as client:
+            garmin.add_jetlag_trip("2026-10-04", "2026-10-09", [_jetlag_flight()])
+        assert "userId" not in client.post.call_args.kwargs["json"]
+
+    def test_update_puts_trip_id_on_trip_and_flights(
+        self, garmin: garminconnect.Garmin
+    ):
+        flight = _jetlag_flight(flightId=5, tripId=999)
+        with patch.object(garmin, "client") as client:
+            garmin.update_jetlag_trip("7", "2026-10-04", "2026-10-12", [flight])
+
+        args, kwargs = client.put.call_args
+        assert args == ("connectapi", "/jetlag-service/jetlag/trip")
+        assert kwargs["api"] is True
+        assert kwargs["json"]["tripId"] == 7
+        assert kwargs["json"]["endDate"] == "2026-10-12"
+        assert kwargs["json"]["flights"] == [flight | {"tripId": 7}]
+        # caller dict is not mutated
+        assert flight["tripId"] == 999
+
+    def test_delete_uses_trip_id_in_path(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "client") as client:
+            garmin.delete_jetlag_trip(7)
+        client.delete.assert_called_once_with(
+            "connectapi", "/jetlag-service/jetlag/trip/7", api=True
+        )
+
+    @pytest.mark.parametrize("method", ["update_jetlag_trip", "delete_jetlag_trip"])
+    def test_rejects_non_positive_trip_id(
+        self, garmin: garminconnect.Garmin, method: str
+    ):
+        args: tuple[Any, ...] = (0,)
+        if method == "update_jetlag_trip":
+            args += ("2026-10-04", "2026-10-09", [_jetlag_flight()])
+        with patch.object(garmin, "client") as client:
+            with pytest.raises(ValueError, match="positive integer"):
+                getattr(garmin, method)(*args)
+        assert not client.method_calls
+
+    def test_rejects_end_before_start(self, garmin: garminconnect.Garmin):
+        with patch.object(garmin, "client") as client:
+            with pytest.raises(ValueError, match="start date cannot be after"):
+                garmin.add_jetlag_trip("2026-10-09", "2026-10-04", [_jetlag_flight()])
+        client.post.assert_not_called()
+
+    @pytest.mark.parametrize(
+        ("flights", "message"),
+        [
+            ([], "non-empty list"),
+            (["flight"], r"flights\[0\] must be a dictionary"),
+            (
+                [_jetlag_flight(originLocation="")],
+                r"flights\[0\] is missing originLocation",
+            ),
+            (
+                [_jetlag_flight(destinationTimezone="Australia/Melbourne")],
+                "destinationTimezone must be a UTC offset",
+            ),
+            (
+                [_jetlag_flight(originTimestamp="2026-10-04 3:20pm")],
+                r"invalid flights\[0\]\.originTimestamp",
+            ),
+            (
+                [_jetlag_flight(originTimestamp="2026-10-04T15:20:00-07:00")],
+                "local time without an offset",
+            ),
+        ],
+    )
+    def test_rejects_invalid_flights(
+        self, garmin: garminconnect.Garmin, flights: list[Any], message: str
+    ):
+        with patch.object(garmin, "client") as client:
+            with pytest.raises(ValueError, match=message):
+                garmin.add_jetlag_trip("2026-10-04", "2026-10-09", flights)
+        client.post.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
 # Activity upload filename handling
 # ---------------------------------------------------------------------------
 

@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **154+ API methods** organized into **14 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **158+ API methods** organized into **14 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -50,7 +50,7 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 154+ methods (snapshot)
+- **Total API Methods**: 158+ methods (snapshot)
 - **Categories**: 14 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 10 methods (today's health data plus daily calories, resting HR and sleep ranges)
@@ -61,7 +61,7 @@ Make your selection:
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
 - **Gear & Equipment**: 8 methods (gear management, tracking, creation)
-- **Hydration & Wellness**: 20 methods (hydration, nutrition, blood pressure, menstrual reads and writes)
+- **Hydration & Wellness**: 24 methods (hydration, nutrition, blood pressure, menstrual reads and writes, Jet Lag Adviser trips)
 - **System & Export**: 5 methods (reporting, logout, GraphQL, health snapshot download)
 - **Training Plans**: 9 methods (plans, plan by ID, typed strength workout upload, exercise catalog search, in-place workout editing, push to device, workout scheduling management)
 - **Golf**: 5 methods (scorecard summary, scorecard detail, shot data, club stats, user stats)
@@ -128,7 +128,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[example]"
 
 python3 ./example.py   # simple getting-started example
-python3 ./demo.py      # comprehensive demo (154+ API methods)
+python3 ./demo.py      # comprehensive demo (158+ API methods)
 ```
 
 ## 🛠️ Development
@@ -241,7 +241,7 @@ responses, activity downloads, and health reports only when you select those
 actions. Demo exports are stored under `your_data/` with owner-only directory
 and file permissions. Run the project in a dedicated virtual environment, read
 the method you plan to call, and start with read-only methods. Upload, edit,
-delete, schedule, hydration, weigh-in, and menstrual write methods can change Garmin account data.
+delete, schedule, hydration, weigh-in, menstrual, and jet lag trip write methods can change Garmin account data.
 
 ## 🧪 Testing
 
@@ -498,9 +498,33 @@ club_stats = client.get_golf_club_stats()
 user_stats = client.get_golf_user_stats()
 ```
 
+### Jet Lag Adviser
+
+The library can list, create, replace, and delete Jet Lag Adviser trips. Garmin does not geocode a location: give each place its UTC offset on that date, and give each time as the local time at that place, without an offset.
+
+```python
+flights = [
+    {
+        "originLocation": "Seattle, WA, United States",
+        "originTimezone": "-07:00",
+        "originTimestamp": "2026-10-04T15:20:00.00",
+        "destinationLocation": "Melbourne, VIC 3004, Australia",
+        "destinationTimezone": "+11:00",
+        "destinationTimestamp": "2026-10-06T06:45:00.00",
+    },
+]
+trip = client.add_jetlag_trip("2026-10-04", "2026-10-09", flights)
+
+# A PUT replaces the whole trip: send every flight, and keep each flightId
+trip = client.get_jetlag_trips()[0]
+client.update_jetlag_trip(trip["tripId"], trip["startDate"], "2026-10-12", trip["flights"])
+
+client.delete_jetlag_trip(trip["tripId"])
+```
+
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 154+ API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 158+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
