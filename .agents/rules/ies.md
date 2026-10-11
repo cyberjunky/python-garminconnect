@@ -12,8 +12,12 @@ Proyecto IES-OS. Reglas minimas (detalle en archivos canonicos):
 6. Usa workspace isolation, sandbox y worktrees; pide review antes de
    aplicar cambios. NO habilites 'Always Proceed'.
 7. Permisos minimos; nunca secretos, deploys ni comandos destructivos.
-8. SDD: specs en `specs/NNN-slug/`, roles coordinator/planner/implementer/viewer;
-   metodologia en `/Users/alarcondiegof/ies-projects/ies-framework/docs/SDD.md`. Un agente por task y worktree.
+8. SDD: orden spec -> plan -> task -> prompt. Empieza SIEMPRE con `ies spec new <slug>`.
+   Destino de toda task: SOLO coordinator | planner | implementer | viewer
+   (verificar/revisar -> viewer; implementar/corregir/configurar -> implementer;
+   especificar/planificar -> planner). Los demas roles (architect, lead-engineer,
+   specialist-engineer, researcher, ...) NO se usan salvo --specialist-reason con causa
+   concreta. Metodologia: `/Users/alarcondiegof/ies-projects/ies-framework/docs/SDD.md`. Un agente por task y worktree.
 
 ## Disciplina human-in-the-loop
 

@@ -53,6 +53,12 @@ paquete; en caso contrario permite ejecutar a la ventana designada.
 Metodologia canonica: `/Users/alarcondiegof/ies-projects/ies-framework/docs/SDD.md` (HITL + Spec-Driven Development +
 EARS). Constitucion del proyecto: `memory/long/constitution.md`.
 
+- Destino de toda task: SOLO el equipo SDD (coordinator, planner, implementer,
+  viewer). Mapeo: especificar/planificar -> planner; implementar, corregir,
+  configurar, migrar, documentar -> implementer; verificar, revisar, validar
+  -> viewer; orquestar -> coordinator. Los roles especialistas (architect,
+  lead-engineer, specialist-engineer, researcher, finance, ...) requieren
+  `--specialist-reason "causa concreta"`; el CLI rechaza el destino sin ella.
 - Roles SDD: `coordinator` (agente principal: dimensiona, crea tasks,
   despacha, consolida evidencia; no implementa), `planner` (spec.md con
   requisitos EARS + plan.md + descomposicion), `implementer` (una task
@@ -67,6 +73,15 @@ EARS). Constitucion del proyecto: `memory/long/constitution.md`.
 - Perfil de task (`--profile riguroso|fast-track`): fast-track acelera el
   transporte y la revision; nunca reduce criterios, tests, backups, rollback
   ni techos de iteracion.
+- Autonomia (se pregunta UNA vez al crear la spec: `ies spec new`): `hitl` =
+  aprobacion humana en cada gate; `autonomous` = una sola aprobacion del plan
+  cubre todo el ciclo y el coordinator lanza y conduce a planner, implementers
+  y viewer hasta el final sin preguntas intermedias. Puertas de calidad que
+  garantizan la entrega en autonomous: criterios por REQ obligatorios, tests
+  por criterio, viewer por entrega (solo BLOCKING detiene, una ronda correctiva
+  consolidada), `ies task done` exige deliverable con `result: success`, y las
+  condiciones de parada de la disciplina. El merge a la rama principal sigue
+  siendo humano; cualquier bloqueo material detiene el ciclo y se reporta.
 - Colores del ledger (derivados del estado, nunca persistidos): backlog
   ⚪, ready 🔵, in_progress 🟡, blocked 🔴, done 🟢, superseded 🟣,
   cancelled ⚫, archived 🟤. No confundir con los emojis de readiness de los
