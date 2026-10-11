@@ -68,6 +68,23 @@ echo "Publishing ${SECRET_NAME} to ${REPO}…"
 tar czf - -C "$TOKEN_DIR" . | base64 | gh secret set "$SECRET_NAME" --repo "$REPO"
 echo "OK: ${SECRET_NAME} updated on ${REPO}"
 
+# Sync tokens to Supabase if credentials exist in env or .env.local
+if [[ -f "$ROOT/.env.local" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$ROOT/.env.local"
+  set +a
+fi
+
+if [[ -n "${SUPABASE_URL:-}" ]] && [[ -n "${SUPABASE_SERVICE_ROLE_KEY:-}" ]]; then
+  echo "Syncing tokens to Supabase…"
+  if "$ROOT/.venv/bin/python" -c 'import sys; sys.path.insert(0, "scripts"); from garmin_auth import persist_tokens_to_supabase; ok = persist_tokens_to_supabase("'"$TOKEN_DIR"'"); sys.exit(0 if ok else 1)'; then
+    echo "OK: tokens synced to Supabase"
+  else
+    echo "WARNING: failed to sync tokens to Supabase" >&2
+  fi
+fi
+
 if [[ "$RUN_COLLECT" -eq 1 ]]; then
   echo "Dispatching coaching-daily-collect.yml…"
   gh workflow run coaching-daily-collect.yml --repo "$REPO" --ref master

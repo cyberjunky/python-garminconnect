@@ -32,6 +32,64 @@ export async function GET() {
   });
 }
 
+const FIXED_TEMP_MODELS = /^(o\d|gpt-5|gpt-6|chatgpt-)/i;
+
+async function executeOpenAiChatCompletion(
+  apiKey: string,
+  model: string,
+  messages: { role: "system" | "user" | "assistant"; content: string }[]
+) {
+  const initialUseTemp = !FIXED_TEMP_MODELS.test(model);
+
+  const sendRequest = async (useTemp: boolean) => {
+    const payload: {
+      model: string;
+      messages: { role: string; content: string }[];
+      temperature?: number;
+    } = {
+      model,
+      messages,
+    };
+    if (useTemp) {
+      payload.temperature = 0.4;
+    }
+
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      cache: "no-store",
+    });
+
+    let body: {
+      error?: { message?: string };
+      choices?: { message?: { content?: string } }[];
+    } = {};
+    try {
+      body = (await res.json()) as typeof body;
+    } catch {
+      // non-JSON body
+    }
+
+    return { res, body, usedTemp: useTemp };
+  };
+
+  let outcome = await sendRequest(initialUseTemp);
+
+  // Reintento automático resiliente si falla por incompatibilidad de temperature
+  if (!outcome.res.ok && outcome.usedTemp) {
+    const errorDetails = `${outcome.body.error?.message || ""} ${outcome.res.statusText || ""}`;
+    if (/temperature/i.test(errorDetails)) {
+      outcome = await sendRequest(false);
+    }
+  }
+
+  return outcome;
+}
+
 export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -65,30 +123,18 @@ export async function POST(request: Request) {
   const catalog = await serverModelCatalog();
   const model = pickModel(payload.model, catalog.models, catalog.defaultModel);
   try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.4,
-        messages: [{ role: "system", content: system }, ...messages],
-      }),
-      cache: "no-store",
-    });
-    const body = (await res.json()) as {
-      error?: { message?: string };
-      choices?: { message?: { content?: string } }[];
-    };
-    if (!res.ok) {
+    const chatMessages: { role: "system" | "user" | "assistant"; content: string }[] = [
+      { role: "system", content: system },
+      ...messages,
+    ];
+    const outcome = await executeOpenAiChatCompletion(apiKey, model, chatMessages);
+    if (!outcome.res.ok) {
       return NextResponse.json(
-        { ok: false, error: body.error?.message || `OpenAI respondió ${res.status}` },
+        { ok: false, error: outcome.body.error?.message || `OpenAI respondió ${outcome.res.status}` },
         { status: 502 }
       );
     }
-    const reply = body.choices?.[0]?.message?.content?.trim();
+    const reply = outcome.body.choices?.[0]?.message?.content?.trim();
     if (!reply) {
       return NextResponse.json({ ok: false, error: "OpenAI no devolvió texto" }, { status: 502 });
     }
