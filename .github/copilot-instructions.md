@@ -60,9 +60,11 @@ EARS). Constitucion del proyecto: `memory/long/constitution.md`.
   requisitos EARS + plan.md + descomposicion), `implementer` (una task
   aprobada, en su worktree, tests primero; se clona uno por task paralela) y
   `viewer` (verificacion solo lectura, hallazgos BLOCKING/NON_BLOCKING).
-- Orden obligatorio: spec -> plan -> task (`ies task add`) -> prompt
-  (`ies prompt`) -> worktree -> entrega -> viewer -> humano. Las specs viven
-  en `specs/NNN-slug/` y se crean con `ies spec new <slug>`.
+- Orden obligatorio: spec -> plan -> aprobacion humana (`ies spec approve`)
+  -> task (`ies task add`) -> prompt (`ies prompt`) -> worktree -> entrega ->
+  viewer -> humano. Las specs viven en `specs/NNN-slug/`, se crean con
+  `ies spec new <slug>` y su `status` nunca se edita a mano. El despliegue lo
+  ejecuta el humano siguiendo la seccion 8 del plan; ningun agente despliega.
 - Paralelismo: un implementer por task y worktree
   (`ies git checkpoint --task T-XXXX --worktree`); allowlists disjuntas; el
   merge lo hace siempre el humano.

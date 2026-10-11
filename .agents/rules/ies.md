@@ -12,7 +12,8 @@ Proyecto IES-OS. Reglas minimas (detalle en archivos canonicos):
 6. Usa workspace isolation, sandbox y worktrees; pide review antes de
    aplicar cambios. NO habilites 'Always Proceed'.
 7. Permisos minimos; nunca secretos, deploys ni comandos destructivos.
-8. SDD: orden spec -> plan -> task -> prompt. Empieza SIEMPRE con `ies spec new <slug>`.
+8. SDD: orden spec -> plan -> `ies spec approve` (tras el Ok humano) -> task -> prompt.
+   Empieza SIEMPRE con `ies spec new <slug>`; el status de la spec nunca se edita a mano.
    Destino de toda task: SOLO coordinator | planner | implementer | viewer
    (verificar/revisar -> viewer; implementar/corregir/configurar -> implementer;
    especificar/planificar -> planner). Los especialistas (researcher, worker-local,

@@ -8,6 +8,7 @@ SDD: registrar la aprobacion de spec/plan y crear las tasks hijas.
 ## Pasos
 
 1. Tras el `Ok` humano, registra la decision en `memory/mid/decisions.md` (control `salvar`).
-2. Copia spec.md y plan.md aprobados a `specs/NNN-slug/` y marca `status: approved`.
-3. Crea las tasks hijas exactamente como las define el plan: `--parent`, `--depends`, `--criterion` por REQ, `--profile`.
-4. Cierra la task de planificacion con `ies task done T-XXXX` y muestra `ies task list`.
+2. Copia el contenido aprobado de spec.md y plan.md a `specs/NNN-slug/` (sin placeholders, con REQ-NNN y la tabla de tasks hijas).
+3. Registra la aprobacion: `ies spec approve NNN-slug --decision-ref memory/mid/decisions.md#<fecha>` (pone `status: approved` y audita; nunca edites el status a mano).
+4. Crea las tasks hijas exactamente como las define el plan: `--parent`, `--depends`, `--criterion` por REQ, `--profile`.
+5. Cierra la task de planificacion con `ies task done T-XXXX` y muestra `ies task list`.
