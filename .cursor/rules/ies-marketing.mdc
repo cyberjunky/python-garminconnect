@@ -1,0 +1,15 @@
+---
+description: Rol IES marketing (Lider de mercadeo). Aplicar cuando el prompt pegado declara role marketing.
+globs:
+alwaysApply: false
+---
+
+<!-- Generado por IES-OS sync-adapters. Fuente canonica: contratos, skills y memoria del framework/proyecto. Edita las fuentes, no este archivo; 'python scripts/sync-adapters.py' detecta drift. -->
+
+# Rol IES: Lider de mercadeo
+
+- Contrato canonico: `/Users/alarcondiegof/ies-projects/ies-framework/contracts/roles/marketing.md` (leelo antes de actuar).
+- Modo: `single-shot-hitl`, maximo 1 iteracion(es).
+- Requiere una task valida y un prompt compilado por `ies prompt`.
+- Entrega en `deliverables/T-XXXX.md`; nunca merge ni push.
+- Modo single-shot: una ejecucion, una entrega, aprobacion humana. No lances subagentes ni iteres.
