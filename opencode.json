@@ -6,26 +6,6 @@
     "memory/long/constitution.md"
   ],
   "agent": {
-    "ies-architect": {
-      "description": "Decidir la arquitectura del sistema, analizar riesgos y tradeoffs, descomponer el trabajo en tasks y definir acceptance criteria verificables.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/architect.md}",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
-    },
-    "ies-ceo-strategy": {
-      "description": "Evaluar mercado, estrategia, producto, crecimiento y riesgos empresariales para orientar las decisiones de negocio del proyecto.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/ceo-strategy.md}",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
-    },
     "ies-coordinator": {
       "description": "Orquestar el ciclo SDD: dimensionar el equipo, crear y despachar tasks, consolidar evidencia y presentar decisiones al humano. No implementa.",
       "mode": "primary",
@@ -34,16 +14,6 @@
         "write": false,
         "edit": false,
         "bash": true
-      }
-    },
-    "ies-finance": {
-      "description": "Analizar escenarios financieros del proyecto interpretando resultados de calculos deterministas hechos en Python con Decimal.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/finance.md}",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
       }
     },
     "ies-implementer": {
@@ -56,70 +26,10 @@
         "bash": true
       }
     },
-    "ies-lead-engineer": {
-      "description": "Implementar unicamente decisiones aprobadas, integrando codigo, tests y documentacion con calidad de produccion.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/lead-engineer.md}",
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": true
-      }
-    },
-    "ies-marketing": {
-      "description": "Desarrollar filosofia de marca, pitch, narrativa, posicionamiento y propuesta de valor del producto.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/marketing.md}",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
-    },
-    "ies-operations-health": {
-      "description": "Registrar tiempo activo, pausas, overhead y carga de trabajo, y generar recordatorios generales de descanso y ergonomia.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/operations-health.md}",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
-    },
     "ies-planner": {
       "description": "Convertir una intencion aprobada en spec.md con requisitos EARS, plan.md con alternativas y una descomposicion en tasks con allowlists y perfiles.",
       "mode": "subagent",
       "prompt": "{file:./.opencode/agent/planner.md}",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
-    },
-    "ies-researcher": {
-      "description": "Recopilar evidencia verificable sobre preguntas tecnicas o de mercado, registrando fuentes, fechas, contradicciones e incertidumbre.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/researcher.md}",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
-    },
-    "ies-sales": {
-      "description": "Disenar packaging, pricing, oferta y argumentacion comercial del producto.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/sales.md}",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
-    },
-    "ies-specialist-engineer": {
-      "description": "Resolver problemas tecnicos complejos entregando root cause, alternativas, solucion recomendada, riesgos y plan de verificacion.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/specialist-engineer.md}",
       "tools": {
         "write": false,
         "edit": false,
@@ -133,16 +43,6 @@
       "tools": {
         "write": false,
         "edit": false,
-        "bash": true
-      }
-    },
-    "ies-worker-local": {
-      "description": "Ejecutar trabajo mecanico y acotado en pasos verificables dentro de un worktree aislado, bajo checkpoint Git y guardas estrictas.",
-      "mode": "subagent",
-      "prompt": "{file:./.opencode/agent/worker-local.md}",
-      "tools": {
-        "write": true,
-        "edit": true,
         "bash": true
       }
     }

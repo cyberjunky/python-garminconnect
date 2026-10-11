@@ -57,9 +57,11 @@ EARS). Constitucion del proyecto: `memory/long/constitution.md`.
 - Destino de toda task: SOLO el equipo SDD (coordinator, planner, implementer,
   viewer). Mapeo: especificar/planificar -> planner; implementar, corregir,
   configurar, migrar, documentar -> implementer; verificar, revisar, validar
-  -> viewer; orquestar -> coordinator. Los roles especialistas (architect,
-  lead-engineer, specialist-engineer, researcher, finance, ...) requieren
-  `--specialist-reason "causa concreta"`; el CLI rechaza el destino sin ella.
+  -> viewer (incluida la causa raiz de un fallo); orquestar -> coordinator.
+  Los roles especialistas (researcher, worker-local, ceo-strategy, finance,
+  operations-health, marketing, sales) solo son destino si estan habilitados
+  en `.ies/environment.yaml` (`ies env set --specialist ...`) o con
+  `--specialist-reason "causa concreta"`; el CLI rechaza el destino sin ello.
 - Roles SDD: `coordinator` (agente principal: dimensiona, crea tasks,
   despacha, consolida evidencia; no implementa), `planner` (spec.md con
   requisitos EARS + plan.md + descomposicion), `implementer` (una task

@@ -15,9 +15,9 @@ Proyecto IES-OS. Reglas minimas (detalle en archivos canonicos):
 8. SDD: orden spec -> plan -> task -> prompt. Empieza SIEMPRE con `ies spec new <slug>`.
    Destino de toda task: SOLO coordinator | planner | implementer | viewer
    (verificar/revisar -> viewer; implementar/corregir/configurar -> implementer;
-   especificar/planificar -> planner). Los demas roles (architect, lead-engineer,
-   specialist-engineer, researcher, ...) NO se usan salvo --specialist-reason con causa
-   concreta. Metodologia: `/Users/alarcondiegof/ies-projects/ies-framework/docs/SDD.md`. Un agente por task y worktree.
+   especificar/planificar -> planner). Los especialistas (researcher, worker-local,
+   finance, ...) solo si estan habilitados en .ies/environment.yaml o con
+   --specialist-reason. Metodologia: `/Users/alarcondiegof/ies-projects/ies-framework/docs/SDD.md`. Un agente por task y worktree.
 
 ## Disciplina human-in-the-loop
 
