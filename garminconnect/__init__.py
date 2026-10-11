@@ -3401,7 +3401,7 @@ class Garmin:
         ``hasImages`` flag in `get_activities` results is not a reliable
         indicator that an activity has photos attached.
         """
-        activity = self.get_activity(str(activity_id))
+        activity = self.get_activity(str(activity_id)) or {}
         return (activity.get("metadataDTO") or {}).get("activityImages") or []
 
     def get_activity_exercise_sets(self, activity_id: int | str) -> dict[str, Any]:

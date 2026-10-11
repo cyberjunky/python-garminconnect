@@ -1769,6 +1769,13 @@ class TestResponseHandling:
         ):
             assert garmin.get_activity_images(1) == []
 
+    def test_get_activity_images_returns_empty_on_none_response(
+        self, garmin: garminconnect.Garmin
+    ):
+        # A successful response with a JSON null body parses to None.
+        with patch.object(garmin, "get_activity", return_value=None):
+            assert garmin.get_activity_images(1) == []
+
     def test_get_morning_training_readiness_picks_after_wakeup_entry(
         self, garmin: garminconnect.Garmin
     ):
