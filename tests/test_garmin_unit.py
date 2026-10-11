@@ -3104,6 +3104,15 @@ class TestJetLagTrips:
         }
         assert result == {"tripId": 7}
 
+    @pytest.mark.parametrize("offset", ["-12:00", "+05:45", "+14:00"])
+    def test_add_accepts_real_offsets(
+        self, garmin: garminconnect.Garmin, offset: str
+    ):
+        flight = _jetlag_flight(destinationTimezone=offset)
+        with patch.object(garmin, "client") as client:
+            garmin.add_jetlag_trip("2026-10-04", "2026-10-09", [flight])
+        assert client.post.call_args.kwargs["json"]["flights"] == [flight]
+
     def test_add_omits_user_id_without_profile(self, garmin: garminconnect.Garmin):
         with patch.object(garmin, "client") as client:
             garmin.add_jetlag_trip("2026-10-04", "2026-10-09", [_jetlag_flight()])
@@ -3164,7 +3173,23 @@ class TestJetLagTrips:
                 "destinationTimezone must be a UTC offset",
             ),
             (
+                [_jetlag_flight(originTimezone="+99:99")],
+                "originTimezone must be a UTC offset",
+            ),
+            (
+                [_jetlag_flight(originTimezone="+15:00")],
+                "originTimezone must be a UTC offset",
+            ),
+            (
                 [_jetlag_flight(originTimestamp="2026-10-04 3:20pm")],
+                r"invalid flights\[0\]\.originTimestamp",
+            ),
+            (
+                [_jetlag_flight(destinationTimestamp="2026-10-06")],
+                r"invalid flights\[0\]\.destinationTimestamp: must hold a date",
+            ),
+            (
+                [_jetlag_flight(originTimestamp="2026-10-04T25:00:00")],
                 r"invalid flights\[0\]\.originTimestamp",
             ),
             (

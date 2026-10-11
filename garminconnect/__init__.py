@@ -111,7 +111,8 @@ JETLAG_FLIGHT_KEYS = (
     "destinationTimezone",
     "destinationTimestamp",
 )
-UTC_OFFSET_REGEX = r"^[+-]\d{2}:\d{2}$"
+# Real UTC offsets run from -12:00 to +14:00.
+UTC_OFFSET_REGEX = r"^[+-](0\d|1[0-4]):[0-5]\d$"
 
 
 # Add validation utilities
@@ -339,9 +340,16 @@ def _validate_jetlag_flights(flights: list[dict[str, Any]]) -> list[dict[str, An
                     f"{name}.{side}Timezone must be a UTC offset such as "
                     f"'-07:00', got: {offset!r}"
                 )
+            raw_stamp = flight[f"{side}Timestamp"]
+            # fromisoformat() reads a date alone as midnight.
+            if not isinstance(raw_stamp, str) or "T" not in raw_stamp:
+                raise ValueError(
+                    f"invalid {name}.{side}Timestamp: must hold a date and a "
+                    f"time such as '2026-10-04T15:20:00', got: {raw_stamp!r}"
+                )
             try:
-                stamp = datetime.fromisoformat(flight[f"{side}Timestamp"])
-            except (TypeError, ValueError) as e:
+                stamp = datetime.fromisoformat(raw_stamp)
+            except ValueError as e:
                 raise ValueError(f"invalid {name}.{side}Timestamp: {e}") from e
             if stamp.tzinfo is not None:
                 raise ValueError(

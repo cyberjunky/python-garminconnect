@@ -518,7 +518,6 @@ flights = [
 trip = client.add_jetlag_trip("2026-10-04", "2026-10-09", flights)
 
 # A PUT replaces the whole trip: send every flight, and keep each flightId
-trip = client.get_jetlag_trips()[0]
 client.update_jetlag_trip(trip["tripId"], trip["startDate"], "2026-10-12", trip["flights"])
 
 client.delete_jetlag_trip(trip["tripId"])
