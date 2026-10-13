@@ -1,4 +1,5 @@
 import { MesocycleVolumeChart } from "@/components/MesocycleVolumeChart";
+import { todayBogotaIso } from "@/lib/lastUpdated";
 import { MESOCYCLE_ANCHOR, mergePlannedExecuted, mondayOf, type WeeklySportRow } from "@/lib/mesocycle";
 import { MVP_USER_ID, supabase } from "@/lib/supabase";
 
@@ -6,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function fetchWeeks(): Promise<WeeklySportRow[]> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayBogotaIso();
   const { data, error } = await supabase
     .from("weekly_sport_load")
     .select(

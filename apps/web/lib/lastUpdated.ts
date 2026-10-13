@@ -38,3 +38,13 @@ export function formatLastUpdatedLabel(iso: string | null | undefined, city = AT
 
   return `Fecha última actualización: ${date} :: ${time} :: ${city}`;
 }
+
+/** Devuelve la fecha YYYY-MM-DD en la zona horaria de Bogotá (UTC-5). */
+export function todayBogotaIso(date: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}

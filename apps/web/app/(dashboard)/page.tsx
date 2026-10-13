@@ -3,7 +3,7 @@ import { LastActivityCard } from "@/components/LastActivityCard";
 import { RecoveryMilestonesCard } from "@/components/RecoveryMilestonesCard";
 import { TodayCard } from "@/components/TodayCard";
 import { fetchDashboard } from "@/lib/dashboard";
-import { formatLastUpdatedLabel, latestTimestamp } from "@/lib/lastUpdated";
+import { formatLastUpdatedLabel, latestTimestamp, todayBogotaIso } from "@/lib/lastUpdated";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -39,7 +39,7 @@ export default async function HomePage() {
     latestTimestamp(snapshot?.updated_at, readiness?.updated_at)
   );
   const ruleIdx = dateLabel !== "—" ? new Date(dateLabel).getDay() % RULES.length : 0;
-  const todayIso = dateLabel !== "—" ? dateLabel : new Date().toISOString().slice(0, 10);
+  const todayIso = dateLabel !== "—" ? dateLabel : todayBogotaIso();
 
   const metrics = [
     {
@@ -70,7 +70,10 @@ export default async function HomePage() {
     },
     {
       label: "BB Δ",
-      value: readiness?.bb_change != null ? `+${readiness.bb_change}` : "—",
+      value:
+        readiness?.bb_change != null
+          ? `${readiness.bb_change > 0 ? "+" : ""}${readiness.bb_change}`
+          : "—",
       ok:
         readiness?.bb_change != null && th.bb_change != null
           ? readiness.bb_change >= th.bb_change
@@ -101,6 +104,7 @@ export default async function HomePage() {
       <RecoveryMilestonesCard
         todayIso={todayIso}
         acwr={training.acwr}
+        macrocycle={payload.macrocycle}
         phaseCode={payload.macrocycle?.code}
         phaseName={payload.macrocycle?.name}
       />

@@ -24,7 +24,15 @@ export type HistoryRow = {
 
 export type SnapshotPayload = {
   date?: string;
-  macrocycle?: { code?: string; name?: string; focus?: string; hr_cap?: number };
+  macrocycle?: {
+    code?: string;
+    name?: string;
+    focus?: string;
+    hr_cap?: number;
+    start?: string;
+    end?: string;
+    target_date?: string;
+  };
   milestones?: { code: string; days_remaining: number }[];
   session?: {
     title?: string;

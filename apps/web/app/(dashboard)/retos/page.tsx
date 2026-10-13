@@ -1,4 +1,5 @@
 import { PreparationChart } from "@/components/PreparationChart";
+import { todayBogotaIso } from "@/lib/lastUpdated";
 import {
   buildFocusItems,
   buildWins,
@@ -27,7 +28,7 @@ export default async function RetosPage() {
   const wins = buildWins(readiness, payload);
   const session = payload.session || {};
   const training = payload.training_load || {};
-  const todayIso = readiness?.readiness_date || snapshot?.snapshot_date || new Date().toISOString().slice(0, 10);
+  const todayIso = readiness?.readiness_date || snapshot?.snapshot_date || todayBogotaIso();
 
   const counts = { VERDE: 0, AMARILLO: 0, ROJO: 0 };
   for (const row of history) {

@@ -1,4 +1,5 @@
 :root {
+  color-scheme: dark;
   --bg: #0f172a;
   --card: #1e293b;
   --text: #f1f5f9;
@@ -389,9 +390,56 @@ a.coach-history-item {
 
   .dash-nav {
     position: sticky;
+    top: 0;
+    z-index: 100;
     height: auto;
+    max-height: 100px;
+    background: #0b1220;
     border-right: 0;
     border-bottom: 1px solid #334155;
+    padding: 0.45rem 0.75rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.4rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .dash-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dash-brand {
+    margin: 0 0.5rem 0 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .dash-nav-link {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .dash-refresh {
+    margin: 0 0 0 auto;
+    padding: 0.3rem 0.55rem;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+  }
+
+  .dash-refresh-status {
+    margin: 0;
+    font-size: 0.72rem;
+    flex-shrink: 0;
+  }
+
+  .dash-version {
+    display: none;
   }
 }
 
@@ -724,12 +772,13 @@ a.coach-history-item {
 
 .prep-chart-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .prep-chart {
   width: 100%;
   max-width: 100%;
-  min-width: 320px;
+  min-width: 680px;
   height: auto;
   display: block;
 }

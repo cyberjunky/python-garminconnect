@@ -177,3 +177,42 @@ create policy "service_role_all" on public.garmin_tokens for all to service_role
 revoke all on public.garmin_tokens from anon, authenticated;
 grant all on public.garmin_tokens to service_role;
 
+-- updated_at auto-update triggers
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trigger_set_updated_at on public.daily_snapshots;
+create trigger trigger_set_updated_at
+before update on public.daily_snapshots
+for each row execute function public.set_updated_at();
+
+drop trigger if exists trigger_set_updated_at on public.readiness_daily;
+create trigger trigger_set_updated_at
+before update on public.readiness_daily
+for each row execute function public.set_updated_at();
+
+drop trigger if exists trigger_set_updated_at on public.training_load;
+create trigger trigger_set_updated_at
+before update on public.training_load
+for each row execute function public.set_updated_at();
+
+drop trigger if exists trigger_set_updated_at on public.session_log;
+create trigger trigger_set_updated_at
+before update on public.session_log
+for each row execute function public.set_updated_at();
+
+drop trigger if exists trigger_set_updated_at on public.weekly_sport_load;
+create trigger trigger_set_updated_at
+before update on public.weekly_sport_load
+for each row execute function public.set_updated_at();
+
+drop trigger if exists trigger_set_updated_at on public.garmin_tokens;
+create trigger trigger_set_updated_at
+before update on public.garmin_tokens
+for each row execute function public.set_updated_at();
+

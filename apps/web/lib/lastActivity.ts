@@ -37,7 +37,9 @@ export function formatActivityWhen(startTimeLocal?: string | null): string {
   const normalized = startTimeLocal.includes("T")
     ? startTimeLocal
     : startTimeLocal.replace(" ", "T");
-  const d = new Date(normalized);
+  const hasTimezone = /[Zz]|[+-]\d{2}(:?\d{2})?$/.test(normalized);
+  const isoUtc = hasTimezone ? normalized : `${normalized}Z`;
+  const d = new Date(isoUtc);
   if (Number.isNaN(d.getTime())) return startTimeLocal;
   return d.toLocaleString("es-CO", {
     weekday: "short",
@@ -45,7 +47,7 @@ export function formatActivityWhen(startTimeLocal?: string | null): string {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "America/Bogota",
+    timeZone: "UTC",
   });
 }
 
