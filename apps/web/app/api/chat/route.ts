@@ -93,8 +93,9 @@ async function executeOpenAiChatCompletion(
 export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
+    console.error("Missing OPENAI_API_KEY in environment");
     return NextResponse.json(
-      { ok: false, error: "Falta OPENAI_API_KEY en el proyecto de Vercel" },
+      { ok: false, error: "El servicio del entrenador no está disponible en este momento. Intenta de nuevo más tarde." },
       { status: 503 }
     );
   }

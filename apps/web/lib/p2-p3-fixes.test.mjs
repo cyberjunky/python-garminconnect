@@ -48,3 +48,20 @@ test("formatGarminStatus translates raw Garmin training status to Spanish", () =
   assert.strictEqual(formatGarminStatus("DETRAINING"), "Desentrenamiento");
   assert.strictEqual(formatGarminStatus(null), "—");
 });
+
+test("globals.css mobile layout enforces minmax(0, 1fr) and min-width: 0", async () => {
+  const fs = await import("node:fs");
+  const css = fs.readFileSync(new URL("../app/globals.css", import.meta.url), "utf-8");
+  assert.match(css, /grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  assert.match(css, /\.dash-nav-container[\s\S]*?min-width:\s*0/);
+  assert.match(css, /\.dash-nav[\s\S]*?min-width:\s*0/);
+  assert.match(css, /\.dash-nav-scroll-area[\s\S]*?min-width:\s*0/);
+});
+
+test("chat API route returns friendly Spanish copy and no technical leaks", async () => {
+  const fs = await import("node:fs");
+  const route = fs.readFileSync(new URL("../app/api/chat/route.ts", import.meta.url), "utf-8");
+  assert.match(route, /El servicio del entrenador no está disponible en este momento/);
+  assert.doesNotMatch(route, /error:\s*"Falta OPENAI_API_KEY/);
+});
+

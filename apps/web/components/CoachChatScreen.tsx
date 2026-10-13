@@ -113,7 +113,7 @@ export function CoachChatScreen() {
       if (!trimmed || sending) return;
 
       if (apiStatus && !apiStatus.configured) {
-        setError("El servicio del coach no está disponible en este momento. Intenta de nuevo más tarde.");
+        setError("El servicio del entrenador no está disponible en este momento. Intenta de nuevo más tarde.");
         return;
       }
 
