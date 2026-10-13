@@ -78,22 +78,66 @@ export function DashboardNav({ version }: { version: string }) {
   }
 
   return (
-    <nav className="dash-nav" aria-label="Secciones">
-      <p className="dash-brand">Fitness Coach</p>
-      {LINKS.map(({ href, label }) => (
-        <Link key={href} href={href} className={path === href ? "dash-nav-link active" : "dash-nav-link"}>
-          {label}
-        </Link>
-      ))}
-      <button type="button" className="dash-refresh" onClick={refreshStatus} disabled={state === "loading"}>
-        {state === "loading" ? "Actualizando…" : "Actualizar"}
-      </button>
+    <div className="dash-nav-container">
+      <nav className="dash-nav" aria-label="Navegación principal">
+        <div className="dash-nav-scroll-area">
+          <span className="dash-brand">Tri-Coach</span>
+          <div className="dash-nav-links">
+            {LINKS.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={path === href ? "dash-nav-link active" : "dash-nav-link"}
+                aria-current={path === href ? "page" : undefined}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="dash-nav-pinned">
+          <button
+            type="button"
+            className={`dash-refresh ${state === "loading" ? "is-loading" : ""}`}
+            onClick={refreshStatus}
+            disabled={state === "loading"}
+            aria-label="Actualizar datos de Garmin"
+            aria-busy={state === "loading"}
+            title="Actualizar datos de Garmin"
+          >
+            <span className="dash-refresh-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 21h5v-5" />
+              </svg>
+            </span>
+            <span className="dash-refresh-label">
+              {state === "loading" ? "Actualizando…" : "Actualizar"}
+            </span>
+          </button>
+        </div>
+      </nav>
       {message ? (
-        <p className={state === "error" ? "dash-refresh-status error" : "dash-refresh-status"} role="status">
+        <div
+          className={`dash-refresh-banner ${state === "error" ? "error" : "ok"}`}
+          role={state === "error" ? "alert" : "status"}
+          aria-live="polite"
+        >
           {message}
-        </p>
+        </div>
       ) : null}
       <p className="dash-version">{version}</p>
-    </nav>
+    </div>
   );
 }

@@ -15,22 +15,20 @@ export function LastActivityCard({ activity }: Props) {
   if (!activity) {
     return (
       <section className="card">
-        <h2 style={{ marginTop: 0 }}>Última actividad</h2>
-        <p className="muted" style={{ margin: 0 }}>
-          Sin datos en el snapshot. Pulsa Actualizar y espera a que termine el collect en GitHub (1–2 min).
-          Si sigue vacío, el workflow debe correr código reciente en la rama configurada en{" "}
-          <code>ACTIONS_DISPATCH_REF</code> (por defecto <code>master</code>).
+        <h2 className="mt-0">Última actividad</h2>
+        <p className="muted m-0">
+          Sin actividades recientes registradas en el snapshot. Pulsa Actualizar para sincronizar los datos de Garmin.
         </p>
       </section>
     );
   }
 
   const href = garminActivityUrl(activity.activity_id);
-  const subtitle = activity.type_label || sportLabel(activity.sport);
+  const subtitle = sportLabel(activity.sport || activity.type_key || activity.type_label);
 
   return (
     <section className="card">
-      <h2 style={{ marginTop: 0 }}>Última actividad</h2>
+      <h2 className="mt-0">Última actividad</h2>
       <p className="last-activity-title">
         <a href={href} target="_blank" rel="noreferrer">
           {activity.name}

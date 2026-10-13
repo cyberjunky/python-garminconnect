@@ -26,8 +26,10 @@ export default async function HomePage() {
   if (error && !readiness) {
     return (
       <main>
-        <h1>Fitness Coach</h1>
-        <p className="muted">Configure NEXT_PUBLIC_SUPABASE_URL y ANON_KEY. {error}</p>
+        <h1 className="page-title">Tri-Coach</h1>
+        <p className="muted">
+          No pudimos cargar los datos de entrenamiento en este momento. Intenta de nuevo más tarde.
+        </p>
       </main>
     );
   }
@@ -48,7 +50,7 @@ export default async function HomePage() {
       ok: readiness?.sleep_h != null && th.sleep_h != null ? readiness.sleep_h >= th.sleep_h : null,
     },
     {
-      label: "Sleep score",
+      label: "Puntuación de sueño",
       value: readiness?.sleep_score?.toString() ?? "—",
       ok:
         readiness?.sleep_score != null && th.sleep_score != null
@@ -69,7 +71,7 @@ export default async function HomePage() {
           : null,
     },
     {
-      label: "BB Δ",
+      label: "Δ Body Battery",
       value:
         readiness?.bb_change != null
           ? `${readiness.bb_change > 0 ? "+" : ""}${readiness.bb_change}`
@@ -83,11 +85,10 @@ export default async function HomePage() {
 
   return (
     <main>
-      <p className="muted" style={{ marginTop: 0 }}>
-        {lastUpdatedLabel}
-      </p>
-
-      <CoachChat />
+      <header className="page-header">
+        <h1 className="page-title">Tri-Coach</h1>
+        <p className="muted page-subtitle">{lastUpdatedLabel}</p>
+      </header>
 
       <TodayCard
         zone={zone}
@@ -109,9 +110,11 @@ export default async function HomePage() {
         phaseName={payload.macrocycle?.name}
       />
 
+      <CoachChat />
+
       <section className="card">
-        <h2 style={{ marginTop: 0 }}>Regla del día</h2>
-        <p style={{ margin: 0 }}>{RULES[ruleIdx]}</p>
+        <h2 className="mt-0">Regla del día</h2>
+        <p className="m-0">{RULES[ruleIdx]}</p>
       </section>
     </main>
   );

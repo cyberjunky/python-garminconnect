@@ -3,6 +3,7 @@ import {
   daysUntilAcwrTarget,
   recoveryLocalDaysRemaining,
 } from "@/lib/preparation";
+import { formatDateEsCO } from "@/lib/lastUpdated";
 
 type Props = {
   todayIso: string;
@@ -46,19 +47,18 @@ export function RecoveryMilestonesCard({
 
   return (
     <section className="card card-recovery">
-      <h2 style={{ marginTop: 0 }}>{title}</h2>
+      <h2 className="mt-0">{title}</h2>
       <div className="recovery-hero">
         {daysRemaining != null ? (
           <span className="recovery-number">{daysRemaining}</span>
         ) : null}
         <span className="recovery-label">
           {daysRemaining != null ? `días para cerrar fase ${code}` : `Fase ${code}`}
-          {name ? ` · ${name}` : ""}
           {phaseEndDate || macrocycle?.focus ? (
             <>
               <br />
               <span className="muted">
-                {phaseEndDate ? `meta: ${phaseEndDate}` : ""}
+                {phaseEndDate ? `meta: ${formatDateEsCO(phaseEndDate)}` : ""}
                 {phaseEndDate && macrocycle?.focus ? " · " : ""}
                 {macrocycle?.focus ?? ""}
               </span>
@@ -91,7 +91,7 @@ export function RecoveryMilestonesCard({
                 ev.shortLabel
               )}
             </span>
-            <span className="milestone-date">{ev.eventDate}</span>
+            <span className="milestone-date">{formatDateEsCO(ev.eventDate)}</span>
             <span className="milestone-days">{daysToEvent(ev.eventDate, todayIso)}d</span>
           </li>
         ))}

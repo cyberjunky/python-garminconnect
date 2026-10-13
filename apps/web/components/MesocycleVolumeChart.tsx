@@ -1,4 +1,5 @@
 import type { WeeklySportRow } from "@/lib/mesocycle";
+import { formatDateEsCO } from "@/lib/lastUpdated";
 
 type Props = { weeks: WeeklySportRow[] };
 
@@ -61,7 +62,7 @@ export function MesocycleVolumeChart({ weeks }: Props) {
           <article key={w.week_start} className={`card meso-week ${recovery ? "meso-recovery" : ""}`}>
             <header className="meso-week-head">
               <div>
-                <strong>Semana {w.week_start}</strong>
+                <strong>Semana del {formatDateEsCO(w.week_start)}</strong>
                 <span className="muted">
                   {" "}
                   · Bloque {(w.block_index ?? 0) + 1} · S{(w.week_in_block ?? 0) + 1}/4 · {w.phase_code}
@@ -72,9 +73,9 @@ export function MesocycleVolumeChart({ weeks }: Props) {
             <p className="muted meso-legend">
               Barras claras = plan · sólidas = Garmin · Lunes siempre recuperación en el plan
             </p>
-            <SportBars label="Run" planned={runP} executed={runE} color="#22c55e" />
-            <SportBars label="Bike" planned={bikeP} executed={bikeE} color="#3b82f6" />
-            <SportBars label="Swim" planned={swimP} executed={swimE} color="#06b6d4" />
+            <SportBars label="Carrera" planned={runP} executed={runE} color="var(--carrera)" />
+            <SportBars label="Ciclismo" planned={bikeP} executed={bikeE} color="var(--ciclismo)" />
+            <SportBars label="Natación" planned={swimP} executed={swimE} color="var(--natacion)" />
             <p className="muted meso-total">
               Total semana: plan {fmt(w.planned_total_min)} · Garmin {fmt(w.executed_total_min)}
             </p>

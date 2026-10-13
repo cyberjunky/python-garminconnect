@@ -9,6 +9,7 @@ import {
   toSvgPath,
   type DailyActual,
 } from "@/lib/preparation";
+import { formatDateEsCO } from "@/lib/lastUpdated";
 
 type Props = {
   actual: DailyActual[];
@@ -223,7 +224,7 @@ export function PreparationChart({ actual, todayIso, vo2max }: Props) {
                     event.shortLabel
                   )}
                 </td>
-                <td>{event.eventDate}</td>
+                <td>{formatDateEsCO(event.eventDate)}</td>
                 <td className="proj-val">{projected}</td>
                 <td>{target}</td>
                 <td className={gap <= 0 ? "gap-ok" : "gap-warn"}>
@@ -234,8 +235,8 @@ export function PreparationChart({ actual, todayIso, vo2max }: Props) {
           </tbody>
         </table>
       </div>
-      <p className="muted" style={{ fontSize: "0.8rem", marginTop: "0.5rem" }}>
-        {chartStart} → {chartEnd} · hoy {todayIso}
+      <p className="muted chart-caption" style={{ marginTop: "0.5rem" }}>
+        {formatDateEsCO(chartStart)} → {formatDateEsCO(chartEnd)} · hoy {formatDateEsCO(todayIso)}
       </p>
     </div>
   );

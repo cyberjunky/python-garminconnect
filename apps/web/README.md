@@ -1,4 +1,4 @@
-# Fitness Coach Web (Phase 2)
+# Tri-Coach Web (Phase 2)
 
 Read-only Next.js dashboard for Supabase coaching data.
 

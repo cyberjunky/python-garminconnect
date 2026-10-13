@@ -1,5 +1,5 @@
 import { PreparationChart } from "@/components/PreparationChart";
-import { todayBogotaIso } from "@/lib/lastUpdated";
+import { formatDateEsCO, todayBogotaIso } from "@/lib/lastUpdated";
 import {
   buildFocusItems,
   buildWins,
@@ -18,8 +18,10 @@ export default async function RetosPage() {
   if (error && !readiness) {
     return (
       <main>
-        <h1>Retos</h1>
-        <p className="muted">Configure NEXT_PUBLIC_SUPABASE_URL y ANON_KEY. {error}</p>
+        <h1 className="page-title">Retos</h1>
+        <p className="muted">
+          No se pudieron cargar los datos de retos en este momento. Intenta de nuevo más tarde.
+        </p>
       </main>
     );
   }
@@ -38,15 +40,15 @@ export default async function RetosPage() {
 
   return (
     <main>
-      <h1 style={{ marginTop: 0 }}>Retos</h1>
+      <h1 className="page-title">Retos</h1>
 
       <section className="card">
-        <h2 style={{ marginTop: 0 }}>Preparación vs retos</h2>
+        <h2 className="mt-0">Preparación vs retos</h2>
         <PreparationChart actual={preparationTrend} todayIso={todayIso} vo2max={training.vo2max} />
       </section>
 
       <section className="card">
-        <h2 style={{ marginTop: 0 }}>Sesión</h2>
+        <h2 className="mt-0">Sesión</h2>
         <p className="session-title">{session.title || session.action || "—"}</p>
         {session.duration_min != null && session.duration_min > 0 ? (
           <p className="muted">
@@ -58,18 +60,20 @@ export default async function RetosPage() {
             {d}
           </p>
         ))}
-        {session.guard_flags?.length ? <p className="guards">Guards: {session.guard_flags.join(" · ")}</p> : null}
+        {session.guard_flags?.length ? (
+          <p className="guards">Restricciones: {session.guard_flags.join(" · ")}</p>
+        ) : null}
       </section>
 
       <div className="two-col">
         <section className="card">
-          <h2 style={{ marginTop: 0 }}>Qué atender</h2>
+          <h2 className="mt-0">Qué atender</h2>
           <ul className="list">
             {focus.length ? focus.map((item) => <li key={item}>{item}</li>) : <li>—</li>}
           </ul>
         </section>
         <section className="card">
-          <h2 style={{ marginTop: 0 }}>Qué va bien</h2>
+          <h2 className="mt-0">Qué va bien</h2>
           <ul className="list list-ok">
             {wins.length ? wins.map((w) => <li key={w}>{w}</li>) : <li>—</li>}
           </ul>
@@ -77,15 +81,15 @@ export default async function RetosPage() {
       </div>
 
       <section className="card">
-        <h2 style={{ marginTop: 0 }}>Macrociclo</h2>
-        <p style={{ margin: 0 }}>
+        <h2 className="mt-0">Macrociclo</h2>
+        <p className="m-0">
           {payload.macrocycle?.code} {payload.macrocycle?.name}
         </p>
         <p className="muted">{payload.macrocycle?.focus}</p>
       </section>
 
       <section className="card">
-        <h2 style={{ marginTop: 0 }}>Tendencia 14d</h2>
+        <h2 className="mt-0">Tendencia 14d</h2>
         <div className="chart-bar">
           <span style={{ width: `${(counts.VERDE / total) * 100}%`, background: "var(--verde)" }} />
           <span style={{ width: `${(counts.AMARILLO / total) * 100}%`, background: "var(--amarillo)" }} />
@@ -105,7 +109,7 @@ export default async function RetosPage() {
           <tbody>
             {history.map((row) => (
               <tr key={row.readiness_date}>
-                <td>{row.readiness_date}</td>
+                <td>{formatDateEsCO(row.readiness_date)}</td>
                 <td>
                   <span className={zoneClass(row.zone)}>{row.zone}</span>
                 </td>

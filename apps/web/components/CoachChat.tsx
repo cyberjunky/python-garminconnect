@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CoachModelSelect } from "@/components/CoachModelSelect";
 import {
@@ -9,9 +10,11 @@ import {
   loadChats,
   setPendingFirstMessage,
 } from "@/lib/coachStorage";
+import { formatDateEsCO } from "@/lib/lastUpdated";
 import { loadPreferredModel } from "@/lib/openaiModels";
 
 export function CoachChat() {
+  const router = useRouter();
   const [draft, setDraft] = useState("");
   const [chats, setChats] = useState<StoredChat[]>([]);
   const [apiOk, setApiOk] = useState<boolean | null>(null);
@@ -34,7 +37,7 @@ export function CoachChat() {
 
   function openChat(id: string, firstMessage?: string) {
     if (firstMessage) setPendingFirstMessage(id, firstMessage);
-    window.location.assign(chatHref(id));
+    router.push(chatHref(id));
   }
 
   return (
@@ -49,7 +52,12 @@ export function CoachChat() {
           openChat(crypto.randomUUID(), text);
         }}
       >
+        <label htmlFor="coach-draft-input" className="sr-only">
+          Pregunta para el entrenador
+        </label>
         <textarea
+          id="coach-draft-input"
+          aria-label="Pregunta para el entrenador"
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder="Pregunta por tu condición, la sesión o el próximo reto"
@@ -62,7 +70,7 @@ export function CoachChat() {
             className="coach-new"
             onClick={() => openChat(crypto.randomUUID())}
           >
-            Nueva
+            Nueva conversación
           </button>
           <button type="submit" className="coach-send" disabled={!draft.trim()}>
             Enviar
@@ -71,8 +79,8 @@ export function CoachChat() {
       </form>
 
       {apiOk === false ? (
-        <p className="dash-refresh-status error" style={{ marginTop: "0.5rem" }}>
-          Para activar el coach, configura <code>OPENAI_API_KEY</code> en Vercel y redeploy.
+        <p className="dash-refresh-status error mt-0" role="alert" style={{ marginTop: "0.5rem" }}>
+          El servicio del entrenador no está disponible en este momento. Intenta de nuevo más tarde.
         </p>
       ) : null}
 
@@ -85,7 +93,7 @@ export function CoachChat() {
             <li key={chat.id}>
               <Link href={chatHref(chat.id)} className="coach-history-item">
                 <span>{chat.title}</span>
-                <span className="muted">{chat.updatedAt.slice(0, 10)}</span>
+                <span className="muted">{formatDateEsCO(chat.updatedAt)}</span>
               </Link>
             </li>
           ))}

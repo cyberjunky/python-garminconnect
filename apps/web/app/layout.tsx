@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Fitness Coach — Diego",
-  description: "Coaching dashboard (vChallenges 21K, mmB 2027, Letras, 70.3 Cartagena)",
+  title: "Tri-Coach — Diego",
+  description: "Panel de entrenamiento y preparación (vChallenges 21K, mmB 2027, Letras, 70.3 Cartagena)",
 };
 
 export const viewport: Viewport = {

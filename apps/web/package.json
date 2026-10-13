@@ -1,5 +1,5 @@
 {
-  "name": "fitness-coach-web",
+  "name": "tri-coach-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "node --test lib/*.test.mjs",
     "deploy:prod": "vercel deploy --prod --yes"
   },
   "dependencies": {
