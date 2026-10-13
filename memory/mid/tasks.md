@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 16
+next_id: 17
 source: ies-cli
-last_updated: '2026-10-13T20:27:29Z'
+last_updated: '2026-10-13T20:36:46Z'
 ---
 
 # Task Ledger
@@ -718,6 +718,71 @@ acceptance_criteria:
 - El log de un run de Coaching Daily Collect no contiene metricas de salud, nombres
   de actividad ni ubicacion; verificado en el log de un run real despues del merge.
 created_at: '2026-10-13T19:38:13Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+```
+
+## T-0016 — Versionado SemVer 0.3.0 y CHANGELOG de Tri-Coach (apps/web)
+
+```yaml
+id: T-0016
+title: Versionado SemVer 0.3.0 y CHANGELOG de Tri-Coach (apps/web)
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: 'Trabajar en la rama ux/audit-2026-10 (viaja dentro del PR #2). Sin force-push
+  (DEC-001). 1. Adoptar SemVer para Tri-Coach; la version vive en apps/web/package.json
+  y apps/web/package-lock.json (MINOR por PR de funcionalidad, PATCH por correcciones).
+  2. Crear apps/web/CHANGELOG.md (formato Keep a Changelog, en espanol), cuyo encabezado
+  aclare que cubre todo Tri-Coach (app web, collector Python, workflows de GitHub
+  Actions y esquema Supabase), no solo apps/web. Historia retroactiva desde git log:
+  - 0.1.0 (2026-09-20..25): MVP dashboard, collect diario, grafica de preparacion,
+  mesociclos, 70.3 Cartagena. - 0.2.0 (2026-10-13, PR #1, merge 0d81139): shell con
+  barra lateral, chat con OpenAI, boton Actualizar (workflow_dispatch), persistencia
+  de ultima actividad Garmin (commit b13aa16 del 3-oct) y tokens Garmin en Supabase
+  (SPEC-001). - 0.3.0 (PR #2): auditoria UX P1-P3 (T-0012, T-0013), marca Tri-Coach,
+  triggers updated_at. 3. Subir apps/web/package.json y apps/web/package-lock.json
+  a 0.3.0 (usando npm --prefix apps/web install --package-lock-only o equivalente).
+  4. Actualizar apps/web/README.md con seccion ''Version y cambios'' (version actual,
+  regla SemVer, enlace a CHANGELOG.md). No tocar el README.md raiz. 5. En deliverables/T-0016.md
+  proponer los tags para que los cree el humano: tri-coach-v0.1.0 (commit 102430e),
+  tri-coach-v0.2.0 (0d81139) y tri-coach-v0.3.0 (merge de PR #2). El agente no crea
+  ni empuja tags. 6. Commit nuevo hacia adelante en ux/audit-2026-10 sin amend ni
+  force-push.'
+expected_output: deliverables/T-0016.md con diffs, apps/web/CHANGELOG.md creado, package.json
+  y package-lock.json en 0.3.0, README.md actualizado, barra lateral mostrando v0.3.0
+  y propuesta de tags git
+parent_task: null
+dependencies:
+- T-0013
+priority: high
+profile: fast-track
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- apps/web/package.json y package-lock.json en version 0.3.0 con build limpio
+- apps/web/CHANGELOG.md creado en espanol cubriendo 0.1.0, 0.2.0 (con b13aa16) y 0.3.0,
+  aclarando cobertura integral del stack
+- apps/web/README.md con seccion 'Version y cambios' y enlace a CHANGELOG sin tocar
+  el README raiz
+- La barra lateral del dashboard muestra v0.3.0 verificada en local
+- Propuesta de tags git documentada en la entrega sin creacion de tags por el agente
+  y commit nuevo en ux/audit-2026-10
+created_at: '2026-10-13T20:36:46Z'
 started_at: null
 completed_at: null
 blocked_reason: null

@@ -2,7 +2,7 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: mid
-last_updated: '2026-10-13T20:27:33Z'
+last_updated: '2026-10-13T20:36:51Z'
 source: ies update
 confidence: alta (generado mecanicamente del ledger)
 ---
@@ -18,6 +18,7 @@ confidence: alta (generado mecanicamente del ledger)
 
 - T-0014 — Verificacion viewer independiente de UX/UI P1-P3 (Local 1280x800 y 375x812) (destino: viewer, perfil: riguroso)
 - T-0015 — Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI (destino: implementer, perfil: fast-track)
+- T-0016 — Versionado SemVer 0.3.0 y CHANGELOG de Tri-Coach (apps/web) (destino: implementer, perfil: fast-track)
 
 ## 🟢 done
 
