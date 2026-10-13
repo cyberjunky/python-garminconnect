@@ -5,11 +5,13 @@ spec: SPEC-001
 slug: recurring-token-sync
 project_id: python-garminconnect
 version: 1
-status: ready
+status: approved
 autonomy: autonomous
 owner_task: T-0001
-last_updated: '2026-10-11T16:00:00Z'
+last_updated: '2026-10-13T19:11:06Z'
 source: ies planner T-0001
+approved_at: '2026-10-13T19:11:06Z'
+decision_ref: memory/mid/decisions.md#DEC-003
 ---
 
 # PLAN-001: Sincronización recurrente de tokens y actualización Vercel
@@ -89,7 +91,6 @@ ADR propuesto: `memory/long/adr/ADR-002-recurring-token-persistence.md`
   ```
 
 ## 3. Dimensionamiento del equipo y autonomía
-
 - **Autonomía de la ejecución**: `autonomous` (definida al crear la spec). La aprobación del plan autoriza al coordinator a orquestar a implementers y viewers a través de las tasks descompuestas sin detenciones innecesarias.
 - **Tamaño**: `M`.
 - **Equipo propuesto**: 1 implementer para tasks de desarrollo / despliegue + 1 viewer para la verificación integral final.
@@ -107,11 +108,12 @@ ADR propuesto: `memory/long/adr/ADR-002-recurring-token-persistence.md`
 
 | REQ | Task | Test / comprobación | Evidencia esperada | Resultado |
 |---|---|---|---|---|
-| REQ-001 | T-0002 | `pytest tests/test_garmin_tokens_supabase.py` | Migración aplicada, RLS activo, roundtrip de lectura y escritura exitoso vía `service_role`, `anon` rechazado | Pendiente |
-| REQ-002 | T-0003 | Ejecución del workflow en GitHub Actions | Step de restore lee tokens desde Supabase y step de persist guarda tokens renovados tras la recolección | Pendiente |
-| REQ-003 | T-0003 | Ejecución local de `refresh_garmin_session.py` y `publish_garmin_tokens_secret.sh` | Tokens locales sincronizados hacia Supabase y secreto `GARMINTOKENS_B64` actualizado si gh CLI está disponible | Pendiente |
-| REQ-004 | T-0004 | `npm --prefix apps/web run build && vercel deploy --prod` | Compilación Next.js limpia sin errores de tipos y despliegue en producción con respuesta 200 y métricas visibles | Pendiente |
-| REQ-005 | T-0002, T-0003 | Prueba unitaria con credenciales/tokens erróneos | Excepción capturada, no se sobreescribe Supabase con null, logs limpios sin tokens en stdout | Pendiente |
+| REQ-001 | T-0002 | `pytest tests/test_garmin_tokens_supabase.py` | Migración aplicada, RLS activo, roundtrip de lectura y escritura exitoso vía `service_role`, `anon` rechazado | Cumple en producción (migración aplicada: service_role 200, anon 401; tabla garmin_tokens con RLS activo) |
+| REQ-002 | T-0003 | Ejecución del workflow en GitHub Actions | Step de restore lee tokens desde Supabase y step de persist guarda tokens renovados tras la recolección | Cumple en producción (run 38450120206 sobre 0d81139: success, "tokens_persisted": true, fila persistida en garmin_tokens) |
+| REQ-003 | T-0003 | Ejecución local de `refresh_garmin_session.py` y `publish_garmin_tokens_secret.sh` | Tokens locales sincronizados hacia Supabase y secreto `GARMINTOKENS_B64` actualizado si gh CLI está disponible | tests; en vivo pendiente (validado en tests unitarios locales; prueba en vivo en el Mac pendiente al próximo refresh) |
+| REQ-004 | T-0004 | `npm --prefix apps/web run build && vercel deploy --prod` | Compilación Next.js limpia sin errores de tipos y despliegue en producción con respuesta 200 y métricas visibles | Cumple en producción (deploy 0d81139 en Vercel Ready con HTTP 200, Root Directory = apps/web y versión v0.1.0) |
+| REQ-005 | T-0002, T-0003 | Prueba unitaria con credenciales/tokens erróneos | Excepción capturada, no se sobreescribe Supabase con null, logs limpios sin tokens en stdout | Cumple (guards de validación impiden sobreescritura con nulos; run 38450120206 sin secretos en logs) |
+
 
 ## 6. Verificación global
 

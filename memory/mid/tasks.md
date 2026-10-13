@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 10
+next_id: 12
 source: ies-cli
-last_updated: '2026-10-13T17:00:58Z'
+last_updated: '2026-10-13T19:00:15Z'
 ---
 
 # Task Ledger
@@ -317,7 +317,7 @@ title: Resolver conflicto del PR 1 con master y sincronizar rama
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: En la rama cursor/shell-chat-hoy-43bc, hacer git fetch origin y fusionar origin/master
   (merge commit, no rebase ni force-push). Resolver el conflicto en .github/workflows/coaching-daily-collect.yml
   conservando la version de la rama (ya incluye last_activity de b13aa16). Correr
@@ -341,6 +341,120 @@ acceptance_criteria:
 - Suite pytest ejecutada con solo la falla conocida de symlink de macOS reportada
 - Commit sin atribucion a IA y PR 1 conservado en draft sin merge
 created_at: '2026-10-13T17:00:48Z'
+started_at: '2026-10-13T17:15:31Z'
+completed_at: '2026-10-13T17:15:31Z'
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: deliverables/T-0008.md
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics:
+  git_before: 7c19924433e57af70526cd418f3660445f92af65
+  git_after: 7c19924433e57af70526cd418f3660445f92af65
+  result: success
+```
+
+## T-0009 — Verificacion viewer diff SPEC-001 y checklist pre-merge PR 1
+
+```yaml
+id: T-0009
+title: Verificacion viewer diff SPEC-001 y checklist pre-merge PR 1
+project_id: python-garminconnect
+origin: coordinator
+destination: viewer
+status: done
+input: 'Inspeccionar el diff completo origin/master...7c19924433e57af70526cd418f3660445f92af65
+  (hash reportado en deliverables/T-0008.md) contra REQ-001..REQ-005 de SPEC-001 con
+  veredicto por requisito. Auditar si GARMINTOKENS: ~/.garminconnect en el workflow
+  se expande con expanduser o requiere $HOME. Auditar REQ-005 (fallo de login no sobreescribe
+  tokens en Supabase ni fuga secretos; || true en restore no oculta fallos reales).
+  Auditar migracion supabase/migrations/20261011_garmin_tokens.sql (RLS y anon bloqueado;
+  reportar como pendiente si no se puede verificar en prod). Si falta apps/web/node_modules,
+  correr npm --prefix apps/web ci antes del build y registrarlo en la entrega; validar
+  npm --prefix apps/web run build. Auditar fallo del check Vercel del PR (dpl_CtnDJBtHAv4jWqfEtSFbCJYkTcWj:
+  ENOENT en raiz /vercel/path0/package.json por Root Directory != apps/web en configuracion
+  del proyecto Vercel) y clasificar si es BLOCKING o NON_BLOCKING para el merge (la
+  configuracion en Vercel la ajusta el humano). Confirmar resultado de los checks
+  test (3.12) y test (3.13) de GitHub Actions sobre 7c19924. Solo lectura: no corregir
+  codigo.'
+expected_output: deliverables/T-0009.md con matriz de requisitos, evaluacion tecnica
+  de env y seguridad, estado de checks de CI/Vercel y lista de hallazgos BLOCKING
+  y NON_BLOCKING
+parent_task: null
+dependencies:
+- T-0008
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- Revision exhaustiva de REQ-001 a REQ-005 sobre el commit 7c19924 con veredicto por
+  requisito
+- Dictamen tecnico de GARMINTOKENS (~ vs $HOME) y auditoria de REQ-005 / migracion
+  Supabase
+- Build de apps/web ejecutado (con ci si faltaba node_modules) y reportado con codigo
+  0
+- Evaluacion y clasificacion (BLOCKING/NON_BLOCKING) del check de Vercel y confirmacion
+  de checks test (3.12/3.13) sobre 7c19924
+- Entrega en deliverables/T-0009.md en modo solo lectura sin mutaciones en el repositorio
+created_at: '2026-10-13T17:00:58Z'
+started_at: '2026-10-13T18:35:11Z'
+completed_at: '2026-10-13T18:35:11Z'
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: deliverables/T-0009.md
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics:
+  git_before: 7c19924433e57af70526cd418f3660445f92af65
+  git_after: 7c19924433e57af70526cd418f3660445f92af65
+  result: success
+```
+
+## T-0010 — Saneamiento linter SPEC-001, observabilidad REQ-005, trazabilidad de restore y ajuste deploy script
+
+```yaml
+id: T-0010
+title: Saneamiento linter SPEC-001, observabilidad REQ-005, trazabilidad de restore
+  y ajuste deploy script
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: '1. Corregir los 9 errores de ruff introducidos por SPEC-001 en scripts/garmin_auth.py
+  y services/collector/supabase_client.py. 2. Sustituir bloques except Exception:
+  pass en scripts/garmin_auth.py:login_client por logging explicito _LOGGER.warning
+  (REQ-005). 3. Registrar en los logs del workflow .github/workflows/coaching-daily-collect.yml
+  de donde se restauro el token (supabase | b64_fallback). 4. Ajustar scripts/deploy_web_vercel.sh
+  para alinearlo con Root Directory = apps/web configurado en Vercel.'
+expected_output: deliverables/T-0010.md con diffs de ruff, logging implementado, salida
+  de trazabilidad de restore y scripts validados
+parent_task: null
+dependencies: []
+priority: high
+profile: fast-track
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- 0 errores de ruff en scripts/garmin_auth.py y services/collector/supabase_client.py
+- Excepciones en login_client logueadas con _LOGGER.warning
+- Workflow reporta en log la fuente de restauracion del token (supabase | b64_fallback)
+- scripts/deploy_web_vercel.sh verificado y funcional con Root Directory de Vercel
+created_at: '2026-10-13T19:00:10Z'
 started_at: null
 completed_at: null
 blocked_reason: null
@@ -355,31 +469,24 @@ approval:
 metrics: {}
 ```
 
-## T-0009 — Verificacion viewer diff SPEC-001 y checklist pre-merge PR 1
+## T-0011 — Estrategia y resolución de 97 errores de linter heredados de master
 
 ```yaml
-id: T-0009
-title: Verificacion viewer diff SPEC-001 y checklist pre-merge PR 1
+id: T-0011
+title: Estrategia y resolución de 97 errores de linter heredados de master
 project_id: python-garminconnect
 origin: coordinator
-destination: viewer
-status: ready
-input: 'Inspeccionar el diff completo origin/master...<hash> (usando el hash de commit
-  reportado en deliverables/T-0008.md, no la rama a secas) contra REQ-001..REQ-005
-  de SPEC-001 con veredicto por requisito. Auditar si GARMINTOKENS: ~/.garminconnect
-  en el workflow se expande con expanduser o requiere $HOME. Auditar REQ-005 (fallo
-  de login no sobreescribe tokens en Supabase ni fuga secretos; || true en restore
-  no oculta fallos reales). Auditar migracion supabase/migrations/20261011_garmin_tokens.sql
-  (RLS y anon bloqueado; reportar como pendiente si no se puede verificar en prod).
-  Si falta apps/web/node_modules, correr npm --prefix apps/web ci antes del build
-  y registrarlo en la entrega; validar npm --prefix apps/web run build. Solo lectura:
-  no corregir codigo.'
-expected_output: deliverables/T-0009.md con matriz de requisitos, evaluacion tecnica
-  de env y seguridad, y lista de hallazgos BLOCKING y NON_BLOCKING
+destination: implementer
+status: backlog
+input: Analizar y definir la estrategia para subsanar los 97 errores de ruff heredados
+  de master en scripts y servicios historicos (evaluar correccion en codigo vs configuracion
+  de per-file-ignores en pyproject.toml), de modo que los jobs test (3.12) y test
+  (3.13) en GitHub Actions puedan ejecutar pytest exitosamente en CI.
+expected_output: deliverables/T-0011.md con estrategia ejecutada, ruff limpio en CI
+  y pytest corriendo en GitHub Actions
 parent_task: null
-dependencies:
-- T-0008
-priority: high
+dependencies: []
+priority: medium
 profile: riguroso
 autonomy: hitl
 execution_mode: null
@@ -387,14 +494,9 @@ requested_iterations: null
 skills: []
 memory_refs: []
 acceptance_criteria:
-- Revision exhaustiva de REQ-001 a REQ-005 sobre el hash reportado por T-0008 con
-  veredicto por requisito
-- Dictamen tecnico de GARMINTOKENS (~ vs $HOME) y auditoria de REQ-005 / migracion
-  Supabase
-- Build de apps/web ejecutado (con ci si faltaba node_modules) y reportado con codigo
-  0
-- Entrega en deliverables/T-0009.md en modo solo lectura sin mutaciones en el repositorio
-created_at: '2026-10-13T17:00:58Z'
+- Jobs test (3.12) y test (3.13) en GitHub Actions ejecutando pytest sin ser bloqueados
+  por linter
+created_at: '2026-10-13T19:00:15Z'
 started_at: null
 completed_at: null
 blocked_reason: null

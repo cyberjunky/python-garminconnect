@@ -1,68 +1,51 @@
-# Handoff — shell del dashboard y collect en la nube
+# Handoff — Garmin Connect & Coaching Platform
 
-## 1. Objetivo
+## 1. Estado Actual (13 de octubre de 2026)
 
-Dejar Fitness Coach con barra izquierda y, solo en Inicio, diálogo con GPT, últimas conversaciones y tarjeta Hoy. El botón Actualizar debe lanzar el collect de Garmin en GitHub Actions, sin Cursor.
+- **Rama principal**: `master` actualizada con el merge commit `0d81139` que incorporó el PR 1 (`cursor/shell-chat-hoy-43bc`).
+- **SPEC-001 (Sincronización recurrente de tokens)**: Implementada y verificada en producción:
+  - Tabla `public.garmin_tokens` en Supabase creada con Row Level Security (RLS) habilitado. Rol `service_role` autorizado (HTTP 200) y rol `anon` completamente bloqueado (HTTP 401).
+  - Rotación y persistencia de tokens activa en el cron diario de GitHub Actions (`coaching-daily-collect.yml`), verificado en run `38450120206` con `"tokens_persisted": true` y fila creada en Supabase (`user_id: 00000000-0000-0000-0000-000000000001`).
+- **Frontend Web (`apps/web`) en Vercel**:
+  - Proyecto en Vercel renombrado a **"tri-coach"** (el CLI local sigue enlazado por `projectId`) y configurado con `Root Directory = apps/web`.
+  - La URL de producción oficial sigue siendo **`https://web-chi-eight-31.vercel.app`** (sitio respondiendo HTTP 200 con versión visible `v0.1.0`).
+  - *Nota importante*: el dominio `tri-coach.vercel.app` **NO** nos pertenece (corresponde a la aplicación de un tercero); no debe usarse ni enlazarse bajo ninguna circunstancia.
+  - Despliegue automático de producción activo sobre `master` (`0d81139`).
+  - Shell lateral con navegación (Inicio, Retos, Mesociclos, 70.3), tarjeta Hoy, chat con IA contextualizado y botón "Actualizar" que dispara el workflow de recolección en GitHub Actions.
 
-## 2. Estado actual
+## 2. Decisiones Arquitectónicas y Operativas
 
-Hecho en la rama `cursor/shell-chat-hoy-43bc` (PR 1, base `master`). Build de Next en `apps/web` pasa.
+- **Persistencia de Tokens**: Supabase `garmin_tokens` actúa como almacén primario y duradero para runners efímeros de GitHub Actions; `GARMINTOKENS_B64` se mantiene como fallback secundario de contingencia.
+- **Seguridad**: RLS estricto; tokens nunca expuestos al cliente web ni a roles no autenticados (`anon`). Secrets nunca filtrados en logs (`REQ-005`).
+- **Monorepo y Despliegue**: Raíz del repo contiene el backend Python y workflows; `apps/web` contiene la app Next.js 15. Vercel apunta su Root Directory a `apps/web`.
+- **Disciplina Git**: Commits sin trailers de IA (según `CLAUDE.md`). Prohibición estricta de `amend` + `force-push` sobre commits ya empujados (`DEC-001`). Toda modificación posterior al push se realiza con commit normal hacia adelante.
+- **Disciplina SDD**: El gate formal de aprobación de especificaciones (`ies spec approve`) debe preceder a cualquier implementación; `SPEC-001` cuenta con aprobación retroactiva formalizada en `DEC-003`.
 
-Verificado en producción (https://web-chi-eight-31.vercel.app), deploy manual del usuario: barra Hoy, Retos, Mesociclos y 70.3; chat y tarjeta Hoy en Inicio; Retos con preparación, sesión, atender, va bien, macrociclo y tendencia 14d. El token de dispatch ya está en Vercel. Tras renovar la sesión Garmin, el sitio mostró última actualización 2026-09-26 08:41 Bogotá y readiness VERDE.
+## 3. Tareas en Curso y Pendientes
 
-No verificado en ese deploy: la etiqueta de versión al pie de la barra. El HTML público no contiene `v0.1.0`; ese cambio es el commit posterior al deploy. El chat con OpenAI no se probó de punta a punta.
+- **`T-0010` (implementer, fast-track)**:
+  1. Corregir 9 errores de `ruff` introducidos por `SPEC-001` en scripts auxiliares (`scripts/garmin_auth.py`, `services/collector/supabase_client.py`).
+  2. Sustituir los bloques `except Exception: pass` en `scripts/garmin_auth.py:login_client` por `_LOGGER.warning` explícito (`REQ-005`).
+  3. Registrar en los logs del workflow la fuente exacta desde la que se restauró el token (`source: supabase` o `source: b64_fallback`).
+  4. Ajustar `scripts/deploy_web_vercel.sh` al nuevo `Root Directory = apps/web` de Vercel.
+- **`T-0011` (backlog, riguroso)**:
+  - Definir estrategia y saneamiento de los 97 errores de `ruff` heredados de master en scripts históricos para que los jobs `test (3.12)` y `test (3.13)` ejecuten `pytest` en CI de GitHub Actions.
+- **Verificación operativa en vivo**:
+  - `REQ-003`: Confirmar la sincronización local en vivo (`scripts/refresh_garmin_session.py` y `scripts/publish_garmin_tokens_secret.sh`) en el próximo ciclo de refresco manual desde el Mac.
 
-## 3. Archivos tocados
+## 4. Comandos de Referencia
 
-- `apps/web/app/layout.tsx` — shell sidebar + main; pasa la versión al menú.
-- `apps/web/app/globals.css` — columna izquierda a altura de viewport y estilos del chat.
-- `apps/web/components/DashboardNav.tsx` — menú vertical, Actualizar con espera al job, versión al pie.
-- `apps/web/app/page.tsx` — Inicio: chat, tarjeta Hoy, recuperación y regla del día.
-- `apps/web/app/retos/page.tsx` — página nueva con las tarjetas de preparación y sesión.
-- `apps/web/lib/dashboard.ts` — lectura de Supabase y textos de atender / va bien, compartida.
-- `apps/web/components/TodayCard.tsx` — tarjeta Hoy extraída del grupo de Inicio.
-- `apps/web/components/CoachChat.tsx` — compositor y últimas 4 conversaciones en el navegador.
-- `apps/web/app/api/chat/route.ts` — respuesta de OpenAI con la condición leída en el servidor.
-- `apps/web/lib/condition.ts` — snapshot de readiness, carga e índice para el prompt.
-- `apps/web/app/api/refresh/route.ts` — dispara el workflow y consulta si el run terminó.
-- `apps/web/lib/supabase.ts` — el cliente se crea al usarlo, no al importar.
-- `apps/web/.env.example` — nombres de `ACTIONS_DISPATCH_TOKEN` y `OPENAI_API_KEY`.
-
-## 4. Decisiones
-
-- El chat y la tarjeta Hoy solo están en Inicio. Mesociclos y 70.3 ocupan el centro. Lo pidió Diego.
-- Garmin no se llama desde Vercel. La sesión vive en el secreto `GARMINTOKENS_B64` de GitHub. Actualizar solo hace `workflow_dispatch` de `coaching-daily-collect.yml`.
-- La API key de OpenAI y el PAT de Actions son variables de servidor en Vercel. No van al repo ni al navegador.
-- El historial del chat queda en `localStorage` de ese navegador, no en Supabase.
-- El índice del chat usa `apps/web/lib/preparation.ts` sobre la última fila de Supabase. Si los datos tienen más de 18 horas, el prompt pide decirlo.
-- La versión visible es la de `apps/web/package.json` y, en Vercel, el SHA corto del commit.
-
-## 5. Errores
-
-- Build local: Supabase exigía la URL al importar el módulo de chat. Se aplazó la creación del cliente en `apps/web/lib/supabase.ts`.
-- Actualizar decía que faltaba `ACTIONS_DISPATCH_TOKEN`. Diego creó un PAT fino con Actions en lectura y escritura y lo guardó en Vercel, Production. Hizo falta otro `vercel deploy --prod`.
-- Luego el job fallaba: la sesión Garmin del secreto estaba vencida y no hay correo ni contraseña en GitHub. En el Mac, `scripts/refresh_garmin_session.py` imprimió `SESSION_OK` y se actualizó el secreto. El collect de la mañana del 26 sí escribió Supabase.
-- Este agente no puede hacer `vercel deploy` ni `gh workflow run`: no hay sesión de Vercel y el token de GitHub del agente recibe 403 al disparar Actions.
-- La versión no se ve porque el deploy público es anterior al commit que la agrega.
-
-## 6. Pendientes
-
-1. Publicar el commit de la versión y confirmar el texto al pie de la barra.
-2. Definir `OPENAI_API_KEY` en Vercel (Production) y comprobar un mensaje del chat.
-3. Fusionar el PR 1 a `master` cuando Diego lo acepte. El cron sigue en `master`; la UI nueva no.
-4. Conectar el repo a Vercel si se quiere deploy en cada push. Hoy es manual.
-
-## 7. Próximo paso
-
-En el Mac, actualizar la rama y publicar producción. Recargar el sitio y mirar el pie izquierdo.
-
-## 8. Comandos
-
-Desde la raíz del repo, con la rama `cursor/shell-chat-hoy-43bc`:
-
-- `git pull`
-- `cd apps/web && npm install && npm run build`
-- `cd apps/web && vercel deploy --prod`
-- Renovar Garmin en el Mac y publicar el secreto: `./scripts/publish_garmin_tokens_secret.sh --run-collect` (repo `dalarconics/python-garminconnect`).
-
-No hay tests de la UI. El collect de Garmin es el workflow Coaching Daily Collect en GitHub Actions.
+- **Tests locales**:
+  ```bash
+  .venv/bin/python -m pytest -q tests
+  ```
+- **Validación del framework**:
+  ```bash
+  ies status
+  ies memory validate
+  ies doctor
+  ```
+- **Disparo manual del cron de recolección**:
+  ```bash
+  gh workflow run coaching-daily-collect.yml --repo dalarconics/python-garminconnect --ref master
+  ```

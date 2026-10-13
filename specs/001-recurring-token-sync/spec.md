@@ -4,11 +4,13 @@ spec_id: SPEC-001
 slug: recurring-token-sync
 project_id: python-garminconnect
 version: 1
-status: ready
+status: approved
 autonomy: autonomous
 owner_task: T-0001
-last_updated: '2026-10-11T16:00:00Z'
+last_updated: '2026-10-13T19:11:06Z'
 source: ies planner T-0001
+approved_at: '2026-10-13T19:11:06Z'
+decision_ref: memory/mid/decisions.md#DEC-003
 ---
 
 # SPEC-001: Sincronización recurrente de tokens y actualización Vercel
