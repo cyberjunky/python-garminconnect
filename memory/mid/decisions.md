@@ -35,5 +35,16 @@ confidence: alta
 - **Decisión**: Declarar formalmente cumplidos en producción los requisitos `REQ-001`, `REQ-002`, `REQ-004` y `REQ-005` (con `REQ-003` cumplido por tests y pendiente de prueba en vivo en el Mac). Autorizar la aprobación oficial de `SPEC-001` mediante `ies spec approve`.
 - **Carácter retroactivo**: Se deja constancia de que la aprobación de `SPEC-001` es formalmente retroactiva, dado que las tasks de implementación y verificación inicial (`T-0002` a `T-0007`) se ejecutaron en el ledger antes de que la especificación superara el gate formal de aprobación humana (`ies spec approve`), contraviniendo el orden estricto de SDD.
 
+## DEC-004: Privacidad en logs públicos de CI/CD (Coaching Daily Collect)
+
+- **Fecha**: 2026-10-13
+- **Contexto**: El repositorio `dalarconics/python-garminconnect` es público (fork de `cyberjunky`), lo que hace que los logs de ejecución de GitHub Actions sean accesibles públicamente. En `.github/workflows/coaching-daily-collect.yml`, el step `Collect and upsert to Supabase` imprimía en stdout un payload JSON con métricas de salud (`readiness.zone`, `training_load.acwr`, `session.guard_flags`) y el nombre y ubicación geográfica de la última actividad deportiva (`last_activity.name`, ej. "Bogota, D.C. - Base").
+- **Decisión**:
+  1. El repositorio permanece público.
+  2. Los workflows de GitHub Actions tienen estrictamente prohibido imprimir en stdout/stderr datos personales de salud, métricas fisiológicas, nombres de actividad o coordenadas de ubicación.
+  3. La salida en logs de CI/CD debe limitarse exclusivamente a metadatos técnicos de ejecución: resultado de la operación (`upsert: ok/fallo`), confirmación técnica de tokens (`tokens_persisted: true/false`), conteos y fuente del token restaurado (`source: supabase` o `source: b64_fallback`).
+  4. La auditoría y sanitización de prints/logs aplica a todo el árbol de recolección (`garmin_coaching/`, `services/collector/`, `scripts/garmin_auth.py`).
+
+
 
 

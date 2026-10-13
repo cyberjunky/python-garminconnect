@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 15
+next_id: 16
 source: ies-cli
-last_updated: '2026-10-13T19:21:00Z'
+last_updated: '2026-10-13T19:38:13Z'
 ---
 
 # Task Ledger
@@ -431,7 +431,7 @@ title: Saneamiento linter SPEC-001, observabilidad REQ-005, trazabilidad de rest
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: cancelled
 input: '1. Corregir los 9 errores de ruff introducidos por SPEC-001 en scripts/garmin_auth.py
   y services/collector/supabase_client.py. 2. Sustituir bloques except Exception:
   pass en scripts/garmin_auth.py:login_client por logging explicito _LOGGER.warning
@@ -456,7 +456,7 @@ acceptance_criteria:
 - scripts/deploy_web_vercel.sh verificado y funcional con Root Directory de Vercel
 created_at: '2026-10-13T19:00:10Z'
 started_at: null
-completed_at: null
+completed_at: '2026-10-13T19:38:05Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
@@ -466,7 +466,8 @@ approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  cancel_reason: reemplazada por T-0015 con alcance ampliado (DEC-004)
 ```
 
 ## T-0011 — Estrategia y resolución de 97 errores de linter heredados de master
@@ -656,6 +657,61 @@ acceptance_criteria:
 - Comprobacion exhaustiva de todos los puntos de P1, P2 y P3 del informe docs/ux-audit-2026-10-13.md
 - Veredicto formal emitido en modo solo lectura sin mutaciones en el repositorio
 created_at: '2026-10-13T19:21:00Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+```
+
+## T-0015 — Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI
+
+```yaml
+id: T-0015
+title: Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad
+  de logs CI
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: 'Trabajar en la rama chore/lint-logs-2026-10 (creada desde master tras merge
+  de UX) con PR a master. 1. Corregir los 9 errores de ruff introducidos por SPEC-001
+  en scripts/garmin_auth.py y services/collector/supabase_client.py. 2. Sustituir
+  bloques except Exception: pass en scripts/garmin_auth.py:login_client por logging
+  explicito _LOGGER.warning (REQ-005). 3. Registrar en logs del workflow de donde
+  se restauro el token (supabase | b64_fallback). 4. Ajustar scripts/deploy_web_vercel.sh
+  para Root Directory = apps/web de Vercel. 5. Recortar salida de workflows (DEC-004):
+  en coaching-daily-collect.yml el JSON final solo puede incluir upsert ok/fallo,
+  tokens_persisted y fuente del restore (supabase | b64_fallback); quitar zone, acwr,
+  guards y last_activity. Revisar que ningun otro print o log del collector (garmin_coaching/,
+  services/collector/, scripts/garmin_auth.py) emita metricas, nombres de actividad
+  ni coordenadas a stdout en Actions.'
+expected_output: deliverables/T-0015.md con diffs de ruff, logging implementado, salida
+  de trazabilidad de restore, sanitizacion de logs de Actions y scripts validados
+parent_task: null
+dependencies: []
+priority: high
+profile: fast-track
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- 0 errores de ruff en scripts/garmin_auth.py y services/collector/supabase_client.py
+- Excepciones en login_client logueadas con _LOGGER.warning
+- Workflow reporta en log la fuente de restauracion del token (supabase | b64_fallback)
+- scripts/deploy_web_vercel.sh verificado y funcional con Root Directory de Vercel
+- El log de un run de Coaching Daily Collect no contiene metricas de salud, nombres
+  de actividad ni ubicacion; verificado en el log de un run real despues del merge.
+created_at: '2026-10-13T19:38:13Z'
 started_at: null
 completed_at: null
 blocked_reason: null
