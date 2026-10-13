@@ -3,7 +3,7 @@ schema_version: 1
 project_id: python-garminconnect
 next_id: 17
 source: ies-cli
-last_updated: '2026-10-13T20:36:46Z'
+last_updated: '2026-10-13T23:00:20Z'
 ---
 
 # Task Ledger
@@ -631,26 +631,29 @@ metrics:
 
 ```yaml
 id: T-0014
-title: Verificacion viewer independiente de UX/UI P1-P3 (Local 1280x800 y 375x812)
+title: Verificacion viewer independiente de UX/UI P1-P3 y SemVer 0.3.0 (Local 1280x800 y 375x812)
 project_id: python-garminconnect
 origin: coordinator
 destination: viewer
 status: ready
-input: 'Verificacion en modo solo lectura de las implementaciones de T-0012 y T-0013
-  en la app local levantada con npm --prefix apps/web run build && npm --prefix apps/web
+input: 'Verificacion en modo solo lectura de las implementaciones de T-0012, T-0013
+  y T-0016 en la app local levantada con npm --prefix apps/web run build && npm --prefix apps/web
   run start (el preview de Vercel pide login 302 y lo revisa el humano a mano). Verificar
   de forma exhaustiva en dos resoluciones: escritorio (1280x800) y movil (375x812).
   Auditar resolucion de items P1 (hora actividad, updated_at, BB delta, recuperacion
   dinamica, fecha Bogota, menu movil, grafica 375px, dark theme), items P2 (foco visible,
-  labels, aria-current, h1, alertas con texto/icono, role alert, reduced motion) e
+  labels, aria-current, h1, alertas con texto/icono, role alert, reduced motion),
   items P3 (copy espanol, fechas Intl, tabular-nums, marca Tri-Coach, tarjeta Hoy
-  antes de chat). Comprobar ausencia de errores de consola y regresiones.'
+  antes de chat) y versionado SemVer 0.3.0 (package.json, package-lock.json, version en
+  sidebar, CHANGELOG.md y README.md). Comprobar tests unitarios, ausencia de errores
+  de consola y regresiones.'
 expected_output: deliverables/T-0014.md con matriz de verificacion en 1280x800 y 375x812,
   evidencia funcional y veredicto formal APROBAR / RECHAZAR
 parent_task: null
 dependencies:
 - T-0012
 - T-0013
+- T-0016
 priority: high
 profile: riguroso
 autonomy: hitl
@@ -661,6 +664,7 @@ memory_refs: []
 acceptance_criteria:
 - Verificacion local documentada en resoluciones 1280x800 y 375x812
 - Comprobacion exhaustiva de todos los puntos de P1, P2 y P3 del informe docs/ux-audit-2026-10-13.md
+- Comprobacion de version 0.3.0 en sidebar/package.json y apps/web/CHANGELOG.md
 - Veredicto formal emitido en modo solo lectura sin mutaciones en el repositorio
 created_at: '2026-10-13T19:21:00Z'
 started_at: null
@@ -688,7 +692,9 @@ origin: coordinator
 destination: implementer
 status: ready
 input: 'Trabajar en la rama chore/lint-logs-2026-10 (creada desde master tras merge
-  de UX) con PR a master. 1. Corregir los 9 errores de ruff introducidos por SPEC-001
+  de UX) con PR a master. 1. Corregir los 10 errores de ruff en el alcance de SPEC-001/UX
+  (9 introducidos en SPEC-001 mas UP017 en services/collector/supabase_client.py:28
+  introducido en T-0012; el total de CI reporta 107 con los 97 heredados de master)
   en scripts/garmin_auth.py y services/collector/supabase_client.py. 2. Sustituir
   bloques except Exception: pass en scripts/garmin_auth.py:login_client por logging
   explicito _LOGGER.warning (REQ-005). 3. Registrar en logs del workflow de donde
@@ -740,7 +746,7 @@ title: Versionado SemVer 0.3.0 y CHANGELOG de Tri-Coach (apps/web)
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: 'Trabajar en la rama ux/audit-2026-10 (viaja dentro del PR #2). Sin force-push
   (DEC-001). 1. Adoptar SemVer para Tri-Coach; la version vive en apps/web/package.json
   y apps/web/package-lock.json (MINOR por PR de funcionalidad, PATCH por correcciones).
@@ -783,16 +789,19 @@ acceptance_criteria:
 - Propuesta de tags git documentada en la entrega sin creacion de tags por el agente
   y commit nuevo en ux/audit-2026-10
 created_at: '2026-10-13T20:36:46Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-13T23:00:20Z'
+completed_at: '2026-10-13T23:00:20Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0016.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: 6093d34d0fc90394826889b09c0910eec5421120
+  git_after: 6093d34d0fc90394826889b09c0910eec5421120
+  result: success
 ```
