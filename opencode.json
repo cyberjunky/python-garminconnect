@@ -1,0 +1,50 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "_comment": "Generado por IES-OS sync-adapters. No fija modelos: el binding canonico vive en config/models.yaml del framework (o .ies/models.yaml). Pasa el modelo al lanzar: opencode --model <provider/model>.",
+  "instructions": [
+    "AGENTS.md",
+    "memory/long/constitution.md"
+  ],
+  "agent": {
+    "ies-coordinator": {
+      "description": "Orquestar el ciclo SDD: dimensionar el equipo, crear y despachar tasks, consolidar evidencia y presentar decisiones al humano. No implementa.",
+      "mode": "primary",
+      "prompt": "{file:./.opencode/agent/coordinator.md}",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": true
+      }
+    },
+    "ies-implementer": {
+      "description": "Implementar exactamente una task aprobada dentro de su allowlist y su worktree, con tests derivados de cada requisito EARS antes del codigo.",
+      "mode": "subagent",
+      "prompt": "{file:./.opencode/agent/implementer.md}",
+      "tools": {
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    },
+    "ies-planner": {
+      "description": "Convertir una intencion aprobada en spec.md con requisitos EARS, plan.md con alternativas y una descomposicion en tasks con allowlists y perfiles.",
+      "mode": "subagent",
+      "prompt": "{file:./.opencode/agent/planner.md}",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+    "ies-viewer": {
+      "description": "Verificar en modo solo lectura que una entrega cumple la spec, el plan y la constitucion, clasificando hallazgos y emitiendo un veredicto.",
+      "mode": "subagent",
+      "prompt": "{file:./.opencode/agent/viewer.md}",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": true
+      }
+    }
+  }
+}

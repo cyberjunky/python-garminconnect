@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from garmin_auth import login_client
+from garmin_auth import login_client, persist_tokens_to_supabase
 from garminconnect import (
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,
@@ -38,6 +38,9 @@ def main() -> int:
         return 5
 
     print("SESSION_OK")
+    persisted = persist_tokens_to_supabase()
+    if persisted:
+        print("SUPABASE_TOKENS_OK")
     print(
         {
             "date": today,

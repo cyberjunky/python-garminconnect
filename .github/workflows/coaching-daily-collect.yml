@@ -30,12 +30,16 @@ jobs:
 
       - name: Restore Garmin tokens
         env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           GARMINTOKENS_B64: ${{ secrets.GARMINTOKENS_B64 }}
           GARMIN_EMAIL: ${{ secrets.GARMIN_EMAIL }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          GARMINTOKENS: ~/.garminconnect
         run: |
           mkdir -p "$HOME/.garminconnect"
-          if [ -n "$GARMINTOKENS_B64" ]; then
+          python -c 'import sys; sys.path.insert(0, "scripts"); from garmin_auth import restore_tokens_from_supabase; restore_tokens_from_supabase()' || true
+          if [ ! -f "$HOME/.garminconnect/garmin_tokens.json" ] && [ -n "$GARMINTOKENS_B64" ]; then
             echo "$GARMINTOKENS_B64" | base64 -d | tar xzf - -C "$HOME/.garminconnect"
           fi
 
@@ -51,16 +55,18 @@ jobs:
           import json
           import sys
           sys.path.insert(0, "scripts")
-          from garmin_auth import login_client
+          from garmin_auth import login_client, persist_tokens_to_supabase
           from garmin_coaching.collector import build_daily_payload
           from services.collector.supabase_client import upsert_daily_payload
 
           client = login_client(prompt=False)
           payload = build_daily_payload(client)
           result = upsert_daily_payload(payload)
+          persisted = persist_tokens_to_supabase()
           la = payload.get("last_activity")
           print(json.dumps({
               "upsert": result,
+              "tokens_persisted": persisted,
               "zone": payload["readiness"]["zone"],
               "acwr": payload["training_load"].get("acwr"),
               "guards": payload["session"].get("guard_flags"),

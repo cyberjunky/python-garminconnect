@@ -64,10 +64,12 @@ Montar **volumen persistente** en `/data/garmin-tokens` para que los tokens Garm
 Opción A — login local → subir tokens:
 
 ```bash
-# En tu Mac (una sola vez)
+# En tu Mac (GitHub Actions secret GARMINTOKENS_B64)
+./scripts/publish_garmin_tokens_secret.sh --run-collect
+
+# Railway: empaquetar y subir al volumen /data/garmin-tokens
 python scripts/refresh_garmin_session.py
 tar czf garmin-tokens.tgz -C ~/.garminconnect .
-# Subir garmin-tokens.tgz al volumen Railway en /data/garmin-tokens
 ```
 
 Opción B — credenciales en env: Railway hace login en el primer `/collect`. Si Garmin pide MFA, hay que completar el login una vez (logs Railway o script local).
@@ -100,9 +102,11 @@ WHATSAPP_API_URL=...
 ## 4. Vercel (dashboard)
 
 ```bash
-cd apps/web
-vercel --prod
+./scripts/deploy_web_vercel.sh
+# or: cd apps/web && npm run deploy:prod
 ```
+
+Non-interactive (CI/agents): always pass `--yes`. The CLI must run with a logged-in session (`vercel login`) or `VERCEL_TOKEN` in the environment.
 
 Env: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 

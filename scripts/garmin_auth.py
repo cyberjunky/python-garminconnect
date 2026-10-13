@@ -9,6 +9,8 @@ Credential resolution order:
 
 from __future__ import annotations
 
+import json
+import logging
 import os
 import re
 import subprocess
@@ -20,6 +22,9 @@ from typing import Callable
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from garminconnect import Garmin, GarminConnectAuthenticationError
+from garminconnect.client import Client, token_file_path
+
+_LOGGER = logging.getLogger(__name__)
 
 KEYCHAIN_SERVICE = "python-garminconnect"
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -141,6 +146,56 @@ def tokenstore_path() -> str:
     return os.path.expanduser(os.getenv("GARMINTOKENS", "~/.garminconnect"))
 
 
+def _ensure_env_local_in_os_environ() -> None:
+    for k, v in _load_env_local().items():
+        if k not in os.environ:
+            os.environ[k] = v
+
+
+def restore_tokens_from_supabase(dest_store: str | None = None) -> bool:
+    """Restore Garmin tokens from Supabase to local store."""
+    try:
+        _ensure_env_local_in_os_environ()
+        from services.collector.supabase_client import get_garmin_tokens_from_supabase
+
+        tokens = get_garmin_tokens_from_supabase()
+        if not tokens or not isinstance(tokens, dict):
+            return False
+        if not (tokens.get("di_token") or tokens.get("di_refresh_token")):
+            return False
+
+        store = dest_store or tokenstore_path()
+        client = Client()
+        client.di_token = tokens.get("di_token")
+        client.di_refresh_token = tokens.get("di_refresh_token")
+        client.di_client_id = tokens.get("di_client_id")
+        client.dumps = lambda: json.dumps(tokens)
+        client.dump(store)
+        return True
+    except Exception as exc:
+        _LOGGER.debug("Failed to restore tokens from Supabase: %s", exc)
+        return False
+
+
+def persist_tokens_to_supabase(src_store: str | None = None) -> bool:
+    """Persist local Garmin tokens to Supabase garmin_tokens table."""
+    try:
+        _ensure_env_local_in_os_environ()
+        store = src_store or tokenstore_path()
+        p = token_file_path(store)
+        if not p.is_file():
+            return False
+        raw_text = p.read_text(encoding="utf-8")
+        token_data = json.loads(raw_text)
+        from services.collector.supabase_client import upsert_garmin_tokens_to_supabase
+
+        res = upsert_garmin_tokens_to_supabase(token_data)
+        return res is not None
+    except Exception as exc:
+        _LOGGER.debug("Failed to persist tokens to Supabase: %s", exc)
+        return False
+
+
 def login_client(
     *,
     prompt: bool = True,
@@ -150,14 +205,40 @@ def login_client(
     store = tokenstore_path()
     mfa = prompt_mfa or (lambda: input("MFA code (if prompted): ").strip())
 
+    token_file = token_file_path(store)
+    if not token_file.is_file():
+        restore_tokens_from_supabase(store)
+
     client = Garmin()
     try:
         client.login(store)
+        try:
+            persist_tokens_to_supabase(store)
+        except Exception:
+            pass
         return client
     except Exception:
         pass
 
+    if token_file.is_file():
+        if restore_tokens_from_supabase(store):
+            try:
+                client = Garmin()
+                client.login(store)
+                try:
+                    persist_tokens_to_supabase(store)
+                except Exception:
+                    pass
+                return client
+            except Exception:
+                pass
+
     email, password = get_credentials(prompt=prompt)
     client = Garmin(email=email, password=password, prompt_mfa=mfa)
     client.login(store)
+    try:
+        persist_tokens_to_supabase(store)
+    except Exception:
+        pass
     return client
+

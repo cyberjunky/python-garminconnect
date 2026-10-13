@@ -1,0 +1,4 @@
+{
+  "contextFileName": "GEMINI.md",
+  "_comment": "Ejemplo sin credenciales. La API key vive en la variable de entorno GEMINI_API_KEY; nunca la pongas en este archivo."
+}

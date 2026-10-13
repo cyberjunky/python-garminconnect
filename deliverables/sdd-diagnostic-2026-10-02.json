@@ -1,0 +1,127 @@
+{
+  "scope": "synthetic, offline, no credentials or real account data",
+  "head": "c2068d481832e38fbb66593d355d96a609664deb",
+  "existing_tests_direct_execution": {
+    "passed": 11,
+    "tests": [
+      "tests/test_garmin_coaching.py:test_classify_rojo",
+      "tests/test_garmin_coaching.py:test_classify_verde",
+      "tests/test_garmin_coaching.py:test_guard_rojo_forces_rest",
+      "tests/test_garmin_coaching.py:test_guard_acwr_high_cuts_volume",
+      "tests/test_garmin_coaching.py:test_guard_overreaching",
+      "tests/test_garmin_coaching.py:test_active_phase_r0",
+      "tests/test_garmin_coaching.py:test_days_to_milestones",
+      "tests/test_mesocycle_activity_load.py:test_classify_sport_running",
+      "tests/test_mesocycle_activity_load.py:test_aggregate_by_week_monday_bucket",
+      "tests/test_mesocycle_activity_load.py:test_mesocycle_monday_recovery_in_plan",
+      "tests/test_mesocycle_activity_load.py:test_week_in_block_recovery_every_fourth"
+    ],
+    "runner": "direct function calls, not pytest"
+  },
+  "red_with_acwr_1_4": {
+    "action": "train",
+    "sport": "run",
+    "duration_min": 45,
+    "title": "Synthetic session",
+    "details": [
+      "ACWR 1.4 — recortar 25% volumen"
+    ],
+    "forced": true,
+    "guard_flags": [
+      "readiness_rojo",
+      "acwr_high"
+    ],
+    "guards_applied": true
+  },
+  "yellow_double_cut": {
+    "planner_duration": 44,
+    "after_guards": 35
+  },
+  "absent_readiness": {
+    "action": "train",
+    "sport": "run",
+    "duration_min": 55,
+    "title": "Run Z2",
+    "hr_cap": 135,
+    "phase_code": "R1",
+    "phase_name": "Base aerobica",
+    "date": "2026-10-06",
+    "details": [
+      "FC techo 135 bpm.",
+      "Duracion max 55 min."
+    ],
+    "guard_flags": [],
+    "guards_applied": false
+  },
+  "weekly_swim": {
+    "declared": 132.0,
+    "sum_daily": 264.0
+  },
+  "phase_gap": {
+    "date": "2027-07-26",
+    "phase": "R7"
+  },
+  "failed_activity_fetch": {
+    "rows_emitted": 24,
+    "all_executed_totals_zero": true,
+    "oldest_emitted": "2026-09-21"
+  },
+  "fallback_dates": {
+    "payload_date": "2026-10-01",
+    "metric_date": "2026-09-30",
+    "persisted_readiness_date": "2026-10-01"
+  },
+  "session_upsert_reset": {
+    "executed": null,
+    "confirmed": false
+  },
+  "persisted_timestamps": {
+    "readiness_daily": false,
+    "training_load": false,
+    "daily_snapshots": false,
+    "session_log": false
+  },
+  "history_reference": {
+    "fixed_now": "2026-10-02",
+    "requested_dates": [
+      "2026-09-25",
+      "2026-09-26",
+      "2026-09-27",
+      "2026-09-28",
+      "2026-09-29",
+      "2026-09-30",
+      "2026-10-01"
+    ],
+    "accepts_target_day": false
+  },
+  "static_test_functions": {
+    "tests/test_activity_details.py": 8,
+    "tests/test_cassette_sanitization.py": 9,
+    "tests/test_demo_gear_and_filters.py": 5,
+    "tests/test_demo_personal_records.py": 8,
+    "tests/test_demo_security.py": 4,
+    "tests/test_garmin.py": 19,
+    "tests/test_garmin_coaching.py": 7,
+    "tests/test_garmin_unit.py": 211,
+    "tests/test_generate_exercises.py": 7,
+    "tests/test_login_recovery.py": 18,
+    "tests/test_mesocycle_activity_load.py": 4,
+    "tests/test_retry_decorator.py": 23,
+    "tests/test_strength_workout.py": 7,
+    "tests/test_token_permissions.py": 6,
+    "tests/test_typed.py": 16,
+    "tests/test_widget_mfa.py": 10,
+    "tests/test_workout_constants.py": 6
+  },
+  "review_date": "2026-10-02",
+  "python_runtime": "3.14.4",
+  "validation": {
+    "pytest_available": false,
+    "full_pytest_suite": "not run",
+    "existing_coaching_functions": "11 passed by direct invocation",
+    "tsc_repository_config": "failed on stale .next/types references to moved routes",
+    "tsc_source_only_temporary_config": "passed; not Next build or E2E",
+    "remote_services": "not inspected",
+    "sql_policies": "static review; effective grants and production policies not verified"
+  }
+}
