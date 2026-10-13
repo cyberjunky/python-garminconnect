@@ -2,9 +2,9 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: long
-last_updated: '2026-10-11T12:52:03Z'
-source: ies init
-confidence: n/a
+last_updated: '2026-10-13T20:34:00Z'
+source: ies coordinator DEC-005/ADR-009
+confidence: alta
 ---
 
 # Constitucion del proyecto python-garminconnect
@@ -35,6 +35,8 @@ y `docs/SDD.md` del framework.
 1. Tests primero: un acceptance criterion sin test es un criterio incumplido.
 2. Toda entrega declara verificacion reproducible (skill verification-gates).
 3. La suite existente nunca empeora respecto al checkpoint.
+4. Toda entrega que cambia un artefacto desplegable sube su version (SemVer) y registra el cambio en su CHANGELOG (ADR-009).
+
 
 ## Articulo IV. Seguridad
 
