@@ -19,21 +19,29 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 Versión introducida en el PR #2 (rama `ux/audit-2026-10`), enfocada en resolver integralmente la auditoría UX (P1, P2 y P3), unificar la identidad visual de la marca Tri-Coach y asegurar consistencia de datos en Supabase.
 
 ### Añadido
+- **Accesibilidad (P2)**: Anillo global `:focus-visible` en toda la interfaz y estilo `:focus-within` en el compositor de chat.
+- **Accesibilidad (P2)**: Etiquetas `<label>` y `aria-label` en textareas de chat (`CoachChat`, `CoachChatScreen`).
 - **Accesibilidad (P2)**: Enlaces directos "Saltar al contenido" (`#main-content` y `#chat-main-content`) para navegación por teclado y lectores de pantalla.
 - **Accesibilidad (P2)**: Atributo `aria-current="page"` dinámico en la navegación del dashboard y etiquetas `aria-label` / `aria-busy` en el botón Actualizar.
-- **Base de datos**: Migración `supabase/migrations/20261013_updated_at_triggers.sql` que crea una función y triggers genéricos `moddatetime` sobre `daily_snapshots`, `training_load` y `garmin_tokens` para actualizar automáticamente `updated_at` en cada modificación.
-- **Suite de pruebas**: Tests automatizados (`p1-fixes.test.mjs`, `p2-p3-fixes.test.mjs`, `version.test.mjs`) que validan conversiones de zona horaria, formateo en español, protecciones contra desbordamiento horizontal en CSS y verificación de SemVer.
+- **Accesibilidad (P2)**: Estados de métricas comunicados con indicadores visuales y textuales (✓/!) además del color del borde en la tarjeta Hoy.
+- **Accesibilidad (P2)**: Región viva `role="alert"` para errores en el chat y respeto a la preferencia de usuario `prefers-reduced-motion` en scroll suave y transiciones.
+- **Diseño y Tema (P1 / P3)**: Configuración de `color-scheme: dark` y metadatos `theme-color` en el layout para controles nativos oscuros coherentes.
+- **Base de datos (P1)**: Migración `supabase/migrations/20261013_updated_at_triggers.sql` con la función propia `public.set_updated_at()` y triggers `before update` en 6 tablas (`daily_snapshots`, `readiness_daily`, `training_load`, `session_log`, `weekly_sport_load`, `garmin_tokens`), más el envío de `updated_at` explícito desde el collector Python en cada upsert.
+- **Suite de pruebas**: Tests automatizados (`p1-fixes.test.mjs`, `p2-p3-fixes.test.mjs`, `version.test.mjs`) que validan conversiones de fecha, formateo en español, protecciones de desbordamiento horizontal y conformidad SemVer.
 
 ### Modificado
-- **Marca e Identidad (P3)**: Unificación de la marca "Tri-Coach" en reemplazo de "Fitness Coach" a lo largo de la barra lateral, títulos de pestaña, metadatos y documentación.
-- **Internacionalización y Copy (P2)**: Traducción completa al español de tipos de deporte (`Carrera`, `Ciclismo`, `Natación`, `Cinta`, etc.) y estados de entrenamiento de Garmin (`Mantenimiento`, `Productivo`, `Recuperación`, `Sobreesfuerzo`, `Desentrenamiento`).
-- **Resiliencia en Chat**: Mensajes de error amigables para el usuario en `/api/chat` en español sin filtrar nombres de variables de entorno ni detalles técnicos internos.
+- **Jerarquía en Inicio (P3)**: Reorganización visual posicionando la tarjeta Hoy antes que el compositor de chat.
+- **Marca e Identidad (P3)**: Unificación de la marca "Tri-Coach" en reemplazo de "Fitness Coach" a lo largo de la barra lateral, encabezado `<h1>`, títulos de pestaña, metadatos y documentación.
+- **Copy y Consistencia (P3)**: Unificación del copy al español sin términos en inglés crudos (`Carrera`, `Ciclismo`, `Natación`, `Mantenimiento`, `Recuperación`, etc.) y eliminación de mensajes de depuración técnicos en la interfaz pública.
+- **Formateo Numérico y Fechas (P3)**: Fechas formateadas en español colombiano mediante `Intl.DateTimeFormat("es-CO")` y cifras/tablas con tipografía `font-variant-numeric: tabular-nums`.
+- **Navegación Móvil (P1 / P3)**: Barra de navegación compacta con botón Actualizar fijo en la barra móvil, eliminando el menú vertical invasivo de 336 px (41% de pantalla).
+- **Tarjeta de Recuperación (P1)**: Fase de recuperación dinámica obtenida desde `payload.macrocycle`, retirando la fecha meta fija y obsoleta.
 
 ### Corregido
-- **Zona Horaria y Fechas (P1)**: Corrección del cálculo de fecha "Hoy" y hora de última actividad deportiva para evaluarse estrictamente en la zona horaria `America/Bogota` (UTC-5), eliminando el desfase visual de 5 horas.
-- **Body Battery (P1)**: Corrección en el formato del diferencial de Body Battery, evitando signos duplicados como `+-12`.
-- **Última Actualización (P1)**: Presentación amigable de timestamp con formato "Actualizado hoy a las HH:mm" o "Actualizado ayer a las HH:mm" en hora local colombiana.
-- **Diseño Responsive Móvil (P1)**: Corrección de desbordamiento horizontal en pantallas móviles (375×812) mediante `grid-template-columns: minmax(0, 1fr)`, barra de navegación con scroll horizontal seguro y contenedor con `min-width: 0`.
+- **Hora de Última Actividad (P1)**: Corrección en `lib/lastActivity.ts` para mostrar la hora local registrada por Garmin sin desfase de 5 horas.
+- **Fecha de Mesociclos y Dashboard (P1)**: Cálculo de fecha local en zona horaria de Bogotá (UTC-5) para evitar el salto prematuro de día a las 19:00 locales originado por fechas UTC.
+- **Body Battery (P1)**: Corrección del diferencial de Body Battery en la tarjeta Hoy, evitando signos duplicados como `+-12`.
+- **Diseño Responsive Móvil (P1)**: Corrección de desbordamiento horizontal en pantallas móviles (375×812) mediante `minmax(0, 1fr)` con `scrollWidth == 375`, y gráfica de preparación física con contenedor de scroll horizontal para garantizar su legibilidad en pantallas de 320–375 px.
 
 ---
 
@@ -50,7 +58,6 @@ Versión integrada a `master` en el merge `0d81139` (PR #1). Introduce la arquit
 
 ### Seguridad
 - Políticas Row Level Security (RLS) estrictas en `public.garmin_tokens` para restringir el acceso exclusivamente al rol de servicio (`service_role`), bloqueando lectura e inserción para el rol público `anon`.
-- Eliminación de impresión de tokens sensibles en stdout de CI/CD.
 
 ---
 
