@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 8
+next_id: 10
 source: ies-cli
-last_updated: '2026-10-11T17:36:39Z'
+last_updated: '2026-10-13T17:00:58Z'
 ---
 
 # Task Ledger
@@ -307,4 +307,104 @@ metrics:
   git_before: d73e40e2fb7e0ba041bf95c1256c4490172b1f21
   git_after: d73e40e2fb7e0ba041bf95c1256c4490172b1f21
   result: success
+```
+
+## T-0008 — Resolver conflicto del PR 1 con master y sincronizar rama
+
+```yaml
+id: T-0008
+title: Resolver conflicto del PR 1 con master y sincronizar rama
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: En la rama cursor/shell-chat-hoy-43bc, hacer git fetch origin y fusionar origin/master
+  (merge commit, no rebase ni force-push). Resolver el conflicto en .github/workflows/coaching-daily-collect.yml
+  conservando la version de la rama (ya incluye last_activity de b13aa16). Correr
+  .venv/bin/python -m pytest -q tests y reportar la falla esperada de macOS (test_absolute_path_outside_home_still_allowed
+  por /var -> /private/var) sin tocar codigo ni tests. Commit y push a cursor/shell-chat-hoy-43bc
+  sin atribucion a IA en el mensaje (CLAUDE.md). Mantener PR 1 en draft y no fusionar.
+expected_output: deliverables/T-0008.md con log de merge, hash del commit resultante
+  en la rama, salida de pytest y confirmacion de push
+parent_task: null
+dependencies: []
+priority: high
+profile: fast-track
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- Rama cursor/shell-chat-hoy-43bc sincronizada con origin/master sin conflictos y
+  con push exitoso
+- Suite pytest ejecutada con solo la falla conocida de symlink de macOS reportada
+- Commit sin atribucion a IA y PR 1 conservado en draft sin merge
+created_at: '2026-10-13T17:00:48Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+```
+
+## T-0009 — Verificacion viewer diff SPEC-001 y checklist pre-merge PR 1
+
+```yaml
+id: T-0009
+title: Verificacion viewer diff SPEC-001 y checklist pre-merge PR 1
+project_id: python-garminconnect
+origin: coordinator
+destination: viewer
+status: ready
+input: 'Inspeccionar el diff completo origin/master...<hash> (usando el hash de commit
+  reportado en deliverables/T-0008.md, no la rama a secas) contra REQ-001..REQ-005
+  de SPEC-001 con veredicto por requisito. Auditar si GARMINTOKENS: ~/.garminconnect
+  en el workflow se expande con expanduser o requiere $HOME. Auditar REQ-005 (fallo
+  de login no sobreescribe tokens en Supabase ni fuga secretos; || true en restore
+  no oculta fallos reales). Auditar migracion supabase/migrations/20261011_garmin_tokens.sql
+  (RLS y anon bloqueado; reportar como pendiente si no se puede verificar en prod).
+  Si falta apps/web/node_modules, correr npm --prefix apps/web ci antes del build
+  y registrarlo en la entrega; validar npm --prefix apps/web run build. Solo lectura:
+  no corregir codigo.'
+expected_output: deliverables/T-0009.md con matriz de requisitos, evaluacion tecnica
+  de env y seguridad, y lista de hallazgos BLOCKING y NON_BLOCKING
+parent_task: null
+dependencies:
+- T-0008
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- Revision exhaustiva de REQ-001 a REQ-005 sobre el hash reportado por T-0008 con
+  veredicto por requisito
+- Dictamen tecnico de GARMINTOKENS (~ vs $HOME) y auditoria de REQ-005 / migracion
+  Supabase
+- Build de apps/web ejecutado (con ci si faltaba node_modules) y reportado con codigo
+  0
+- Entrega en deliverables/T-0009.md en modo solo lectura sin mutaciones en el repositorio
+created_at: '2026-10-13T17:00:58Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
 ```
