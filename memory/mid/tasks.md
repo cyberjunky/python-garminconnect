@@ -3,7 +3,7 @@ schema_version: 1
 project_id: python-garminconnect
 next_id: 16
 source: ies-cli
-last_updated: '2026-10-13T19:45:56Z'
+last_updated: '2026-10-13T20:27:29Z'
 ---
 
 # Task Ledger
@@ -578,7 +578,7 @@ title: Accesibilidad P2, copy en espanol, consistencia UI y marca Tri-Coach P3
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: 'Trabajar en la rama ux/audit-2026-10 (creada desde master) con PR a master.
   Sin force-push (DEC-001). Implementar decisiones de producto y secciones P2 y P3
   de docs/ux-audit-2026-10-13.md: 1. Marca Tri-Coach en layout, nav, paginas y metadatos.
@@ -610,18 +610,21 @@ acceptance_criteria:
 - Cifras y tablas con tabular-nums y fechas en formato es-CO
 - npm --prefix apps/web run build finaliza con codigo 0
 created_at: '2026-10-13T19:20:50Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-13T20:27:29Z'
+completed_at: '2026-10-13T20:27:29Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0013.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: cf19c10adfa1917b33200709b51f5f34f650c5ca
+  git_after: cf19c10adfa1917b33200709b51f5f34f650c5ca
+  result: success
 ```
 
 ## T-0014 — Verificacion viewer independiente de UX/UI P1-P3 (Local 1280x800 y 375x812)

@@ -2,7 +2,7 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: mid
-last_updated: '2026-10-13T19:47:08Z'
+last_updated: '2026-10-13T20:27:33Z'
 source: ies update
 confidence: alta (generado mecanicamente del ledger)
 ---
@@ -16,7 +16,6 @@ confidence: alta (generado mecanicamente del ledger)
 
 ## 🔵 ready
 
-- T-0013 — Accesibilidad P2, copy en espanol, consistencia UI y marca Tri-Coach P3 (destino: implementer, perfil: fast-track)
 - T-0014 — Verificacion viewer independiente de UX/UI P1-P3 (Local 1280x800 y 375x812) (destino: viewer, perfil: riguroso)
 - T-0015 — Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI (destino: implementer, perfil: fast-track)
 
@@ -32,6 +31,7 @@ confidence: alta (generado mecanicamente del ledger)
 - T-0008 — Resolver conflicto del PR 1 con master y sincronizar rama (destino: implementer, perfil: fast-track)
 - T-0009 — Verificacion viewer diff SPEC-001 y checklist pre-merge PR 1 (destino: viewer, perfil: riguroso)
 - T-0012 — Correccion de datos P1 y responsive movil en apps/web y backend (destino: implementer, perfil: riguroso)
+- T-0013 — Accesibilidad P2, copy en espanol, consistencia UI y marca Tri-Coach P3 (destino: implementer, perfil: fast-track)
 
 ## ⚫ cancelled
 
