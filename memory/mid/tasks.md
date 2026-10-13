@@ -3,7 +3,7 @@ schema_version: 1
 project_id: python-garminconnect
 next_id: 16
 source: ies-cli
-last_updated: '2026-10-13T19:38:13Z'
+last_updated: '2026-10-13T19:45:56Z'
 ---
 
 # Task Ledger
@@ -520,7 +520,7 @@ title: Correccion de datos P1 y responsive movil en apps/web y backend
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: 'Trabajar en la rama ux/audit-2026-10 (creada desde master) con PR a master.
   Sin force-push (DEC-001). Implementar seccion P1 de docs/ux-audit-2026-10-13.md:
   1. Hora de ultima actividad: en apps/web/lib/lastActivity.ts:40 formatear hora local
@@ -553,18 +553,21 @@ acceptance_criteria:
 - Fase de recuperacion dinamica segun payload.macrocycle sin meta inventada
 - Menu movil compacto (<15% altura) y grafica legible en 375x812
 created_at: '2026-10-13T19:20:22Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-13T19:45:56Z'
+completed_at: '2026-10-13T19:45:56Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0012.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: c1250438e8b77dc315913ae3d321eb0d7e195d06
+  git_after: c1250438e8b77dc315913ae3d321eb0d7e195d06
+  result: success
 ```
 
 ## T-0013 — Accesibilidad P2, copy en espanol, consistencia UI y marca Tri-Coach P3

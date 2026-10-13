@@ -45,6 +45,14 @@ confidence: alta
   3. La salida en logs de CI/CD debe limitarse exclusivamente a metadatos técnicos de ejecución: resultado de la operación (`upsert: ok/fallo`), confirmación técnica de tokens (`tokens_persisted: true/false`), conteos y fuente del token restaurado (`source: supabase` o `source: b64_fallback`).
   4. La auditoría y sanitización de prints/logs aplica a todo el árbol de recolección (`garmin_coaching/`, `services/collector/`, `scripts/garmin_auth.py`).
 
+## DEC-005: Aprobación de entrega T-0012 y verificación de migración updated_at en producción
+
+- **Fecha**: 2026-10-13
+- **Contexto**: Se completó la revisión humana de la entrega de `T-0012` ([deliverables/T-0012.md](file:///Users/alarcondiegof/ies-projects/python-garminconnect/deliverables/T-0012.md)) contra el código fuente, la base de datos Supabase y la aplicación web local en viewport 375×812, validando los 8 puntos P1 de [docs/ux-audit-2026-10-13.md](file:///Users/alarcondiegof/ies-projects/python-garminconnect/docs/ux-audit-2026-10-13.md).
+- **Verificación en producción**: La migración `supabase/migrations/20261013_updated_at_triggers.sql` fue aplicada exitosamente en la base de datos de producción de Supabase y verificada en vivo: un update sin cambio de datos en la tabla `training_load` avanzó `updated_at` de 16:47:54 a 19:44:42 UTC.
+- **Decisión**: Aprobar la entrega de `T-0012`, cerrarla como `done` y autorizar el paso a `T-0013`. Dejar constancia formal verificada de la migración en base de datos para preservar la trazabilidad operacional.
+
+
 
 
 
