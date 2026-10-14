@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 17
+next_id: 18
 source: ies-cli
-last_updated: '2026-10-13T23:00:20Z'
+last_updated: '2026-10-14T15:19:18Z'
 ---
 
 # Task Ledger
@@ -33,6 +33,7 @@ memory_refs:
 - long/constitution.md
 acceptance_criteria:
 - spec.md con REQ EARS y plan.md con tasks y matriz de trazabilidad
+allowlist: []
 created_at: '2026-10-11T15:54:12Z'
 started_at: '2026-10-11T16:01:26Z'
 completed_at: '2026-10-11T16:01:26Z'
@@ -75,6 +76,7 @@ skills: []
 memory_refs: []
 acceptance_criteria:
 - tests unitarios para sincronizacion de tokens con Supabase pasando sin regresiones
+allowlist: []
 created_at: '2026-10-11T16:01:36Z'
 started_at: '2026-10-11T17:04:17Z'
 completed_at: '2026-10-11T17:04:17Z'
@@ -119,6 +121,7 @@ memory_refs: []
 acceptance_criteria:
 - coaching-daily-collect.yml y scripts locales integrados con persistencia en Supabase
   y verificados
+allowlist: []
 created_at: '2026-10-11T17:04:26Z'
 started_at: '2026-10-11T17:09:54Z'
 completed_at: '2026-10-11T17:09:54Z'
@@ -163,6 +166,7 @@ memory_refs: []
 acceptance_criteria:
 - deploy en Vercel completado exitosamente y URL de produccion respondiendo 200 con
   datos actualizados
+allowlist: []
 created_at: '2026-10-11T17:10:01Z'
 started_at: '2026-10-11T17:13:58Z'
 completed_at: '2026-10-11T17:13:58Z'
@@ -206,6 +210,7 @@ skills: []
 memory_refs: []
 acceptance_criteria:
 - todos los requisitos de SPEC-001 verificados con pruebas y sin hallazgos BLOCKING
+allowlist: []
 created_at: '2026-10-11T17:14:07Z'
 started_at: '2026-10-11T17:18:02Z'
 completed_at: '2026-10-11T17:18:02Z'
@@ -248,6 +253,7 @@ skills: []
 memory_refs: []
 acceptance_criteria:
 - chat funcional con gpt-6.1-sol y modelos tradicionales sin error 502
+allowlist: []
 created_at: '2026-10-11T17:28:29Z'
 started_at: '2026-10-11T17:35:00Z'
 completed_at: '2026-10-11T17:35:00Z'
@@ -291,6 +297,7 @@ skills: []
 memory_refs: []
 acceptance_criteria:
 - comprobacion independiente de /api/chat en vivo sin errores 502
+allowlist: []
 created_at: '2026-10-11T17:35:10Z'
 started_at: '2026-10-11T17:36:39Z'
 completed_at: '2026-10-11T17:36:39Z'
@@ -340,6 +347,7 @@ acceptance_criteria:
   con push exitoso
 - Suite pytest ejecutada con solo la falla conocida de symlink de macOS reportada
 - Commit sin atribucion a IA y PR 1 conservado en draft sin merge
+allowlist: []
 created_at: '2026-10-13T17:00:48Z'
 started_at: '2026-10-13T17:15:31Z'
 completed_at: '2026-10-13T17:15:31Z'
@@ -404,6 +412,7 @@ acceptance_criteria:
 - Evaluacion y clasificacion (BLOCKING/NON_BLOCKING) del check de Vercel y confirmacion
   de checks test (3.12/3.13) sobre 7c19924
 - Entrega en deliverables/T-0009.md en modo solo lectura sin mutaciones en el repositorio
+allowlist: []
 created_at: '2026-10-13T17:00:58Z'
 started_at: '2026-10-13T18:35:11Z'
 completed_at: '2026-10-13T18:35:11Z'
@@ -454,6 +463,7 @@ acceptance_criteria:
 - Excepciones en login_client logueadas con _LOGGER.warning
 - Workflow reporta en log la fuente de restauracion del token (supabase | b64_fallback)
 - scripts/deploy_web_vercel.sh verificado y funcional con Root Directory de Vercel
+allowlist: []
 created_at: '2026-10-13T19:00:10Z'
 started_at: null
 completed_at: '2026-10-13T19:38:05Z'
@@ -497,6 +507,7 @@ memory_refs: []
 acceptance_criteria:
 - Jobs test (3.12) y test (3.13) en GitHub Actions ejecutando pytest sin ser bloqueados
   por linter
+allowlist: []
 created_at: '2026-10-13T19:00:15Z'
 started_at: null
 completed_at: null
@@ -552,6 +563,7 @@ acceptance_criteria:
 - Formato BB delta sin +- y fechas de dashboard calculadas en zona horaria Bogota
 - Fase de recuperacion dinamica segun payload.macrocycle sin meta inventada
 - Menu movil compacto (<15% altura) y grafica legible en 375x812
+allowlist: []
 created_at: '2026-10-13T19:20:22Z'
 started_at: '2026-10-13T19:45:56Z'
 completed_at: '2026-10-13T19:45:56Z'
@@ -609,6 +621,7 @@ acceptance_criteria:
 - Copy en espanol consistente sin mensajes de debug expuestos
 - Cifras y tablas con tabular-nums y fechas en formato es-CO
 - npm --prefix apps/web run build finaliza con codigo 0
+allowlist: []
 created_at: '2026-10-13T19:20:50Z'
 started_at: '2026-10-13T20:27:29Z'
 completed_at: '2026-10-13T20:27:29Z'
@@ -627,26 +640,27 @@ metrics:
   result: success
 ```
 
-## T-0014 — Verificacion viewer independiente de UX/UI P1-P3 (Local 1280x800 y 375x812)
+## T-0014 — Verificacion viewer independiente de UX/UI P1-P3 y SemVer 0.3.0 (Local 1280x800 y 375x812)
 
 ```yaml
 id: T-0014
-title: Verificacion viewer independiente de UX/UI P1-P3 y SemVer 0.3.0 (Local 1280x800 y 375x812)
+title: Verificacion viewer independiente de UX/UI P1-P3 y SemVer 0.3.0 (Local 1280x800
+  y 375x812)
 project_id: python-garminconnect
 origin: coordinator
 destination: viewer
-status: ready
+status: done
 input: 'Verificacion en modo solo lectura de las implementaciones de T-0012, T-0013
-  y T-0016 en la app local levantada con npm --prefix apps/web run build && npm --prefix apps/web
-  run start (el preview de Vercel pide login 302 y lo revisa el humano a mano). Verificar
-  de forma exhaustiva en dos resoluciones: escritorio (1280x800) y movil (375x812).
-  Auditar resolucion de items P1 (hora actividad, updated_at, BB delta, recuperacion
-  dinamica, fecha Bogota, menu movil, grafica 375px, dark theme), items P2 (foco visible,
-  labels, aria-current, h1, alertas con texto/icono, role alert, reduced motion),
-  items P3 (copy espanol, fechas Intl, tabular-nums, marca Tri-Coach, tarjeta Hoy
-  antes de chat) y versionado SemVer 0.3.0 (package.json, package-lock.json, version en
-  sidebar, CHANGELOG.md y README.md). Comprobar tests unitarios, ausencia de errores
-  de consola y regresiones.'
+  y T-0016 en la app local levantada con npm --prefix apps/web run build && npm --prefix
+  apps/web run start (el preview de Vercel pide login 302 y lo revisa el humano a
+  mano). Verificar de forma exhaustiva en dos resoluciones: escritorio (1280x800)
+  y movil (375x812). Auditar resolucion de items P1 (hora actividad, updated_at, BB
+  delta, recuperacion dinamica, fecha Bogota, menu movil, grafica 375px, dark theme),
+  items P2 (foco visible, labels, aria-current, h1, alertas con texto/icono, role
+  alert, reduced motion), items P3 (copy espanol, fechas Intl, tabular-nums, marca
+  Tri-Coach, tarjeta Hoy antes de chat) y versionado SemVer 0.3.0 (package.json, package-lock.json,
+  version en sidebar, CHANGELOG.md y README.md). Comprobar tests unitarios, ausencia
+  de errores de consola y regresiones.'
 expected_output: deliverables/T-0014.md con matriz de verificacion en 1280x800 y 375x812,
   evidencia funcional y veredicto formal APROBAR / RECHAZAR
 parent_task: null
@@ -666,19 +680,23 @@ acceptance_criteria:
 - Comprobacion exhaustiva de todos los puntos de P1, P2 y P3 del informe docs/ux-audit-2026-10-13.md
 - Comprobacion de version 0.3.0 en sidebar/package.json y apps/web/CHANGELOG.md
 - Veredicto formal emitido en modo solo lectura sin mutaciones en el repositorio
+allowlist: []
 created_at: '2026-10-13T19:21:00Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-14T15:17:58Z'
+completed_at: '2026-10-14T15:17:58Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0014.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: 828f3075fc9c4467c2e4a34f96d3535395ad9e5f
+  git_after: 828f3075fc9c4467c2e4a34f96d3535395ad9e5f
+  result: success
 ```
 
 ## T-0015 — Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI
@@ -690,7 +708,7 @@ title: Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y priv
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: cancelled
 input: 'Trabajar en la rama chore/lint-logs-2026-10 (creada desde master tras merge
   de UX) con PR a master. 1. Corregir los 10 errores de ruff en el alcance de SPEC-001/UX
   (9 introducidos en SPEC-001 mas UP017 en services/collector/supabase_client.py:28
@@ -723,9 +741,10 @@ acceptance_criteria:
 - scripts/deploy_web_vercel.sh verificado y funcional con Root Directory de Vercel
 - El log de un run de Coaching Daily Collect no contiene metricas de salud, nombres
   de actividad ni ubicacion; verificado en el log de un run real despues del merge.
+allowlist: []
 created_at: '2026-10-13T19:38:13Z'
 started_at: null
-completed_at: null
+completed_at: '2026-10-14T15:19:03Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
@@ -735,7 +754,9 @@ approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  cancel_reason: reemplazada por T-0017 para cumplir nuevo contrato (allowlist ADR-012,
+    SemVer 0.3.1 ADR-009 y worktree)
 ```
 
 ## T-0016 — Versionado SemVer 0.3.0 y CHANGELOG de Tri-Coach (apps/web)
@@ -788,6 +809,7 @@ acceptance_criteria:
 - La barra lateral del dashboard muestra v0.3.0 verificada en local
 - Propuesta de tags git documentada en la entrega sin creacion de tags por el agente
   y commit nuevo en ux/audit-2026-10
+allowlist: []
 created_at: '2026-10-13T20:36:46Z'
 started_at: '2026-10-13T23:00:20Z'
 completed_at: '2026-10-13T23:00:20Z'
@@ -804,4 +826,74 @@ metrics:
   git_before: 6093d34d0fc90394826889b09c0910eec5421120
   git_after: 6093d34d0fc90394826889b09c0910eec5421120
   result: success
+```
+
+## T-0017 — Saneamiento linter SPEC-001, privacidad logs CI, deploy script y SemVer 0.3.1
+
+```yaml
+id: T-0017
+title: Saneamiento linter SPEC-001, privacidad logs CI, deploy script y SemVer 0.3.1
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: 'Trabajar en el worktree .ies/worktrees/T-0017 creado desde master (despues
+  del merge del PR #2). El implementer no hace push ni abre PR; el humano empuja la
+  rama y abre el PR. 1. Corregir los 10 errores de ruff en el alcance de SPEC-001/UX
+  (9 de SPEC-001 mas UP017 en services/collector/supabase_client.py:28 introducido
+  en T-0012) en scripts/garmin_auth.py y services/collector/supabase_client.py. 2.
+  Sustituir bloques except Exception: pass en scripts/garmin_auth.py:login_client
+  por logging explicito _LOGGER.warning (REQ-005). 3. Registrar en logs del workflow
+  de donde se restauro el token (supabase | b64_fallback). 4. Ajustar scripts/deploy_web_vercel.sh
+  para Root Directory = apps/web de Vercel. 5. Recortar salida de workflows (DEC-004):
+  en coaching-daily-collect.yml el JSON final solo puede incluir upsert ok/fallo,
+  tokens_persisted y fuente del restore (supabase | b64_fallback); quitar zone, acwr,
+  guards y last_activity. Revisar que ningun otro print o log del collector (garmin_coaching/,
+  services/collector/, scripts/garmin_auth.py) emita metricas, nombres de actividad
+  ni coordenadas a stdout en Actions. 6. Versionado SemVer 0.3.1 (PATCH, ADR-009):
+  al modificar el collector y el workflow de produccion, subir apps/web/package.json
+  y apps/web/package-lock.json a 0.3.1 con entrada en apps/web/CHANGELOG.md.'
+expected_output: deliverables/T-0017.md con diffs de ruff, logging implementado, trazabilidad
+  de restore, sanitizacion de logs Actions, scripts validados y bump a 0.3.1
+parent_task: null
+dependencies: []
+priority: high
+profile: fast-track
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- 0 errores de ruff en scripts/garmin_auth.py y services/collector/supabase_client.py
+- Excepciones en login_client logueadas con _LOGGER.warning
+- Workflow reporta en log la fuente de restauracion del token (supabase | b64_fallback)
+- scripts/deploy_web_vercel.sh verificado y funcional con Root Directory de Vercel
+- El log de un run de Coaching Daily Collect no contiene metricas de salud, nombres
+  de actividad ni ubicacion; verificado en el log de un run real despues del merge.
+- Bump SemVer a 0.3.1 en package.json y package-lock.json con entrada en apps/web/CHANGELOG.md
+  (ADR-009)
+allowlist:
+- scripts/garmin_auth.py
+- scripts/deploy_web_vercel.sh
+- services/collector
+- garmin_coaching
+- .github/workflows/coaching-daily-collect.yml
+- tests
+- apps/web/CHANGELOG.md
+- apps/web/package.json
+- apps/web/package-lock.json
+created_at: '2026-10-14T15:19:18Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
 ```

@@ -52,6 +52,25 @@ confidence: alta
 - **Verificación en producción**: La migración `supabase/migrations/20261013_updated_at_triggers.sql` fue aplicada exitosamente en la base de datos de producción de Supabase y verificada en vivo: un update sin cambio de datos en la tabla `training_load` avanzó `updated_at` de 16:47:54 a 19:44:42 UTC.
 - **Decisión**: Aprobar la entrega de `T-0012`, cerrarla como `done` y autorizar el paso a `T-0013`. Dejar constancia formal verificada de la migración en base de datos para preservar la trazabilidad operacional.
 
+## DEC-006: Adopción del patrón Layered en apps/web y justificación frente a MVVM (Art. VII)
+
+- **Fecha**: 2026-10-14
+- **Contexto**: La migración ADR-010 del framework incorporó el Artículo VII en la constitución, exigiendo declarar en `memory/long/standards.md` el patrón arquitectónico (`patron_arquitectonico`) y si el proyecto tiene UI (`tiene_ui`). El Artículo VII.3 exige MVVM para aplicaciones con UI, salvo justificación explícita por ADR en `memory/long/adr/` (Art. VII.4). `ies constitution check` señalaba el hallazgo `VII-07` por tener `patron_arquitectonico: n/a` con tasks de implementer existentes.
+- **Decisión**:
+  1. Declarar en `memory/long/standards.md`: `patron_arquitectonico: layered` y `tiene_ui: si`.
+  2. Aprobar `ADR-001` en `memory/long/adr/ADR-001-patron-layered-apps-web.md`, justificando el uso de una arquitectura por capas (`layered`) en Next.js 15 App Router: páginas Server Components actúan como Vista, `apps/web/lib/` actúa como Modelo y Servicios, y los client components (`CoachChat`, `CoachChatScreen`, `DashboardNav`) conservan estado de vista y orquestación de llamadas en el propio componente.
+  3. Criterio de revisión: mover la orquestación de llamadas en componentes de cliente a hooks o `lib/`, y si el estado interactivo del cliente escala significativamente, reevaluar MVVM en un nuevo ADR.
+  4. Dejar constancia del cierre formal de `T-0014` (`APROBAR`), aclarando que la medición headless de `/chat` evaluó `/` por redirección de query param en ausencia de `?conversation`, estando el chat interactivo (`CoachChatScreen`) ya validado a 375 px en T-0013.
+- **Verificación**: Salida real de `ies constitution check`:
+  ```text
+  [INFO] II-03 [T-0011]: T-0011 no referencia ninguna spec (heuristica: SPEC-NNN, specs/NNN- o NNN-slug).
+  [INFO] III-05: Articulo III.4 (SemVer + CHANGELOG por entrega desplegable, ADR-009) lo verifica el viewer; no es comprobable genericamente.
+  [INFO] VII-06 memory/long/standards.md: app con UI y patron 'layered': el Articulo VII.3 exige MVVM (desviacion justificada por ADR).
+  constitucion: 0 BLOCKING, 0 NON_BLOCKING, 3 INFO
+  ```
+  `VII-07` desaparece y la constitución queda en 0 BLOCKING y 0 NON_BLOCKING.
+
+
 
 
 
