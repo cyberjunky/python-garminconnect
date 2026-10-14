@@ -25,6 +25,7 @@ def upsert_daily_payload(payload: dict[str, Any], user_id: str = DEFAULT_USER_ID
     readiness = payload.get("readiness") or {}
     training = payload.get("training_load") or {}
     session = payload.get("session") or {}
+    now_iso = datetime.now(timezone.utc).isoformat()
 
     client.table("readiness_daily").upsert(
         {
@@ -41,6 +42,7 @@ def upsert_daily_payload(payload: dict[str, Any], user_id: str = DEFAULT_USER_ID
             "thresholds": payload.get("thresholds"),
             "recommendation": readiness.get("recommendation"),
             "payload": readiness,
+            "updated_at": now_iso,
         },
         on_conflict="user_id,readiness_date",
     ).execute()
@@ -54,6 +56,7 @@ def upsert_daily_payload(payload: dict[str, Any], user_id: str = DEFAULT_USER_ID
             "vo2max": training.get("vo2max"),
             "lthr": training.get("lthr"),
             "payload": training,
+            "updated_at": now_iso,
         },
         on_conflict="user_id,load_date",
     ).execute()
@@ -64,6 +67,7 @@ def upsert_daily_payload(payload: dict[str, Any], user_id: str = DEFAULT_USER_ID
             "snapshot_date": ds,
             "payload": payload,
             "health_score": None,
+            "updated_at": now_iso,
         },
         on_conflict="user_id,snapshot_date",
     ).execute()
@@ -75,6 +79,7 @@ def upsert_daily_payload(payload: dict[str, Any], user_id: str = DEFAULT_USER_ID
             "planned": session,
             "executed": None,
             "confirmed": False,
+            "updated_at": now_iso,
         },
         on_conflict="user_id,session_date",
     ).execute()
@@ -100,6 +105,7 @@ def upsert_daily_payload(payload: dict[str, Any], user_id: str = DEFAULT_USER_ID
                 "executed_other_min": row.get("executed_other_min"),
                 "executed_total_min": row.get("executed_total_min"),
                 "payload": row.get("payload"),
+                "updated_at": now_iso,
             },
             on_conflict="user_id,week_start",
         ).execute()

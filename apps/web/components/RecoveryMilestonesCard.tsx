@@ -3,12 +3,20 @@ import {
   daysUntilAcwrTarget,
   recoveryLocalDaysRemaining,
 } from "@/lib/preparation";
+import { formatDateEsCO } from "@/lib/lastUpdated";
 
 type Props = {
   todayIso: string;
   acwr: number | null | undefined;
   phaseCode?: string;
   phaseName?: string;
+  macrocycle?: {
+    code?: string;
+    name?: string;
+    focus?: string;
+    end?: string;
+    start?: string;
+  };
 };
 
 function daysToEvent(eventDate: string, todayIso: string): number {
@@ -17,19 +25,45 @@ function daysToEvent(eventDate: string, todayIso: string): number {
   return Math.max(0, Math.round((b - a) / 86400000));
 }
 
-export function RecoveryMilestonesCard({ todayIso, acwr, phaseCode, phaseName }: Props) {
-  const recoveryDays = recoveryLocalDaysRemaining(todayIso);
+export function RecoveryMilestonesCard({
+  todayIso,
+  acwr,
+  phaseCode,
+  phaseName,
+  macrocycle,
+}: Props) {
+  const code = macrocycle?.code ?? phaseCode ?? "R0";
+  const name = macrocycle?.name ?? phaseName;
+  const title = name ? `${name} (${code})` : `Fase ${code}`;
+
+  const phaseEndDate = macrocycle?.end;
+  const daysRemaining = phaseEndDate
+    ? daysToEvent(phaseEndDate, todayIso)
+    : code === "R0"
+    ? recoveryLocalDaysRemaining(todayIso)
+    : null;
+
   const acwrDays = daysUntilAcwrTarget(acwr, 1.0);
 
   return (
     <section className="card card-recovery">
-      <h2 style={{ marginTop: 0 }}>Recuperación local (R0)</h2>
+      <h2 className="mt-0">{title}</h2>
       <div className="recovery-hero">
-        <span className="recovery-number">{recoveryDays}</span>
+        {daysRemaining != null ? (
+          <span className="recovery-number">{daysRemaining}</span>
+        ) : null}
         <span className="recovery-label">
-          días para cerrar fase {phaseCode ?? "R0"} {phaseName ? `· ${phaseName}` : ""}
-          <br />
-          <span className="muted">meta: 5 oct 2026 · ACWR &lt; 1.0</span>
+          {daysRemaining != null ? `días para cerrar fase ${code}` : `Fase ${code}`}
+          {phaseEndDate || macrocycle?.focus ? (
+            <>
+              <br />
+              <span className="muted">
+                {phaseEndDate ? `meta: ${formatDateEsCO(phaseEndDate)}` : ""}
+                {phaseEndDate && macrocycle?.focus ? " · " : ""}
+                {macrocycle?.focus ?? ""}
+              </span>
+            </>
+          ) : null}
         </span>
       </div>
       {acwr != null && acwr > 1.0 ? (
@@ -39,7 +73,7 @@ export function RecoveryMilestonesCard({ todayIso, acwr, phaseCode, phaseName }:
         </p>
       ) : (
         <p className="muted" style={{ margin: "0.75rem 0 0" }}>
-          ACWR en rango R0 ✓
+          ACWR en rango {code} ✓
         </p>
       )}
 
@@ -57,7 +91,7 @@ export function RecoveryMilestonesCard({ todayIso, acwr, phaseCode, phaseName }:
                 ev.shortLabel
               )}
             </span>
-            <span className="milestone-date">{ev.eventDate}</span>
+            <span className="milestone-date">{formatDateEsCO(ev.eventDate)}</span>
             <span className="milestone-days">{daysToEvent(ev.eventDate, todayIso)}d</span>
           </li>
         ))}

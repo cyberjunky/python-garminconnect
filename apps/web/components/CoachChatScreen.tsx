@@ -13,6 +13,7 @@ import {
   takePendingFirstMessage,
   upsertChat,
 } from "@/lib/coachStorage";
+import { formatDateEsCO } from "@/lib/lastUpdated";
 import { loadPreferredModel } from "@/lib/openaiModels";
 
 type ApiStatus = {
@@ -54,7 +55,12 @@ export function CoachChatScreen() {
   const bootstrappedRef = useRef<string | null>(null);
 
   const scrollToEnd = useCallback(() => {
-    threadEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const prefersReducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    threadEndRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
   }, []);
 
   useEffect(() => {
@@ -107,7 +113,7 @@ export function CoachChatScreen() {
       if (!trimmed || sending) return;
 
       if (apiStatus && !apiStatus.configured) {
-        setError("Falta OPENAI_API_KEY en Vercel (Production). Agrégala y redeploy.");
+        setError("El servicio del entrenador no está disponible en este momento. Intenta de nuevo más tarde.");
         return;
       }
 
@@ -173,7 +179,7 @@ export function CoachChatScreen() {
           <Link href="/" className="chat-back" aria-label="Volver a Hoy">
             ←
           </Link>
-          <h1 className="chat-title">Coach</h1>
+          <h1 className="chat-title">Tri-Coach</h1>
         </div>
         <div className="chat-header-actions">
           <button type="button" className="chat-header-btn" onClick={startNewChat} disabled={sending}>
@@ -191,9 +197,8 @@ export function CoachChatScreen() {
       </header>
 
       {apiStatus && !apiStatus.configured ? (
-        <p className="chat-api-hint dash-refresh-status error">
-          OpenAI no está configurado. En Vercel → Settings → Environment Variables, agrega{" "}
-          <code>OPENAI_API_KEY</code> y redeploy.
+        <p className="chat-api-hint dash-refresh-status error" role="alert">
+          El servicio del coach no está disponible en este momento. Intenta de nuevo más tarde.
         </p>
       ) : null}
 
@@ -210,7 +215,7 @@ export function CoachChatScreen() {
                   onClick={() => setHistoryOpen(false)}
                 >
                   <span>{item.title}</span>
-                  <span className="muted">{item.updatedAt.slice(0, 10)}</span>
+                  <span className="muted">{formatDateEsCO(item.updatedAt)}</span>
                 </Link>
               </li>
             ))
@@ -235,7 +240,11 @@ export function CoachChatScreen() {
         <div ref={threadEndRef} />
       </div>
 
-      {error ? <p className="dash-refresh-status error chat-error">{error}</p> : null}
+      {error ? (
+        <p className="dash-refresh-status error chat-error" role="alert" aria-live="assertive">
+          {error}
+        </p>
+      ) : null}
 
       <form
         className="chat-composer-wrap"
@@ -245,10 +254,15 @@ export function CoachChatScreen() {
         }}
       >
         <div className="coach-composer chat-composer">
+          <label htmlFor="chat-screen-input" className="sr-only">
+            Mensaje para el entrenador
+          </label>
           <textarea
+            id="chat-screen-input"
+            aria-label="Mensaje para el entrenador"
             value={draft}
             onChange={(event) => setDraft(event.target.value)}
-            placeholder="Pregunta lo que quieras sobre tu entrenamiento…"
+            placeholder="Pregunta lo que quieras sobre tu entrenamiento"
             rows={3}
             disabled={sending}
           />

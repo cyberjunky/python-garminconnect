@@ -2,7 +2,7 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: mid
-last_updated: '2026-10-13T19:15:14Z'
+last_updated: '2026-10-14T15:19:23Z'
 source: ies update
 confidence: alta (generado mecanicamente del ledger)
 ---
@@ -16,7 +16,7 @@ confidence: alta (generado mecanicamente del ledger)
 
 ## 🔵 ready
 
-- T-0010 — Saneamiento linter SPEC-001, observabilidad REQ-005, trazabilidad de restore y ajuste deploy script (destino: implementer, perfil: fast-track)
+- T-0017 — Saneamiento linter SPEC-001, privacidad logs CI, deploy script y SemVer 0.3.1 (destino: implementer, perfil: fast-track)
 
 ## 🟢 done
 
@@ -29,3 +29,12 @@ confidence: alta (generado mecanicamente del ledger)
 - T-0007 — Verificacion independiente de correccion de temperature en produccion (destino: viewer, perfil: riguroso)
 - T-0008 — Resolver conflicto del PR 1 con master y sincronizar rama (destino: implementer, perfil: fast-track)
 - T-0009 — Verificacion viewer diff SPEC-001 y checklist pre-merge PR 1 (destino: viewer, perfil: riguroso)
+- T-0012 — Correccion de datos P1 y responsive movil en apps/web y backend (destino: implementer, perfil: riguroso)
+- T-0013 — Accesibilidad P2, copy en espanol, consistencia UI y marca Tri-Coach P3 (destino: implementer, perfil: fast-track)
+- T-0014 — Verificacion viewer independiente de UX/UI P1-P3 y SemVer 0.3.0 (Local 1280x800 y 375x812) (destino: viewer, perfil: riguroso)
+- T-0016 — Versionado SemVer 0.3.0 y CHANGELOG de Tri-Coach (apps/web) (destino: implementer, perfil: fast-track)
+
+## ⚫ cancelled
+
+- T-0010 — Saneamiento linter SPEC-001, observabilidad REQ-005, trazabilidad de restore y ajuste deploy script (destino: implementer, perfil: fast-track)
+- T-0015 — Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI (destino: implementer, perfil: fast-track)

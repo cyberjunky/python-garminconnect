@@ -17,15 +17,51 @@ export type LastActivity = {
 
 const SPORT_LABEL: Record<string, string> = {
   run: "Carrera",
+  running: "Carrera",
+  trail_running: "Trail running",
+  treadmill_running: "Cinta",
   bike: "Ciclismo",
+  cycling: "Ciclismo",
+  road_biking: "Ciclismo de ruta",
+  indoor_cycling: "Ciclismo indoor",
+  gravel_cycling: "Ciclismo gravel",
+  mountain_biking: "Ciclismo de montaña",
   swim: "Natación",
+  swimming: "Natación",
+  lap_swimming: "Natación en piscina",
+  open_water_swimming: "Natación en aguas abiertas",
   walk: "Caminata",
+  walking: "Caminata",
+  hiking: "Senderismo",
+  strength_training: "Entrenamiento de fuerza",
   multisport: "Multideporte",
+  triathlon: "Triatlón",
+  cardio: "Cardio",
+  yoga: "Yoga",
   other: "Otro",
 };
 
-export function sportLabel(sport: string): string {
-  return SPORT_LABEL[sport] ?? sport;
+export function sportLabel(sport?: string | null): string {
+  if (!sport) return "Actividad";
+  const key = sport.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  return SPORT_LABEL[key] ?? sport;
+}
+
+export const GARMIN_STATUS_MAP: Record<string, string> = {
+  MAINTAINING: "Mantenimiento",
+  PRODUCTIVE: "Productivo",
+  RECOVERY: "Recuperación",
+  UNPRODUCTIVE: "No productivo",
+  OVERREACHING: "Sobreesfuerzo",
+  DETRAINING: "Desentrenamiento",
+  PEAKING: "Pico de forma",
+  NO_STATUS: "Sin estado",
+};
+
+export function formatGarminStatus(status?: string | null): string {
+  if (!status) return "—";
+  const upper = status.trim().toUpperCase();
+  return GARMIN_STATUS_MAP[upper] ?? status;
 }
 
 export function garminActivityUrl(activityId: number): string {
@@ -37,7 +73,9 @@ export function formatActivityWhen(startTimeLocal?: string | null): string {
   const normalized = startTimeLocal.includes("T")
     ? startTimeLocal
     : startTimeLocal.replace(" ", "T");
-  const d = new Date(normalized);
+  const hasTimezone = /[Zz]|[+-]\d{2}(:?\d{2})?$/.test(normalized);
+  const isoUtc = hasTimezone ? normalized : `${normalized}Z`;
+  const d = new Date(isoUtc);
   if (Number.isNaN(d.getTime())) return startTimeLocal;
   return d.toLocaleString("es-CO", {
     weekday: "short",
@@ -45,7 +83,7 @@ export function formatActivityWhen(startTimeLocal?: string | null): string {
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "America/Bogota",
+    timeZone: "UTC",
   });
 }
 

@@ -9,8 +9,13 @@ function appVersion(): string {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-shell">
+      <a href="#main-content" className="skip-link">
+        Saltar al contenido
+      </a>
       <DashboardNav version={appVersion()} />
-      <div className="app-main">{children}</div>
+      <div className="app-main" id="main-content" tabIndex={-1}>
+        {children}
+      </div>
     </div>
   );
 }

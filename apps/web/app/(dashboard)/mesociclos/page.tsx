@@ -1,4 +1,5 @@
 import { MesocycleVolumeChart } from "@/components/MesocycleVolumeChart";
+import { formatDateEsCO, todayBogotaIso } from "@/lib/lastUpdated";
 import { MESOCYCLE_ANCHOR, mergePlannedExecuted, mondayOf, type WeeklySportRow } from "@/lib/mesocycle";
 import { MVP_USER_ID, supabase } from "@/lib/supabase";
 
@@ -6,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function fetchWeeks(): Promise<WeeklySportRow[]> {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayBogotaIso();
   const { data, error } = await supabase
     .from("weekly_sport_load")
     .select(
@@ -32,7 +33,7 @@ export default async function MesociclosPage() {
 
   return (
     <main>
-      <h1>Mesociclos 3+1</h1>
+      <h1 className="page-title">Mesociclos 3+1</h1>
       <p className="muted">
         Volumen planificado por fase macrociclo (3 semanas de carga + 1 de recuperación). Lo ejecutado viene de
         actividades Garmin sincronizadas en el collect diario.
@@ -40,21 +41,21 @@ export default async function MesociclosPage() {
 
       {current ? (
         <section className="card">
-          <h2>Semana en curso</h2>
+          <h2 className="mt-0">Semana en curso</h2>
           <p>
-            <strong>{current.week_start}</strong> · {current.phase_code} ·{" "}
+            <strong>Semana del {formatDateEsCO(current.week_start)}</strong> · {current.phase_code} ·{" "}
             {current.kind === "recovery" ? "Semana de recuperación del bloque" : "Semana de carga"}
           </p>
           <div className="metric-row">
             <div>
-              <div className="muted">Plan run / bike / swim</div>
+              <div className="muted">Plan carrera / ciclismo / natación</div>
               <div>
                 {Math.round(current.planned_run_min ?? 0)} / {Math.round(current.planned_bike_min ?? 0)} /{" "}
                 {Math.round(current.planned_swim_min ?? 0)} min
               </div>
             </div>
             <div>
-              <div className="muted">Garmin run / bike / swim</div>
+              <div className="muted">Garmin carrera / ciclismo / natación</div>
               <div>
                 {Math.round(current.executed_run_min ?? 0)} / {Math.round(current.executed_bike_min ?? 0)} /{" "}
                 {Math.round(current.executed_swim_min ?? 0)} min

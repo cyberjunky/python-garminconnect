@@ -1,5 +1,8 @@
 import { buildActualSeries } from "@/lib/preparation";
 import { MVP_USER_ID, supabase } from "@/lib/supabase";
+import { formatGarminStatus } from "@/lib/lastActivity";
+
+export { formatGarminStatus };
 
 export type ReadinessRow = {
   readiness_date: string;
@@ -24,7 +27,15 @@ export type HistoryRow = {
 
 export type SnapshotPayload = {
   date?: string;
-  macrocycle?: { code?: string; name?: string; focus?: string; hr_cap?: number };
+  macrocycle?: {
+    code?: string;
+    name?: string;
+    focus?: string;
+    hr_cap?: number;
+    start?: string;
+    end?: string;
+    target_date?: string;
+  };
   milestones?: { code: string; days_remaining: number }[];
   session?: {
     title?: string;
@@ -74,6 +85,7 @@ type LoadRow = {
   status_phrase: string | null;
 };
 
+
 export function zoneClass(zone: string) {
   return `badge badge-${zone}`;
 }
@@ -87,7 +99,7 @@ export function buildFocusItems(readiness: ReadinessRow | null, payload: Snapsho
     items.push(`Sueño ${r.sleep_h.toFixed(1)} h — meta ≥${th.sleep_h} h`);
   }
   if (r?.sleep_score != null && th.sleep_score != null && r.sleep_score < th.sleep_score) {
-    items.push(`Sleep score ${r.sleep_score} — meta ≥${th.sleep_score}`);
+    items.push(`Puntuación de sueño ${r.sleep_score} — meta ≥${th.sleep_score}`);
   }
   if (r?.hrv != null && th.hrv != null && r.hrv < th.hrv) {
     items.push(`HRV ${r.hrv.toFixed(0)} ms — meta ≥${th.hrv} ms`);
@@ -100,7 +112,7 @@ export function buildFocusItems(readiness: ReadinessRow | null, payload: Snapsho
     items.push(`ACWR ${acwr.toFixed(1)} — meta <1.3 (descanso hasta baje)`);
   }
   if (payload.training_load?.status_phrase === "OVERREACHING") {
-    items.push("Garmin: OVERREACHING — cero intensidad");
+    items.push("Garmin: Sobreesfuerzo — cero intensidad");
   }
   if (items.length === 0 && r?.zone === "VERDE") {
     items.push("Indicadores alineados — puedes confirmar sesión del día");

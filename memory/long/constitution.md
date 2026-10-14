@@ -2,9 +2,9 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: long
-last_updated: '2026-10-11T12:52:03Z'
-source: ies init
-confidence: n/a
+last_updated: '2026-10-14T13:20:10Z'
+source: ies update (migracion ADR-010)
+confidence: alta
 ---
 
 # Constitucion del proyecto python-garminconnect
@@ -35,6 +35,8 @@ y `docs/SDD.md` del framework.
 1. Tests primero: un acceptance criterion sin test es un criterio incumplido.
 2. Toda entrega declara verificacion reproducible (skill verification-gates).
 3. La suite existente nunca empeora respecto al checkpoint.
+4. Toda entrega que cambia un artefacto desplegable sube su version (SemVer) y registra el cambio en su CHANGELOG (ADR-009).
+
 
 ## Articulo IV. Seguridad
 
@@ -55,3 +57,14 @@ y `docs/SDD.md` del framework.
    medio, completamente reversibles, de un componente y sin sensibilidad.
 2. `fast-track` nunca reduce criterios, tests, backups, rollback ni los
    techos de iteracion del framework.
+
+## Articulo VII. Diseno de software
+
+1. Clean Code en todo proyecto: nombres intencionales, funciones pequenas de
+   una sola responsabilidad, sin duplicacion, sin codigo muerto ni comentarios
+   que sustituyan claridad.
+2. El patron arquitectonico se declara en `memory/long/standards.md`
+   (`patron_arquitectonico`, `tiene_ui`) antes de la primera task implementer.
+3. Toda app con UI (Android, iOS, web) usa MVVM: separacion View / ViewModel /
+   Model y logica de negocio fuera de la View.
+4. Toda desviacion de este articulo se justifica por ADR en `memory/long/adr/`.

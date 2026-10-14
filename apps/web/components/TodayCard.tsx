@@ -1,3 +1,5 @@
+import { formatGarminStatus } from "@/lib/dashboard";
+
 type Metric = {
   label: string;
   value: string;
@@ -34,22 +36,33 @@ export function TodayCard({
 }: Props) {
   return (
     <section className="card card-highlight">
-      <h2 style={{ marginTop: 0 }}>Hoy</h2>
-      <span className={zoneClass(zone)}>
+      <h2 className="mt-0">Hoy</h2>
+      <span className={zoneClass(zone)} role="status">
         {zone} {scoreOk ?? "?"}/5
       </span>
       <p className="recommendation">{recommendation}</p>
       <div className="metrics-grid">
         {metrics.map((m) => (
           <div key={m.label} className={`metric-cell ${metricStatus(m.ok)}`}>
-            <span className="metric-label">{m.label}</span>
+            <div className="metric-label-row">
+              <span className="metric-label">{m.label}</span>
+              {m.ok === true ? (
+                <span className="metric-status-badge ok" title="En rango óptimo" aria-label="Óptimo">
+                  ✓
+                </span>
+              ) : m.ok === false ? (
+                <span className="metric-status-badge bad" title="Requiere atención" aria-label="Atención">
+                  !
+                </span>
+              ) : null}
+            </div>
             <span className="metric-value">{m.value}</span>
           </div>
         ))}
       </div>
       {statusPhrase || acwr != null ? (
         <p className="load-line">
-          Carga: {statusPhrase || "—"}
+          Carga: {formatGarminStatus(statusPhrase)}
           {acwr != null ? ` · ACWR ${acwr.toFixed(1)}` : ""}
           {vo2max != null ? ` · VO₂ ${vo2max}` : ""}
         </p>
