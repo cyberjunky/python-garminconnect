@@ -2039,6 +2039,17 @@ class TestHttpErrorMapping:
         assert "db01.garmin.internal" not in str(exc_info.value)
         assert "API Error 500" in str(exc_info.value)
 
+    def test_debug_log_omits_raw_response_body(self, monkeypatch, caplog):
+        body = "<html><body>internal hostname: db01.garmin.internal</body></html>"
+        c = self._client(monkeypatch, _FakeResp(500, body))
+        with (
+            caplog.at_level(logging.DEBUG, logger="garminconnect"),
+            pytest.raises(garminconnect.GarminConnectConnectionError),
+        ):
+            c._run_request("GET", "x")
+        assert "db01.garmin.internal" not in caplog.text
+        assert "status=500" in caplog.text
+
     @pytest.mark.parametrize(
         "bad_path",
         [
