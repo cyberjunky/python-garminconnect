@@ -2186,12 +2186,18 @@ def get_single_activity_data(api: Garmin) -> None:
 def get_activity_images_data(api: Garmin) -> None:
     """Get photos attached to an activity (defaults to the most recent one)."""
     try:
-        last = api.get_last_activity()
-        default_id = str(last["activityId"]) if last else ""
+        # The latest activity is only a convenience default; if looking it
+        # up fails, still let the user type an ID they know has photos.
+        default_id = ""
+        try:
+            last = api.get_last_activity()
+            default_id = str(last["activityId"]) if last else ""
+        except Exception as e:
+            print(f"⚠️ Could not look up the most recent activity: {e}")
         prompt = f"Activity ID [{default_id}]: " if default_id else "Activity ID: "
         activity_id = input(prompt).strip() or default_id
         if not activity_id:
-            print("ℹ️ No activities found")
+            print("ℹ️ No activity ID given")
             return
 
         success, images = call_and_display(
