@@ -1730,9 +1730,10 @@ class Client:
                 _LOGGER.debug("Could not extract safe error detail: %s", e)
             if safe_detail:
                 error_msg += f" - {safe_detail}"
-            _LOGGER.debug(
-                "API error response: status=%s body=%r", resp.status_code, resp.text
-            )
+            # Log only the status, not the raw body: it may contain account
+            # or session metadata the surrounding safe_detail extraction
+            # above was specifically trying to avoid exposing.
+            _LOGGER.debug("API error response: status=%s", resp.status_code)
             # A 404 is a missing resource, not a connectivity failure.
             if resp.status_code == 404:
                 raise GarminConnectNotFoundError(error_msg)
