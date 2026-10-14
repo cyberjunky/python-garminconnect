@@ -453,6 +453,10 @@ menu_categories = {
                 "desc": "Get the earliest upcoming scheduled workout (today or later)",
                 "key": "get_next_scheduled_workout",
             },
+            "C": {
+                "desc": "Get photos attached to an activity (interactive)",
+                "key": "get_activity_images",
+            },
         },
     },
     "6": {
@@ -2177,6 +2181,37 @@ def get_single_activity_data(api: Garmin) -> None:
             print("ℹ️ No activities found")
     except Exception as e:
         print(f"❌ Error getting single activity: {e}")
+
+
+def get_activity_images_data(api: Garmin) -> None:
+    """Get photos attached to an activity (defaults to the most recent one)."""
+    try:
+        # The latest activity is only a convenience default; if looking it
+        # up fails, still let the user type an ID they know has photos.
+        default_id = ""
+        try:
+            last = api.get_last_activity()
+            default_id = str(last["activityId"]) if last else ""
+        except Exception as e:
+            print(f"⚠️ Could not look up the most recent activity: {e}")
+        prompt = f"Activity ID [{default_id}]: " if default_id else "Activity ID: "
+        activity_id = input(prompt).strip() or default_id
+        if not activity_id:
+            print("ℹ️ No activity ID given")
+            return
+
+        success, images = call_and_display(
+            api.get_activity_images,
+            activity_id,
+            method_name="get_activity_images",
+            api_call_desc=f"api.get_activity_images({activity_id})",
+        )
+        if success and not images:
+            print("ℹ️ No photos attached to this activity")
+        elif success:
+            print("ℹ️ Photo URLs are presigned and expire after 24 hours")
+    except Exception as e:
+        print(f"❌ Error getting activity images: {e}")
 
 
 def get_activity_exercise_sets_data(api: Garmin) -> None:
@@ -4902,6 +4937,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_activity_details": lambda: get_activity_details_data(api),
             "get_activity_gear": lambda: get_activity_gear_data(api),
             "get_activity": lambda: get_single_activity_data(api),
+            "get_activity_images": lambda: get_activity_images_data(api),
             "get_activity_exercise_sets": lambda: get_activity_exercise_sets_data(api),
             "get_workout_by_id": lambda: get_workout_by_id_data(api),
             "download_workout": lambda: download_workout_data(api),
