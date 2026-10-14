@@ -823,7 +823,9 @@ class DataExporter:
             health_metrics = {}
             metrics_to_fetch = [
                 ("heart_rate", lambda: api_instance.get_heart_rates(today_str)),
-                ("steps", lambda: api_instance.get_steps_data(today_str)),
+                # The Step Goal card reads totalSteps and dailyStepGoal, which are in the
+                # daily user summary; get_steps_data returns a list of 15 minute intervals.
+                ("steps", lambda: api_instance.get_user_summary(today_str)),
                 ("sleep", lambda: api_instance.get_sleep_data(today_str)),
                 ("stress", lambda: api_instance.get_all_day_stress(today_str)),
                 (
