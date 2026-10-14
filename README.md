@@ -376,8 +376,7 @@ from garminconnect.workout import (
 )
 
 easy_pace = PaceTarget(
-    lower_limit=pace_to_mps(6, 11, 'km'),
-    upper_limit=pace_to_mps(6, 0, 'km')
+    lower_limit=pace_to_mps(6, 11, "km"), upper_limit=pace_to_mps(6, 0, "km")
 )
 
 # Create a structured running workout
@@ -398,7 +397,7 @@ workout = RunningWorkout(
                     duration_seconds=200.0,
                     step_order=3,
                     target=easy_pace,
-                )
+                ),
             ],
         )
     ],
