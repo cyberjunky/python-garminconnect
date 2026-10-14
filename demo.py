@@ -457,6 +457,10 @@ menu_categories = {
                 "desc": "Get photos attached to an activity (interactive)",
                 "key": "get_activity_images",
             },
+            "D": {
+                "desc": "Upload typed swimming workout with CSS offset targets (sample)",
+                "key": "upload_swimming_css_workout",
+            },
         },
     },
     "6": {
@@ -2639,6 +2643,69 @@ def upload_swimming_workout_data(api: Garmin) -> None:
         )
     except Exception as e:
         print(f"❌ Error uploading swimming workout: {e}")
+
+
+def _find_interval_step(steps: list[dict]) -> dict | None:
+    """Return the first interval step, searching inside repeat groups."""
+    for step in steps:
+        if step.get("stepType", {}).get("stepTypeKey") == "interval":
+            return step
+        nested = _find_interval_step(step.get("workoutSteps") or [])
+        if nested:
+            return nested
+    return None
+
+
+def upload_swimming_css_workout_data(api: Garmin) -> None:
+    """Upload a typed swimming workout with CSS-offset targets, then read it back."""
+    try:
+        import sys
+        from pathlib import Path
+
+        test_data_path = Path(__file__).parent / "test_data"
+        if str(test_data_path) not in sys.path:
+            sys.path.insert(0, str(test_data_path))
+
+        from sample_swimming_workout import create_sample_swimming_css_workout
+
+        print("🏊 Creating and uploading swimming workout with CSS +5s intervals...")
+        workout = create_sample_swimming_css_workout()
+        result = api.upload_swimming_workout(workout)
+        if not result or not result.get("workoutId"):
+            print("❌ Failed to upload swimming CSS workout")
+            return
+        workout_id = result["workoutId"]
+        print(f"✅ Uploaded workout {workout_id}; reading it back from Garmin...")
+
+        # Show what Garmin actually stored, so the CSS target can be checked
+        # against what was sent (type 17 'swim.css.offset', value 5.0).
+        stored = api.get_workout_by_id(workout_id)
+        steps = (stored.get("workoutSegments") or [{}])[0].get("workoutSteps") or []
+        interval = _find_interval_step(steps)
+        if interval is None:
+            print("⚠️ No interval step found in the stored workout")
+            return
+        call_and_display(
+            lambda: {
+                key: interval.get(key)
+                for key in (
+                    "targetType",
+                    "secondaryTargetType",
+                    "secondaryTargetValueOne",
+                    "secondaryTargetValueTwo",
+                )
+            },
+            method_name="get_workout_by_id",
+            api_call_desc=f"api.get_workout_by_id({workout_id}) - stored interval targets",
+        )
+        print("💡 Also open the workout in Garmin Connect to check it shows CSS +5s")
+    except ImportError as e:
+        print(f"❌ Error: {e}")
+        print(
+            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
+        )
+    except Exception as e:
+        print(f"❌ Error uploading swimming CSS workout: {e}")
 
 
 def upload_walking_workout_data(api: Garmin) -> None:
@@ -4945,6 +5012,9 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "upload_running_workout": lambda: upload_running_workout_data(api),
             "upload_cycling_workout": lambda: upload_cycling_workout_data(api),
             "upload_swimming_workout": lambda: upload_swimming_workout_data(api),
+            "upload_swimming_css_workout": lambda: upload_swimming_css_workout_data(
+                api
+            ),
             "upload_walking_workout": lambda: upload_walking_workout_data(api),
             "upload_hiking_workout": lambda: upload_hiking_workout_data(api),
             "upload_strength_workout": lambda: upload_strength_workout_data(api),
