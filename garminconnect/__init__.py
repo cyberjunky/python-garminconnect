@@ -3388,6 +3388,22 @@ class Garmin:
 
         return self.connectapi(url, params=params)
 
+    def get_activity_images(self, activity_id: int | str) -> list[dict[str, Any]]:
+        """Return the photos attached to an activity.
+
+        Photos are surfaced in ``metadataDTO.activityImages`` of the
+        `get_activity` response; there is no separate images endpoint.
+        Each entry contains ``imageId``, ``url``, and ``photoDate``.
+
+        Note: the ``url`` values are presigned S3 links
+        (``X-Amz-Expires=86400``) that expire after 24 hours, so download
+        the images promptly rather than storing the URLs. The
+        ``hasImages`` flag in `get_activities` results is not a reliable
+        indicator that an activity has photos attached.
+        """
+        activity = self.get_activity(str(activity_id)) or {}
+        return (activity.get("metadataDTO") or {}).get("activityImages") or []
+
     def get_activity_exercise_sets(self, activity_id: int | str) -> dict[str, Any]:
         """Return activity exercise sets."""
         activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
