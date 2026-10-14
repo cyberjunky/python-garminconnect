@@ -1317,10 +1317,10 @@ class Client:
     def _exchange_service_ticket(
         self, ticket: str, service_url: str | None = None
     ) -> None:
-        """Exchange a CAS service ticket for native DI + IT Bearer tokens.
+        """Exchange a CAS service ticket for a native DI OAuth2 Bearer token.
 
-        POST to diauth.garmin.com to get a DI OAuth2 token, then exchange
-        for an IT token via services.garmin.com.
+        POST to diauth.garmin.com, trying each DI client ID in turn, and store
+        the access token and refresh token.
         """
         # service_url must match the one used during SSO login
         svc_url = service_url or self._mobile_sso_service_url

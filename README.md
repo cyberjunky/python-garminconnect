@@ -170,13 +170,13 @@ Run `pdm run format && pdm run lint && pdm run test` before submitting PRs.
 
 ## 🔐 Authentication
 
-Authentication uses the same mobile SSO flow as the official Garmin Connect Android app.
+Authentication uses the same mobile SSO flow as the official Garmin Connect mobile apps.
 No browser is needed.
 
 **How it works:**
 
-1. **First login**: Authenticates via `sso.garmin.com/mobile/api/login` using the Android
-   app's client ID. If MFA is required, a callback (`prompt_mfa`) prompts for the one-time code.
+1. **First login**: Authenticates via `sso.garmin.com/mobile/api/login` using the iOS
+   app's client ID (`GCM_IOS_DARK`). If MFA is required, a callback (`prompt_mfa`) prompts for the one-time code.
 2. **Token exchange**: The service ticket is exchanged for DI OAuth Bearer tokens
    (`access_token` + `refresh_token`) via `diauth.garmin.com`. Tokens are stored at
    `~/.garminconnect/garmin_tokens.json`.
