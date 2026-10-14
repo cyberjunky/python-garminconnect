@@ -1319,8 +1319,9 @@ class Client:
     ) -> None:
         """Exchange a CAS service ticket for a native DI OAuth2 Bearer token.
 
-        POST to diauth.garmin.com, trying each DI client ID in turn, and store
-        the access token and refresh token.
+        POST to the DI auth host for the configured domain (diauth.garmin.com,
+        or diauth.garmin.cn for China accounts), trying each DI client ID in
+        turn, and store the access token and refresh token.
         """
         # service_url must match the one used during SSO login
         svc_url = service_url or self._mobile_sso_service_url
