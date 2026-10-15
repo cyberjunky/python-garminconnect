@@ -7,7 +7,7 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
-## [0.3.18] - Unreleased
+## [0.3.18] - 2026-10-15
 
 ### Added
 
@@ -25,6 +25,7 @@ page.
 - **IDs are no longer silently rounded down**: every method that takes an ID (activities, workouts, devices, weigh-ins, trips, training plans, golf scorecards) used to cut off anything after the decimal point, so `delete_activity(1.9)` would have deleted activity 1. Values like `1.9` and `"1.9"` are now rejected before any request is sent. Integers, `"123"` and `123.0` still work. (#465)
 - **Clearer error when the API refuses a call after login**: when the test call made after login gets a 403, the "token rejected by API tier" error now notes that a 403 can mean Garmin is blocking your client or network, not rejecting your token. A 401 (an actually refused token) is unchanged. The status is also read more reliably from the error, so a server error whose text happens to mention "403" no longer counts as a rejected token. (#444, #467)
 - **API error responses are no longer logged**: when an API call fails, the debug log now records only the status code, not the full response body, which could contain account or session details. (#464)
+- **Token exchange errors are no longer logged**: when the login token exchange fails, the debug log records only the status code, not Garmin's error response. (#468)
 - **Demo**: the HTML health report's Step Goal card now actually shows, filled from the daily summary. (#462)
 
 ### Docs
@@ -188,7 +189,7 @@ This release is primarily a security-hardening pass covering authentication, tok
 - Exception messages and debug logs no longer include raw server response bodies, CAS service tickets, or token contents.
 - Hardened the VCR cassette sanitizer (JSON bodies, MFA codes, tickets) and the exercise-catalog generator script against recording or publishing session/account data.
 
-[0.3.18]: https://github.com/cyberjunky/python-garminconnect/compare/0.3.17...HEAD
+[0.3.18]: https://github.com/cyberjunky/python-garminconnect/releases/tag/0.3.18
 [0.3.17]: https://github.com/cyberjunky/python-garminconnect/releases/tag/0.3.17
 [0.3.16]: https://github.com/cyberjunky/python-garminconnect/releases/tag/0.3.16
 [0.3.15]: https://github.com/cyberjunky/python-garminconnect/releases/tag/0.3.15
