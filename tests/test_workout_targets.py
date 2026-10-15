@@ -14,6 +14,8 @@ from garminconnect.workout import (
     PowerZoneTarget,
     SpeedTarget,
     StepType,
+    SwimCssOffsetTarget,
+    SwimmingWorkout,
     TargetType,
     WorkoutSegment,
     create_distance_interval_step,
@@ -201,6 +203,92 @@ def test_targets_survive_workout_serialization():
         85,
         95,
     )
+
+
+@pytest.mark.parametrize("offset", [5.0, 0.0, -3.5])
+@pytest.mark.parametrize(
+    "factory, condition, value",
+    [
+        (create_targeted_interval_step, ConditionType.TIME, 120.0),
+        (create_targeted_distance_interval_step, ConditionType.DISTANCE, 100.0),
+    ],
+)
+def test_css_offset_is_secondary_with_no_primary_target(
+    offset, factory, condition, value
+):
+    data = _dump(
+        factory(
+            value,
+            step_order=2,
+            secondary_target=SwimCssOffsetTarget(offset_seconds=offset),
+        )
+    )
+    assert data["targetType"] == {
+        "workoutTargetTypeId": TargetType.NO_TARGET,
+        "workoutTargetTypeKey": "no.target",
+        "displayOrder": 1,
+    }
+    assert data["secondaryTargetType"] == {
+        "workoutTargetTypeId": 17,
+        "workoutTargetTypeKey": "swim.css.offset",
+        "displayOrder": 2,
+    }
+    assert data["secondaryTargetValueOne"] == offset
+    assert data["secondaryTargetValueTwo"] == 0.0
+    assert data["endCondition"]["conditionTypeId"] == condition
+    assert data["endConditionValue"] == value
+    assert data["stepOrder"] == 2
+    for key in (
+        "targetValueOne",
+        "targetValueTwo",
+        "zoneNumber",
+        "secondaryZoneNumber",
+    ):
+        assert key not in data
+
+
+@pytest.mark.parametrize("offset", [float("nan"), float("inf"), float("-inf")])
+def test_css_offset_rejects_non_finite_values(offset):
+    with pytest.raises(ValidationError):
+        SwimCssOffsetTarget(offset_seconds=offset)
+
+
+@pytest.mark.parametrize(
+    "factory", [create_targeted_interval_step, create_targeted_distance_interval_step]
+)
+def test_css_offset_rejects_primary_placement(factory):
+    with pytest.raises(ValueError, match="must be supplied as secondary_target"):
+        factory(100.0, step_order=1, target=SwimCssOffsetTarget(offset_seconds=5))
+
+
+def test_secondary_only_helper_keeps_untargeted_payload_unchanged():
+    assert _dump(create_targeted_interval_step(120.0, 1)) == _dump(
+        create_interval_step(120.0, 1)
+    )
+    assert _dump(create_targeted_distance_interval_step(100.0, 1)) == _dump(
+        create_distance_interval_step(100.0, 1)
+    )
+
+
+def test_css_offset_survives_swimming_workout_serialization():
+    step = create_targeted_distance_interval_step(
+        100.0, 1, secondary_target=SwimCssOffsetTarget(offset_seconds=5)
+    )
+    workout = SwimmingWorkout(
+        workoutName="CSS intervals",
+        estimatedDurationInSecs=0,
+        workoutSegments=[
+            WorkoutSegment(
+                segmentOrder=1,
+                sportType={"sportTypeId": 3, "sportTypeKey": "swimming"},
+                workoutSteps=[step],
+            )
+        ],
+    )
+    data = workout.to_dict()["workoutSegments"][0]["workoutSteps"][0]
+    assert data["secondaryTargetType"]["workoutTargetTypeId"] == 17
+    assert data["secondaryTargetValueOne"] == 5.0
+    assert data["secondaryTargetValueTwo"] == 0.0
 
 
 def test_repeat_group_can_skip_its_last_rest_step():
