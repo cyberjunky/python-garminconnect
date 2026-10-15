@@ -71,7 +71,11 @@ confidence: alta
   `VII-07` desaparece y la constitución queda en 0 BLOCKING y 0 NON_BLOCKING.
 
 
+## DEC-007: Aprobacion de ADR-002, Clean Architecture (regla de dependencia) en lugar de `layered`
 
-
-
-
+- **Fecha**: 2026-10-15
+- **Contexto**: ADR-018 del framework retira `layered`; `ies constitution check` reportaba VII-04. Instruccion de Diego (chat, 2026-10-15): "puedes hacer un solo lote y ejecutarlo por mi? quiero dedicar mi energia al avance de los proyectos", tras la propuesta que listaba aprobar los ADRs, integrar ramas y ejecutar las tasks de gate.
+- **Decision**:
+  1. ADR-002 (`memory/long/adr/ADR-002-clean-architecture-regla-de-dependencia.md`) aceptado: `clean-architecture`, `tiene_ui: si`, `patron_presentacion: n/a` (se mantiene la justificacion de ADR-001 y DEC-006), capas Python (`garmin_coaching` dominio) y web (`apps/web/lib` dominio, `app` y `components` presentacion).
+  2. Task T-0020 (gate arquitectura: import-linter y dependency-cruiser) autorizada; depende de T-0017.
+- **Verificacion**: `ies constitution check`: 0 BLOCKING, 1 NON_BLOCKING (VII-08), VII-06 en INFO por ADR.

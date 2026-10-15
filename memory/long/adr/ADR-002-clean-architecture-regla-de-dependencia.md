@@ -1,6 +1,6 @@
 # ADR-002: Clean Architecture (regla de dependencia) en lugar de `layered`; presentacion sin MVVM
 
-- Estado: propuesto (pendiente de decision humana en `memory/mid/decisions.md`)
+- Estado: aceptado
 - Fecha: 2026-10-15
 - Relacionado: ADR-018 del framework; ADR-001 (layered en apps/web frente a MVVM); constitucion Articulo VII
 
