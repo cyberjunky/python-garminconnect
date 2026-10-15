@@ -735,6 +735,69 @@ class TestResumeLogin:
 
         mock_clear.assert_called_once()
 
+    @pytest.mark.parametrize(
+        ("status", "hinted"), [("API Error 403", True), ("API Error 401", False)]
+    )
+    def test_client_resume_login_rejection_hint_only_on_403(
+        self, status: str, hinted: bool
+    ):
+        """A 403 can be Garmin blocking the client/network, not the token;
+        a 401 really is the token being refused, so it gets no such hint.
+        """
+        c = client_mod.Client(verify_login=True)
+        with (
+            patch.object(c, "_complete_mfa"),
+            patch.object(
+                c,
+                "connectapi",
+                side_effect=garminconnect.GarminConnectConnectionError(status),
+            ),
+            patch.object(c, "_clear_auth_state"),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError,
+                match="token rejected by API tier after MFA",
+            ) as exc_info,
+        ):
+            c.resume_login({}, "123456")
+        assert ("blocking this client or network" in str(exc_info.value)) is hinted
+
+    @pytest.mark.parametrize(
+        ("status", "hinted"),
+        [
+            ("API Error 403", True),
+            ("API Error 401", False),
+            # The status comes from the prefix, not from numbers in the detail.
+            ("API Error 401 - see help article 403", False),
+        ],
+    )
+    def test_verify_token_warning_hints_block_only_on_403(
+        self, caplog, status: str, hinted: bool
+    ):
+        c = client_mod.Client(verify_login=True)
+        with (
+            patch.object(
+                c,
+                "connectapi",
+                side_effect=garminconnect.GarminConnectConnectionError(status),
+            ),
+            caplog.at_level(logging.WARNING, logger="garminconnect"),
+        ):
+            assert c._verify_token() is False
+        assert ("blocking this client or network" in caplog.text) is hinted
+
+    def test_verify_token_ignores_status_numbers_in_error_detail(self):
+        """A 5xx whose detail mentions 403 is inconclusive, not a rejection."""
+        c = client_mod.Client(verify_login=True)
+        with patch.object(
+            c,
+            "connectapi",
+            side_effect=garminconnect.GarminConnectConnectionError(
+                "API Error 500 - upstream returned 403"
+            ),
+        ):
+            assert c._verify_token() is True
+        assert c._last_rejection_status is None
+
     def test_client_resume_login_skips_verify_when_verify_login_disabled(self):
         c = client_mod.Client(verify_login=False)
         with (
@@ -3202,9 +3265,7 @@ class TestJetLagTrips:
         assert result == {"tripId": 7}
 
     @pytest.mark.parametrize("offset", ["-12:00", "+05:45", "+14:00"])
-    def test_add_accepts_real_offsets(
-        self, garmin: garminconnect.Garmin, offset: str
-    ):
+    def test_add_accepts_real_offsets(self, garmin: garminconnect.Garmin, offset: str):
         flight = _jetlag_flight(destinationTimezone=offset)
         with patch.object(garmin, "client") as client:
             garmin.add_jetlag_trip("2026-10-04", "2026-10-09", [flight])
