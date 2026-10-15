@@ -94,6 +94,7 @@ class TargetType:
     HEART_RATE_LAP = 8
     POWER_LAP = 9
     RESISTANCE = 15
+    SWIM_CSS_OFFSET = 17
 
 
 # Weight unit for strength workout target loads.
@@ -175,6 +176,7 @@ class RepeatGroup(BaseModel):
     endConditionValue: float | None = None
     childStepId: int | None = None
     smartRepeat: bool = False
+    skipLastRestStep: bool | None = None
 
     model_config = ConfigDict(extra="allow")
 
@@ -405,6 +407,27 @@ class PaceTarget(_RangeTarget):
     target_type_key: ClassVar[str] = "pace.zone"
 
 
+class SwimCssOffsetTarget(BaseModel):
+    """Secondary swim target relative to the configured Critical Swim Speed.
+
+    ``offset_seconds`` is a signed pace offset, not an absolute speed in m/s.
+    Positive values indicate a slower pace and negative values a faster pace.
+    Garmin stores the offset in secondaryTargetValueOne and uses zero for
+    secondaryTargetValueTwo. No range ordering applies to this target.
+    """
+
+    target_type: ClassVar[int] = TargetType.SWIM_CSS_OFFSET
+    target_type_key: ClassVar[str] = "swim.css.offset"
+    zone_number: ClassVar[None] = None
+    upper_limit: ClassVar[float] = 0.0
+    offset_seconds: float = Field(allow_inf_nan=False)
+
+    @property
+    def lower_limit(self) -> float:
+        """Return the offset stored in Garmin's first target value."""
+        return self.offset_seconds
+
+
 IntensityTarget = _RangeTarget | _ZoneTarget
 
 
@@ -494,19 +517,23 @@ def create_interval_step(
 
 
 def _target_kwargs(
-    target: IntensityTarget,
-    secondary_target: IntensityTarget | None,
+    target: IntensityTarget | None,
+    secondary_target: IntensityTarget | SwimCssOffsetTarget | None,
 ) -> dict[str, Any]:
-    kwargs: dict[str, Any] = {
-        "target_type": {
-            "workoutTargetTypeId": target.target_type,
-            "workoutTargetTypeKey": target.target_type_key,
-            "displayOrder": 1,
-        },
-        "target_value_one": target.lower_limit,
-        "target_value_two": target.upper_limit,
-        "zone_number": target.zone_number,
-    }
+    if isinstance(target, SwimCssOffsetTarget):
+        raise ValueError("SwimCssOffsetTarget must be supplied as secondary_target")
+    kwargs: dict[str, Any] = {}
+    if target is not None:
+        kwargs = {
+            "target_type": {
+                "workoutTargetTypeId": target.target_type,
+                "workoutTargetTypeKey": target.target_type_key,
+                "displayOrder": 1,
+            },
+            "target_value_one": target.lower_limit,
+            "target_value_two": target.upper_limit,
+            "zone_number": target.zone_number,
+        }
     if secondary_target is not None:
         kwargs |= {
             "secondary_target_type": {
@@ -524,10 +551,10 @@ def _target_kwargs(
 def create_targeted_interval_step(
     duration_seconds: float,
     step_order: int,
-    target: IntensityTarget,
-    secondary_target: IntensityTarget | None = None,
+    target: IntensityTarget | None = None,
+    secondary_target: IntensityTarget | SwimCssOffsetTarget | None = None,
 ) -> ExecutableStep:
-    """Create a targeted interval step."""
+    """Create a targeted interval step, optionally with only a secondary target."""
     return create_interval_step(
         duration_seconds, step_order, **_target_kwargs(target, secondary_target)
     )
@@ -579,10 +606,10 @@ def create_distance_interval_step(
 def create_targeted_distance_interval_step(
     distance_meters: float,
     step_order: int,
-    target: IntensityTarget,
-    secondary_target: IntensityTarget | None = None,
+    target: IntensityTarget | None = None,
+    secondary_target: IntensityTarget | SwimCssOffsetTarget | None = None,
 ) -> ExecutableStep:
-    """Create a targeted interval step that ends after a distance in meters."""
+    """Create a targeted distance step, optionally with only a secondary target."""
     return create_distance_interval_step(
         distance_meters, step_order, **_target_kwargs(target, secondary_target)
     )
@@ -650,8 +677,9 @@ def create_repeat_group(
     iterations: int,
     workout_steps: list[ExecutableStep | RepeatGroup],
     step_order: int,
+    skip_last_rest_step: bool | None = None,
 ) -> RepeatGroup:
-    """Create a repeat group."""
+    """Create a repeat group, optionally omitting its final recovery/rest step."""
     return RepeatGroup(
         stepOrder=step_order,
         stepType={
@@ -668,6 +696,7 @@ def create_repeat_group(
             "displayable": False,
         },
         endConditionValue=float(iterations),
+        skipLastRestStep=skip_last_rest_step,
     )
 
 

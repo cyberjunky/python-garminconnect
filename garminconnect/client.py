@@ -1317,10 +1317,11 @@ class Client:
     def _exchange_service_ticket(
         self, ticket: str, service_url: str | None = None
     ) -> None:
-        """Exchange a CAS service ticket for native DI + IT Bearer tokens.
+        """Exchange a CAS service ticket for a native DI OAuth2 Bearer token.
 
-        POST to diauth.garmin.com to get a DI OAuth2 token, then exchange
-        for an IT token via services.garmin.com.
+        POST to the DI auth host for the configured domain (diauth.garmin.com,
+        or diauth.garmin.cn for China accounts), trying each DI client ID in
+        turn, and store the access token and refresh token.
         """
         # service_url must match the one used during SSO login
         svc_url = service_url or self._mobile_sso_service_url
@@ -1729,9 +1730,10 @@ class Client:
                 _LOGGER.debug("Could not extract safe error detail: %s", e)
             if safe_detail:
                 error_msg += f" - {safe_detail}"
-            _LOGGER.debug(
-                "API error response: status=%s body=%r", resp.status_code, resp.text
-            )
+            # Log only the status, not the raw body: it may contain account
+            # or session metadata the surrounding safe_detail extraction
+            # above was specifically trying to avoid exposing.
+            _LOGGER.debug("API error response: status=%s", resp.status_code)
             # A 404 is a missing resource, not a connectivity failure.
             if resp.status_code == 404:
                 raise GarminConnectNotFoundError(error_msg)

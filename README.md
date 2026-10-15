@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **158+ API methods** organized into **14 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **163+ API methods** organized into **14 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -50,13 +50,13 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 158+ methods (snapshot)
+- **Total API Methods**: 163+ methods (snapshot)
 - **Categories**: 14 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 10 methods (today's health data plus daily calories, resting HR and sleep ranges)
 - **Advanced Health Metrics**: 19 methods (fitness metrics, HRV, VO2, FTP range, training readiness, training zones, running tolerance, training load balance, daily training status, activity training load)
 - **Historical Data & Trends**: 9 methods (date range queries, weekly aggregates)
-- **Activities & Workouts**: 37 methods (comprehensive activity, workout management, typed workout uploads including strength, in-place edit, scheduling, push to device, import, activity type/subtype filtering, earliest-upcoming-workout lookup)
+- **Activities & Workouts**: 39 methods (comprehensive activity, workout management, typed workout uploads including strength and swim CSS targets, in-place edit, scheduling, push to device, import, activity type/subtype filtering, earliest-upcoming-workout lookup, activity photos)
 - **Body Composition & Weight**: 7 methods (weight tracking, body composition)
 - **Goals & Achievements**: 15 methods (challenges, badges, goals)
 - **Device & Technical**: 7 methods (device info, settings)
@@ -128,7 +128,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[example]"
 
 python3 ./example.py   # simple getting-started example
-python3 ./demo.py      # comprehensive demo (158+ API methods)
+python3 ./demo.py      # comprehensive demo (163+ API methods)
 ```
 
 ## 🛠️ Development
@@ -170,13 +170,13 @@ Run `pdm run format && pdm run lint && pdm run test` before submitting PRs.
 
 ## 🔐 Authentication
 
-Authentication uses the same mobile SSO flow as the official Garmin Connect Android app.
+Authentication uses the same mobile SSO flow as the official Garmin Connect mobile apps.
 No browser is needed.
 
 **How it works:**
 
-1. **First login**: Authenticates via `sso.garmin.com/mobile/api/login` using the Android
-   app's client ID. If MFA is required, a callback (`prompt_mfa`) prompts for the one-time code.
+1. **First login**: Authenticates via `sso.garmin.com/mobile/api/login` using the iOS
+   app's client ID (`GCM_IOS_DARK`). If MFA is required, a callback (`prompt_mfa`) prompts for the one-time code.
 2. **Token exchange**: The service ticket is exchanged for DI OAuth Bearer tokens
    (`access_token` + `refresh_token`) via `diauth.garmin.com`. Tokens are stored at
    `~/.garminconnect/garmin_tokens.json`.
@@ -376,8 +376,7 @@ from garminconnect.workout import (
 )
 
 easy_pace = PaceTarget(
-    lower_limit=pace_to_mps(6, 11, 'km'),
-    upper_limit=pace_to_mps(6, 0, 'km')
+    lower_limit=pace_to_mps(6, 11, "km"), upper_limit=pace_to_mps(6, 0, "km")
 )
 
 # Create a structured running workout
@@ -398,7 +397,7 @@ workout = RunningWorkout(
                     duration_seconds=200.0,
                     step_order=3,
                     target=easy_pace,
-                )
+                ),
             ],
         )
     ],
@@ -420,6 +419,29 @@ client.unschedule_workout(scheduled_workout_id)
 # Push a workout to a device - defaults to the last workout / last used device
 client.push_workout_to_device(result["workoutId"], device_id)
 ```
+
+**Swimming CSS targets:** `SwimCssOffsetTarget` represents a signed offset from
+Critical Swim Speed, rather than an absolute pace range. Supply it as the
+secondary target; the primary target can be omitted (Garmin `no.target`):
+
+```python
+from garminconnect.workout import (
+    SwimCssOffsetTarget,
+    create_targeted_distance_interval_step,
+)
+
+step = create_targeted_distance_interval_step(
+    100.0,
+    step_order=1,
+    secondary_target=SwimCssOffsetTarget(offset_seconds=5.0),
+)
+```
+
+Positive offsets are slower than CSS; negative offsets are faster. The offset
+is serialized as `secondaryTargetValueOne`, with `secondaryTargetValueTwo=0`.
+The time-based targeted helper also accepts secondary-only targets. These
+helpers retain their existing interval step/end-condition behavior; swimming
+stroke, rest, and pool settings are configured separately.
 
 **Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `StrengthWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
 
@@ -518,14 +540,32 @@ flights = [
 trip = client.add_jetlag_trip("2026-10-04", "2026-10-09", flights)
 
 # A PUT replaces the whole trip: send every flight, and keep each flightId
-client.update_jetlag_trip(trip["tripId"], trip["startDate"], "2026-10-12", trip["flights"])
+client.update_jetlag_trip(
+    trip["tripId"], trip["startDate"], "2026-10-12", trip["flights"]
+)
 
 client.delete_jetlag_trip(trip["tripId"])
 ```
 
+### Activity Photos
+
+Photos attached to an activity are available inside the `get_activity()`
+response at `metadataDTO.activityImages`; the `get_activity_images()`
+helper returns that list directly:
+
+```python
+# [{imageId, url, photoDate}, ...] or [] when the activity has no photos
+images = client.get_activity_images(activity_id)
+```
+
+The `url` values are presigned S3 links that expire after 24 hours, so
+download the images promptly instead of storing the URLs. The `hasImages`
+flag in `get_activities()` results is not a reliable indicator that an
+activity has photos attached.
+
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 158+ API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 163+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
