@@ -190,6 +190,33 @@ def _validate_positive_integer(value: int, param_name: str = "value") -> int:
     return value
 
 
+def _coerce_positive_id(value: Any, param_name: str = "value") -> int:
+    """Convert an ID-like value to a positive int without truncating it.
+
+    Accepts ints, whole-number floats (``123.0``) and integer strings
+    (``"123"``). Plain ``int()`` would silently turn ``1.9`` into ``1``
+    and so target a different resource; that is rejected instead.
+    """
+    if isinstance(value, bool):
+        raise ValueError(f"{param_name} must be an integer")
+    if isinstance(value, numbers.Integral):
+        result = int(value)
+    elif isinstance(value, float):
+        if not value.is_integer():
+            raise ValueError(f"{param_name} must be a whole number, got: {value}")
+        result = int(value)
+    elif isinstance(value, str):
+        try:
+            result = int(value.strip())
+        except ValueError:
+            raise ValueError(
+                f"{param_name} must be an integer, got: {value!r}"
+            ) from None
+    else:
+        raise ValueError(f"{param_name} must be an integer, got: {value!r}")
+    return _validate_positive_integer(result, param_name)
+
+
 def _validate_hole_numbers(value: str, param_name: str = "hole_numbers") -> str:
     """Validate a golf hole-numbers string: holes 1-18 separated by ',' or '-'.
 
@@ -1603,7 +1630,7 @@ class Garmin:
     def delete_weigh_in(self, weight_pk: str, cdate: str) -> Any:
         """Delete specific weigh-in."""
         cdate = _validate_date_format(cdate, "cdate")
-        weight_pk = str(_validate_positive_integer(int(weight_pk), "weight_pk"))
+        weight_pk = str(_coerce_positive_id(weight_pk, "weight_pk"))
         url = f"{self.garmin_connect_weight_url}/weight/{cdate}/byversion/{weight_pk}"
         logger.debug("Deleting weigh-in")
 
@@ -1723,7 +1750,7 @@ class Garmin:
     def delete_blood_pressure(self, version: str, cdate: str) -> dict[str, Any]:
         """Delete specific blood pressure measurement."""
         cdate = _validate_date_format(cdate, "cdate")
-        version = str(_validate_positive_integer(int(version), "version"))
+        version = str(_coerce_positive_id(version, "version"))
         url = f"{self.garmin_connect_set_blood_pressure_endpoint}/{cdate}/{version}"
         logger.debug("Deleting blood pressure measurement")
 
@@ -2588,7 +2615,7 @@ class Garmin:
 
     def get_device_settings(self, device_id: str) -> dict[str, Any]:
         """Return device settings for device with 'device_id'."""
-        device_id = str(_validate_positive_integer(int(device_id), "device_id"))
+        device_id = str(_coerce_positive_id(device_id, "device_id"))
         url = f"{self.garmin_connect_device_url}/device-info/settings/{device_id}"
         logger.debug("Requesting device settings")
 
@@ -2615,7 +2642,7 @@ class Garmin:
 
         startdate = _validate_date_format(startdate, "startdate")
         enddate = _validate_date_format(enddate, "enddate")
-        device_id = str(_validate_positive_integer(int(device_id), "device_id"))
+        device_id = str(_coerce_positive_id(device_id, "device_id"))
         params = {"singleDayView": single_day}
 
         url = f"{self.garmin_connect_solar_url}/{device_id}/{startdate}/{enddate}"
@@ -2704,7 +2731,7 @@ class Garmin:
 
     def set_activity_name(self, activity_id: str, title: str) -> Any:
         """Set name for activity with id."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {"activityId": activity_id, "activityName": title}
 
@@ -2717,7 +2744,7 @@ class Garmin:
         type_key: str,
         parent_type_id: int,
     ) -> Any:
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {
             "activityId": activity_id,
@@ -2732,7 +2759,7 @@ class Garmin:
 
     def set_activity_description(self, activity_id: str, description: str) -> Any:
         """Set description for activity with id."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {"activityId": activity_id, "description": description}
 
@@ -2939,7 +2966,7 @@ class Garmin:
 
     def delete_activity(self, activity_id: str) -> Any:
         """Delete activity with specified id."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_delete_activity_url}/{activity_id}"
         logger.debug("Deleting activity with id %s", activity_id)
 
@@ -3140,7 +3167,7 @@ class Garmin:
     def get_gear(self, userProfileNumber: str) -> dict[str, Any]:
         """Return a list of gear for the specified user profile number."""
         userProfileNumber = str(
-            _validate_positive_integer(int(userProfileNumber), "userProfileNumber")
+            _coerce_positive_id(userProfileNumber, "userProfileNumber")
         )
         url = self.garmin_connect_gear
         logger.debug("Requesting gear for user %s", userProfileNumber)
@@ -3275,7 +3302,7 @@ class Garmin:
 
     def get_gear_defaults(self, userProfileNumber: str) -> dict[str, Any]:
         userProfileNumber = str(
-            _validate_positive_integer(int(userProfileNumber), "userProfileNumber")
+            _coerce_positive_id(userProfileNumber, "userProfileNumber")
         )
         url = (
             f"{self.garmin_connect_gear_baseurl}/user/{userProfileNumber}/activityTypes"
@@ -3328,7 +3355,7 @@ class Garmin:
         "Original" will return the zip file content, up to user to extract it.
         "CSV" will return a csv of the splits.
         """
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         urls = {
             Garmin.ActivityDownloadFormat.ORIGINAL: f"{self.garmin_connect_fit_download}/{activity_id}",
             Garmin.ActivityDownloadFormat.TCX: f"{self.garmin_connect_tcx_download}/{activity_id}",
@@ -3355,7 +3382,7 @@ class Garmin:
 
     def get_activity_splits(self, activity_id: str) -> dict[str, Any]:
         """Return activity splits."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/splits"
         logger.debug("Requesting splits for activity id %s", activity_id)
 
@@ -3365,7 +3392,7 @@ class Garmin:
         """Return typed activity splits. Contains similar info to `get_activity_splits`, but for certain activity types
         (e.g., Bouldering), this contains more detail.
         """
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/typedsplits"
         logger.debug("Requesting typed splits for activity id %s", activity_id)
 
@@ -3373,7 +3400,7 @@ class Garmin:
 
     def get_activity_split_summaries(self, activity_id: str) -> dict[str, Any]:
         """Return activity split summaries."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/split_summaries"
         logger.debug("Requesting split summaries for activity id %s", activity_id)
 
@@ -3381,7 +3408,7 @@ class Garmin:
 
     def get_activity_weather(self, activity_id: str) -> dict[str, Any]:
         """Return activity weather."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/weather"
         logger.debug("Requesting weather for activity id %s", activity_id)
 
@@ -3389,7 +3416,7 @@ class Garmin:
 
     def get_activity_hr_in_timezones(self, activity_id: str) -> dict[str, Any]:
         """Return activity heartrate in timezones."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/hrTimeInZones"
         logger.debug("Requesting HR time-in-zones for activity id %s", activity_id)
 
@@ -3397,7 +3424,7 @@ class Garmin:
 
     def get_activity_power_in_timezones(self, activity_id: str) -> dict[str, Any]:
         """Return activity power in timezones."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/powerTimeInZones"
         logger.debug("Requesting Power time-in-zones for activity id %s", activity_id)
 
@@ -3431,7 +3458,7 @@ class Garmin:
 
     def get_activity(self, activity_id: str) -> dict[str, Any]:
         """Return activity summary, including basic splits."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         logger.debug("Requesting activity summary data for activity id %s", activity_id)
 
@@ -3441,7 +3468,7 @@ class Garmin:
         self, activity_id: str, maxchart: int = 2000, maxpoly: int = 4000
     ) -> dict[str, Any]:
         """Return activity details."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         maxchart = _validate_positive_integer(maxchart, "maxchart")
         maxpoly = _validate_non_negative_integer(maxpoly, "maxpoly")
         params = {"maxChartSize": str(maxchart), "maxPolylineSize": str(maxpoly)}
@@ -3468,7 +3495,7 @@ class Garmin:
 
     def get_activity_exercise_sets(self, activity_id: int | str) -> dict[str, Any]:
         """Return activity exercise sets."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
         logger.debug("Requesting exercise sets for activity id %s", activity_id)
 
@@ -3486,7 +3513,7 @@ class Garmin:
         against its FIT enum and returns 400 "Invalid Sub-Category Passed" for
         unknown values; `name=None` is always accepted under a known parent.
         """
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/exerciseSets"
         logger.debug("Replacing exercise sets for activity id %s", activity_id)
 
@@ -3494,7 +3521,7 @@ class Garmin:
 
     def get_activity_gear(self, activity_id: int | str) -> dict[str, Any]:
         """Return gears used for activity id."""
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         params = {
             "activityId": activity_id,
         }
@@ -3544,7 +3571,7 @@ class Garmin:
 
         """
         gearUUID = _validate_uuid(gearUUID, "gearUUID")
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
 
         url = (
             f"{self.garmin_connect_gear_baseurl}/link/{gearUUID}/activity/{activity_id}"
@@ -3575,7 +3602,7 @@ class Garmin:
 
         """
         gearUUID = _validate_uuid(gearUUID, "gearUUID")
-        activity_id = str(_validate_positive_integer(int(activity_id), "activity_id"))
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
 
         url = f"{self.garmin_connect_gear_baseurl}/unlink/{gearUUID}/activity/{activity_id}"
         logger.debug("Unlinking gear %s from activity %s", gearUUID, activity_id)
@@ -3625,20 +3652,20 @@ class Garmin:
 
     def get_workout_by_id(self, workout_id: int | str) -> dict[str, Any]:
         """Return workout by id."""
-        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        workout_id = _coerce_positive_id(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/{workout_id}"
         return self.connectapi(url)
 
     def delete_workout(self, workout_id: int | str) -> Any:
         """Delete a workout template from the workout library."""
-        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        workout_id = _coerce_positive_id(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/{workout_id}"
         logger.debug("Deleting workout %s", workout_id)
         return self.client.delete("connectapi", url, api=True)
 
     def download_workout(self, workout_id: int | str) -> bytes:
         """Download workout by id."""
-        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        workout_id = _coerce_positive_id(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/FIT/{workout_id}"
         logger.debug("Downloading workout from %s", url)
 
@@ -3675,7 +3702,7 @@ class Garmin:
         The workout keeps its id, so any calendar schedules pointing at it stay
         valid. ``workoutId`` in the body is forced to match ``workout_id``.
         """
-        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        workout_id = _coerce_positive_id(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/{workout_id}"
         logger.debug("Updating workout using %s", url)
 
@@ -3893,7 +3920,7 @@ class Garmin:
         if device_id is None:
             device_id = self.get_device_last_used()["userDeviceId"]
 
-        device_id = _validate_positive_integer(int(device_id), "device_id")
+        device_id = _coerce_positive_id(device_id, "device_id")
 
         if workout_id is None:
             workouts = self.get_workouts(start=0, limit=1)
@@ -3901,7 +3928,7 @@ class Garmin:
                 raise ValueError("No workouts found to push.")
             workout_id = workouts[0]["workoutId"]
 
-        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        workout_id = _coerce_positive_id(workout_id, "workout_id")
         workout_name = self.get_workout_by_id(workout_id)["workoutName"]
 
         url = self.garmin_connect_devicemessage_url
@@ -3926,11 +3953,11 @@ class Garmin:
         self, year: int | str, month: int | str
     ) -> dict[str, Any]:
         """Return scheduled workout by year and month."""
-        year = _validate_positive_integer(int(year), "year")
+        year = _coerce_positive_id(year, "year")
         if year < 2000:
             raise ValueError(f"year must be 2000 or later, got: {year}")
 
-        month = _validate_positive_integer(int(month), "month")
+        month = _coerce_positive_id(month, "month")
         if month < 1 or month > 12:
             raise ValueError(f"month must be between 1 and 12, got: {month}")
 
@@ -3945,8 +3972,8 @@ class Garmin:
         self, scheduled_workout_id: int | str
     ) -> dict[str, Any]:
         """Return scheduled workout by ID."""
-        scheduled_workout_id = _validate_positive_integer(
-            int(scheduled_workout_id), "scheduled_workout_id"
+        scheduled_workout_id = _coerce_positive_id(
+            scheduled_workout_id, "scheduled_workout_id"
         )
         url = f"{self.garmin_workouts_schedule_url}/{scheduled_workout_id}"
         logger.debug("Requesting scheduled workout by id %d", scheduled_workout_id)
@@ -3996,7 +4023,7 @@ class Garmin:
             date_str: Target date in YYYY-MM-DD format.
 
         """
-        workout_id = _validate_positive_integer(int(workout_id), "workout_id")
+        workout_id = _coerce_positive_id(workout_id, "workout_id")
         date_str = _validate_date_format(date_str, "date_str")
         url = f"{self.garmin_workouts_schedule_url}/{workout_id}"
         logger.debug("Scheduling workout %s for %s", workout_id, date_str)
@@ -4005,8 +4032,8 @@ class Garmin:
 
     def unschedule_workout(self, scheduled_workout_id: int | str) -> Any:
         """Remove a scheduled workout from the calendar without deleting the template."""
-        scheduled_workout_id = _validate_positive_integer(
-            int(scheduled_workout_id), "scheduled_workout_id"
+        scheduled_workout_id = _coerce_positive_id(
+            scheduled_workout_id, "scheduled_workout_id"
         )
         url = f"{self.garmin_workouts_schedule_url}/{scheduled_workout_id}"
         logger.debug("Unscheduling workout %s", scheduled_workout_id)
@@ -4441,7 +4468,7 @@ class Garmin:
         to ``trip_id`` on the trip and on each flight. Garmin answers with an
         empty body.
         """
-        trip_id = _validate_positive_integer(int(trip_id), "trip_id")
+        trip_id = _coerce_positive_id(trip_id, "trip_id")
         payload = self._jetlag_trip_payload(start_date, end_date, flights)
         payload["tripId"] = trip_id
         payload["flights"] = [
@@ -4454,7 +4481,7 @@ class Garmin:
 
     def delete_jetlag_trip(self, trip_id: int | str) -> Any:
         """Delete a Jet Lag Adviser trip. Garmin answers with an empty body."""
-        trip_id = _validate_positive_integer(int(trip_id), "trip_id")
+        trip_id = _coerce_positive_id(trip_id, "trip_id")
         url = f"{self.garmin_connect_jetlag_trip_url}/{trip_id}"
         logger.debug("Deleting jet lag trip %s", trip_id)
         return self.client.delete("connectapi", url, api=True)
@@ -4529,7 +4556,7 @@ class Garmin:
 
     def get_training_plan_by_id(self, plan_id: int | str) -> dict[str, Any]:
         """Return details for a specific training plan."""
-        plan_id = _validate_positive_integer(int(plan_id), "plan_id")
+        plan_id = _coerce_positive_id(plan_id, "plan_id")
 
         url = f"{self.garmin_connect_training_plan_url}/phased/{plan_id}"
         logger.debug("Requesting training plan details for %s", plan_id)
@@ -4537,7 +4564,7 @@ class Garmin:
 
     def get_adaptive_training_plan_by_id(self, plan_id: int | str) -> dict[str, Any]:
         """Return details for a specific adaptive training plan."""
-        plan_id = _validate_positive_integer(int(plan_id), "plan_id")
+        plan_id = _coerce_positive_id(plan_id, "plan_id")
         url = f"{self.garmin_connect_training_plan_url}/fbt-adaptive/{plan_id}"
 
         logger.debug("Requesting adaptive training plan details for %s", plan_id)
@@ -4594,7 +4621,7 @@ class Garmin:
             Dictionary containing the golf scorecard detail.
 
         """
-        scorecard_id = _validate_positive_integer(int(scorecard_id), "scorecard_id")
+        scorecard_id = _coerce_positive_id(scorecard_id, "scorecard_id")
         url = f"{self.garmin_golf_scorecard_detail}"
         params = {
             "scorecard-ids": str(scorecard_id),
@@ -4624,7 +4651,7 @@ class Garmin:
             Dictionary containing shot data per hole.
 
         """
-        scorecard_id = _validate_positive_integer(int(scorecard_id), "scorecard_id")
+        scorecard_id = _coerce_positive_id(scorecard_id, "scorecard_id")
         url = f"{self.garmin_golf_shot}/{scorecard_id}/hole"
         params = None
         if hole_numbers is not None:

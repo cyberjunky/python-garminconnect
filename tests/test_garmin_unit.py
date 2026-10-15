@@ -2665,6 +2665,55 @@ class TestSetBloodPressure:
 
 
 # ---------------------------------------------------------------------------
+# ID validation: never truncate (int(1.9) == 1 would target another resource)
+# ---------------------------------------------------------------------------
+
+
+class TestCoercePositiveId:
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [(123, 123), ("123", 123), (" 123 ", 123), (123.0, 123)],
+    )
+    def test_accepts_integral_values(self, value: Any, expected: int):
+        assert garminconnect._coerce_positive_id(value, "x") == expected
+
+    @pytest.mark.parametrize(
+        "value", [1.9, "1.9", "abc", "", None, True, [1], 0, -5, "0", 0.0]
+    )
+    def test_rejects_non_integral_or_non_positive(self, value: Any):
+        with pytest.raises(ValueError, match="x must be"):
+            garminconnect._coerce_positive_id(value, "x")
+
+    def test_delete_activity_rejects_fractional_id_without_request(
+        self, garmin: garminconnect.Garmin
+    ):
+        with (
+            patch.object(garmin, "client") as client,
+            pytest.raises(ValueError, match="whole number"),
+        ):
+            garmin.delete_activity(1.9)  # type: ignore[arg-type]
+        client.request.assert_not_called()
+
+    def test_delete_jetlag_trip_rejects_fractional_id_without_request(
+        self, garmin: garminconnect.Garmin
+    ):
+        with (
+            patch.object(garmin, "client") as client,
+            pytest.raises(ValueError, match="whole number"),
+        ):
+            garmin.delete_jetlag_trip(1.9)  # type: ignore[arg-type]
+        client.delete.assert_not_called()
+
+    @pytest.mark.parametrize("workout_id", [42, "42", 42.0])
+    def test_get_workout_by_id_still_accepts_existing_id_forms(
+        self, garmin: garminconnect.Garmin, workout_id: Any
+    ):
+        with patch.object(garmin, "connectapi", return_value={}) as api:
+            garmin.get_workout_by_id(workout_id)
+        assert api.call_args[0][0].endswith("/workout/42")
+
+
+# ---------------------------------------------------------------------------
 # create_gear: matches the payload captured from Garmin Connect's "Add Gear"
 # ---------------------------------------------------------------------------
 
