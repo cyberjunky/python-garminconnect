@@ -14,9 +14,9 @@ The five strategies, in the order the library tries them:
     5. portal+requests  Connect portal via plain requests
 
 Usage:
-    python3 test_strategy.py
-    EMAIL=you@example.com PASSWORD=secret python3 test_strategy.py
-    GARMINTOKENS=~/.garminconnect python3 test_strategy.py
+    python3 scripts/test_strategy.py
+    EMAIL=you@example.com PASSWORD=secret python3 scripts/test_strategy.py
+    GARMINTOKENS=~/.garminconnect python3 scripts/test_strategy.py
 
 All output (console + debug logs) is also written to strategy_<name>.log.
 """

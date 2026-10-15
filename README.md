@@ -166,7 +166,7 @@ pdm run publish     # Build and publish to PyPI
 pdm run --list      # Show all available commands
 ```
 
-Run `pdm run format && pdm run lint && pdm run test` before submitting PRs.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the checks CI runs and what a pull request needs.
 
 ## 🔐 Authentication
 
@@ -317,11 +317,7 @@ We welcome contributions! Here's how you can help:
 - **Testing**: Help test new features and report compatibility issues
 - **Documentation**: Improve examples, add use cases, fix typos
 
-**Before contributing:**
-1. Set up your dev environment (see [Development](#️-development) above)
-2. Format and lint: `pdm run format && pdm run lint`
-3. Run tests: `pdm run test`
-4. Follow existing code style and patterns
+**Before contributing**, read [CONTRIBUTING.md](CONTRIBUTING.md). It covers the dev setup, the checks CI runs, and how to add an API method. Release notes are in [CHANGELOG.md](CHANGELOG.md).
 
 ### Jupyter Notebook
 
