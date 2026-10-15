@@ -2679,7 +2679,15 @@ def upload_swimming_css_workout_data(api: Garmin) -> None:
 
         # Show what Garmin actually stored, so the CSS target can be checked
         # against what was sent (type 17 'swim.css.offset', value 5.0).
-        stored = api.get_workout_by_id(workout_id)
+        # The upload already succeeded, so report a readback failure as such
+        # rather than as an upload error that might prompt a duplicate upload.
+        try:
+            stored = api.get_workout_by_id(workout_id)
+        except Exception as e:
+            print(
+                f"⚠️ Workout {workout_id} was uploaded, but reading it back failed: {e}"
+            )
+            return
         steps = (stored.get("workoutSegments") or [{}])[0].get("workoutSteps") or []
         interval = _find_interval_step(steps)
         if interval is None:

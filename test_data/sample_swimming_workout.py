@@ -18,7 +18,7 @@ def create_sample_swimming_workout() -> SwimmingWorkout:
     return SwimmingWorkout(
         workoutName="Swimming Interval Training",
         description="A sample swimming interval workout with warmup, multiple intervals with recovery, and cooldown.",
-        estimatedDurationInSecs=2400,  # 40 minutes
+        estimatedDurationInSecs=1440,  # 24 minutes: 300 + 8 x (90 + 30) + 180
         workoutSegments=[
             WorkoutSegment(
                 segmentOrder=1,
@@ -56,7 +56,7 @@ def create_sample_swimming_css_workout() -> SwimmingWorkout:
     return SwimmingWorkout(
         workoutName="Swimming CSS Intervals",
         description="A sample swimming workout with intervals at CSS +5 seconds.",
-        estimatedDurationInSecs=2400,  # 40 minutes
+        estimatedDurationInSecs=1440,  # 24 minutes: 300 + 8 x (90 + 30) + 180
         workoutSegments=[
             WorkoutSegment(
                 segmentOrder=1,
