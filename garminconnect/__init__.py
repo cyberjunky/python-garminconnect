@@ -111,8 +111,10 @@ JETLAG_FLIGHT_KEYS = (
     "destinationTimezone",
     "destinationTimestamp",
 )
+UTC_OFFSET_REGEX = r"^([+-])(\d{2}):([0-5]\d)$"
 # Real UTC offsets run from -12:00 to +14:00.
-UTC_OFFSET_REGEX = r"^[+-](0\d|1[0-4]):[0-5]\d$"
+UTC_OFFSET_MIN_MINUTES = -12 * 60
+UTC_OFFSET_MAX_MINUTES = 14 * 60
 
 
 # Add validation utilities
@@ -333,12 +335,21 @@ def _validate_jetlag_flights(flights: list[dict[str, Any]]) -> list[dict[str, An
             raise ValueError(f"{name} is missing {', '.join(missing)}")
         for side in ("origin", "destination"):
             offset = flight[f"{side}Timezone"]
-            if not isinstance(offset, str) or not re.fullmatch(
-                UTC_OFFSET_REGEX, offset
+            match = (
+                re.fullmatch(UTC_OFFSET_REGEX, offset)
+                if isinstance(offset, str)
+                else None
+            )
+            minutes = None
+            if match:
+                sign = -1 if match.group(1) == "-" else 1
+                minutes = sign * (int(match.group(2)) * 60 + int(match.group(3)))
+            if minutes is None or not (
+                UTC_OFFSET_MIN_MINUTES <= minutes <= UTC_OFFSET_MAX_MINUTES
             ):
                 raise ValueError(
-                    f"{name}.{side}Timezone must be a UTC offset such as "
-                    f"'-07:00', got: {offset!r}"
+                    f"{name}.{side}Timezone must be a UTC offset between "
+                    f"'-12:00' and '+14:00', such as '-07:00', got: {offset!r}"
                 )
             raw_stamp = flight[f"{side}Timestamp"]
             # fromisoformat() reads a date alone as midnight.

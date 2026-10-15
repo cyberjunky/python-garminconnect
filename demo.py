@@ -4620,7 +4620,11 @@ def _select_jetlag_trip(api: Garmin) -> dict | None:
     if index_input.lower() == "q":
         print("❌ Cancelled")
         return None
-    index = int(index_input)
+    try:
+        index = int(index_input)
+    except ValueError:
+        print("❌ Invalid index")
+        return None
     if not 0 <= index < len(trips):
         print("❌ Invalid index")
         return None

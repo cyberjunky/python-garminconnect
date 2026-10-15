@@ -3228,6 +3228,15 @@ class TestJetLagTrips:
                 [_jetlag_flight(originTimezone="+15:00")],
                 "originTimezone must be a UTC offset",
             ),
+            # Format-valid but outside the real -12:00..+14:00 range.
+            (
+                [_jetlag_flight(originTimezone="-13:00")],
+                "originTimezone must be a UTC offset",
+            ),
+            (
+                [_jetlag_flight(destinationTimezone="+14:30")],
+                "destinationTimezone must be a UTC offset",
+            ),
             (
                 [_jetlag_flight(originTimestamp="2026-10-04 3:20pm")],
                 r"invalid flights\[0\]\.originTimestamp",
