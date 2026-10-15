@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **163+ API methods** organized into **14 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **164+ API methods** organized into **14 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -50,7 +50,7 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 163+ methods (snapshot)
+- **Total API Methods**: 164+ methods (snapshot)
 - **Categories**: 14 organized sections
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 10 methods (today's health data plus daily calories, resting HR and sleep ranges)
@@ -63,7 +63,7 @@ Make your selection:
 - **Gear & Equipment**: 8 methods (gear management, tracking, creation)
 - **Hydration & Wellness**: 24 methods (hydration, nutrition, blood pressure, menstrual reads and writes, Jet Lag Adviser trips)
 - **System & Export**: 5 methods (reporting, logout, GraphQL, health snapshot download)
-- **Training Plans**: 9 methods (plans, plan by ID, typed strength workout upload, exercise catalog search, in-place workout editing, push to device, workout scheduling management)
+- **Training Plans**: 10 methods (plans, plan by ID, typed strength workout uploads including timed sets, exercise catalog search, in-place workout editing, push to device, workout scheduling management)
 - **Golf**: 5 methods (scorecard summary, scorecard detail, shot data, club stats, user stats)
 - **Activity Editing**: 2 methods (set activity description, set strength-activity exercise sets)
 
@@ -128,7 +128,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[example]"
 
 python3 ./example.py   # simple getting-started example
-python3 ./demo.py      # comprehensive demo (163+ API methods)
+python3 ./demo.py      # comprehensive demo (164+ API methods)
 ```
 
 ## 🛠️ Development
@@ -445,7 +445,7 @@ stroke, rest, and pool settings are configured separately.
 
 **Available workout classes:** `RunningWorkout`, `CyclingWorkout`, `SwimmingWorkout`, `WalkingWorkout`, `HikingWorkout`, `StrengthWorkout`, `MultiSportWorkout`, `FitnessEquipmentWorkout`
 
-**Strength workouts** are rep-based. Build each exercise with `create_strength_set(category, step_order, sets, reps, rest_seconds, exercise_name="", weight_kg=None)` and identify exercises with a `category` / `exercise` pair from the bundled catalog in `garminconnect.exercises` (1,527 exercises across 47 categories, with `resolve(name)` and `find(term)` helpers):
+**Strength workouts** are usually rep-based. Build each exercise with `create_strength_set(category, step_order, sets, reps, rest_seconds, exercise_name="", weight_kg=None, description=None)` and identify exercises with a `category` / `exercise` pair from the bundled catalog in `garminconnect.exercises` (1,527 exercises across 47 categories, with `resolve(name)` and `find(term)` helpers):
 
 ```python
 from garminconnect import exercises
@@ -481,11 +481,28 @@ workout = StrengthWorkout(
 client.upload_strength_workout(workout)
 ```
 
+For exercises done for time, such as planks or carries, use `create_strength_timed_set` (or `create_strength_timed_step` for a single step); it takes `duration_seconds` instead of `reps`. Every strength helper also accepts an optional `description`, a per-step note such as a form cue:
+
+```python
+from garminconnect.workout import create_strength_timed_set
+
+plank = create_strength_timed_set(
+    "PLANK",
+    step_order=1,
+    sets=3,
+    duration_seconds=45,
+    rest_seconds=30,
+    exercise_name="PLANK",
+    description="Squeeze glutes, keep a neutral spine",
+)
+```
+
 **Helper functions:** `create_warmup_step`, `create_interval_step`,
 `create_targeted_interval_step`, `create_distance_interval_step`,
 `create_targeted_distance_interval_step`, `create_recovery_step`,
 `create_cooldown_step`, `create_repeat_group`, `create_strength_exercise_step`,
-`create_strength_rest_step`, `create_strength_set`
+`create_strength_timed_step`, `create_strength_rest_step`, `create_strength_set`,
+`create_strength_timed_set`
 
 **Intensity Targets**: `CadenceTarget`, `PowerZoneTarget`, `CustomPowerTarget`,
 `HeartRateZoneTarget`, `CustomHeartRateTarget`, `SpeedTarget`, `PaceTarget`
@@ -564,7 +581,7 @@ activity has photos attached.
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 163+ API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 164+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
