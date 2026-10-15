@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 20
+next_id: 21
 source: ies-cli
-last_updated: '2026-10-14T17:37:15Z'
+last_updated: '2026-10-15T10:07:27Z'
 ---
 
 # Task Ledger
@@ -50,6 +50,7 @@ metrics:
   git_before: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   git_after: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   result: success
+edits: []
 ```
 
 ## T-0002 — Migracion Supabase garmin_tokens y adaptadores Python
@@ -93,6 +94,7 @@ metrics:
   git_before: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   git_after: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   result: success
+edits: []
 ```
 
 ## T-0003 — Actualizar workflow GitHub Actions y scripts de sincronizacion
@@ -138,6 +140,7 @@ metrics:
   git_before: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   git_after: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   result: success
+edits: []
 ```
 
 ## T-0004 — Build, validacion y despliegue a produccion de apps/web en Vercel
@@ -183,6 +186,7 @@ metrics:
   git_before: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   git_after: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   result: success
+edits: []
 ```
 
 ## T-0005 — Verificacion integral SDD SPEC-001
@@ -227,6 +231,7 @@ metrics:
   git_before: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   git_after: 630e50ed0dcdf82e02a575e2cd7781afea06333b
   result: success
+edits: []
 ```
 
 ## T-0006 — Corregir soporte de temperature para modelos reasoning en /api/chat
@@ -270,6 +275,7 @@ metrics:
   git_before: d73e40e2fb7e0ba041bf95c1256c4490172b1f21
   git_after: d73e40e2fb7e0ba041bf95c1256c4490172b1f21
   result: success
+edits: []
 ```
 
 ## T-0007 — Verificacion independiente de correccion de temperature en produccion
@@ -314,6 +320,7 @@ metrics:
   git_before: d73e40e2fb7e0ba041bf95c1256c4490172b1f21
   git_after: d73e40e2fb7e0ba041bf95c1256c4490172b1f21
   result: success
+edits: []
 ```
 
 ## T-0008 — Resolver conflicto del PR 1 con master y sincronizar rama
@@ -364,6 +371,7 @@ metrics:
   git_before: 7c19924433e57af70526cd418f3660445f92af65
   git_after: 7c19924433e57af70526cd418f3660445f92af65
   result: success
+edits: []
 ```
 
 ## T-0009 — Verificacion viewer diff SPEC-001 y checklist pre-merge PR 1
@@ -429,6 +437,7 @@ metrics:
   git_before: 7c19924433e57af70526cd418f3660445f92af65
   git_after: 7c19924433e57af70526cd418f3660445f92af65
   result: success
+edits: []
 ```
 
 ## T-0010 — Saneamiento linter SPEC-001, observabilidad REQ-005, trazabilidad de restore y ajuste deploy script
@@ -478,6 +487,7 @@ approval:
   approved_at: null
 metrics:
   cancel_reason: reemplazada por T-0015 con alcance ampliado (DEC-004)
+edits: []
 ```
 
 ## T-0011 — Estrategia y resolución de 97 errores de linter heredados de master
@@ -521,6 +531,7 @@ approval:
   approved_by: null
   approved_at: null
 metrics: {}
+edits: []
 ```
 
 ## T-0012 — Correccion de datos P1 y responsive movil en apps/web y backend
@@ -580,6 +591,7 @@ metrics:
   git_before: c1250438e8b77dc315913ae3d321eb0d7e195d06
   git_after: c1250438e8b77dc315913ae3d321eb0d7e195d06
   result: success
+edits: []
 ```
 
 ## T-0013 — Accesibilidad P2, copy en espanol, consistencia UI y marca Tri-Coach P3
@@ -638,6 +650,7 @@ metrics:
   git_before: cf19c10adfa1917b33200709b51f5f34f650c5ca
   git_after: cf19c10adfa1917b33200709b51f5f34f650c5ca
   result: success
+edits: []
 ```
 
 ## T-0014 — Verificacion viewer independiente de UX/UI P1-P3 y SemVer 0.3.0 (Local 1280x800 y 375x812)
@@ -697,6 +710,7 @@ metrics:
   git_before: 828f3075fc9c4467c2e4a34f96d3535395ad9e5f
   git_after: 828f3075fc9c4467c2e4a34f96d3535395ad9e5f
   result: success
+edits: []
 ```
 
 ## T-0015 — Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI
@@ -757,6 +771,7 @@ approval:
 metrics:
   cancel_reason: reemplazada por T-0017 para cumplir nuevo contrato (allowlist ADR-012,
     SemVer 0.3.1 ADR-009 y worktree)
+edits: []
 ```
 
 ## T-0016 — Versionado SemVer 0.3.0 y CHANGELOG de Tri-Coach (apps/web)
@@ -826,6 +841,7 @@ metrics:
   git_before: 6093d34d0fc90394826889b09c0910eec5421120
   git_after: 6093d34d0fc90394826889b09c0910eec5421120
   result: success
+edits: []
 ```
 
 ## T-0017 — Saneamiento linter SPEC-001, privacidad logs CI, deploy script y SemVer 0.3.1
@@ -896,6 +912,7 @@ approval:
   approved_by: null
   approved_at: null
 metrics: {}
+edits: []
 ```
 
 ## T-0018 — Verificacion viewer independiente de T-0017 sobre commit f3fc13a
@@ -960,6 +977,7 @@ approval:
   approved_by: null
   approved_at: null
 metrics: {}
+edits: []
 ```
 
 ## T-0019 — Sincronización de adaptadores canónicos a IES 0.2.0 y actualización de manifiesto
@@ -1023,4 +1041,66 @@ approval:
   approved_by: null
   approved_at: null
 metrics: {}
+edits: []
+```
+
+## T-0020 — Gate arquitectura: import-linter y dependency-cruiser (ADR-002)
+
+```yaml
+id: T-0020
+title: 'Gate arquitectura: import-linter y dependency-cruiser (ADR-002)'
+project_id: python-garminconnect
+origin: human
+destination: implementer
+status: ready
+input: 'Python: anadir import-linter a las dependencias de desarrollo en pyproject.toml
+  y un archivo .importlinter con el contrato ''garmin_coaching independiente de garminconnect,
+  services, supabase, fastapi, requests'' (ADR-002 §2 y §5). Web: anadir dependency-cruiser
+  en apps/web/package.json con apps/web/.dependency-cruiser.cjs que prohiba que lib/**
+  (salvo lib/infra/**) importe @supabase/* u openai (ADR-002 §3). Registrar en .ies/gate.yaml
+  dos comandos cuyo nombre contenga ''arquitectura'' (lint-imports; npx depcruise
+  en apps/web), sdlc: pruebas. No mover supabase.ts ni openaiModels.ts: si hoy violan
+  la regla, el contrato web los exime por ruta y se anota como deuda en el deliverable.
+  Depende de T-0017 porque ambas tocan apps/web/package.json.'
+expected_output: Ambos linters en verde, comandos de arquitectura en .ies/gate.yaml,
+  ies constitution check sin VII-08 y deliverable con la salida del gate y la deuda
+  registrada.
+parent_task: null
+dependencies:
+- T-0017
+priority: medium
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills:
+- verification-gates
+memory_refs:
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- long/standards.md
+acceptance_criteria:
+- ies gate --task T-XXXX en PASS con los comandos de arquitectura ejecutados
+- ies constitution check no reporta VII-08
+- un import sintetico de garminconnect dentro de garmin_coaching hace fallar lint-imports
+allowlist:
+- pyproject.toml
+- .importlinter
+- apps/web/package.json
+- apps/web/package-lock.json
+- apps/web/.dependency-cruiser.cjs
+- .ies/gate.yaml
+created_at: '2026-10-15T10:07:27Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+edits: []
 ```
