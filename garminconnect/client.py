@@ -58,6 +58,10 @@ _API_REJECTION_HINT = (
     "a 403 here can also mean Garmin is blocking this client or network "
     "rather than rejecting the token"
 )
+# _run_request() errors start with "API Error <status>"; read the status from
+# that prefix rather than searching the whole message, whose detail text can
+# contain other numbers.
+_API_ERROR_STATUS_RE = re.compile(r"^API Error (\d{3})\b")
 
 
 # Detect ~username expansion that would point into another user's home directory.
@@ -453,8 +457,10 @@ class Client:
             return True
         except GarminConnectConnectionError as e:
             msg = str(e)
-            if "401" in msg or "403" in msg:
-                self._last_rejection_status = 403 if "403" in msg else 401
+            match = _API_ERROR_STATUS_RE.match(msg)
+            status = int(match.group(1)) if match else None
+            if status in (401, 403):
+                self._last_rejection_status = status
                 _LOGGER.warning(
                     "%s: %s",
                     self._token_rejected_message("Token rejected by API tier"),

@@ -762,7 +762,13 @@ class TestResumeLogin:
         assert ("blocking this client or network" in str(exc_info.value)) is hinted
 
     @pytest.mark.parametrize(
-        ("status", "hinted"), [("API Error 403", True), ("API Error 401", False)]
+        ("status", "hinted"),
+        [
+            ("API Error 403", True),
+            ("API Error 401", False),
+            # The status comes from the prefix, not from numbers in the detail.
+            ("API Error 401 - see help article 403", False),
+        ],
     )
     def test_verify_token_warning_hints_block_only_on_403(
         self, caplog, status: str, hinted: bool
@@ -778,6 +784,19 @@ class TestResumeLogin:
         ):
             assert c._verify_token() is False
         assert ("blocking this client or network" in caplog.text) is hinted
+
+    def test_verify_token_ignores_status_numbers_in_error_detail(self):
+        """A 5xx whose detail mentions 403 is inconclusive, not a rejection."""
+        c = client_mod.Client(verify_login=True)
+        with patch.object(
+            c,
+            "connectapi",
+            side_effect=garminconnect.GarminConnectConnectionError(
+                "API Error 500 - upstream returned 403"
+            ),
+        ):
+            assert c._verify_token() is True
+        assert c._last_rejection_status is None
 
     def test_client_resume_login_skips_verify_when_verify_login_disabled(self):
         c = client_mod.Client(verify_login=False)
