@@ -531,18 +531,17 @@ flights = [
     {
         "originLocation": "Portland, OR, United States",
         "originTimezone": "-07:00",
-        "originTimestamp": "2026-10-04T15:20:00.00",
+        "originTimestamp": "2027-10-04T15:20:00.00",
         "destinationLocation": "Melbourne, VIC, Australia",
         "destinationTimezone": "+11:00",
-        "destinationTimestamp": "2026-10-06T06:45:00.00",
+        "destinationTimestamp": "2027-10-06T06:45:00.00",
     },
 ]
-trip = client.add_jetlag_trip("2026-10-04", "2026-10-09", flights)
+start_date = "2027-10-04"
+trip = client.add_jetlag_trip(start_date, "2027-10-09", flights)
 
 # A PUT replaces the whole trip: send every flight, and keep each flightId
-client.update_jetlag_trip(
-    trip["tripId"], trip["startDate"], "2026-10-12", trip["flights"]
-)
+client.update_jetlag_trip(trip["tripId"], start_date, "2027-10-12", trip["flights"])
 
 client.delete_jetlag_trip(trip["tripId"])
 ```
