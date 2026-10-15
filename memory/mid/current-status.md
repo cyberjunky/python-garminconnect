@@ -2,7 +2,7 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: mid
-last_updated: '2026-10-14T15:19:23Z'
+last_updated: '2026-10-15T09:51:50Z'
 source: ies update
 confidence: alta (generado mecanicamente del ledger)
 ---
@@ -17,6 +17,8 @@ confidence: alta (generado mecanicamente del ledger)
 ## 🔵 ready
 
 - T-0017 — Saneamiento linter SPEC-001, privacidad logs CI, deploy script y SemVer 0.3.1 (destino: implementer, perfil: fast-track)
+- T-0018 — Verificacion viewer independiente de T-0017 sobre commit f3fc13a (destino: viewer, perfil: riguroso)
+- T-0019 — Sincronización de adaptadores canónicos a IES 0.2.0 y actualización de manifiesto (destino: implementer, perfil: fast-track)
 
 ## 🟢 done
 

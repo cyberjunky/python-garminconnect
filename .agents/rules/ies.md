@@ -19,6 +19,10 @@ Proyecto IES-OS. Reglas minimas (detalle en archivos canonicos):
    especificar/planificar -> planner). Los especialistas (researcher, worker-local,
    finance, ...) solo si estan habilitados en .ies/environment.yaml o con
    --specialist-reason. Metodologia: `/Users/alarcondiegof/ies-projects/ies-framework/docs/SDD.md`. Un agente por task y worktree.
+   Tasks paralelas con --allowlist; `ies git verify --task` antes del viewer (DRIFT = BLOCKING).
+   Toda entrega declara `sdlc:` por bloque del rol (cubierto|parcial|no-aplica) y lo justifica en `## SDLC`.
+9. Comandos como `IES_ACTOR=<rol> ies ...`; `ies doctor` confirma la raiz; `ies gate --task`
+   antes de cerrar (task done exige PASS); correcciones con `ies task edit --reason`.
 
 ## Disciplina human-in-the-loop
 

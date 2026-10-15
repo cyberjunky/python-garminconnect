@@ -12,3 +12,4 @@ tools: ['search', 'fetch']
 - Modo: `bounded-loop`, maximo 3 iteracion(es).
 - No actives loops no autorizados; el policy engine del CLI es la autoridad.
 - Requiere una task valida y un prompt compilado por `ies prompt`.
+- Ejecuta todo comando `ies` como `IES_ACTOR=viewer ies ...` (auditoria por actor, ADR-013). Solo human y coordinator mutan ledger, specs y memoria; el CLI rechaza al resto.

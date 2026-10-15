@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 18
+next_id: 20
 source: ies-cli
-last_updated: '2026-10-14T15:19:18Z'
+last_updated: '2026-10-14T17:37:15Z'
 ---
 
 # Task Ledger
@@ -884,6 +884,133 @@ allowlist:
 - apps/web/package.json
 - apps/web/package-lock.json
 created_at: '2026-10-14T15:19:18Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+```
+
+## T-0018 — Verificacion viewer independiente de T-0017 sobre commit f3fc13a
+
+```yaml
+id: T-0018
+title: Verificacion viewer independiente de T-0017 sobre commit f3fc13a
+project_id: python-garminconnect
+origin: coordinator
+destination: viewer
+status: ready
+input: 'Auditar en modo solo lectura el commit exacto f3fc13a1bf5aa0490687882c1d89e04be176ca91
+  en .ies/worktrees/T-0017 (referenciando la entrega deliverables/T-0017.md de T-0017
+  sin marcarla done). Revisar todos los criterios de T-0017 y reproducir rigurosamente:
+  1. Cumplimiento estricto de allowlist con ies git verify --task T-0017. 2. Tres
+  pruebas web omitidas con --test-skip-pattern en apps/web/package.json. 3. Dos fallos
+  al correr node --test lib/*.test.mjs sin filtro. 4. Ruff distinto de cero: 10 errores
+  en scripts/garmin_auth.py y services/collector/supabase_client.py (sin rebajar a
+  NON_BLOCKING por considerarlos legacy si el criterio contractual exigia 0 errores)
+  mas los 2 errores de Ruff en el test nuevo tests/test_collector_privacy_and_resilience.py
+  (I001, SIM108). 5. Excepcion sin sanitizar en warnings de login_client (%s, exc).
+  6. Persistencia fallida sin warning (persist_tokens_to_supabase retorna False sin
+  elevar, dejando inactivo el try/except de login_client). 7. Afirmaciones incorrectas
+  del entregable deliverables/T-0017.md (afirma 0 errores de ruff y omite el skip
+  de tests web). 8. En SDLC, evaluar si el procedimiento preparado para despliegue
+  satisface el contrato sin calificarlo falso por no ejecutar el deploy, conservando
+  como pendientes las comprobaciones reales en produccion (run real de Actions post-merge
+  y despliegue efectivo en Vercel). Emitir veredicto canonico APROBAR | CORREGIR |
+  BLOQUEAR.'
+expected_output: deliverables/T-XXXX.md con matriz de verificacion de criterios de
+  T-0017, reproduccion de hallazgos tecnicos, clasificacion formal de severidad y
+  veredicto APROBAR | CORREGIR | BLOQUEAR
+parent_task: null
+dependencies: []
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- Revision independiente en solo lectura del commit f3fc13a sin mutaciones en el repositorio
+- Auditoria de allowlist (ies git verify) y reproduccion de las 3 pruebas omitidas
+  y 2 fallos web sin filtro
+- Auditoria de Ruff en modulos del recolector (10 errores) y en el test nuevo (2 errores)
+- Auditoria de manejo de excepciones y warnings en persist_tokens_to_supabase y login_client
+- Auditoria de veracidad del entregable, evaluacion de procedimiento de despliegue
+  y validaciones pendientes en produccion
+- Veredicto canonico formal (APROBAR | CORREGIR | BLOQUEAR) con clasificacion de severidad
+allowlist: []
+created_at: '2026-10-14T16:44:27Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+```
+
+## T-0019 — Sincronización de adaptadores canónicos a IES 0.2.0 y actualización de manifiesto
+
+```yaml
+id: T-0019
+title: Sincronización de adaptadores canónicos a IES 0.2.0 y actualización de manifiesto
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: Sincronizar los 9 adaptadores desactualizados del proyecto utilizando el intérprete
+  Python del framework (/Users/alarcondiegof/ies-projects/ies-framework/.venv/bin/python)
+  y scripts/sync-adapters.py sin --force. Preservar archivos preexistentes (CLAUDE.md
+  y .vscode/settings.json), bindings, tasks.md.lock, evidencias de T-0017/T-0018 y
+  metadatos históricos de .ies/project.yaml. Verificar .ies/adapters.json en 0.2.0
+  y validar que sync-adapters --check reporte 0 adaptadores desactualizados o con
+  drift y únicamente CLAUDE.md y .vscode/settings.json como preexistentes preservados.
+expected_output: deliverables/T-XXXX.md con evidencia de antes/después, .ies/adapters.json
+  en 0.2.0 y validación de sync-adapters --check
+parent_task: null
+dependencies: []
+priority: medium
+profile: fast-track
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- Ejecución mediante Python del framework sobre scripts/sync-adapters.py sin --force
+- Sincronización de los 9 adaptadores canónicos a IES 0.2.0
+- Preservación de CLAUDE.md y .vscode/settings.json como preexistentes preservados
+- Actualización de .ies/adapters.json a framework_version 0.2.0
+- Preservación de .ies/project.yaml con framework_version 0.1.0
+- Validación de sync-adapters --check reportando exclusivamente CLAUDE.md y .vscode/settings.json
+  como preexistentes (código 3)
+- Preservación íntegra de tasks.md, deliverables/T-0018.md, deliverables/T-0017.md
+  y tasks.md.lock
+allowlist:
+- .agents/rules/ies.md
+- .agents/workflows/sdd-autonomous.md
+- .agents/workflows/sdd-implement.md
+- .agents/workflows/sdd-plan.md
+- .agents/workflows/sdd-verify.md
+- .cursor/rules/00-ies-sdd.mdc
+- .github/copilot-instructions.md
+- AGENTS.md
+- GEMINI.md
+- .ies/adapters.json
+created_at: '2026-10-14T17:37:15Z'
 started_at: null
 completed_at: null
 blocked_reason: null

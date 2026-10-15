@@ -73,8 +73,43 @@ EARS). Constitucion del proyecto: `memory/long/constitution.md`.
   `ies spec new <slug>` y su `status` nunca se edita a mano. El despliegue lo
   ejecuta el humano siguiendo la seccion 8 del plan; ningun agente despliega.
 - Paralelismo: un implementer por task y worktree
-  (`ies git checkpoint --task T-XXXX --worktree`); allowlists disjuntas; el
-  merge lo hace siempre el humano.
+  (`ies git checkpoint --task T-XXXX --worktree`); allowlist declarada en
+  cada task (`--allowlist`, obligatoria para implementer; el CLI rechaza el
+  solape entre tasks paralelas del mismo padre salvo `--depends`); dentro
+  del worktree `ies` escribe ledger y estado en el repo principal;
+  `ies git verify --task T-XXXX` antes del viewer (DRIFT = BLOCKING); el
+  merge lo hace siempre el humano (ADR-012). La unica memoria que un
+  implementer edita es el documento `memory/long/<nombre>.md` que su
+  allowlist nombra de forma explicita (task documental de `ies update
+  --create-stale-doc-task`), siempre en su worktree y sin sellar el
+  frontmatter (`--sync-doc` es de human o coordinator) (ADR-017).
+- Bloques SDLC (`/Users/alarcondiegof/ies-projects/ies-framework/src/ies/sdlc.py`): requisitos, diseno, implementacion,
+  pruebas, release, despliegue, operacion-mantenimiento, seguridad. Cada
+  contrato declara los suyos (`sdlc_blocks`) y cada entrega declara en su
+  frontmatter `sdlc:` el estado por bloque (`cubierto | parcial | no-aplica`)
+  justificado bajo `## SDLC`; el viewer lo verifica y `ies task done` avisa
+  si falta (ADR-011).
+- Actor (ADR-013): todo comando `ies` de un agente se ejecuta como
+  `IES_ACTOR=<rol> ies ...`; la auditoria registra actor y fuente (env,
+  terminal, worktree). Solo human y coordinator mutan ledger, specs, memoria
+  y checkpoints; `--human-override` solo lo usan human o coordinator.
+- Contexto (ADR-015): al abrir sesion, `IES_ACTOR=coordinator ies doctor`
+  confirma la raiz de control; si el cwd no es un proyecto IES, el error
+  sugiere el proyecto cercano. `ies init` exige ruta explicita fuera de una
+  terminal y rechaza rutas sospechosas salvo `--accept-path`.
+- Correcciones del ledger (ADR-014): `ies task edit T-XXXX --reason ...`
+  (backlog, ready o blocked); nunca editar tasks.md ni usar la API interna.
+- Gate de maquina (ADR-016): `ies gate --task T-XXXX` evalua alcance,
+  entrega, constitucion, secretos, comandos de `.ies/gate.yaml` (tests, lint,
+  build) y la coherencia de `sdlc:` con la evidencia; `ies task done` exige
+  su PASS sobre el commit actual de task/T-XXXX. El viewer ejecuta el gate
+  (builds en solo lectura: ningun archivo versionado puede cambiar).
+- Constitucion: `ies constitution check` (Articulos I-VII; VII = Clean Code
+  mas regla de dependencia de Clean Architecture en todo proyecto con codigo
+  de aplicacion, declarada en `memory/long/standards.md`; `n/a` solo por
+  ADR; MVVM como patron de presentacion con UI; ADR-018). El viewer lo
+  reporta; `ies task done` bloquea con BLOCKING salvo `--human-override`
+  (ADR-010).
 - Perfil de task (`--profile riguroso|fast-track`): fast-track acelera el
   transporte y la revision; nunca reduce criterios, tests, backups, rollback
   ni techos de iteracion.

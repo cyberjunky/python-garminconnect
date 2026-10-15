@@ -7,5 +7,5 @@ Consultar el estado completo del proyecto.
 
 ## Pasos
 
-1. Ejecuta `ies status`.
+1. Ejecuta `ies status` (muestra la raiz de control y el actor).
 2. Revisa bloqueos y decisiones pendientes antes de continuar.

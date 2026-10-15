@@ -2,8 +2,8 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: long
-last_updated: '2026-10-14T13:20:10Z'
-source: ies update (migracion ADR-010)
+last_updated: '2026-10-15T09:44:12Z'
+source: ies update (migracion ADR-018)
 confidence: alta
 ---
 
@@ -63,8 +63,18 @@ y `docs/SDD.md` del framework.
 1. Clean Code en todo proyecto: nombres intencionales, funciones pequenas de
    una sola responsabilidad, sin duplicacion, sin codigo muerto ni comentarios
    que sustituyan claridad.
-2. El patron arquitectonico se declara en `memory/long/standards.md`
-   (`patron_arquitectonico`, `tiene_ui`) antes de la primera task implementer.
-3. Toda app con UI (Android, iOS, web) usa MVVM: separacion View / ViewModel /
-   Model y logica de negocio fuera de la View.
-4. Toda desviacion de este articulo se justifica por ADR en `memory/long/adr/`.
+2. Regla de dependencia (Clean Architecture): la logica de negocio no depende
+   de frameworks, UI, base de datos ni red; las dependencias apuntan hacia el
+   dominio. Aplica a todo proyecto con codigo de aplicacion que se despliega o
+   se instala; no aplica a repositorios documentales ni de infraestructura
+   declarativa. El planner responde esa prueba en la primera spec y el
+   resultado se declara en `memory/long/standards.md`
+   (`patron_arquitectonico: clean-architecture | n/a`, `tiene_ui`) antes de la
+   primera task implementer.
+3. La forma (numero y nombre de capas, patron de presentacion, rutas) es un
+   estandar del proyecto en `standards.md`, decidido en el plan; toda app con
+   UI (Android, iOS, web) usa MVVM como patron de presentacion, con la logica
+   de negocio fuera de la View.
+4. `n/a` y toda otra desviacion de este articulo se justifican por ADR en
+   `memory/long/adr/`, nunca solo por YAML. Donde hay codigo, la regla de
+   dependencia se comprueba por maquina con un comando de `.ies/gate.yaml`.

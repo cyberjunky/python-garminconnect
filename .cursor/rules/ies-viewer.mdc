@@ -12,4 +12,5 @@ alwaysApply: false
 - Modo: `bounded-loop`, maximo 3 iteracion(es).
 - Requiere una task valida y un prompt compilado por `ies prompt`.
 - Entrega en `deliverables/T-XXXX.md`; nunca merge ni push.
+- Ejecuta todo comando `ies` como `IES_ACTOR=viewer ies ...` (auditoria por actor, ADR-013). Solo human y coordinator mutan ledger, specs y memoria; el CLI rechaza al resto.
 - Respeta las guardas de loop del contrato y la skill loop-guard.

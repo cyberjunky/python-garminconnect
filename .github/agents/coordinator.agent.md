@@ -13,3 +13,4 @@ tools: ['search', 'fetch']
 - PROHIBIDO usar subagentes: este rol es single-shot-hitl.
 - No actives loops no autorizados; el policy engine del CLI es la autoridad.
 - Requiere una task valida y un prompt compilado por `ies prompt`.
+- Ejecuta todo comando `ies` como `IES_ACTOR=coordinator ies ...` (auditoria por actor, ADR-013). Solo human y coordinator mutan ledger, specs y memoria; el CLI rechaza al resto.

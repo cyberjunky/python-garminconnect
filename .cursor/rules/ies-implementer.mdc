@@ -12,4 +12,6 @@ alwaysApply: false
 - Modo: `single-shot-hitl`, maximo 1 iteracion(es).
 - Requiere una task valida y un prompt compilado por `ies prompt`.
 - Entrega en `deliverables/T-XXXX.md`; nunca merge ni push.
+- Ejecuta todo comando `ies` como `IES_ACTOR=implementer ies ...` (auditoria por actor, ADR-013). Solo human y coordinator mutan ledger, specs y memoria; el CLI rechaza al resto.
+- La unica memoria que editas es el documento `memory/long/<nombre>.md` que la allowlist de tu task nombra de forma explicita, en tu worktree y sin sellar su frontmatter (ADR-017). Sin worktree, detente y pide el checkpoint.
 - Modo single-shot: una ejecucion, una entrega, aprobacion humana. No lances subagentes ni iteres.

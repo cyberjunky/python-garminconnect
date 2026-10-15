@@ -12,4 +12,5 @@ alwaysApply: false
 - Modo: `single-shot-hitl`, maximo 1 iteracion(es).
 - Requiere una task valida y un prompt compilado por `ies prompt`.
 - Entrega en `deliverables/T-XXXX.md`; nunca merge ni push.
+- Ejecuta todo comando `ies` como `IES_ACTOR=planner ies ...` (auditoria por actor, ADR-013). Solo human y coordinator mutan ledger, specs y memoria; el CLI rechaza al resto.
 - Modo single-shot: una ejecucion, una entrega, aprobacion humana. No lances subagentes ni iteres.
