@@ -735,6 +735,38 @@ class TestResumeLogin:
 
         mock_clear.assert_called_once()
 
+    def test_client_resume_login_rejection_mentions_client_or_network_block(self):
+        """A 403 can be Garmin blocking the client/network, not the token."""
+        c = client_mod.Client(verify_login=True)
+        with (
+            patch.object(c, "_complete_mfa"),
+            patch.object(c, "_verify_token", return_value=False),
+            patch.object(c, "_clear_auth_state"),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError,
+                match="blocking this client or network",
+            ),
+        ):
+            c.resume_login({}, "123456")
+
+    @pytest.mark.parametrize(
+        ("status", "hinted"), [("API Error 403", True), ("API Error 401", False)]
+    )
+    def test_verify_token_warning_hints_block_only_on_403(
+        self, caplog, status: str, hinted: bool
+    ):
+        c = client_mod.Client(verify_login=True)
+        with (
+            patch.object(
+                c,
+                "connectapi",
+                side_effect=garminconnect.GarminConnectConnectionError(status),
+            ),
+            caplog.at_level(logging.WARNING, logger="garminconnect"),
+        ):
+            assert c._verify_token() is False
+        assert ("blocking this client or network" in caplog.text) is hinted
+
     def test_client_resume_login_skips_verify_when_verify_login_disabled(self):
         c = client_mod.Client(verify_login=False)
         with (

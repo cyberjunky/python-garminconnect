@@ -51,6 +51,14 @@ from .exceptions import (
 
 _LOGGER = logging.getLogger(__name__)
 
+# A 401 from the API tier means the token itself is refused, but a 403 can
+# also mean Garmin is blocking the client or network making the call, in
+# which case the token may be fine and the "token rejected" wording misleads.
+_API_REJECTION_HINT = (
+    "a 403 here can also mean Garmin is blocking this client or network "
+    "rather than rejecting the token"
+)
+
 
 # Detect ~username expansion that would point into another user's home directory.
 _OTHER_USER_HOME_RE = re.compile(r"^~[^/\\]")
@@ -436,7 +444,12 @@ class Client:
         except GarminConnectConnectionError as e:
             msg = str(e)
             if "401" in msg or "403" in msg:
-                _LOGGER.warning("Token rejected by API tier: %s", msg)
+                if "403" in msg:
+                    _LOGGER.warning(
+                        "Token rejected by API tier: %s (%s)", msg, _API_REJECTION_HINT
+                    )
+                else:
+                    _LOGGER.warning("Token rejected by API tier: %s", msg)
                 return False
             _LOGGER.debug("Token validation inconclusive (kept): %s", msg)
             return True
@@ -541,7 +554,8 @@ class Client:
                 if self.verify_login and not self._verify_token():
                     self._clear_auth_state(keep_tokenstore_path=True)
                     raise GarminConnectConnectionError(
-                        f"{name}: token rejected by API tier after MFA"
+                        f"{name}: token rejected by API tier after MFA "
+                        f"({_API_REJECTION_HINT})"
                     )
                 self._mfa_pending = False
                 return None, None
@@ -562,7 +576,7 @@ class Client:
                     )
                     self._clear_auth_state(keep_tokenstore_path=True)
                     last_err = GarminConnectConnectionError(
-                        f"{name}: token rejected by API tier"
+                        f"{name}: token rejected by API tier ({_API_REJECTION_HINT})"
                     )
                     continue
                 return None, None
@@ -1633,7 +1647,9 @@ class Client:
         self._complete_mfa(mfa_code)
         if self.verify_login and not self._verify_token():
             self._clear_auth_state()
-            raise GarminConnectConnectionError("token rejected by API tier after MFA")
+            raise GarminConnectConnectionError(
+                f"token rejected by API tier after MFA ({_API_REJECTION_HINT})"
+            )
         self._clear_mfa_pending_state()
         return None, None
 
