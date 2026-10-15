@@ -2113,6 +2113,21 @@ class TestHttpErrorMapping:
         assert "db01.garmin.internal" not in caplog.text
         assert "status=500" in caplog.text
 
+    def test_di_exchange_failure_log_omits_response_body(self, caplog):
+        """A failed DI exchange logs the status, never the token endpoint body."""
+        c = client_mod.Client(verify_login=False)
+        failed = type(
+            "Resp", (), {"ok": False, "status_code": 400, "text": "ST-CANARY detail"}
+        )()
+        with (
+            patch.object(c, "_http_post", return_value=failed),
+            caplog.at_level(logging.DEBUG, logger="garminconnect"),
+            pytest.raises(garminconnect.GarminConnectAuthenticationError),
+        ):
+            c._exchange_service_ticket("ST-CANARY")
+        assert "HTTP 400" in caplog.text
+        assert "ST-CANARY" not in caplog.text
+
     @pytest.mark.parametrize(
         "bad_path",
         [
