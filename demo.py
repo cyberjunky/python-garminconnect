@@ -645,6 +645,19 @@ menu_categories = {
                 "desc": "Update menstrual tracking settings (interactive)",
                 "key": "update_menstrual_settings",
             },
+            "l": {"desc": "Get jet lag trips", "key": "get_jetlag_trips"},
+            "m": {
+                "desc": "Add jet lag trip (interactive)",
+                "key": "add_jetlag_trip",
+            },
+            "n": {
+                "desc": "Update jet lag trip (interactive)",
+                "key": "update_jetlag_trip",
+            },
+            "o": {
+                "desc": "Delete jet lag trip (interactive)",
+                "key": "delete_jetlag_trip",
+            },
         },
     },
     "a": {
@@ -4580,6 +4593,117 @@ def update_menstrual_settings_entry(api: Garmin) -> None:
         print(f"❌ Error updating menstrual settings: {e}")
 
 
+JETLAG_FLIGHTS_EXAMPLE = (
+    '[{"originLocation": "Portland, OR, United States", '
+    '"originTimezone": "-07:00", "originTimestamp": "2027-10-04T15:20:00.00", '
+    '"destinationLocation": "Melbourne, VIC 3004, Australia", '
+    '"destinationTimezone": "+11:00", '
+    '"destinationTimestamp": "2027-10-06T06:45:00.00"}]'
+)
+
+
+def _select_jetlag_trip(api: Garmin) -> dict | None:
+    """List jet lag trips and return the one the user picks."""
+    trips = api.get_jetlag_trips()
+    if not trips:
+        print("ℹ️ No jet lag trips found")
+        return None
+    print("\nJet lag trips:")
+    for i, trip in enumerate(trips):
+        print(
+            f"  [{i}] {trip.get('startDate')} to {trip.get('endDate')}, "
+            f"{len(trip.get('flights', []))} flight(s) (ID: {trip.get('tripId')})"
+        )
+    index_input = input(
+        f"\nEnter trip index (0-{len(trips) - 1}, or 'q' to cancel): "
+    ).strip()
+    if index_input.lower() == "q":
+        print("❌ Cancelled")
+        return None
+    try:
+        index = int(index_input)
+    except ValueError:
+        print("❌ Invalid index")
+        return None
+    if not 0 <= index < len(trips):
+        print("❌ Invalid index")
+        return None
+    return trips[index]
+
+
+def add_jetlag_trip_entry(api: Garmin) -> None:
+    """Create a jet lag trip from dates and a pasted JSON list of flights."""
+    try:
+        start_date = input("Start date (YYYY-MM-DD): ").strip()
+        end_date = input("End date (YYYY-MM-DD): ").strip()
+        print("Paste the flights as a JSON list. Times are local, with no offset.")
+        print(f"Example: {JETLAG_FLIGHTS_EXAMPLE}")
+        flights = json.loads(input("Flights JSON: ").strip())
+        call_and_display(
+            api.add_jetlag_trip,
+            start_date,
+            end_date,
+            flights,
+            method_name="add_jetlag_trip",
+            api_call_desc=f"api.add_jetlag_trip('{start_date}', '{end_date}', [...])",
+        )
+    except Exception as e:
+        print(f"❌ Error adding jet lag trip: {e}")
+
+
+def update_jetlag_trip_entry(api: Garmin) -> None:
+    """Replace the dates and, optionally, the flights of a jet lag trip."""
+    try:
+        trip = _select_jetlag_trip(api)
+        if trip is None:
+            return
+        trip_id = trip["tripId"]
+        start_date = (
+            input(f"Start date [{trip['startDate']}]: ").strip() or trip["startDate"]
+        )
+        end_date = input(f"End date [{trip['endDate']}]: ").strip() or trip["endDate"]
+        print("Paste a JSON list to replace all flights, or press Enter to keep them.")
+        raw = input("Flights JSON: ").strip()
+        flights = json.loads(raw) if raw else trip["flights"]
+        call_and_display(
+            api.update_jetlag_trip,
+            trip_id,
+            start_date,
+            end_date,
+            flights,
+            method_name="update_jetlag_trip",
+            api_call_desc=(
+                f"api.update_jetlag_trip({trip_id}, '{start_date}', '{end_date}', [...])"
+            ),
+        )
+    except Exception as e:
+        print(f"❌ Error updating jet lag trip: {e}")
+
+
+def delete_jetlag_trip_entry(api: Garmin) -> None:
+    """Delete a jet lag trip after a y/N confirmation."""
+    try:
+        trip = _select_jetlag_trip(api)
+        if trip is None:
+            return
+        trip_id = trip["tripId"]
+        confirm = input(
+            f"Delete trip {trip['startDate']} to {trip['endDate']} "
+            f"(ID: {trip_id})? (y/N): "
+        ).strip()
+        if confirm.lower() != "y":
+            print("❌ Cancelled")
+            return
+        call_and_display(
+            api.delete_jetlag_trip,
+            trip_id,
+            method_name="delete_jetlag_trip",
+            api_call_desc=f"api.delete_jetlag_trip({trip_id})",
+        )
+    except Exception as e:
+        print(f"❌ Error deleting jet lag trip: {e}")
+
+
 def set_blood_pressure_data(api: Garmin) -> None:
     """Set blood pressure (and pulse) data."""
     try:
@@ -5261,6 +5385,15 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 lambda: confirm_menstrual_period_start_entry(api)
             ),
             "update_menstrual_settings": lambda: update_menstrual_settings_entry(api),
+            # Jet lag
+            "get_jetlag_trips": lambda: call_and_display(
+                api.get_jetlag_trips,
+                method_name="get_jetlag_trips",
+                api_call_desc="api.get_jetlag_trips()",
+            ),
+            "add_jetlag_trip": lambda: add_jetlag_trip_entry(api),
+            "update_jetlag_trip": lambda: update_jetlag_trip_entry(api),
+            "delete_jetlag_trip": lambda: delete_jetlag_trip_entry(api),
             # Nutrition
             "get_nutrition_daily_food_log": lambda: call_and_display(
                 api.get_nutrition_daily_food_log,

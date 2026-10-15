@@ -103,6 +103,18 @@ VALID_MENSTRUAL_DISCHARGE = frozenset(
 VALID_MENSTRUAL_SEX_DRIVE = frozenset({"AVERAGE", "HIGH", "LOW"})
 VALID_MENSTRUAL_SEXUAL_ACTIVITY = frozenset({"PROTECTED", "UNPROTECTED"})
 VALID_MENSTRUAL_REPORT_CYCLES = frozenset({1, 6, 12})
+JETLAG_FLIGHT_KEYS = (
+    "originLocation",
+    "originTimezone",
+    "originTimestamp",
+    "destinationLocation",
+    "destinationTimezone",
+    "destinationTimestamp",
+)
+UTC_OFFSET_REGEX = r"^([+-])(\d{2}):([0-5]\d)$"
+# Real UTC offsets run from -12:00 to +14:00.
+UTC_OFFSET_MIN_MINUTES = -12 * 60
+UTC_OFFSET_MAX_MINUTES = 14 * 60
 
 
 # Add validation utilities
@@ -307,6 +319,55 @@ def _clean_menstrual_daily_log(payload: dict[str, Any]) -> dict[str, Any]:
             continue
         cleaned[key] = value
     return cleaned
+
+
+def _validate_jetlag_flights(flights: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Validate Jet Lag Adviser flights and return shallow copies."""
+    if not isinstance(flights, list) or not flights:
+        raise ValueError("flights must be a non-empty list")
+    result: list[dict[str, Any]] = []
+    for index, flight in enumerate(flights):
+        name = f"flights[{index}]"
+        if not isinstance(flight, dict):
+            raise ValueError(f"{name} must be a dictionary")
+        missing = [key for key in JETLAG_FLIGHT_KEYS if not flight.get(key)]
+        if missing:
+            raise ValueError(f"{name} is missing {', '.join(missing)}")
+        for side in ("origin", "destination"):
+            offset = flight[f"{side}Timezone"]
+            match = (
+                re.fullmatch(UTC_OFFSET_REGEX, offset)
+                if isinstance(offset, str)
+                else None
+            )
+            minutes = None
+            if match:
+                sign = -1 if match.group(1) == "-" else 1
+                minutes = sign * (int(match.group(2)) * 60 + int(match.group(3)))
+            if minutes is None or not (
+                UTC_OFFSET_MIN_MINUTES <= minutes <= UTC_OFFSET_MAX_MINUTES
+            ):
+                raise ValueError(
+                    f"{name}.{side}Timezone must be a UTC offset between "
+                    f"'-12:00' and '+14:00', such as '-07:00', got: {offset!r}"
+                )
+            raw_stamp = flight[f"{side}Timestamp"]
+            # fromisoformat() reads a date alone as midnight.
+            if not isinstance(raw_stamp, str) or "T" not in raw_stamp:
+                raise ValueError(
+                    f"invalid {name}.{side}Timestamp: must hold a date and a "
+                    f"time such as '2026-10-04T15:20:00', got: {raw_stamp!r}"
+                )
+            try:
+                stamp = datetime.fromisoformat(raw_stamp)
+            except ValueError as e:
+                raise ValueError(f"invalid {name}.{side}Timestamp: {e}") from e
+            if stamp.tzinfo is not None:
+                raise ValueError(
+                    f"{name}.{side}Timestamp must be local time without an offset"
+                )
+        result.append(dict(flight))
+    return result
 
 
 def _validate_json_exists(response: requests.Response) -> dict[str, Any] | None:
@@ -692,6 +753,7 @@ class Garmin:
         self.garmin_connect_pregnancy_snapshot_url = (
             "/periodichealth-service/menstrualcycle/pregnancysnapshot"
         )
+        self.garmin_connect_jetlag_trip_url = "/jetlag-service/jetlag/trip"
         self.garmin_connect_goals_url = "/goal-service/goal/goals"
 
         self.garmin_connect_rhr_url = "/userstats-service/wellness/daily"
@@ -4311,6 +4373,91 @@ class Garmin:
             json=payload,
             api=True,
         )
+
+    def get_jetlag_trips(self) -> list[dict[str, Any]]:
+        """Return all Jet Lag Adviser trips, each with its flights."""
+        url = f"{self.garmin_connect_jetlag_trip_url}/all"
+        logger.debug("Requesting jet lag trips")
+        return self.connectapi(url)
+
+    def _jetlag_trip_payload(
+        self, start_date: str, end_date: str, flights: list[dict[str, Any]]
+    ) -> dict[str, Any]:
+        start_date, end_date = _validate_date_range(start_date, end_date)
+        payload: dict[str, Any] = {
+            "startDate": start_date,
+            "endDate": end_date,
+            "flights": _validate_jetlag_flights(flights),
+        }
+        if self.profile_id is not None:
+            payload["userId"] = self.profile_id
+        return payload
+
+    def add_jetlag_trip(
+        self, start_date: str, end_date: str, flights: list[dict[str, Any]]
+    ) -> dict[str, Any]:
+        """Create a Jet Lag Adviser trip.
+
+        Each flight is a dict with ``originLocation``, ``originTimezone`` and
+        ``originTimestamp``, and the same three ``destination*`` keys. A
+        location is free text. A timezone is the UTC offset at that place on
+        that date, such as ``"-07:00"``. A timestamp is the local time at that
+        place without an offset, such as ``"2026-10-04T15:20:00.00"``. Garmin
+        does not geocode the location, so the offset must be correct.
+
+        Each flight is one leg, so a connection is two flights (PDX to MSP,
+        then MSP to ATL). Garmin does not check that the legs connect or
+        that a leg changes timezone. It also accepts dates in the past and a
+        ``start_date`` before the first flight, which the web page does not
+        allow. The web page names a trip after its first flight only, and
+        shows the first departure to the last arrival. Garmin deletes a trip
+        by itself after the trip ends and the user has adjusted to the home
+        timezone. Garmin can refuse a trip whose dates overlap an existing
+        trip, with HTTP 400 "A trip already exists for this date range".
+
+        Returns the trip with its new ``tripId`` and a ``flightId`` on each
+        flight. ``dailyStatus``, the guidance that Garmin calculates, is not
+        in this response. It appears in :meth:`get_jetlag_trips` only after
+        travel starts.
+        """
+        payload = self._jetlag_trip_payload(start_date, end_date, flights)
+        logger.debug("Creating jet lag trip %s to %s", start_date, end_date)
+        return self.client.post(
+            "connectapi", self.garmin_connect_jetlag_trip_url, json=payload, api=True
+        )
+
+    def update_jetlag_trip(
+        self,
+        trip_id: int | str,
+        start_date: str,
+        end_date: str,
+        flights: list[dict[str, Any]],
+    ) -> Any:
+        """Replace a Jet Lag Adviser trip.
+
+        The PUT replaces the whole trip, so ``flights`` must hold every flight,
+        in the format of :meth:`add_jetlag_trip`. Keep the ``flightId`` from
+        :meth:`get_jetlag_trips` on each flight that stays. ``tripId`` is set
+        to ``trip_id`` on the trip and on each flight. Garmin answers with an
+        empty body.
+        """
+        trip_id = _validate_positive_integer(int(trip_id), "trip_id")
+        payload = self._jetlag_trip_payload(start_date, end_date, flights)
+        payload["tripId"] = trip_id
+        payload["flights"] = [
+            flight | {"tripId": trip_id} for flight in payload["flights"]
+        ]
+        logger.debug("Updating jet lag trip %s", trip_id)
+        return self.client.put(
+            "connectapi", self.garmin_connect_jetlag_trip_url, json=payload, api=True
+        )
+
+    def delete_jetlag_trip(self, trip_id: int | str) -> Any:
+        """Delete a Jet Lag Adviser trip. Garmin answers with an empty body."""
+        trip_id = _validate_positive_integer(int(trip_id), "trip_id")
+        url = f"{self.garmin_connect_jetlag_trip_url}/{trip_id}"
+        logger.debug("Deleting jet lag trip %s", trip_id)
+        return self.client.delete("connectapi", url, api=True)
 
     def query_garmin_graphql(self, query: dict[str, Any]) -> dict[str, Any]:
         """Execute a POST to Garmin's GraphQL endpoint.
