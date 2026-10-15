@@ -7,6 +7,12 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
+## [Unreleased]
+
+### Fixed
+
+- Preserve HTTP responses on native client errors so `get_gear_activities()` and `get_gear_stats()` use their existing empty-result fallbacks for HTTP 404.
+
 ## [0.3.18] - 2026-10-15
 
 ### Added
