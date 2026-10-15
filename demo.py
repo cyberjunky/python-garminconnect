@@ -709,6 +709,10 @@ menu_categories = {
                 "desc": "Unschedule a scheduled workout",
                 "key": "unschedule_workout",
             },
+            "0": {
+                "desc": "Upload timed strength workout with step notes (sample)",
+                "key": "upload_timed_strength_workout",
+            },
         },
     },
     "c": {
@@ -2866,6 +2870,75 @@ def upload_strength_workout_data(api: Garmin) -> None:
         )
     except Exception as e:
         print(f"❌ Error uploading strength workout: {e}")
+
+
+def _iter_exercise_steps(steps: list[dict]) -> list[dict]:
+    """Return every interval (exercise) step, searching inside repeat groups."""
+    found: list[dict] = []
+    for step in steps:
+        if step.get("stepType", {}).get("stepTypeKey") == "interval":
+            found.append(step)
+        found.extend(_iter_exercise_steps(step.get("workoutSteps") or []))
+    return found
+
+
+def upload_timed_strength_workout_data(api: Garmin) -> None:
+    """Upload a strength workout with timed sets and step notes, then read it back."""
+    try:
+        import sys
+        from pathlib import Path
+
+        test_data_path = Path(__file__).parent / "test_data"
+        if str(test_data_path) not in sys.path:
+            sys.path.insert(0, str(test_data_path))
+
+        from sample_strength_workout import create_sample_timed_strength_workout
+
+        print("🏋️ Creating and uploading timed strength workout with step notes...")
+        workout = create_sample_timed_strength_workout()
+        result = api.upload_strength_workout(workout)
+        if not result or not result.get("workoutId"):
+            print("❌ Failed to upload timed strength workout")
+            return
+        workout_id = result["workoutId"]
+        print(f"✅ Uploaded workout {workout_id}; reading it back from Garmin...")
+
+        # Show what Garmin stored, so the time end condition and the step
+        # descriptions can be checked against what was sent.
+        try:
+            stored = api.get_workout_by_id(workout_id)
+        except Exception as e:
+            print(
+                f"⚠️ Workout {workout_id} was uploaded, but reading it back failed: {e}"
+            )
+            return
+        steps = (stored.get("workoutSegments") or [{}])[0].get("workoutSteps") or []
+        call_and_display(
+            lambda: [
+                {
+                    "exercise": f"{s.get('category')}/{s.get('exerciseName')}",
+                    "endCondition": (s.get("endCondition") or {}).get(
+                        "conditionTypeKey"
+                    ),
+                    "endConditionValue": s.get("endConditionValue"),
+                    "description": s.get("description"),
+                }
+                for s in _iter_exercise_steps(steps)
+            ],
+            method_name="get_workout_by_id",
+            api_call_desc=f"api.get_workout_by_id({workout_id}) - stored exercise steps",
+        )
+        print(
+            "💡 Expect PLANK and FARMERS_CARRY with endCondition 'time' (45, 40) "
+            "and BENCH_PRESS with 'reps' (10), each with its description"
+        )
+    except ImportError as e:
+        print(f"❌ Error: {e}")
+        print(
+            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
+        )
+    except Exception as e:
+        print(f"❌ Error uploading timed strength workout: {e}")
 
 
 def schedule_workout_data(api: Garmin) -> None:
@@ -5150,6 +5223,9 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "upload_walking_workout": lambda: upload_walking_workout_data(api),
             "upload_hiking_workout": lambda: upload_hiking_workout_data(api),
             "upload_strength_workout": lambda: upload_strength_workout_data(api),
+            "upload_timed_strength_workout": lambda: upload_timed_strength_workout_data(
+                api
+            ),
             "search_exercise_catalog": lambda: search_exercise_catalog_data(api),
             "get_scheduled_workout_by_id": lambda: get_scheduled_workout_by_id_data(
                 api

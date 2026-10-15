@@ -160,6 +160,7 @@ class ExecutableStep(BaseModel):
     strokeType: dict[str, Any] | None = None
     equipmentType: dict[str, Any] | None = None
     childStepId: int | None = None
+    description: str | None = None
 
     model_config = ConfigDict(extra="allow")
 
@@ -300,11 +301,12 @@ class HikingWorkout(BaseWorkout):
 class StrengthWorkout(BaseWorkout):
     """Strength training workout model.
 
-    Strength workouts are rep-based rather than time/distance-based.  Build the
-    steps with :func:`create_strength_exercise_step` /
-    :func:`create_strength_rest_step` (or the :func:`create_strength_set`
-    convenience), and identify each exercise with a ``category`` /
-    ``exerciseName`` pair from :mod:`garminconnect.exercises`.
+    Strength exercises are usually rep-based.  Build the steps with
+    :func:`create_strength_exercise_step` / :func:`create_strength_rest_step`
+    (or the :func:`create_strength_set` convenience); for exercises done for
+    time, such as planks or carries, use :func:`create_strength_timed_step` /
+    :func:`create_strength_timed_set`.  Identify each exercise with a
+    ``category`` / ``exerciseName`` pair from :mod:`garminconnect.exercises`.
     """
 
     sportType: dict[str, Any] = Field(
@@ -700,25 +702,15 @@ def create_repeat_group(
     )
 
 
-def create_strength_exercise_step(
+def _strength_exercise_step(
     category: str,
     step_order: int,
-    reps: int,
-    exercise_name: str = "",
-    weight_kg: float | None = None,
+    end_condition: dict[str, Any],
+    end_condition_value: float,
+    exercise_name: str,
+    weight_kg: float | None,
+    description: str | None,
 ) -> ExecutableStep:
-    """Create a rep-based strength exercise step.
-
-    Args:
-        category: Garmin exercise category, e.g. ``"BENCH_PRESS"``.  See
-            :mod:`garminconnect.exercises` for the full list of valid values.
-        step_order: Position of this step within the segment (1-indexed, unique).
-        reps: Number of repetitions to perform.
-        exercise_name: Specific exercise variant, e.g. ``"LAT_PULLDOWN"``.  An
-            empty string shows only the category name.
-        weight_kg: Optional target weight in kilograms.
-
-    """
     extra: dict[str, Any] = {"category": category, "exerciseName": exercise_name}
     if weight_kg is not None:
         extra["weightValue"] = float(weight_kg) * 1000.0
@@ -731,19 +723,81 @@ def create_strength_exercise_step(
             "stepTypeKey": "interval",
             "displayOrder": 3,
         },
-        endCondition={
-            "conditionTypeId": ConditionType.REPS,
-            "conditionTypeKey": "reps",
-            "displayOrder": 10,
-            "displayable": True,
-        },
-        endConditionValue=float(reps),
+        endCondition=end_condition,
+        endConditionValue=end_condition_value,
         targetType={
             "workoutTargetTypeId": TargetType.NO_TARGET,
             "workoutTargetTypeKey": "no.target",
             "displayOrder": 1,
         },
+        description=description,
         **extra,
+    )
+
+
+def create_strength_exercise_step(
+    category: str,
+    step_order: int,
+    reps: int,
+    exercise_name: str = "",
+    weight_kg: float | None = None,
+    description: str | None = None,
+) -> ExecutableStep:
+    """Create a rep-based strength exercise step.
+
+    Args:
+        category: Garmin exercise category, e.g. ``"BENCH_PRESS"``.  See
+            :mod:`garminconnect.exercises` for the full list of valid values.
+        step_order: Position of this step within the segment (1-indexed, unique).
+        reps: Number of repetitions to perform.
+        exercise_name: Specific exercise variant, e.g. ``"LAT_PULLDOWN"``.  An
+            empty string shows only the category name.
+        weight_kg: Optional target weight in kilograms.
+        description: Optional per-step note, e.g. a form cue.
+
+    """
+    return _strength_exercise_step(
+        category,
+        step_order,
+        {
+            "conditionTypeId": ConditionType.REPS,
+            "conditionTypeKey": "reps",
+            "displayOrder": 10,
+            "displayable": True,
+        },
+        float(reps),
+        exercise_name,
+        weight_kg,
+        description,
+    )
+
+
+def create_strength_timed_step(
+    category: str,
+    step_order: int,
+    duration_seconds: float,
+    exercise_name: str = "",
+    weight_kg: float | None = None,
+    description: str | None = None,
+) -> ExecutableStep:
+    """Create a time-based strength exercise step (e.g. a plank or a carry).
+
+    Same as :func:`create_strength_exercise_step`, except the step ends after
+    ``duration_seconds`` instead of a number of reps.
+    """
+    return _strength_exercise_step(
+        category,
+        step_order,
+        {
+            "conditionTypeId": ConditionType.TIME,
+            "conditionTypeKey": "time",
+            "displayOrder": 2,
+            "displayable": True,
+        },
+        float(duration_seconds),
+        exercise_name,
+        weight_kg,
+        description,
     )
 
 
@@ -782,11 +836,13 @@ def create_strength_set(
     rest_seconds: float,
     exercise_name: str = "",
     weight_kg: float | None = None,
+    description: str | None = None,
 ) -> RepeatGroup:
     """Create a full strength exercise block as a repeat group.
 
     Produces ``sets`` repetitions of ``reps`` reps of the exercise followed by
     a timed rest, i.e. one "N Sets" block in the Garmin workout editor.
+    ``description`` is set on the exercise step.
 
     ``step_order`` is the order of the repeat group; the inner exercise and rest
     steps take ``step_order + 1`` and ``step_order + 2``.  Advance the caller's
@@ -798,6 +854,35 @@ def create_strength_set(
         reps,
         exercise_name=exercise_name,
         weight_kg=weight_kg,
+        description=description,
+    )
+    rest = create_strength_rest_step(rest_seconds, step_order + 2)
+    return create_repeat_group(sets, [exercise, rest], step_order)
+
+
+def create_strength_timed_set(
+    category: str,
+    step_order: int,
+    sets: int,
+    duration_seconds: float,
+    rest_seconds: float,
+    exercise_name: str = "",
+    weight_kg: float | None = None,
+    description: str | None = None,
+) -> RepeatGroup:
+    """Create a time-based strength block (e.g. 3 x 45 s plank) as a repeat group.
+
+    Same as :func:`create_strength_set`, except each set lasts
+    ``duration_seconds`` instead of a number of reps. Step ordering works the
+    same way: the inner steps take ``step_order + 1`` and ``step_order + 2``.
+    """
+    exercise = create_strength_timed_step(
+        category,
+        step_order + 1,
+        duration_seconds,
+        exercise_name=exercise_name,
+        weight_kg=weight_kg,
+        description=description,
     )
     rest = create_strength_rest_step(rest_seconds, step_order + 2)
     return create_repeat_group(sets, [exercise, rest], step_order)

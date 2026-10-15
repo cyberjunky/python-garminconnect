@@ -4,6 +4,7 @@ from garminconnect.workout import (
     StrengthWorkout,
     WorkoutSegment,
     create_strength_set,
+    create_strength_timed_set,
     create_warmup_step,
 )
 
@@ -52,6 +53,60 @@ def create_sample_strength_workout() -> StrengthWorkout:
                         rest_seconds=90.0,
                         exercise_name="SEATED_CABLE_ROW",
                         weight_kg=40,
+                    ),
+                ],
+            )
+        ],
+    )
+
+
+def create_sample_timed_strength_workout() -> StrengthWorkout:
+    """Create a sample strength workout with timed exercises and step notes.
+
+    Mixes time-based sets (plank, weighted carry) with a rep-based set, and
+    gives every exercise step a ``description`` (form cue), so one upload
+    exercises both the time end condition and per-step descriptions.
+    """
+    return StrengthWorkout(
+        workoutName="Timed Strength Session",
+        estimatedDurationInSecs=0,
+        description="A sample strength workout with timed sets and form cues.",
+        workoutSegments=[
+            WorkoutSegment(
+                segmentOrder=1,
+                sportType={
+                    "sportTypeId": 5,
+                    "sportTypeKey": "strength_training",
+                    "displayOrder": 5,
+                },
+                workoutSteps=[
+                    create_warmup_step(300.0, step_order=1),  # 5 min warmup
+                    create_strength_timed_set(
+                        "PLANK",
+                        step_order=2,
+                        sets=3,
+                        duration_seconds=45,
+                        rest_seconds=30,
+                        exercise_name="PLANK",
+                        description="Squeeze glutes, keep a neutral spine",
+                    ),
+                    create_strength_timed_set(
+                        "CARRY",
+                        step_order=5,
+                        sets=2,
+                        duration_seconds=40,
+                        rest_seconds=60,
+                        exercise_name="FARMERS_CARRY",
+                        weight_kg=16,
+                        description="Tall posture, short quick steps",
+                    ),
+                    create_strength_set(
+                        "BENCH_PRESS",
+                        step_order=8,
+                        sets=3,
+                        reps=10,
+                        rest_seconds=90,
+                        description="Feet planted, bar to mid-chest",
                     ),
                 ],
             )
