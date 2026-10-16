@@ -220,7 +220,7 @@ feature get a 404.
 | `get_gear_details(gear_uuid)` | `GET /gear-service/gear/v2/{uuid}` | | yes |
 | `set_gear_status(gear_uuid, status)` | `PUT /gear-service/gear/v2/{uuid}/status/{ACTIVE\|RETIRED}` | | no |
 | `update_gear(gear_uuid, *, name, brand, model, gear_type, first_use_date, usage_type, max_usage_distance_km, max_usage_duration_min, notes, activity_type_keys)` | `PUT /gear-service/gear/v2/{uuid}` with the complete gear object | Garmin rejects partial bodies (400); the object from `get_gear_details` is sent back with the changed fields. `notes` persists — the legacy `get_gear()` record simply never includes it. | yes |
-| `delete_gear(gear_uuid)` | `DELETE /gear-service/gear/v2/{uuid}` | | no |
+| `delete_gear(gear_uuid)` | `DELETE /gear-service/gear/v2/{uuid}` | Gone from `get_gear_details` (404) and `get_gear_list` afterwards. | yes |
 | `get_gear_types()` | `GET /gear-service/gear/types` | | yes |
 | `get_user_gear_types()` | `GET /gear-service/gear/v2/user-gear-types` | | yes |
 | `get_gear_make_models(keywords)` | `GET /gear-service/gear/makemodels?keywords` | Autocomplete for the gear form. | yes |

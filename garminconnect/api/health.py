@@ -932,7 +932,6 @@ class HealthMixin(GarminBase):
         else:
             payload["userGoal"] = 0
             payload["userGoalCategory"] = "my-auto"
-        url = f"{self.garmin_connect_wellness_url}/wellness-goals/consolidated/steps/{cdate}"
         logger.debug("Setting steps goal to %s", payload["userGoal"])
         return self.client.put("connectapi", url, json=payload).json()
 
