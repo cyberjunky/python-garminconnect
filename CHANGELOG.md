@@ -7,6 +7,12 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
+## [Unreleased]
+
+### Changed
+
+- **Login no longer logs a warning for every strategy that fails**: falling through to the next login strategy is expected (a 429 on the mobile strategies is common and a later strategy usually succeeds), so each failure is now logged at debug level. When every strategy fails, the final error lists each strategy and why it failed, for example `All login strategies exhausted (mobile+cffi: 429; mobile+requests: 429; ...)`.
+
 ## [0.3.19] - 2026-10-16
 
 ### Added

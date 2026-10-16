@@ -165,6 +165,10 @@ class LoginMixin(_ClientState):
 
         last_err: Exception | None = None
         rate_limited_count = 0
+        # Earlier strategies failing is expected (later ones usually work), so
+        # per-strategy failures are logged at debug and summarized in the
+        # final error when every strategy fails.
+        failures: list[str] = []
 
         def resolve_mfa(name: str) -> tuple[str | None, Any]:
             if return_on_mfa:
@@ -193,10 +197,11 @@ class LoginMixin(_ClientState):
                 # Strategy got a token — make sure the API tier accepts it
                 # before declaring success (else fall through to the next).
                 if self.verify_login and not self._verify_token():
-                    _LOGGER.warning(
+                    _LOGGER.debug(
                         "%s obtained a token the API rejected; trying next strategy",
                         name,
                     )
+                    failures.append(f"{name}: token rejected")
                     self._clear_auth_state(keep_tokenstore_path=True)
                     last_err = GarminConnectConnectionError(
                         self._token_rejected_message(
@@ -215,17 +220,18 @@ class LoginMixin(_ClientState):
                     return resolve_mfa(name)
                 except GarminConnectConnectionError as e:
                     last_err = e
+                    failures.append(f"{name}: MFA failed")
                     continue
             except GarminConnectTooManyRequestsError as e:
-                _LOGGER.warning(
-                    "%s returned 429: %s", name, _sanitize_exception_text(e)
-                )
+                _LOGGER.debug("%s returned 429: %s", name, _sanitize_exception_text(e))
                 rate_limited_count += 1
                 last_err = e
+                failures.append(f"{name}: 429")
                 continue
             except Exception as e:
-                _LOGGER.warning("%s failed: %s", name, _sanitize_exception_text(e))
+                _LOGGER.debug("%s failed: %s", name, _sanitize_exception_text(e))
                 last_err = e
+                failures.append(f"{name}: {type(e).__name__}")
                 continue
 
         if rate_limited_count == len(strategies):
@@ -235,7 +241,7 @@ class LoginMixin(_ClientState):
                 "rate limiting; try again later or from another network."
             )
         raise GarminConnectConnectionError(
-            "All login strategies exhausted: "
+            f"All login strategies exhausted ({'; '.join(failures)}): "
             + (_sanitize_exception_text(last_err) if last_err else "no strategies ran")
             + (
                 "; curl_cffi is not installed (pip install curl_cffi), which "

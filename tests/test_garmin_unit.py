@@ -993,7 +993,7 @@ class TestLoginMFA:
             patch.object(c, "_widget_web_login", side_effect=boom),
             patch.object(c, "_portal_web_login_cffi", side_effect=boom),
             patch.object(c, "_portal_web_login_requests", side_effect=boom),
-            caplog.at_level(logging.WARNING, logger="garminconnect"),
+            caplog.at_level(logging.DEBUG, logger="garminconnect"),
             pytest.raises(
                 garminconnect.GarminConnectConnectionError, match="exhausted"
             ) as exc_info,
@@ -1090,6 +1090,25 @@ class TestLoginClearsStaleAuth:
         assert c.is_authenticated is False
         with pytest.raises(garminconnect.GarminConnectAuthenticationError):
             c.get_api_headers()
+
+    def test_failed_strategies_log_at_debug_and_are_summarized(self, caplog):
+        """A strategy failing is expected; only the final error reports them."""
+        c = client_mod.Client(verify_login=False)
+
+        def fail(_email, _password):
+            raise ConnectionError("down")
+
+        with ExitStack() as stack:
+            for name in self.ALL_STRATEGIES:
+                stack.enter_context(patch.object(c, name, side_effect=fail))
+            stack.enter_context(caplog.at_level("WARNING"))
+            with pytest.raises(
+                garminconnect.GarminConnectConnectionError,
+                match=r"exhausted \(.*: ConnectionError; ",
+            ):
+                c.login("u@x.com", "pw")
+
+        assert not [r for r in caplog.records if "failed" in r.getMessage()]
 
     def test_web_login_uses_fresh_jwt_not_stale_di_token(self):
         c = client_mod.Client(verify_login=False)
