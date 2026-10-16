@@ -33,7 +33,7 @@ Select a category:
   [3] 🔬 Advanced Health Metrics
   [4] 📈 Historical Data & Trends
   [5] 🏃 Activities & Workouts
-  [6] ⚖️  Body Composition & Weight
+  [6] ⚖️ Body Composition & Weight
   [7] 🏆 Goals & Achievements
   [8] ⌚ Device & Technical
   [9] 🎽 Gear & Equipment
@@ -41,7 +41,7 @@ Select a category:
   [a] 🔧 System & Export
   [b] 📅 Training Plans & Calendar
   [c] ⛳ Golf
-  [d] ✏️  Activity Editing
+  [d] ✏️ Activity Editing
   [e] 🏃 Activity Details & Courses
 
   [q] Exit program
