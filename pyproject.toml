@@ -1,6 +1,6 @@
 [project]
 name = "garminconnect"
-version = "0.3.18"
+version = "0.3.19"
 description = "Python 3 API wrapper for Garmin Connect"
 authors = [
     {name = "Ron Klinkien", email = "ron@cyberjunky.nl"},
@@ -9,6 +9,8 @@ dependencies = [
     "curl_cffi>=0.15.0",
     "requests>=2.33.0",
     "ua-generator>=1.0",
+    # zoneinfo has no system tz database on Windows
+    "tzdata; sys_platform == 'win32'",
 ]
 readme = "README.md"
 license = {text = "MIT"}

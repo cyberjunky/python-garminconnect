@@ -7,6 +7,36 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
+## [Unreleased]
+
+### Added
+
+- **165 new methods covering the endpoints the Garmin Connect web app uses**: every API call the web app makes was compared with the library and the missing ones were added. The new methods are documented, with the exact request each one sends and whether it was verified against a live account, in [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md). Highlights:
+  - *Performance*: `get_max_metrics_latest()`, `get_training_readiness_range()`, `get_weekly_training_status()`, heat/altitude acclimation, cycling ability, running economy, stamina curve, power curve, critical swim speed, glucose, heart rate zones v2, biometric statistics, power-to-weight history, fitness age v2 with daily/weekly history, personal-record candidates/types/per-activity.
+  - *Daily statistics*: `get_daily_stats()` (steps/pushes/calories with aggregations), daily and weekly series for heart rate, stress, Body Battery, intensity minutes, respiration, floors, hydration and calories, monthly steps, averages, lifetime totals, `get_daily_summaries()` for a date range, week-average resting HR, full hydration data.
+  - *Wellness*: SpO2 with acclimation, daily movement, step goal, sync timestamp, hourly intensity minutes, weekly/monthly wellness and activity statistics, `get_daily_sleep()` (sleep-service), naps, weekly/overall sleep statistics, Health Snapshot sessions (list, detail, epochs, FIT download), nutrition status and calorie summary.
+  - *Weight & blood pressure*: latest/first weight, last weight per day, weight snapshot, weekly weight; blood pressure day view, last reading per day, weekly aggregates.
+  - *ECG*: `get_ecg_daily()`, `get_ecg_list()` and `get_ecg()` from the `ghs.connect.garmin.com` service.
+  - *Goals, badges, challenges, profile*: effective daily goals, user goals, weight goal, badge attributes/detail/latest/per-activity/per-day, virtual (expedition) challenges, active ad-hoc challenges, `get_personal_information()`, user profile base, privacy settings, usage indicators, jet lag status.
+  - *Activities*: `search_activities()` with the web app's full filter set, fastest splits, favorites, laps, rounds, step/jump/sub-second/swim details, map details, polyline, power curve, previous/next activity, event types, matched segments, `set_activity_favorite()`.
+  - *Gear & devices*: gear v2 list/detail/status/types/make-models, gear on an activity (v2); all/historical/active devices, device record, app info, sensors, device message queue, displayed activities, `update_device_settings()`, multi-day solar gain.
+  - *Workouts, plans, calendar, courses*: scheduled workouts by period (includes adaptive plans), workout counts/sport types/type dictionaries, strength benchmarks, copy/reschedule/send-to-devices; active plans, plan tasks, plan catalogue search, schedule/delete plan; calendar year/week/events/upcoming/primary event and event CRUD, move calendar item; courses list/detail/CRUD/download/import/convert/favorites, PacePro bands; PDF report export flow.
+- **Extended existing methods (all optional, backwards compatible)**: `get_workouts()` gains the library page's filters and sorting; `get_training_plans()` gains `limit`/`start`/`status`; `get_personal_record()` gains `include_history`/`months`; `get_endurance_score()` and `get_max_metrics_range()` gain `aggregation` (and `sport`); `get_nutrition_daily_food_log()` sends `includeGoals`/`includeNutrition` like the web app; `request_reload()` accepts a device id; `get_menstrual_data_for_date()` sends `todayDate` as the web app does.
+- **GraphQL**: all 53 operations the web dashboard sends to the GraphQL gateway are documented in [docs/graphql_operations.md](docs/graphql_operations.md) for use with `query_garmin_graphql()`.
+- **User timezone helpers**: new `get_user_timezone()` returns the IANA timezone from your Garmin profile (for example `Europe/Paris`), and `today()` / `now()` give the current date and time in that timezone. Garmin evaluates "today" in the profile timezone, so use `api.today()` rather than `date.today()` when asking for today's data.
+- **Demo**: the 100 new read methods are available from the existing menu categories (Training Plans is now "Training Plans & Calendar"), plus a new "Activity Details & Courses" category for per-activity details, activity search and courses.
+
+### Changed
+
+- **The `Garmin` class is now assembled from one module per data domain** in the new `garminconnect.api` package: `base` (construction, login, transport, profile), `activities`, `health`, `metrics`, `body`, `achievements`, `gear`, `devices`, `workouts`, `training` (plans, calendar, courses, reports), `womens_health` and `golf`, with the shared constants and validation helpers in `api/_common.py`. `from garminconnect import Garmin` and every constant and helper previously importable from the package still work; `Garmin.ActivityDownloadFormat` and `Garmin.ActivityUploadFormat` are unchanged. The only internal move that affects test code is that `_fmt_ts_utc` is now patched at `garminconnect.api.womens_health._fmt_ts_utc`.
+- **`garminconnect.client` is now a package** split by concern: `constants`, `sso` (login strategies and MFA), `session` (ticket exchange and token refresh), `tokens` (token store and JWT helpers) and `transport` (authenticated requests). Every name that was importable from `garminconnect.client` still is, including the optional-dependency flags `HAS_CFFI`/`HAS_UA_GEN`, so existing imports and test patches keep working. Duplicated code was folded into shared helpers: one TLS-fingerprint rotation loop and one credential-response handler serve both the mobile and portal flows, the `post`/`put`/`delete` wrappers share one implementation, the two DI token requests share one, and JWT_WEB cookie extraction and SSO page parsing each live in one place.
+
+### Fixed
+
+- **"Today" no longer follows the machine clock**: every default date and timestamp the library fills in itself (the lactate-threshold and power-to-weight lookups, the next scheduled workout, menstrual reports and calendar updates, and the local timestamps of new weigh-ins, body-composition entries, blood-pressure readings and hydration logs) is now computed in your Garmin profile timezone. On a host running in UTC these used to lag behind your real day every evening, so "today" silently returned or wrote yesterday's data. Timestamps you pass in without an offset are now also read as your profile's local time rather than the host's. Nothing changes when the host and your profile share a timezone.
+- **Demo**: dates are evaluated when a menu option runs, not once at startup, so a session left open overnight no longer keeps using yesterday; once logged in they follow your profile timezone.
+- **Clearer error when `curl_cffi` is missing**: login warns up front that the browser-impersonating strategies are unavailable, and the final "all login strategies exhausted" error names the missing package as the likely cause, instead of only reporting a Cloudflare 403.
+
 ## [0.3.18] - 2026-10-15
 
 ### Added

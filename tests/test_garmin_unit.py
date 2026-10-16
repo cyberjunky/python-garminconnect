@@ -2984,7 +2984,7 @@ class TestMenstrualCycle:
                 "post",
                 return_value={"calendarDate": "2026-09-01"},
             ) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.update_menstrual_daily_log(
                 "2026-09-01",
@@ -3023,7 +3023,7 @@ class TestMenstrualCycle:
     ):
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.update_menstrual_daily_log(
                 "2026-09-01",
@@ -3066,7 +3066,7 @@ class TestMenstrualCycle:
         garmin.profile_id = 99
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.update_menstrual_calendar(
                 "2026-09-01",
@@ -3112,7 +3112,7 @@ class TestMenstrualCycle:
         garmin.profile_id = 99
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.init_menstrual_cycle_setup("2026-08-01", 5, 28)
 
@@ -3132,7 +3132,7 @@ class TestMenstrualCycle:
     ):
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.confirm_menstrual_period_start(
                 "2026-09-08",

@@ -50,8 +50,9 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 164+ methods (snapshot)
-- **Categories**: 14 organized sections
+- **Total API Methods**: 330+ methods (snapshot)
+- **Categories**: 15 organized sections
+- **Web-app endpoint map**: 165 methods added in 2026 covering the endpoints the Garmin Connect web app uses, each documented with the exact request it sends and whether it was verified live, in [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md); the dashboard's GraphQL operations are in [docs/graphql_operations.md](docs/graphql_operations.md)
 - **User & Profile**: 4 methods (basic user info, settings)
 - **Daily Health & Activity**: 10 methods (today's health data plus daily calories, resting HR and sleep ranges)
 - **Advanced Health Metrics**: 19 methods (fitness metrics, HRV, VO2, FTP range, training readiness, training zones, running tolerance, training load balance, daily training status, activity training load)
