@@ -200,43 +200,43 @@ menu_categories = {
         "name": "📊 Daily Health & Activity",
         "options": {
             "1": {
-                "desc": f"Get activity data for '{config.today.isoformat()}'",
+                "desc": "Get activity data for '{today}'",
                 "key": "get_stats",
             },
             "2": {
-                "desc": f"Get user summary for '{config.today.isoformat()}'",
+                "desc": "Get user summary for '{today}'",
                 "key": "get_user_summary",
             },
             "3": {
-                "desc": f"Get stats and body composition for '{config.today.isoformat()}'",
+                "desc": "Get stats and body composition for '{today}'",
                 "key": "get_stats_and_body",
             },
             "4": {
-                "desc": f"Get steps data for '{config.today.isoformat()}'",
+                "desc": "Get steps data for '{today}'",
                 "key": "get_steps_data",
             },
             "5": {
-                "desc": f"Get heart rate data for '{config.today.isoformat()}'",
+                "desc": "Get heart rate data for '{today}'",
                 "key": "get_heart_rates",
             },
             "6": {
-                "desc": f"Get resting heart rate from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get resting heart rate from '{week_start}' to '{today}'",
                 "key": "get_rhr_daily",
             },
             "7": {
-                "desc": f"Get daily sleep summaries from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get daily sleep summaries from '{week_start}' to '{today}'",
                 "key": "get_sleep_daily",
             },
             "8": {
-                "desc": f"Get stress data for '{config.today.isoformat()}'",
+                "desc": "Get stress data for '{today}'",
                 "key": "get_all_day_stress",
             },
             "9": {
-                "desc": f"Get lifestyle logging data for '{config.today.isoformat()}'",
+                "desc": "Get lifestyle logging data for '{today}'",
                 "key": "get_lifestyle_logging_data",
             },
             "a": {
-                "desc": f"Get daily calories from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get daily calories from '{week_start}' to '{today}'",
                 "key": "get_calories_daily",
             },
             "0": {
@@ -268,48 +268,48 @@ menu_categories = {
         "name": "🔬 Advanced Health Metrics",
         "options": {
             "1": {
-                "desc": f"Get training readiness for '{config.today.isoformat()}'",
+                "desc": "Get training readiness for '{today}'",
                 "key": "get_training_readiness",
             },
             "2": {
-                "desc": f"Get morning training readiness for '{config.today.isoformat()}'",
+                "desc": "Get morning training readiness for '{today}'",
                 "key": "get_morning_training_readiness",
             },
             "3": {
-                "desc": f"Get training status for '{config.today.isoformat()}'",
+                "desc": "Get training status for '{today}'",
                 "key": "get_training_status",
             },
             "4": {
-                "desc": f"Get respiration data for '{config.today.isoformat()}'",
+                "desc": "Get respiration data for '{today}'",
                 "key": "get_respiration_data",
             },
             "5": {
-                "desc": f"Get SpO2 data for '{config.today.isoformat()}'",
+                "desc": "Get SpO2 data for '{today}'",
                 "key": "get_spo2_data",
             },
             "6": {
-                "desc": f"Get max metrics (VO2, fitness age) from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get max metrics (VO2, fitness age) from '{week_start}' to '{today}'",
                 "key": "get_max_metrics_range",
             },
             "7": {
-                "desc": f"Get Heart Rate Variability (HRV) from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get Heart Rate Variability (HRV) from '{week_start}' to '{today}'",
                 "key": "get_hrv_data_range",
             },
             "8": {
-                "desc": f"Get Fitness Age data for '{config.today.isoformat()}'",
+                "desc": "Get Fitness Age data for '{today}'",
                 "key": "get_fitnessage_data",
             },
             "9": {
-                "desc": f"Get stress data for '{config.today.isoformat()}'",
+                "desc": "Get stress data for '{today}'",
                 "key": "get_stress_data",
             },
             "0": {"desc": "Get lactate threshold data", "key": "get_lactate_threshold"},
             "a": {
-                "desc": f"Get intensity minutes for '{config.today.isoformat()}'",
+                "desc": "Get intensity minutes for '{today}'",
                 "key": "get_intensity_minutes_data",
             },
             "b": {
-                "desc": f"Get running tolerance from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get running tolerance from '{week_start}' to '{today}'",
                 "key": "get_running_tolerance",
             },
             "c": {
@@ -325,19 +325,19 @@ menu_categories = {
                 "key": "get_power_zones_for_sport",
             },
             "f": {
-                "desc": f"Get functional threshold power range from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get functional threshold power range from '{week_start}' to '{today}'",
                 "key": "get_functional_threshold_power_range",
             },
             "g": {
-                "desc": f"Get four-week training load balance for '{config.today.isoformat()}'",
+                "desc": "Get four-week training load balance for '{today}'",
                 "key": "get_training_four_week_load_balance",
             },
             "h": {
-                "desc": f"Get daily training status (acute/chronic load) for '{config.today.isoformat()}'",
+                "desc": "Get daily training status (acute/chronic load) for '{today}'",
                 "key": "get_daily_training_status",
             },
             "i": {
-                "desc": f"Get activity training load from '{config.month_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get activity training load from '{month_start}' to '{today}'",
                 "key": "get_training_load_activities",
             },
             "j": {"desc": "Latest VO2 max record", "key": "get_max_metrics_latest"},
@@ -392,39 +392,39 @@ menu_categories = {
         "name": "📈 Historical Data & Trends",
         "options": {
             "1": {
-                "desc": f"Get daily steps from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get daily steps from '{week_start}' to '{today}'",
                 "key": "get_daily_steps",
             },
             "2": {
-                "desc": f"Get body battery from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get body battery from '{week_start}' to '{today}'",
                 "key": "get_body_battery",
             },
             "3": {
-                "desc": f"Get floors data for '{config.week_start.isoformat()}'",
+                "desc": "Get floors data for '{week_start}'",
                 "key": "get_floors",
             },
             "4": {
-                "desc": f"Get blood pressure from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get blood pressure from '{week_start}' to '{today}'",
                 "key": "get_blood_pressure",
             },
             "5": {
-                "desc": f"Get progress summary from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get progress summary from '{week_start}' to '{today}'",
                 "key": "get_progress_summary_between_dates",
             },
             "6": {
-                "desc": f"Get body battery events for '{config.week_start.isoformat()}'",
+                "desc": "Get body battery events for '{week_start}'",
                 "key": "get_body_battery_events",
             },
             "7": {
-                "desc": f"Get weekly steps (52 weeks ending '{config.today.isoformat()}')",
+                "desc": "Get weekly steps (52 weeks ending '{today}')",
                 "key": "get_weekly_steps",
             },
             "8": {
-                "desc": f"Get weekly stress (52 weeks ending '{config.today.isoformat()}')",
+                "desc": "Get weekly stress (52 weeks ending '{today}')",
                 "key": "get_weekly_stress",
             },
             "9": {
-                "desc": f"Get weekly intensity minutes from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get weekly intensity minutes from '{week_start}' to '{today}'",
                 "key": "get_weekly_intensity_minutes",
             },
             "0": {
@@ -509,11 +509,11 @@ menu_categories = {
             },
             "2": {"desc": "Get last activity", "key": "get_last_activity"},
             "3": {
-                "desc": f"Get activities for today '{config.today.isoformat()}'",
+                "desc": "Get activities for today '{today}'",
                 "key": "get_activities_fordate",
             },
             "4": {
-                "desc": f"Download activities by date range '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Download activities by date range '{week_start}' to '{today}'",
                 "key": "download_activities",
             },
             "5": {
@@ -564,7 +564,7 @@ menu_categories = {
                 "key": "upload_workout",
             },
             "l": {
-                "desc": f"Get activities by date range '{config.today.isoformat()}'",
+                "desc": "Get activities by date range '{today}'",
                 "key": "get_activities_by_date",
             },
             "m": {"desc": "Set activity name", "key": "set_activity_name"},
@@ -621,24 +621,24 @@ menu_categories = {
         "name": "⚖️  Body Composition & Weight",
         "options": {
             "1": {
-                "desc": f"Get body composition for '{config.today.isoformat()}'",
+                "desc": "Get body composition for '{today}'",
                 "key": "get_body_composition",
             },
             "2": {
-                "desc": f"Get weigh-ins from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get weigh-ins from '{week_start}' to '{today}'",
                 "key": "get_weigh_ins",
             },
             "3": {
-                "desc": f"Get daily weigh-ins for '{config.today.isoformat()}'",
+                "desc": "Get daily weigh-ins for '{today}'",
                 "key": "get_daily_weigh_ins",
             },
             "4": {"desc": "Add a weigh-in (interactive)", "key": "add_weigh_in"},
             "5": {
-                "desc": f"Add body composition for '{config.today.isoformat()}' (interactive)",
+                "desc": "Add body composition for '{today}' (interactive)",
                 "key": "add_body_composition",
             },
             "6": {
-                "desc": f"Delete all weigh-ins for '{config.today.isoformat()}'",
+                "desc": "Delete all weigh-ins for '{today}'",
                 "key": "delete_weigh_ins",
             },
             "7": {"desc": "Delete specific weigh-in", "key": "delete_weigh_in"},
@@ -678,11 +678,11 @@ menu_categories = {
             },
             "a": {"desc": "Get race predictions", "key": "get_race_predictions"},
             "b": {
-                "desc": f"Get hill score from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get hill score from '{week_start}' to '{today}'",
                 "key": "get_hill_score",
             },
             "c": {
-                "desc": f"Get endurance score from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get endurance score from '{week_start}' to '{today}'",
                 "key": "get_endurance_score",
             },
             "d": {"desc": "Get available badges", "key": "get_available_badges"},
@@ -717,7 +717,7 @@ menu_categories = {
             "2": {"desc": "Get device alarms", "key": "get_device_alarms"},
             "3": {"desc": "Get solar data from your devices", "key": "get_solar_data"},
             "4": {
-                "desc": f"Request data reload (epoch) for '{config.today.isoformat()}'",
+                "desc": "Request data reload (epoch) for '{today}'",
                 "key": "request_reload",
             },
             "5": {"desc": "Get device settings", "key": "get_device_settings"},
@@ -777,7 +777,7 @@ menu_categories = {
         "name": "💧 Hydration & Wellness",
         "options": {
             "1": {
-                "desc": f"Get hydration data for '{config.today.isoformat()}'",
+                "desc": "Get hydration data for '{today}'",
                 "key": "get_hydration_data",
             },
             "2": {"desc": "Add hydration data", "key": "add_hydration_data"},
@@ -787,19 +787,19 @@ menu_categories = {
             },
             "4": {"desc": "Get pregnancy summary data", "key": "get_pregnancy_summary"},
             "5": {
-                "desc": f"Get all day events for '{config.week_start.isoformat()}'",
+                "desc": "Get all day events for '{week_start}'",
                 "key": "get_all_day_events",
             },
             "6": {
-                "desc": f"Get body battery events for '{config.week_start.isoformat()}'",
+                "desc": "Get body battery events for '{week_start}'",
                 "key": "get_body_battery_events",
             },
             "7": {
-                "desc": f"Get menstrual data for '{config.today.isoformat()}'",
+                "desc": "Get menstrual data for '{today}'",
                 "key": "get_menstrual_data_for_date",
             },
             "8": {
-                "desc": f"Get menstrual calendar from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get menstrual calendar from '{week_start}' to '{today}'",
                 "key": "get_menstrual_calendar_data",
             },
             "9": {
@@ -807,27 +807,27 @@ menu_categories = {
                 "key": "delete_blood_pressure",
             },
             "a": {
-                "desc": f"Get nutrition daily food log for '{config.today.isoformat()}'",
+                "desc": "Get nutrition daily food log for '{today}'",
                 "key": "get_nutrition_daily_food_log",
             },
             "b": {
-                "desc": f"Get nutrition daily meals for '{config.today.isoformat()}'",
+                "desc": "Get nutrition daily meals for '{today}'",
                 "key": "get_nutrition_daily_meals",
             },
             "c": {
-                "desc": f"Get nutrition daily settings for '{config.today.isoformat()}'",
+                "desc": "Get nutrition daily settings for '{today}'",
                 "key": "get_nutrition_daily_settings",
             },
             "d": {
-                "desc": f"Get last confirmed menstrual cycle for '{config.today.isoformat()}'",
+                "desc": "Get last confirmed menstrual cycle for '{today}'",
                 "key": "get_menstrual_last_confirmed",
             },
             "e": {
-                "desc": f"Get menstrual cycle summary for '{config.today.isoformat()}'",
+                "desc": "Get menstrual cycle summary for '{today}'",
                 "key": "get_menstrual_cycle_summary",
             },
             "f": {
-                "desc": f"Get menstrual reports (6 cycles) ending '{config.today.isoformat()}'",
+                "desc": "Get menstrual reports (6 cycles) ending '{today}'",
                 "key": "get_menstrual_reports",
             },
             "g": {
@@ -1084,6 +1084,20 @@ def _web(api: Garmin, method: str, args_fn=None, kwargs_fn=None):
     return run
 
 
+def _menu_label(desc: str) -> str:
+    """Fill a menu label's date placeholders with the dates as of now.
+
+    Labels are defined once at import, so they hold ``{today}`` /
+    ``{week_start}`` / ``{month_start}`` and are filled in when the menu is
+    printed; a session left open past midnight then shows the new dates.
+    """
+    return (
+        desc.replace("{today}", config.today.isoformat())
+        .replace("{week_start}", config.week_start.isoformat())
+        .replace("{month_start}", config.month_start.isoformat())
+    )
+
+
 def print_main_menu():
     """Print the main category menu."""
     print("\n" + "=" * 50)
@@ -1111,7 +1125,7 @@ def print_category_menu(category_key: str):
     print("-" * 40)
 
     for key, option in category["options"].items():
-        print(f"  [{key}] {option['desc']}")
+        print(f"  [{key}] {_menu_label(option['desc'])}")
 
     print()
     print("  [q] Back to main menu")
@@ -5260,12 +5274,16 @@ def calendar_note_data(api: Garmin) -> None:
         _display_single(
             f"api.create_calendar_note('{_today()}', {name!r}, {content!r})", note
         )
-        if note and input("Delete it again? (y/N): ").strip().lower() == "y":
+        note_id = note.get("id") if isinstance(note, dict) else None
+        if not note_id:
+            print("⚠️ The response has no note id; delete the note in Garmin Connect")
+            return
+        if input("Delete it again? (y/N): ").strip().lower() == "y":
             call_and_display(
                 api.delete_calendar_note,
-                note["id"],
+                note_id,
                 method_name="delete_calendar_note",
-                api_call_desc=f"api.delete_calendar_note({note['id']})",
+                api_call_desc=f"api.delete_calendar_note({note_id})",
             )
     except Exception as e:
         print(f"❌ Error with calendar note: {e}")

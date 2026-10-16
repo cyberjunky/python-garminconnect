@@ -33,7 +33,10 @@ def test_not_logged_in_falls_back_to_machine_local_time():
     g = Garmin()
     assert g.get_user_timezone() is None
     assert g.now().utcoffset() == datetime.now().astimezone().utcoffset()
-    assert g.today() == datetime.now().astimezone().date()
+    # Bracket the call so a run across local midnight cannot fail.
+    before = datetime.now().astimezone().date()
+    result = g.today()
+    assert result in {before, datetime.now().astimezone().date()}
 
 
 def test_timezone_is_read_from_profile_and_cached(monkeypatch):
@@ -55,7 +58,9 @@ def test_today_and_now_use_profile_timezone(garmin: Garmin):
     # UTC+14 is the zone most likely to differ from the host's date.
     tz = ZoneInfo("Pacific/Kiritimati")
     assert garmin.now().tzinfo == tz
-    assert garmin.today() == datetime.now(tz).date()
+    before = datetime.now(tz).date()
+    result = garmin.today()
+    assert result in {before, datetime.now(tz).date()}
 
 
 def test_failed_lookup_is_not_retried(monkeypatch):
@@ -73,7 +78,10 @@ def test_failed_lookup_is_not_retried(monkeypatch):
     assert g.get_user_timezone() is None
     assert calls == 1
     # Falls back to machine local time instead of raising.
-    assert g.today() == datetime.now().astimezone().date()
+    # Bracket the call so a run across local midnight cannot fail.
+    before = datetime.now().astimezone().date()
+    result = g.today()
+    assert result in {before, datetime.now().astimezone().date()}
 
 
 def test_localize_keeps_aware_and_fixes_naive(garmin: Garmin):

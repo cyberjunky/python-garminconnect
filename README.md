@@ -717,7 +717,7 @@ activity has photos attached.
 | `get_fitness_age_details(cdate=None)` | Return Fitness Age with its components and achievable targets. |
 | `get_fitness_age_weekly(end=None, weeks=52)` | Return weekly Fitness Age history for `weeks` weeks ending at `end`. |
 | `get_fitnessage_data(cdate)` | Return Fitness Age data for current user. |
-| `get_functional_threshold_power_range(start, end, sport='RUNNING', aggregation='daily')` | Return historic functional threshold power for a Garmin sport. |
+| `get_functional_threshold_power_range(start, end, *, sport='RUNNING', aggregation='daily')` | Return historic functional threshold power for a Garmin sport. |
 | `get_glucose_data(cdate)` | Return logged glucose readings for a day (`glucoseList`). |
 | `get_glucose_data_range(start, end)` | Return logged glucose readings for a date range. |
 | `get_heart_rate_zones()` | Return configured heart rate zones for all sport profiles. |
@@ -725,7 +725,7 @@ activity has photos attached.
 | `get_heat_altitude_acclimation(cdate=None)` | Return heat and altitude acclimation as of `cdate` (default today). |
 | `get_heat_altitude_acclimation_range(start, end, aggregation='daily')` | Return heat and altitude acclimation history for a date range. |
 | `get_hill_score(startdate, enddate=None)` | Return hill score by day from 'startdate' format 'YYYY-MM-DD' to enddate 'YYYY-MM-DD'. |
-| `get_lactate_threshold(latest=True, start_date=None, end_date=None, …)` | Return running lactate threshold information, including heart rate, power, and speed. |
+| `get_lactate_threshold(*, latest=True, start_date=None, end_date=None, …)` | Return running lactate threshold information, including heart rate, power, and speed. |
 | `get_max_metrics(cdate)` | Return available max metric data for 'cdate' format 'YYYY-MM-DD'. |
 | `get_max_metrics_latest(cdate=None)` | Return the latest VO2 max record as of `cdate` (default today). |
 | `get_max_metrics_range(start, end, aggregation='daily', sport=None)` | Return max metric data for a date range ('start'/'end' format 'YYYY-MM-DD'). |
@@ -776,7 +776,7 @@ activity has photos attached.
 | `get_weigh_ins(startdate, enddate)` | Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'. |
 | `get_weight_snapshot(start, end)` | Return all weigh-ins in a range as `dateWeightList` entries. |
 | `set_blood_pressure(systolic, diastolic, pulse=None, timestamp='', notes='')` | Add a blood pressure reading. |
-| `update_blood_pressure(measurement, notes)` | Change the note of an existing blood pressure reading. |
+| `update_blood_pressure(measurement, *, notes)` | Change the note of an existing blood pressure reading. |
 
 </details>
 
@@ -819,7 +819,7 @@ activity has photos attached.
 | `get_favorite_activities(limit=5)` | Return activities marked as favorite (`activityList`). |
 | `get_last_activity()` | Return the most recent activity. |
 | `get_progress_summary_between_dates(startdate, enddate, metric='distance', groupbyactivities=True)` | Return progress totals (distance, duration, ...) between two dates. |
-| `get_training_load_activities(startdate, enddate, metrics=None, activitytype=None)` | Fetch individual activities and their training load metrics for a date range. |
+| `get_training_load_activities(startdate, enddate, *, metrics=None, activitytype=None)` | Fetch individual activities and their training load metrics for a date range. |
 | `get_weekly_activity_stats(start, end, group_by_activity_type=True)` | Return weekly activity aggregates (VO2 max, distance, duration, ...). |
 | `import_activity(activity_path)` | Upload activity as an import (not re-exported to third parties like Strava). |
 | `search_activities(start=0, limit=20, **filters)` | Search activities with the full filter set of the web app's activity list. |
@@ -849,7 +849,7 @@ activity has photos attached.
 | `get_workout_count(include_atp=False)` | Return workout counts per sport (`totalCount`, `runningCount`, ...). |
 | `get_workout_sport_types()` | Return the sport types that have workouts in the library. |
 | `get_workout_types()` | Return the workout dictionaries (step, condition, target, sport, equipment types). |
-| `get_workouts(start=0, limit=100, my_workouts_only=None, …)` | Return workouts starting at offset `start` with at most `limit` results. |
+| `get_workouts(start=0, limit=100, *, my_workouts_only=None, …)` | Return workouts starting at offset `start` with at most `limit` results. |
 | `reschedule_workout(scheduled_workout_id, cdate)` | Move a scheduled workout to another date. |
 | `schedule_workout(workout_id, date_str)` | Schedule a workout on a specific date in the Garmin calendar. |
 | `unschedule_workout(scheduled_workout_id)` | Remove a scheduled workout from the calendar without deleting the template. |
@@ -986,7 +986,7 @@ activity has photos attached.
 | `remove_gear_from_activity(gearUUID, activity_id)` | Unlink gear from an activity. |
 | `set_gear_default(activityType, gearUUID, defaultGear=True)` | Make gear the default for an activity type, or remove it as the default. |
 | `set_gear_status(gear_uuid, status)` | Retire or re-activate gear. |
-| `update_gear(gear_uuid, name=None, brand=None, model=None, …)` | Edit a piece of gear and return the updated gear object. |
+| `update_gear(gear_uuid, *, name=None, brand=None, model=None, …)` | Edit a piece of gear and return the updated gear object. |
 
 </details>
 
@@ -994,17 +994,17 @@ activity has photos attached.
 
 | Method | Description |
 | --- | --- |
-| `confirm_menstrual_period_start(period_start_date, period_length, cycle_length, predicted_cycle=False)` | Confirm a menstrual period start date, including a prediction. |
+| `confirm_menstrual_period_start(period_start_date, period_length, cycle_length, *, predicted_cycle=False)` | Confirm a menstrual period start date, including a prediction. |
 | `get_menstrual_calendar_data(startdate, enddate)` | Return summaries of cycles that have days between startdate and enddate. |
 | `get_menstrual_cycle_summary(fordate)` | Return the menstrual cycle summary for `fordate`. |
 | `get_menstrual_data_for_date(fordate, today_date=None)` | Return the menstrual day view for a date. |
 | `get_menstrual_last_confirmed(fordate)` | Return the last confirmed menstrual cycle as of `fordate`. |
-| `get_menstrual_reports(fordate, number_of_cycles=6, next_report=False, report_type='CYCLE', …)` | Return menstrual cycle reports for 1, 6, or 12 cycles ending at date. |
+| `get_menstrual_reports(fordate, number_of_cycles=6, *, next_report=False, report_type='CYCLE', …)` | Return menstrual cycle reports for 1, 6, or 12 cycles ending at date. |
 | `get_pregnancy_summary()` | Return pregnancy summary for the current user. |
 | `init_menstrual_cycle_setup(period_start_date, period_length, cycle_length)` | Initialize menstrual cycle tracking with the first confirmed period. |
-| `update_menstrual_calendar(startdate, enddate, cycle_dates_lists, today_calendar_date=None)` | Replace menstrual period dates in `startdate`..`enddate`. |
-| `update_menstrual_daily_log(calendar_date, symptoms=None, moods=None, flow=None, …)` | Replace the menstrual daily log for `calendar_date`. |
-| `update_menstrual_settings(settings, user_settings_id=None)` | Update `userMenstrualCycleSettings` on the user profile. |
+| `update_menstrual_calendar(startdate, enddate, cycle_dates_lists, *, today_calendar_date=None)` | Replace menstrual period dates in `startdate`..`enddate`. |
+| `update_menstrual_daily_log(calendar_date, *, symptoms=None, moods=None, flow=None, …)` | Replace the menstrual daily log for `calendar_date`. |
+| `update_menstrual_settings(settings, *, user_settings_id=None)` | Update `userMenstrualCycleSettings` on the user profile. |
 
 </details>
 

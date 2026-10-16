@@ -25,9 +25,13 @@ from .transport import _native_headers, _sanitize_exception_text
 _LOGGER = logging.getLogger(__name__)
 
 
-def _jwt_web_from_cookies(jar: Any) -> str | None:
-    """Return the JWT_WEB cookie value from a cookie jar, if present."""
-    for c in jar:
+def _jwt_web_from_cookies(cookies: Any) -> str | None:
+    """Return the JWT_WEB cookie value from a session's cookies, if present.
+
+    curl_cffi wraps its jar (``cookies.jar``); a requests ``RequestsCookieJar``
+    is the jar itself, so iterate whichever one the session has.
+    """
+    for c in getattr(cookies, "jar", cookies):
         if c.name == "JWT_WEB":
             return str(c.value)
     return None
@@ -148,7 +152,7 @@ class SessionMixin(_ClientState):
             timeout=30,
         )
 
-        jwt_web = _jwt_web_from_cookies(self.cs.cookies.jar)
+        jwt_web = _jwt_web_from_cookies(self.cs.cookies)
         if not jwt_web:
             raise GarminConnectAuthenticationError(
                 "JWT_WEB cookie not set after ticket consumption"
@@ -306,7 +310,7 @@ class SessionMixin(_ClientState):
                     allow_redirects=True,
                     timeout=15,
                 )
-                jwt_web = _jwt_web_from_cookies(self.cs.cookies.jar)
+                jwt_web = _jwt_web_from_cookies(self.cs.cookies)
                 if jwt_web:
                     self.jwt_web = jwt_web
                     _LOGGER.debug("Session refreshed via CAS TGT")
@@ -323,7 +327,7 @@ class SessionMixin(_ClientState):
                         },
                         timeout=10,
                     )
-                jwt_web = _jwt_web_from_cookies(self.cs.cookies.jar)
+                jwt_web = _jwt_web_from_cookies(self.cs.cookies)
                 if jwt_web:
                     self.jwt_web = jwt_web
             except Exception as err:

@@ -1,5 +1,6 @@
 """Daily health and wellness data: summaries, sleep, heart rate, stress, hydration, nutrition, Health Snapshot, ECG, jet lag."""
 
+import math
 import numbers
 import re
 from datetime import datetime, timedelta
@@ -290,9 +291,11 @@ class HealthMixin(GarminBase):
         :param date optional - cdate: The date of the weigh in, format 'YYYY-MM-DD'. Defaults to current date.
         """
         # Validate inputs
-        if not isinstance(value_in_ml, numbers.Real):
+        if isinstance(value_in_ml, bool) or not isinstance(value_in_ml, numbers.Real):
             raise ValueError("value_in_ml must be a number")
         value_in_ml = float(value_in_ml)
+        if not math.isfinite(value_in_ml):
+            raise ValueError("value_in_ml must be a finite number")
 
         # Allow negative values for subtraction but validate reasonable range
         if abs(value_in_ml) > MAX_HYDRATION_ML:

@@ -37,9 +37,14 @@ def token_file_path(path: str) -> Path:
     # ~/.garminconnect -> /attacker/dir). O_NOFOLLOW on the final open()
     # only covers the last component; an intermediate symlinked directory
     # would still redirect load/dump/logout into an attacker-controlled tree.
+    # A root-owned symlink (Fedora Silverblue's /home -> var/home, FreeBSD's
+    # /home -> usr/home) can only be planted by root, so it is allowed on
+    # POSIX; Windows reports st_uid 0 for everything, so it never qualifies.
     for check_path in (token_path, *token_path.parents):
         try:
-            if check_path.is_symlink():
+            if check_path.is_symlink() and not (
+                os.name == "posix" and os.lstat(check_path).st_uid == 0
+            ):
                 raise ValueError(f"Token path must not be a symlink: {path!r}")
         except OSError as e:
             raise ValueError(

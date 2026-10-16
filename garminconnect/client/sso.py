@@ -393,7 +393,13 @@ class LoginMixin(_ClientState):
                 "falling through to next strategy"
             )
 
-        _LOGGER.debug("%s unexpected response: %s", label, res)
+        # Status only: the body can carry account data (customerMfaInfo, ids).
+        _LOGGER.debug(
+            "%s unexpected response: HTTP %s, responseStatus=%s",
+            label,
+            r.status_code,
+            resp_type or "unknown",
+        )
         raise GarminConnectConnectionError(
             f"{label} failed: HTTP {r.status_code}, "
             f"responseStatus={resp_type or 'unknown'}"

@@ -556,8 +556,11 @@ def _handle_api_errors(
                         if resp is not None:
                             new_exc.response = resp
                         raise new_exc from e
-                    # 5xx or no parseable status — retryable path.
-                    if attempt < attempts:
+                    # Retry only transient failures: a 5xx, or no status but a
+                    # network error in the cause chain. A status-less local
+                    # error (rejected URL, invalid response) cannot succeed.
+                    retryable = status >= 500 if status else _has_network_cause(e)
+                    if retryable and attempt < attempts:
                         delay = _backoff_delay(attempt, self)
                         logger.warning(
                             "%s attempt %d/%d failed (path=%s status=%s) — "

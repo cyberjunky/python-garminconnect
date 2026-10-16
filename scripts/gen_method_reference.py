@@ -47,17 +47,27 @@ def _signature(func: object) -> str:
     params = list(inspect.signature(func).parameters.values())[1:]  # type: ignore[arg-type]
     parts: list[str] = []
     optional = 0
+    star_shown = False  # "*" or "*args" already separates keyword-only params
+
+    def add(p: inspect.Parameter, text: str) -> None:
+        nonlocal star_shown
+        if p.kind is p.KEYWORD_ONLY and not star_shown:
+            parts.append("*")
+            star_shown = True
+        parts.append(text)
+
     for p in params:
         if p.kind is p.VAR_POSITIONAL:
             parts.append(f"*{p.name}")
+            star_shown = True
         elif p.kind is p.VAR_KEYWORD:
             parts.append(f"**{p.name}")
         elif p.default is inspect.Parameter.empty:
-            parts.append(p.name)
+            add(p, p.name)
         else:
             optional += 1
             if optional <= MAX_OPTIONAL_SHOWN:
-                parts.append(f"{p.name}={p.default!r}")
+                add(p, f"{p.name}={p.default!r}")
     if optional > MAX_OPTIONAL_SHOWN:
         parts.append("…")
     return ", ".join(parts)
