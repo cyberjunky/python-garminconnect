@@ -39,7 +39,22 @@ try:
 except ImportError:
     HAS_UA_GEN = False
 
+# The single-module client imported these, so callers could import them from
+# garminconnect.client; they stay importable from here.
+from ..exceptions import (
+    GarminConnectAuthenticationError,
+    GarminConnectConnectionError,
+    GarminConnectNotFoundError,
+    GarminConnectTooManyRequestsError,
+)
 from .constants import (
+    _API_ERROR_STATUS_RE,
+    _API_REJECTION_HINT,
+    _CSRF_RE,
+    _OTHER_USER_HOME_RE,
+    _QUERY_VALUE_RE,
+    _TITLE_RE,
+    _WIDGET_MFA_VARS_RE,
     ALLOWED_DOMAINS,
     DESKTOP_USER_AGENT,
     DI_CLIENT_IDS,
@@ -110,7 +125,18 @@ __all__ = [
     "PORTAL_SSO_SERVICE_URL",
     "WIDGET_DELAY_MAX_S",
     "WIDGET_DELAY_MIN_S",
+    "_API_ERROR_STATUS_RE",
+    "_API_REJECTION_HINT",
+    "_CSRF_RE",
+    "_OTHER_USER_HOME_RE",
+    "_QUERY_VALUE_RE",
+    "_TITLE_RE",
+    "_WIDGET_MFA_VARS_RE",
     "Client",
+    "GarminConnectAuthenticationError",
+    "GarminConnectConnectionError",
+    "GarminConnectNotFoundError",
+    "GarminConnectTooManyRequestsError",
     # Private helpers kept importable for existing callers and tests.
     "_MFARequired",
     "_build_basic_auth",

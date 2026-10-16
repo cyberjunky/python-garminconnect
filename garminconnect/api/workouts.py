@@ -170,7 +170,7 @@ class WorkoutsMixin(GarminBase):
 
         """
         try:
-            from .workout import RunningWorkout
+            from ..workout import RunningWorkout
 
             if not isinstance(workout, RunningWorkout):
                 raise TypeError("workout must be a RunningWorkout instance")
@@ -208,7 +208,7 @@ class WorkoutsMixin(GarminBase):
 
         """
         try:
-            from .workout import CyclingWorkout
+            from ..workout import CyclingWorkout
 
             if not isinstance(workout, CyclingWorkout):
                 raise TypeError("workout must be a CyclingWorkout instance")
@@ -230,7 +230,7 @@ class WorkoutsMixin(GarminBase):
 
         """
         try:
-            from .workout import SwimmingWorkout
+            from ..workout import SwimmingWorkout
 
             if not isinstance(workout, SwimmingWorkout):
                 raise TypeError("workout must be a SwimmingWorkout instance")
@@ -252,7 +252,7 @@ class WorkoutsMixin(GarminBase):
 
         """
         try:
-            from .workout import WalkingWorkout
+            from ..workout import WalkingWorkout
 
             if not isinstance(workout, WalkingWorkout):
                 raise TypeError("workout must be a WalkingWorkout instance")
@@ -274,7 +274,7 @@ class WorkoutsMixin(GarminBase):
 
         """
         try:
-            from .workout import HikingWorkout
+            from ..workout import HikingWorkout
 
             if not isinstance(workout, HikingWorkout):
                 raise TypeError("workout must be a HikingWorkout instance")
@@ -316,7 +316,7 @@ class WorkoutsMixin(GarminBase):
 
         """
         try:
-            from .workout import StrengthWorkout
+            from ..workout import StrengthWorkout
 
             if not isinstance(workout, StrengthWorkout):
                 raise TypeError("workout must be a StrengthWorkout instance")

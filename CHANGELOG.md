@@ -35,6 +35,7 @@ page.
 
 - **"Today" no longer follows the machine clock**: every default date and timestamp the library fills in itself (the lactate-threshold and power-to-weight lookups, the next scheduled workout, menstrual reports and calendar updates, and the local timestamps of new weigh-ins, body-composition entries, blood-pressure readings and hydration logs) is now computed in your Garmin profile timezone. On a host running in UTC these used to lag behind your real day every evening, so "today" silently returned or wrote yesterday's data. Timestamps you pass in without an offset are now also read as your profile's local time rather than the host's. Nothing changes when the host and your profile share a timezone.
 - **Demo**: dates are evaluated when a menu option runs, not once at startup, so a session left open overnight no longer keeps using yesterday; once logged in they follow your profile timezone.
+- **`get_progress_summary_between_dates()` sends `groupByParentActivityType` as `true`/`false`**, the form the web app uses, instead of Python's `True`/`False`.
 - **Clearer error when `curl_cffi` is missing**: login warns up front that the browser-impersonating strategies are unavailable, and the final "all login strategies exhausted" error names the missing package as the likely cause, instead of only reporting a Cloudflare 403.
 
 ## [0.3.18] - 2026-10-15
