@@ -7,7 +7,7 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
-## [Unreleased]
+## [0.3.19] - 2026-10-16
 
 ### Added
 
