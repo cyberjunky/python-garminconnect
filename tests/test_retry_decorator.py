@@ -254,3 +254,35 @@ def test_retry_attempts_rejects_bool():
     """Reject bool — it is a subclass of int in Python."""
     with pytest.raises(ValueError):
         Garmin(retry_attempts=True)
+
+
+def test_statusless_local_error_is_not_retried(garmin, monkeypatch):
+    """A failure without a status or network cause cannot succeed on retry."""
+    calls = {"n": 0}
+
+    def fake(path, **kw):
+        calls["n"] += 1
+        raise GarminConnectConnectionError("Invalid API path")
+
+    _stub(garmin.client, "connectapi", fake, monkeypatch)
+    garmin.retry_attempts = 3
+    with pytest.raises(GarminConnectConnectionError):
+        garmin.connectapi("/x")
+    assert calls["n"] == 1
+
+
+def test_statusless_error_with_network_cause_is_retried(garmin, monkeypatch):
+    calls = {"n": 0}
+
+    def fake(path, **kw):
+        calls["n"] += 1
+        try:
+            raise requests.ConnectionError("reset")
+        except requests.ConnectionError as e:
+            raise GarminConnectConnectionError("request failed") from e
+
+    _stub(garmin.client, "connectapi", fake, monkeypatch)
+    garmin.retry_attempts = 2
+    with pytest.raises(GarminConnectConnectionError):
+        garmin.connectapi("/x")
+    assert calls["n"] == 3

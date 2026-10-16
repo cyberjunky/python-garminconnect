@@ -251,7 +251,11 @@ class SwimmingWorkout(BaseWorkout):
 
 
 class WalkingWorkout(BaseWorkout):
-    """Walking workout model."""
+    """Walking workout model; Garmin cannot store it.
+
+    Garmin has no walking workout sport type, so ``upload_walking_workout()``
+    raises ``ValueError``. Kept so existing imports keep working.
+    """
 
     sportType: dict[str, Any] = Field(
         default_factory=lambda: {
@@ -287,7 +291,11 @@ class FitnessEquipmentWorkout(BaseWorkout):
 
 
 class HikingWorkout(BaseWorkout):
-    """Hiking workout model."""
+    """Hiking workout model; Garmin cannot store it.
+
+    Garmin has no hiking workout sport type, so ``upload_hiking_workout()``
+    raises ``ValueError``. Kept so existing imports keep working.
+    """
 
     sportType: dict[str, Any] = Field(
         default_factory=lambda: {

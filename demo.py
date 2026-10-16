@@ -71,8 +71,6 @@ else:
 
 _LOGGER = logging.getLogger("demo")
 
-api: Garmin | None = None
-
 
 def _open_private(path: str | Path, mode: str, encoding: str | None = None):
     """Open a new or existing export file with owner-only permissions."""
@@ -131,15 +129,12 @@ class Config:
     """Configuration class for the Garmin Connect API demo."""
 
     def __init__(self):
+        # The logged-in client, set by main(); today follows its profile timezone.
+        self.api: Garmin | None = None
         # Load environment variables
         self.email = os.getenv("GARMIN_EMAIL") or os.getenv("EMAIL")
         self.password = os.getenv("GARMIN_PASSWORD") or os.getenv("PASSWORD")
         self.tokenstore = os.getenv("GARMINTOKENS") or "~/.garminconnect"
-
-        # Date settings
-        self.today = datetime.date.today()
-        self.week_start = self.today - timedelta(days=7)
-        self.month_start = self.today - timedelta(days=30)
 
         # API call settings
         self.default_limit = 100
@@ -155,6 +150,26 @@ class Config:
         self.export_dir.mkdir(mode=0o700, exist_ok=True)
         if os.name != "nt":
             self.export_dir.chmod(0o700)
+
+    # Dates are evaluated on every access (not once at startup) so a long
+    # running session never lags behind midnight, and once logged in they
+    # follow the user's Garmin profile timezone rather than the machine clock.
+    @property
+    def today(self) -> datetime.date:
+        if self.api is not None and self.api.display_name:
+            try:
+                return self.api.today()
+            except Exception as e:
+                _LOGGER.debug("Falling back to machine date: %s", e)
+        return datetime.date.today()
+
+    @property
+    def week_start(self) -> datetime.date:
+        return self.today - timedelta(days=7)
+
+    @property
+    def month_start(self) -> datetime.date:
+        return self.today - timedelta(days=30)
 
 
 # Initialize configuration
@@ -172,99 +187,129 @@ menu_categories = {
                 "desc": "Get userprofile settings",
                 "key": "get_userprofile_settings",
             },
+            "5": {
+                "desc": "Personal information (timezone, biometrics)",
+                "key": "get_personal_information",
+            },
+            "6": {"desc": "User profile base", "key": "get_user_profile_base"},
+            "7": {"desc": "Privacy settings", "key": "get_privacy_settings"},
+            "8": {"desc": "Account usage indicators", "key": "get_usage_indicators"},
         },
     },
     "2": {
         "name": "📊 Daily Health & Activity",
         "options": {
             "1": {
-                "desc": f"Get activity data for '{config.today.isoformat()}'",
+                "desc": "Get activity data for '{today}'",
                 "key": "get_stats",
             },
             "2": {
-                "desc": f"Get user summary for '{config.today.isoformat()}'",
+                "desc": "Get user summary for '{today}'",
                 "key": "get_user_summary",
             },
             "3": {
-                "desc": f"Get stats and body composition for '{config.today.isoformat()}'",
+                "desc": "Get stats and body composition for '{today}'",
                 "key": "get_stats_and_body",
             },
             "4": {
-                "desc": f"Get steps data for '{config.today.isoformat()}'",
+                "desc": "Get steps data for '{today}'",
                 "key": "get_steps_data",
             },
             "5": {
-                "desc": f"Get heart rate data for '{config.today.isoformat()}'",
+                "desc": "Get heart rate data for '{today}'",
                 "key": "get_heart_rates",
             },
             "6": {
-                "desc": f"Get resting heart rate from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get resting heart rate from '{week_start}' to '{today}'",
                 "key": "get_rhr_daily",
             },
             "7": {
-                "desc": f"Get daily sleep summaries from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get daily sleep summaries from '{week_start}' to '{today}'",
                 "key": "get_sleep_daily",
             },
             "8": {
-                "desc": f"Get stress data for '{config.today.isoformat()}'",
+                "desc": "Get stress data for '{today}'",
                 "key": "get_all_day_stress",
             },
             "9": {
-                "desc": f"Get lifestyle logging data for '{config.today.isoformat()}'",
+                "desc": "Get lifestyle logging data for '{today}'",
                 "key": "get_lifestyle_logging_data",
             },
             "a": {
-                "desc": f"Get daily calories from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get daily calories from '{week_start}' to '{today}'",
                 "key": "get_calories_daily",
             },
+            "0": {
+                "desc": "SpO2 with acclimation for today",
+                "key": "get_spo2_acclimation_data",
+            },
+            "b": {"desc": "Daily movement chart", "key": "get_daily_movement"},
+            "c": {"desc": "Step goal (device vs user)", "key": "get_steps_goal"},
+            "d": {"desc": "Last device sync timestamp", "key": "get_sync_timestamp"},
+            "e": {
+                "desc": "Hourly intensity minutes for today",
+                "key": "get_hourly_intensity_minutes",
+            },
+            "f": {"desc": "Sleep for today (sleep-service)", "key": "get_daily_sleep"},
+            "g": {"desc": "Naps for today", "key": "get_naps"},
+            "h": {"desc": "Blood pressure for today", "key": "get_blood_pressure_day"},
+            "i": {
+                "desc": "Hydration: intake, goal, containers",
+                "key": "get_hydration_all_data",
+            },
+            "j": {
+                "desc": "Week average resting heart rate",
+                "key": "get_week_average_resting_hr",
+            },
+            "k": {"desc": "Fitness age details (v2)", "key": "get_fitness_age_details"},
         },
     },
     "3": {
         "name": "🔬 Advanced Health Metrics",
         "options": {
             "1": {
-                "desc": f"Get training readiness for '{config.today.isoformat()}'",
+                "desc": "Get training readiness for '{today}'",
                 "key": "get_training_readiness",
             },
             "2": {
-                "desc": f"Get morning training readiness for '{config.today.isoformat()}'",
+                "desc": "Get morning training readiness for '{today}'",
                 "key": "get_morning_training_readiness",
             },
             "3": {
-                "desc": f"Get training status for '{config.today.isoformat()}'",
+                "desc": "Get training status for '{today}'",
                 "key": "get_training_status",
             },
             "4": {
-                "desc": f"Get respiration data for '{config.today.isoformat()}'",
+                "desc": "Get respiration data for '{today}'",
                 "key": "get_respiration_data",
             },
             "5": {
-                "desc": f"Get SpO2 data for '{config.today.isoformat()}'",
+                "desc": "Get SpO2 data for '{today}'",
                 "key": "get_spo2_data",
             },
             "6": {
-                "desc": f"Get max metrics (VO2, fitness age) from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get max metrics (VO2, fitness age) from '{week_start}' to '{today}'",
                 "key": "get_max_metrics_range",
             },
             "7": {
-                "desc": f"Get Heart Rate Variability (HRV) from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get Heart Rate Variability (HRV) from '{week_start}' to '{today}'",
                 "key": "get_hrv_data_range",
             },
             "8": {
-                "desc": f"Get Fitness Age data for '{config.today.isoformat()}'",
+                "desc": "Get Fitness Age data for '{today}'",
                 "key": "get_fitnessage_data",
             },
             "9": {
-                "desc": f"Get stress data for '{config.today.isoformat()}'",
+                "desc": "Get stress data for '{today}'",
                 "key": "get_stress_data",
             },
             "0": {"desc": "Get lactate threshold data", "key": "get_lactate_threshold"},
             "a": {
-                "desc": f"Get intensity minutes for '{config.today.isoformat()}'",
+                "desc": "Get intensity minutes for '{today}'",
                 "key": "get_intensity_minutes_data",
             },
             "b": {
-                "desc": f"Get running tolerance from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get running tolerance from '{week_start}' to '{today}'",
                 "key": "get_running_tolerance",
             },
             "c": {
@@ -280,62 +325,179 @@ menu_categories = {
                 "key": "get_power_zones_for_sport",
             },
             "f": {
-                "desc": f"Get functional threshold power range from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get functional threshold power range from '{week_start}' to '{today}'",
                 "key": "get_functional_threshold_power_range",
             },
             "g": {
-                "desc": f"Get four-week training load balance for '{config.today.isoformat()}'",
+                "desc": "Get four-week training load balance for '{today}'",
                 "key": "get_training_four_week_load_balance",
             },
             "h": {
-                "desc": f"Get daily training status (acute/chronic load) for '{config.today.isoformat()}'",
+                "desc": "Get daily training status (acute/chronic load) for '{today}'",
                 "key": "get_daily_training_status",
             },
             "i": {
-                "desc": f"Get activity training load from '{config.month_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get activity training load from '{month_start}' to '{today}'",
                 "key": "get_training_load_activities",
             },
+            "j": {"desc": "Latest VO2 max record", "key": "get_max_metrics_latest"},
+            "k": {
+                "desc": "Training readiness, last 7 days",
+                "key": "get_training_readiness_range",
+            },
+            "l": {
+                "desc": "Weekly training status, last 30 days",
+                "key": "get_weekly_training_status",
+            },
+            "m": {
+                "desc": "Heat & altitude acclimation (latest)",
+                "key": "get_heat_altitude_acclimation",
+            },
+            "n": {
+                "desc": "Heat & altitude acclimation, last 7 days",
+                "key": "get_heat_altitude_acclimation_range",
+            },
+            "o": {"desc": "Cycling ability (latest)", "key": "get_cycling_ability"},
+            "p": {
+                "desc": "Cycling ability, last 30 days",
+                "key": "get_cycling_ability_range",
+            },
+            "r": {"desc": "Running economy (latest)", "key": "get_running_economy"},
+            "s": {"desc": "Stamina curve (running)", "key": "get_stamina_curve"},
+            "t": {
+                "desc": "Power curve, last 30 days (cycling)",
+                "key": "get_power_curve",
+            },
+            "u": {
+                "desc": "Critical swim speed (latest)",
+                "key": "get_critical_swim_speed",
+            },
+            "v": {"desc": "Heart rate zones (v2)", "key": "get_heart_rate_zones_v2"},
+            "w": {
+                "desc": "Biometric statistics, last 7 days",
+                "key": "get_biometric_stats",
+            },
+            "x": {
+                "desc": "Power-to-weight history, last 30 days",
+                "key": "get_power_to_weight_range",
+            },
+            "y": {
+                "desc": "Current biometrics (VO2 max, LT, FTP)",
+                "key": "get_current_biometrics",
+            },
+            "z": {"desc": "Glucose readings for today", "key": "get_glucose_data"},
         },
     },
     "4": {
         "name": "📈 Historical Data & Trends",
         "options": {
             "1": {
-                "desc": f"Get daily steps from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get daily steps from '{week_start}' to '{today}'",
                 "key": "get_daily_steps",
             },
             "2": {
-                "desc": f"Get body battery from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get body battery from '{week_start}' to '{today}'",
                 "key": "get_body_battery",
             },
             "3": {
-                "desc": f"Get floors data for '{config.week_start.isoformat()}'",
+                "desc": "Get floors data for '{week_start}'",
                 "key": "get_floors",
             },
             "4": {
-                "desc": f"Get blood pressure from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get blood pressure from '{week_start}' to '{today}'",
                 "key": "get_blood_pressure",
             },
             "5": {
-                "desc": f"Get progress summary from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get progress summary from '{week_start}' to '{today}'",
                 "key": "get_progress_summary_between_dates",
             },
             "6": {
-                "desc": f"Get body battery events for '{config.week_start.isoformat()}'",
+                "desc": "Get body battery events for '{week_start}'",
                 "key": "get_body_battery_events",
             },
             "7": {
-                "desc": f"Get weekly steps (52 weeks ending '{config.today.isoformat()}')",
+                "desc": "Get weekly steps (52 weeks ending '{today}')",
                 "key": "get_weekly_steps",
             },
             "8": {
-                "desc": f"Get weekly stress (52 weeks ending '{config.today.isoformat()}')",
+                "desc": "Get weekly stress (52 weeks ending '{today}')",
                 "key": "get_weekly_stress",
             },
             "9": {
-                "desc": f"Get weekly intensity minutes from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get weekly intensity minutes from '{week_start}' to '{today}'",
                 "key": "get_weekly_intensity_minutes",
             },
+            "0": {
+                "desc": "Daily steps stats with aggregations, last 7 days",
+                "key": "get_daily_stats",
+            },
+            "a": {
+                "desc": "Daily heart rate stats, last 7 days",
+                "key": "get_daily_heart_rate_stats",
+            },
+            "b": {
+                "desc": "Weekly heart rate stats, last 12 weeks",
+                "key": "get_weekly_heart_rate_stats",
+            },
+            "c": {
+                "desc": "Daily stress stats, last 7 days",
+                "key": "get_daily_stress_stats",
+            },
+            "d": {
+                "desc": "Daily Body Battery stats, last 7 days",
+                "key": "get_daily_body_battery_stats",
+            },
+            "e": {
+                "desc": "Daily intensity minutes, last 7 days",
+                "key": "get_daily_intensity_minutes_stats",
+            },
+            "f": {
+                "desc": "Daily respiration stats, last 7 days",
+                "key": "get_daily_respiration_stats",
+            },
+            "g": {
+                "desc": "Daily floors stats, last 7 days",
+                "key": "get_daily_floors_stats",
+            },
+            "h": {
+                "desc": "Weekly calories, last 12 weeks",
+                "key": "get_weekly_calories_stats",
+            },
+            "i": {"desc": "Monthly steps, last 6 months", "key": "get_monthly_steps"},
+            "j": {
+                "desc": "Average steps and resting HR, last 7 days",
+                "key": "get_stats_averages",
+            },
+            "k": {"desc": "Lifetime totals", "key": "get_lifetime_totals"},
+            "l": {
+                "desc": "Daily summaries, last 7 days (one call)",
+                "key": "get_daily_summaries",
+            },
+            "m": {
+                "desc": "Weekly sleep statistics, last 12 weeks",
+                "key": "get_sleep_stats_weekly",
+            },
+            "n": {
+                "desc": "Overall sleep statistics, last 30 days",
+                "key": "get_sleep_stats_overall",
+            },
+            "o": {
+                "desc": "Health Snapshot sessions, last 30 days",
+                "key": "get_health_snapshots_range",
+            },
+            "p": {
+                "desc": "Fitness age, daily, last 7 days",
+                "key": "get_fitness_age_daily",
+            },
+            "r": {
+                "desc": "Fitness age, weekly, last 12 weeks",
+                "key": "get_fitness_age_weekly",
+            },
+            "s": {
+                "desc": "Available progress metrics, last 30 days",
+                "key": "get_available_metrics",
+            },
+            "t": {"desc": "One-rep-max estimates (strength)", "key": "get_one_rep_max"},
         },
     },
     "5": {
@@ -347,11 +509,11 @@ menu_categories = {
             },
             "2": {"desc": "Get last activity", "key": "get_last_activity"},
             "3": {
-                "desc": f"Get activities for today '{config.today.isoformat()}'",
+                "desc": "Get activities for today '{today}'",
                 "key": "get_activities_fordate",
             },
             "4": {
-                "desc": f"Download activities by date range '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Download activities by date range '{week_start}' to '{today}'",
                 "key": "download_activities",
             },
             "5": {
@@ -402,7 +564,7 @@ menu_categories = {
                 "key": "upload_workout",
             },
             "l": {
-                "desc": f"Get activities by date range '{config.today.isoformat()}'",
+                "desc": "Get activities by date range '{today}'",
                 "key": "get_activities_by_date",
             },
             "m": {"desc": "Set activity name", "key": "set_activity_name"},
@@ -437,14 +599,6 @@ menu_categories = {
                 "desc": "Upload typed swimming workout (sample)",
                 "key": "upload_swimming_workout",
             },
-            "y": {
-                "desc": "Upload typed walking workout (sample)",
-                "key": "upload_walking_workout",
-            },
-            "z": {
-                "desc": "Upload typed hiking workout (sample)",
-                "key": "upload_hiking_workout",
-            },
             "A": {
                 "desc": "Get activities filtered by type/subtype (interactive)",
                 "key": "get_activities_filtered",
@@ -467,27 +621,34 @@ menu_categories = {
         "name": "⚖️  Body Composition & Weight",
         "options": {
             "1": {
-                "desc": f"Get body composition for '{config.today.isoformat()}'",
+                "desc": "Get body composition for '{today}'",
                 "key": "get_body_composition",
             },
             "2": {
-                "desc": f"Get weigh-ins from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get weigh-ins from '{week_start}' to '{today}'",
                 "key": "get_weigh_ins",
             },
             "3": {
-                "desc": f"Get daily weigh-ins for '{config.today.isoformat()}'",
+                "desc": "Get daily weigh-ins for '{today}'",
                 "key": "get_daily_weigh_ins",
             },
             "4": {"desc": "Add a weigh-in (interactive)", "key": "add_weigh_in"},
             "5": {
-                "desc": f"Add body composition for '{config.today.isoformat()}' (interactive)",
+                "desc": "Add body composition for '{today}' (interactive)",
                 "key": "add_body_composition",
             },
             "6": {
-                "desc": f"Delete all weigh-ins for '{config.today.isoformat()}'",
+                "desc": "Delete all weigh-ins for '{today}'",
                 "key": "delete_weigh_ins",
             },
             "7": {"desc": "Delete specific weigh-in", "key": "delete_weigh_in"},
+            "8": {"desc": "Latest weigh-in", "key": "get_latest_weight"},
+            "9": {"desc": "First weigh-in ever", "key": "get_first_weight"},
+            "0": {
+                "desc": "Last weigh-in per day, last 30 days",
+                "key": "get_daily_last_weight",
+            },
+            "a": {"desc": "Weekly weight, last 52 weeks", "key": "get_weekly_weight"},
         },
     },
     "7": {
@@ -517,15 +678,36 @@ menu_categories = {
             },
             "a": {"desc": "Get race predictions", "key": "get_race_predictions"},
             "b": {
-                "desc": f"Get hill score from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get hill score from '{week_start}' to '{today}'",
                 "key": "get_hill_score",
             },
             "c": {
-                "desc": f"Get endurance score from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get endurance score from '{week_start}' to '{today}'",
                 "key": "get_endurance_score",
             },
             "d": {"desc": "Get available badges", "key": "get_available_badges"},
             "e": {"desc": "Get badges in progress", "key": "get_in_progress_badges"},
+            "f": {"desc": "Effective daily goals", "key": "get_effective_goals"},
+            "g": {"desc": "User goals", "key": "get_user_goals"},
+            "h": {"desc": "Badge attributes", "key": "get_badge_attributes"},
+            "i": {"desc": "Latest earned badges", "key": "get_latest_earned_badges"},
+            "j": {
+                "desc": "Available virtual challenges",
+                "key": "get_available_virtual_challenges",
+            },
+            "k": {
+                "desc": "Personal record candidates",
+                "key": "get_personal_record_candidates",
+            },
+            "l": {"desc": "Personal record types", "key": "get_personal_record_types"},
+            "m": {
+                "desc": "Set or reset the step goal (interactive)",
+                "key": "set_steps_goal",
+            },
+            "n": {
+                "desc": "Set a daily goal: intensity minutes, floors, hydration (interactive)",
+                "key": "set_daily_goal",
+            },
         },
     },
     "8": {
@@ -535,7 +717,7 @@ menu_categories = {
             "2": {"desc": "Get device alarms", "key": "get_device_alarms"},
             "3": {"desc": "Get solar data from your devices", "key": "get_solar_data"},
             "4": {
-                "desc": f"Request data reload (epoch) for '{config.today.isoformat()}'",
+                "desc": "Request data reload (epoch) for '{today}'",
                 "key": "request_reload",
             },
             "5": {"desc": "Get device settings", "key": "get_device_settings"},
@@ -543,6 +725,15 @@ menu_categories = {
             "7": {
                 "desc": "Get primary training device",
                 "key": "get_primary_training_device",
+            },
+            "8": {"desc": "All devices (incl. inactive)", "key": "get_all_devices"},
+            "9": {"desc": "Historical devices", "key": "get_historical_devices"},
+            "0": {"desc": "Active devices", "key": "get_active_devices"},
+            "a": {"desc": "Paired sensors", "key": "get_sensors"},
+            "b": {"desc": "Device message queue", "key": "get_device_messages"},
+            "c": {
+                "desc": "Set primary training device (interactive)",
+                "key": "set_primary_training_device",
             },
         },
     },
@@ -566,13 +757,27 @@ menu_categories = {
                 "desc": "Create new gear, e.g. shoes (interactive)",
                 "key": "create_gear",
             },
+            "9": {"desc": "Gear list (v2)", "key": "get_gear_list"},
+            "0": {"desc": "Gear types", "key": "get_gear_types"},
+            "a": {
+                "desc": "Gear on latest activity (v2)",
+                "key": "get_activity_gear_v2",
+            },
+            "b": {
+                "desc": "Update gear notes (interactive)",
+                "key": "update_gear_notes",
+            },
+            "c": {
+                "desc": "Delete gear (interactive, confirms by name)",
+                "key": "delete_gear",
+            },
         },
     },
     "0": {
         "name": "💧 Hydration & Wellness",
         "options": {
             "1": {
-                "desc": f"Get hydration data for '{config.today.isoformat()}'",
+                "desc": "Get hydration data for '{today}'",
                 "key": "get_hydration_data",
             },
             "2": {"desc": "Add hydration data", "key": "add_hydration_data"},
@@ -582,19 +787,19 @@ menu_categories = {
             },
             "4": {"desc": "Get pregnancy summary data", "key": "get_pregnancy_summary"},
             "5": {
-                "desc": f"Get all day events for '{config.week_start.isoformat()}'",
+                "desc": "Get all day events for '{week_start}'",
                 "key": "get_all_day_events",
             },
             "6": {
-                "desc": f"Get body battery events for '{config.week_start.isoformat()}'",
+                "desc": "Get body battery events for '{week_start}'",
                 "key": "get_body_battery_events",
             },
             "7": {
-                "desc": f"Get menstrual data for '{config.today.isoformat()}'",
+                "desc": "Get menstrual data for '{today}'",
                 "key": "get_menstrual_data_for_date",
             },
             "8": {
-                "desc": f"Get menstrual calendar from '{config.week_start.isoformat()}' to '{config.today.isoformat()}'",
+                "desc": "Get menstrual calendar from '{week_start}' to '{today}'",
                 "key": "get_menstrual_calendar_data",
             },
             "9": {
@@ -602,27 +807,27 @@ menu_categories = {
                 "key": "delete_blood_pressure",
             },
             "a": {
-                "desc": f"Get nutrition daily food log for '{config.today.isoformat()}'",
+                "desc": "Get nutrition daily food log for '{today}'",
                 "key": "get_nutrition_daily_food_log",
             },
             "b": {
-                "desc": f"Get nutrition daily meals for '{config.today.isoformat()}'",
+                "desc": "Get nutrition daily meals for '{today}'",
                 "key": "get_nutrition_daily_meals",
             },
             "c": {
-                "desc": f"Get nutrition daily settings for '{config.today.isoformat()}'",
+                "desc": "Get nutrition daily settings for '{today}'",
                 "key": "get_nutrition_daily_settings",
             },
             "d": {
-                "desc": f"Get last confirmed menstrual cycle for '{config.today.isoformat()}'",
+                "desc": "Get last confirmed menstrual cycle for '{today}'",
                 "key": "get_menstrual_last_confirmed",
             },
             "e": {
-                "desc": f"Get menstrual cycle summary for '{config.today.isoformat()}'",
+                "desc": "Get menstrual cycle summary for '{today}'",
                 "key": "get_menstrual_cycle_summary",
             },
             "f": {
-                "desc": f"Get menstrual reports (6 cycles) ending '{config.today.isoformat()}'",
+                "desc": "Get menstrual reports (6 cycles) ending '{today}'",
                 "key": "get_menstrual_reports",
             },
             "g": {
@@ -658,6 +863,21 @@ menu_categories = {
                 "desc": "Delete jet lag trip (interactive)",
                 "key": "delete_jetlag_trip",
             },
+            "0": {"desc": "Nutrition status", "key": "get_nutrition_status"},
+            "p": {
+                "desc": "Calorie summary per meal, last 7 days",
+                "key": "get_calorie_summary",
+            },
+            "r": {
+                "desc": "ECG recordings per day, last 30 days",
+                "key": "get_ecg_daily",
+            },
+            "s": {"desc": "ECG recordings list", "key": "get_ecg_list"},
+            "t": {"desc": "Jet lag status for today", "key": "get_jetlag_status"},
+            "u": {
+                "desc": "Edit the note of a blood pressure reading (interactive)",
+                "key": "update_blood_pressure",
+            },
         },
     },
     "a": {
@@ -677,7 +897,7 @@ menu_categories = {
         },
     },
     "b": {
-        "name": "📅 Training Plans",
+        "name": "📅 Training Plans & Calendar",
         "options": {
             "1": {"desc": "Get training plans", "key": "get_training_plans"},
             "2": {"desc": "Get training plan by ID", "key": "get_training_plan_by_id"},
@@ -713,6 +933,34 @@ menu_categories = {
                 "desc": "Upload timed strength workout with step notes (sample)",
                 "key": "upload_timed_strength_workout",
             },
+            "a": {
+                "desc": "Scheduled workouts, next 60 days (incl. adaptive plans)",
+                "key": "get_scheduled_workouts_by_period",
+            },
+            "b": {"desc": "Workout counts per sport", "key": "get_workout_count"},
+            "c": {"desc": "Workout sport types", "key": "get_workout_sport_types"},
+            "d": {"desc": "Workout type dictionaries", "key": "get_workout_types"},
+            "e": {
+                "desc": "Strength benchmark exercises",
+                "key": "get_strength_benchmarks",
+            },
+            "f": {"desc": "Active training plans", "key": "get_active_training_plans"},
+            "g": {
+                "desc": "Search Garmin training plan catalogue",
+                "key": "search_training_plans",
+            },
+            "h": {"desc": "Calendar year overview", "key": "get_calendar_year"},
+            "i": {
+                "desc": "Calendar week (items of this week)",
+                "key": "get_calendar_week",
+            },
+            "j": {"desc": "Calendar events this year", "key": "get_calendar_events"},
+            "k": {"desc": "Upcoming events", "key": "get_upcoming_events"},
+            "l": {"desc": "Primary race event", "key": "get_primary_event"},
+            "m": {
+                "desc": "Add a calendar note for today (interactive)",
+                "key": "calendar_note",
+            },
         },
     },
     "c": {
@@ -739,11 +987,115 @@ menu_categories = {
                 "desc": "Set activity exercise sets (strength activity)",
                 "key": "set_activity_exercise_sets",
             },
+            "3": {
+                "desc": "Rename latest activity via update_activity (interactive)",
+                "key": "update_activity",
+            },
+        },
+    },
+    "e": {
+        "name": "🏃 Activity Details & Courses",
+        "options": {
+            "1": {
+                "desc": "Search activities (walking, last 7 days)",
+                "key": "search_activities",
+            },
+            "2": {
+                "desc": "Fastest running splits this year",
+                "key": "get_fastest_splits",
+            },
+            "3": {"desc": "Favorite activities", "key": "get_favorite_activities"},
+            "4": {"desc": "Laps of latest activity", "key": "get_activity_laps"},
+            "5": {
+                "desc": "Map details of latest activity",
+                "key": "get_activity_map_details",
+            },
+            "6": {
+                "desc": "Previous/next of latest activity",
+                "key": "get_adjacent_activities",
+            },
+            "7": {"desc": "Activity event types", "key": "get_activity_event_types"},
+            "8": {
+                "desc": "Segments in latest activity",
+                "key": "get_activity_segments",
+            },
+            "9": {
+                "desc": "Personal records set by latest activity",
+                "key": "get_personal_records_for_activity",
+            },
+            "0": {"desc": "My courses", "key": "get_courses"},
+            "a": {"desc": "Favorite courses", "key": "get_course_favorites"},
+            "b": {"desc": "PacePro pace bands", "key": "get_pace_bands"},
+            "c": {
+                "desc": "Convert latest activity to a course (not saved)",
+                "key": "convert_activity_to_course",
+            },
         },
     },
 }
 
 current_category = None
+
+
+# --- Helpers for the web-app endpoint categories (see docs/API_ENDPOINTS.md) --
+
+
+def _today() -> str:
+    return config.today.isoformat()
+
+
+def _week_ago() -> str:
+    return config.week_start.isoformat()
+
+
+def _month_ago() -> str:
+    return config.month_start.isoformat()
+
+
+def _latest_activity_id(api: Garmin) -> int:
+    """Return the id of the most recent activity (raises when there is none)."""
+    activity = api.get_last_activity()
+    if not activity:
+        raise ValueError("No activities found on this account")
+    return int(activity["activityId"])
+
+
+def _web(api: Garmin, method: str, args_fn=None, kwargs_fn=None):
+    """Build a menu action that calls ``api.<method>`` with lazily built arguments.
+
+    Arguments are computed when the option runs, so dates follow
+    ``config.today`` and activity ids are looked up on demand.
+    """
+
+    def run():
+        args = tuple(args_fn()) if args_fn else ()
+        kwargs = dict(kwargs_fn()) if kwargs_fn else {}
+        shown = ", ".join(
+            [repr(a) for a in args] + [f"{k}={v!r}" for k, v in kwargs.items()]
+        )
+        call_and_display(
+            getattr(api, method),
+            *args,
+            method_name=method,
+            api_call_desc=f"api.{method}({shown})",
+            **kwargs,
+        )
+
+    return run
+
+
+def _menu_label(desc: str) -> str:
+    """Fill a menu label's date placeholders with the dates as of now.
+
+    Labels are defined once at import, so they hold ``{today}`` /
+    ``{week_start}`` / ``{month_start}`` and are filled in when the menu is
+    printed; a session left open past midnight then shows the new dates.
+    """
+    return (
+        desc.replace("{today}", config.today.isoformat())
+        .replace("{week_start}", config.week_start.isoformat())
+        .replace("{month_start}", config.month_start.isoformat())
+    )
 
 
 def print_main_menu():
@@ -773,7 +1125,7 @@ def print_category_menu(category_key: str):
     print("-" * 40)
 
     for key, option in category["options"].items():
-        print(f"  [{key}] {option['desc']}")
+        print(f"  [{key}] {_menu_label(option['desc'])}")
 
     print()
     print("  [q] Back to main menu")
@@ -2731,80 +3083,6 @@ def upload_swimming_css_workout_data(api: Garmin) -> None:
         )
     except Exception as e:
         print(f"❌ Error uploading swimming CSS workout: {e}")
-
-
-def upload_walking_workout_data(api: Garmin) -> None:
-    """Upload a typed walking workout."""
-    try:
-        import sys
-        from pathlib import Path
-
-        # Add test_data to path for imports
-        test_data_path = Path(__file__).parent / "test_data"
-        if str(test_data_path) not in sys.path:
-            sys.path.insert(0, str(test_data_path))
-
-        from sample_walking_workout import create_sample_walking_workout
-
-        print("🚶 Creating and uploading walking workout...")
-        workout = create_sample_walking_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
-
-        result = api.upload_walking_workout(workout)
-
-        if result:
-            print("✅ Walking workout uploaded successfully!")
-            call_and_display(
-                lambda: result,
-                method_name="upload_walking_workout",
-                api_call_desc="api.upload_walking_workout(workout)",
-            )
-        else:
-            print("❌ Failed to upload walking workout")
-    except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
-    except Exception as e:
-        print(f"❌ Error uploading walking workout: {e}")
-
-
-def upload_hiking_workout_data(api: Garmin) -> None:
-    """Upload a typed hiking workout."""
-    try:
-        import sys
-        from pathlib import Path
-
-        # Add test_data to path for imports
-        test_data_path = Path(__file__).parent / "test_data"
-        if str(test_data_path) not in sys.path:
-            sys.path.insert(0, str(test_data_path))
-
-        from sample_hiking_workout import create_sample_hiking_workout
-
-        print("🥾 Creating and uploading hiking workout...")
-        workout = create_sample_hiking_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
-
-        result = api.upload_hiking_workout(workout)
-
-        if result:
-            print("✅ Hiking workout uploaded successfully!")
-            call_and_display(
-                lambda: result,
-                method_name="upload_hiking_workout",
-                api_call_desc="api.upload_hiking_workout(workout)",
-            )
-        else:
-            print("❌ Failed to upload hiking workout")
-    except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
-    except Exception as e:
-        print(f"❌ Error uploading hiking workout: {e}")
 
 
 def search_exercise_catalog_data(api: Garmin) -> None:
@@ -4874,6 +5152,218 @@ def track_gear_usage_data(api: Garmin) -> None:
         print(f"❌ Error getting gear for track_gear_usage_data: {e}")
 
 
+# --- Interactive helpers for the edit calls (write to the account; each asks first) ---
+
+
+def _pick(items: list, label: str, show) -> Any | None:
+    """Let the user pick one item from a short numbered list (or cancel)."""
+    if not items:
+        print(f"❌ No {label} found")
+        return None
+    for i, item in enumerate(items, 1):
+        print(f"  [{i}] {show(item)}")
+    choice = input(f"Choose a {label} (1-{len(items)}, Enter to cancel): ").strip()
+    if not choice.isdigit() or not 1 <= int(choice) <= len(items):
+        print("Cancelled")
+        return None
+    return items[int(choice) - 1]
+
+
+def update_gear_notes_data(api: Garmin) -> None:
+    """Edit the notes of a piece of gear (gear-service v2)."""
+    try:
+        gear = _pick(
+            api.get_gear_list(0, 50),
+            "gear item",
+            lambda g: (
+                f"{g.get('name')} ({g.get('brand')} {g.get('model')}) notes={g.get('notes')!r}"
+            ),
+        )
+        if not gear:
+            return
+        notes = input("New notes (Enter to keep, '-' to clear): ").strip()
+        if not notes:
+            print("Cancelled")
+            return
+        notes = "" if notes == "-" else notes
+        call_and_display(
+            api.update_gear,
+            gear["uuid"],
+            notes=notes,
+            method_name="update_gear",
+            api_call_desc=f"api.update_gear('{gear['uuid']}', notes={notes!r})",
+        )
+    except Exception as e:
+        print(f"❌ Error updating gear: {e}")
+
+
+def delete_gear_data(api: Garmin) -> None:
+    """Delete a piece of gear after typing its name to confirm."""
+    try:
+        gear = _pick(
+            api.get_gear_list(0, 50),
+            "gear item",
+            lambda g: (
+                f"{g.get('name')} ({g.get('brand')} {g.get('model')}, {g.get('status')})"
+            ),
+        )
+        if not gear:
+            return
+        if (
+            input(f"Type the gear name '{gear['name']}' to delete it: ").strip()
+            != gear["name"]
+        ):
+            print("Cancelled")
+            return
+        call_and_display(
+            api.delete_gear,
+            gear["uuid"],
+            method_name="delete_gear",
+            api_call_desc=f"api.delete_gear('{gear['uuid']}')",
+        )
+    except Exception as e:
+        print(f"❌ Error deleting gear: {e}")
+
+
+def set_steps_goal_data(api: Garmin) -> None:
+    """Set a manual step goal or return to the automatic one."""
+    try:
+        current = api.get_steps_goal()
+        print(f"Current goal: {current}")
+        value = input("Manual step goal (Enter for automatic goal): ").strip()
+        steps = int(value) if value else None
+        call_and_display(
+            api.set_steps_goal,
+            steps,
+            method_name="set_steps_goal",
+            api_call_desc=f"api.set_steps_goal({steps})",
+        )
+    except Exception as e:
+        print(f"❌ Error setting step goal: {e}")
+
+
+def set_daily_goal_data(api: Garmin) -> None:
+    """Set an intensity-minutes, floors or hydration goal."""
+    try:
+        goals = api.get_effective_goals()
+        print(f"Effective goals: {goals}")
+        goal = _pick(goals, "goal", lambda g: f"{g['goalType']} = {g['goalValue']}")
+        if not goal:
+            return
+        value = input(f"New value for {goal['goalType']}: ").strip()
+        if not value:
+            print("Cancelled")
+            return
+        call_and_display(
+            api.set_daily_goal,
+            goal["goalType"],
+            float(value),
+            method_name="set_daily_goal",
+            api_call_desc=f"api.set_daily_goal('{goal['goalType']}', {value})",
+        )
+    except Exception as e:
+        print(f"❌ Error setting goal: {e}")
+
+
+def calendar_note_data(api: Garmin) -> None:
+    """Add a calendar note for today and optionally delete it again."""
+    try:
+        name = input("Note title (default: 'Demo note'): ").strip() or "Demo note"
+        content = input("Note content (optional): ").strip()
+        note = api.create_calendar_note(_today(), name, content)
+        _display_single(
+            f"api.create_calendar_note('{_today()}', {name!r}, {content!r})", note
+        )
+        note_id = note.get("id") if isinstance(note, dict) else None
+        if not note_id:
+            print("⚠️ The response has no note id; delete the note in Garmin Connect")
+            return
+        if input("Delete it again? (y/N): ").strip().lower() == "y":
+            call_and_display(
+                api.delete_calendar_note,
+                note_id,
+                method_name="delete_calendar_note",
+                api_call_desc=f"api.delete_calendar_note({note_id})",
+            )
+    except Exception as e:
+        print(f"❌ Error with calendar note: {e}")
+
+
+def update_blood_pressure_note_data(api: Garmin) -> None:
+    """Edit the note of a blood pressure reading from the last 30 days."""
+    try:
+        data = api.get_blood_pressure(_month_ago(), _today())
+        readings = [
+            m
+            for day in (data or {}).get("measurementSummaries", [])
+            for m in day.get("measurements", [])
+        ]
+        reading = _pick(
+            readings,
+            "reading",
+            lambda m: (
+                f"{m.get('measurementTimestampLocal')} {m.get('systolic')}/{m.get('diastolic')} notes={m.get('notes')!r}"
+            ),
+        )
+        if not reading:
+            return
+        notes = input("New note: ").strip()
+        call_and_display(
+            api.update_blood_pressure,
+            reading,
+            notes=notes,
+            method_name="update_blood_pressure",
+            api_call_desc=f"api.update_blood_pressure(<reading {reading.get('version')}>, notes={notes!r})",
+        )
+    except Exception as e:
+        print(f"❌ Error updating blood pressure note: {e}")
+
+
+def set_primary_training_device_data(api: Garmin) -> None:
+    """Choose the primary training device."""
+    try:
+        device = _pick(
+            api.get_devices(),
+            "device",
+            lambda d: f"{d.get('productDisplayName')} (id {d.get('deviceId')})",
+        )
+        if not device:
+            return
+        call_and_display(
+            api.set_primary_training_device,
+            device["deviceId"],
+            method_name="set_primary_training_device",
+            api_call_desc=f"api.set_primary_training_device({device['deviceId']})",
+        )
+    except Exception as e:
+        print(f"❌ Error setting primary training device: {e}")
+
+
+def update_activity_name_data(api: Garmin) -> None:
+    """Rename the latest activity through the generic update call."""
+    try:
+        activity = api.get_last_activity()
+        if not activity:
+            print("❌ No activities found")
+            return
+        print(
+            f"Latest activity: {activity.get('activityName')} ({activity.get('activityId')})"
+        )
+        name = input("New name (Enter to cancel): ").strip()
+        if not name:
+            print("Cancelled")
+            return
+        call_and_display(
+            api.update_activity,
+            activity["activityId"],
+            {"activityName": name},
+            method_name="update_activity",
+            api_call_desc=f"api.update_activity({activity['activityId']}, {{'activityName': {name!r}}})",
+        )
+    except Exception as e:
+        print(f"❌ Error updating activity: {e}")
+
+
 def execute_api_call(api: Garmin, key: str) -> None:
     """Execute an API call based on the key."""
     if not api:
@@ -5220,8 +5710,6 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "upload_swimming_css_workout": lambda: upload_swimming_css_workout_data(
                 api
             ),
-            "upload_walking_workout": lambda: upload_walking_workout_data(api),
-            "upload_hiking_workout": lambda: upload_hiking_workout_data(api),
             "upload_strength_workout": lambda: upload_strength_workout_data(api),
             "upload_timed_strength_workout": lambda: upload_timed_strength_workout_data(
                 api
@@ -5512,6 +6000,225 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "download_health_snapshot": lambda: download_health_snapshot_file(api),
             # GraphQL Queries
             "query_garmin_graphql": lambda: query_garmin_graphql_data(api),
+            # Edit calls (interactive)
+            "update_gear_notes": lambda: update_gear_notes_data(api),
+            "delete_gear": lambda: delete_gear_data(api),
+            "set_steps_goal": lambda: set_steps_goal_data(api),
+            "set_daily_goal": lambda: set_daily_goal_data(api),
+            "calendar_note": lambda: calendar_note_data(api),
+            "update_blood_pressure": lambda: update_blood_pressure_note_data(api),
+            "set_primary_training_device": lambda: set_primary_training_device_data(
+                api
+            ),
+            "update_activity": lambda: update_activity_name_data(api),
+            # Endpoints the Garmin Connect web app uses, see docs/API_ENDPOINTS.md
+            "get_max_metrics_latest": _web(api, "get_max_metrics_latest"),
+            "get_training_readiness_range": _web(
+                api, "get_training_readiness_range", lambda: (_week_ago(), _today())
+            ),
+            "get_weekly_training_status": _web(
+                api, "get_weekly_training_status", lambda: (_month_ago(), _today())
+            ),
+            "get_heat_altitude_acclimation": _web(api, "get_heat_altitude_acclimation"),
+            "get_heat_altitude_acclimation_range": _web(
+                api,
+                "get_heat_altitude_acclimation_range",
+                lambda: (_week_ago(), _today()),
+            ),
+            "get_cycling_ability": _web(api, "get_cycling_ability"),
+            "get_cycling_ability_range": _web(
+                api, "get_cycling_ability_range", lambda: (_month_ago(), _today())
+            ),
+            "get_running_economy": _web(api, "get_running_economy"),
+            "get_stamina_curve": _web(api, "get_stamina_curve"),
+            "get_power_curve": _web(
+                api, "get_power_curve", lambda: (_month_ago(), _today())
+            ),
+            "get_critical_swim_speed": _web(api, "get_critical_swim_speed"),
+            "get_heart_rate_zones_v2": _web(api, "get_heart_rate_zones_v2"),
+            "get_biometric_stats": _web(
+                api, "get_biometric_stats", lambda: (_week_ago(), _today())
+            ),
+            "get_power_to_weight_range": _web(
+                api, "get_power_to_weight_range", lambda: (_month_ago(), _today())
+            ),
+            "get_current_biometrics": _web(api, "get_current_biometrics"),
+            "get_fitness_age_details": _web(api, "get_fitness_age_details"),
+            "get_fitness_age_daily": _web(
+                api, "get_fitness_age_daily", lambda: (_week_ago(), _today())
+            ),
+            "get_fitness_age_weekly": _web(
+                api, "get_fitness_age_weekly", kwargs_fn=lambda: {"weeks": 12}
+            ),
+            "get_personal_record_candidates": _web(
+                api, "get_personal_record_candidates"
+            ),
+            "get_personal_record_types": _web(api, "get_personal_record_types"),
+            "get_available_metrics": _web(
+                api, "get_available_metrics", lambda: (_month_ago(), _today())
+            ),
+            "get_one_rep_max": _web(api, "get_one_rep_max"),
+            "get_glucose_data": _web(api, "get_glucose_data", lambda: (_today(),)),
+            "get_daily_stats": _web(
+                api, "get_daily_stats", lambda: (_week_ago(), _today(), "STEPS")
+            ),
+            "get_daily_heart_rate_stats": _web(
+                api, "get_daily_heart_rate_stats", lambda: (_week_ago(), _today())
+            ),
+            "get_weekly_heart_rate_stats": _web(
+                api, "get_weekly_heart_rate_stats", kwargs_fn=lambda: {"weeks": 12}
+            ),
+            "get_daily_stress_stats": _web(
+                api, "get_daily_stress_stats", lambda: (_week_ago(), _today())
+            ),
+            "get_daily_body_battery_stats": _web(
+                api, "get_daily_body_battery_stats", lambda: (_week_ago(), _today())
+            ),
+            "get_daily_intensity_minutes_stats": _web(
+                api,
+                "get_daily_intensity_minutes_stats",
+                lambda: (_week_ago(), _today()),
+            ),
+            "get_daily_respiration_stats": _web(
+                api, "get_daily_respiration_stats", lambda: (_week_ago(), _today())
+            ),
+            "get_daily_floors_stats": _web(
+                api, "get_daily_floors_stats", lambda: (_week_ago(), _today())
+            ),
+            "get_weekly_calories_stats": _web(
+                api, "get_weekly_calories_stats", kwargs_fn=lambda: {"weeks": 12}
+            ),
+            "get_monthly_steps": _web(
+                api, "get_monthly_steps", kwargs_fn=lambda: {"months": 6}
+            ),
+            "get_stats_averages": _web(
+                api, "get_stats_averages", lambda: (_week_ago(), _today())
+            ),
+            "get_lifetime_totals": _web(api, "get_lifetime_totals"),
+            "get_daily_summaries": _web(
+                api, "get_daily_summaries", lambda: (_week_ago(), _today())
+            ),
+            "get_week_average_resting_hr": _web(api, "get_week_average_resting_hr"),
+            "get_hydration_all_data": _web(api, "get_hydration_all_data"),
+            "get_spo2_acclimation_data": _web(api, "get_spo2_acclimation_data"),
+            "get_daily_movement": _web(api, "get_daily_movement"),
+            "get_steps_goal": _web(api, "get_steps_goal"),
+            "get_sync_timestamp": _web(api, "get_sync_timestamp"),
+            "get_hourly_intensity_minutes": _web(
+                api, "get_hourly_intensity_minutes", kwargs_fn=lambda: {"days": 1}
+            ),
+            "get_daily_sleep": _web(api, "get_daily_sleep"),
+            "get_naps": _web(api, "get_naps"),
+            "get_sleep_stats_weekly": _web(
+                api, "get_sleep_stats_weekly", kwargs_fn=lambda: {"weeks": 12}
+            ),
+            "get_sleep_stats_overall": _web(
+                api, "get_sleep_stats_overall", lambda: (_month_ago(), _today())
+            ),
+            "get_health_snapshots_range": _web(
+                api, "get_health_snapshots_range", lambda: (_month_ago(), _today())
+            ),
+            "get_nutrition_status": _web(api, "get_nutrition_status"),
+            "get_calorie_summary": _web(
+                api, "get_calorie_summary", lambda: (_week_ago(), _today())
+            ),
+            "get_latest_weight": _web(api, "get_latest_weight"),
+            "get_first_weight": _web(api, "get_first_weight"),
+            "get_daily_last_weight": _web(
+                api, "get_daily_last_weight", lambda: (_month_ago(), _today())
+            ),
+            "get_weekly_weight": _web(api, "get_weekly_weight"),
+            "get_blood_pressure_day": _web(api, "get_blood_pressure_day"),
+            "get_ecg_daily": _web(
+                api, "get_ecg_daily", lambda: (_month_ago(), _today())
+            ),
+            "get_ecg_list": _web(api, "get_ecg_list"),
+            "get_effective_goals": _web(api, "get_effective_goals"),
+            "get_scheduled_workouts_by_period": _web(
+                api,
+                "get_scheduled_workouts_by_period",
+                lambda: (_today(), (config.today + timedelta(days=60)).isoformat()),
+            ),
+            "get_workout_count": _web(api, "get_workout_count"),
+            "get_workout_sport_types": _web(api, "get_workout_sport_types"),
+            "get_workout_types": _web(api, "get_workout_types"),
+            "get_strength_benchmarks": _web(api, "get_strength_benchmarks"),
+            "get_active_training_plans": _web(api, "get_active_training_plans"),
+            "search_training_plans": _web(
+                api, "search_training_plans", lambda: (1, 10)
+            ),
+            "get_calendar_year": _web(
+                api, "get_calendar_year", lambda: (config.today.year,)
+            ),
+            "get_calendar_week": _web(api, "get_calendar_week"),
+            "get_calendar_events": _web(
+                api,
+                "get_calendar_events",
+                lambda: (f"{config.today.year}-01-01", f"{config.today.year}-12-31"),
+            ),
+            "get_upcoming_events": _web(api, "get_upcoming_events"),
+            "get_primary_event": _web(api, "get_primary_event"),
+            "get_courses": _web(api, "get_courses"),
+            "get_course_favorites": _web(api, "get_course_favorites"),
+            "get_pace_bands": _web(api, "get_pace_bands"),
+            "convert_activity_to_course": _web(
+                api, "convert_activity_to_course", lambda: (_latest_activity_id(api),)
+            ),
+            "get_user_goals": _web(api, "get_user_goals"),
+            "get_all_devices": _web(api, "get_all_devices"),
+            "get_historical_devices": _web(api, "get_historical_devices"),
+            "get_active_devices": _web(api, "get_active_devices"),
+            "get_sensors": _web(api, "get_sensors"),
+            "get_device_messages": _web(api, "get_device_messages"),
+            "get_usage_indicators": _web(api, "get_usage_indicators"),
+            "get_personal_information": _web(api, "get_personal_information"),
+            "get_user_profile_base": _web(api, "get_user_profile_base"),
+            "get_privacy_settings": _web(api, "get_privacy_settings"),
+            "get_jetlag_status": _web(api, "get_jetlag_status"),
+            "get_gear_list": _web(api, "get_gear_list"),
+            "get_gear_types": _web(api, "get_gear_types"),
+            "get_badge_attributes": _web(api, "get_badge_attributes"),
+            "get_latest_earned_badges": _web(api, "get_latest_earned_badges"),
+            "get_available_virtual_challenges": _web(
+                api, "get_available_virtual_challenges", lambda: (1, 10)
+            ),
+            "search_activities": _web(
+                api,
+                "search_activities",
+                lambda: (0, 10),
+                lambda: {
+                    "activityType": "walking",
+                    "startDate": _week_ago(),
+                    "endDate": _today(),
+                },
+            ),
+            "get_fastest_splits": _web(
+                api,
+                "get_fastest_splits",
+                lambda: (f"{config.today.year}-01-01", _today(), "running", 5),
+            ),
+            "get_favorite_activities": _web(api, "get_favorite_activities"),
+            "get_activity_laps": _web(
+                api, "get_activity_laps", lambda: (_latest_activity_id(api),)
+            ),
+            "get_activity_map_details": _web(
+                api, "get_activity_map_details", lambda: (_latest_activity_id(api),)
+            ),
+            "get_adjacent_activities": _web(
+                api, "get_adjacent_activities", lambda: (_latest_activity_id(api),)
+            ),
+            "get_activity_event_types": _web(api, "get_activity_event_types"),
+            "get_activity_gear_v2": _web(
+                api, "get_activity_gear_v2", lambda: (_latest_activity_id(api),)
+            ),
+            "get_activity_segments": _web(
+                api, "get_activity_segments", lambda: (_latest_activity_id(api),)
+            ),
+            "get_personal_records_for_activity": _web(
+                api,
+                "get_personal_records_for_activity",
+                lambda: (_latest_activity_id(api),),
+            ),
         }
 
         if key in api_methods:
@@ -5663,6 +6370,8 @@ def main():
     print("📄 All API responses are written to: 'response.json'")
 
     api_instance = init_api(config.email, config.password)
+    # Lets config.today follow the Garmin profile timezone instead of the host.
+    config.api = api_instance
     current_category = None
 
     while True:

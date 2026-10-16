@@ -2107,6 +2107,26 @@ class TestGearActivityHttpResponses:
             g.connectapi(f"/activitylist-service/activities/{self.gear_uuid}/gear")
         assert exc_info.value.response is response
 
+    def test_import_activity_409_reports_duplicate(self, tmp_path):
+        fit = tmp_path / "ride.fit"
+        fit.write_bytes(b".FIT")
+        body = {
+            "detailedImportResult": {
+                "failures": [
+                    {"messages": [{"code": 202, "content": "Duplicate Activity."}]}
+                ]
+            }
+        }
+        g, response = self._garmin_response(409, body)
+        with (
+            patch.object(g.client._api_session, "request", return_value=response),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError,
+                match="already exists \\(duplicate\\): ride.fit",
+            ),
+        ):
+            g.import_activity(str(fit))
+
 
 class TestHttpErrorMapping:
     """A 404 raises GarminConnectNotFoundError; other >=400 stay ConnectionError."""
@@ -2134,6 +2154,25 @@ class TestHttpErrorMapping:
         with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
             c._run_request("GET", "x")
         assert not isinstance(exc_info.value, garminconnect.GarminConnectNotFoundError)
+
+    def test_upload_failure_message_text_is_used(self, monkeypatch):
+        body = {
+            "detailedImportResult": {
+                "failures": [
+                    {"messages": [{"code": 202, "content": "Duplicate Activity."}]}
+                ]
+            }
+        }
+        c = self._client(monkeypatch, _FakeResp(409, body))
+        with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
+            c._run_request("POST", "upload-service/upload")
+        assert str(exc_info.value) == "API Error 409 - Duplicate Activity."
+
+    def test_non_text_error_detail_is_left_out(self, monkeypatch):
+        c = self._client(monkeypatch, _FakeResp(400, {"message": {"user": 123}}))
+        with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
+            c._run_request("GET", "x")
+        assert str(exc_info.value) == "API Error 400"
 
     def _garmin(self, monkeypatch, resp):
         g = garminconnect.Garmin()
@@ -3052,7 +3091,7 @@ class TestMenstrualCycle:
                 "post",
                 return_value={"calendarDate": "2026-09-01"},
             ) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.update_menstrual_daily_log(
                 "2026-09-01",
@@ -3091,7 +3130,7 @@ class TestMenstrualCycle:
     ):
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.update_menstrual_daily_log(
                 "2026-09-01",
@@ -3134,7 +3173,7 @@ class TestMenstrualCycle:
         garmin.profile_id = 99
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.update_menstrual_calendar(
                 "2026-09-01",
@@ -3180,7 +3219,7 @@ class TestMenstrualCycle:
         garmin.profile_id = 99
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.init_menstrual_cycle_setup("2026-08-01", 5, 28)
 
@@ -3200,7 +3239,7 @@ class TestMenstrualCycle:
     ):
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
         ):
             garmin.confirm_menstrual_period_start(
                 "2026-09-08",
