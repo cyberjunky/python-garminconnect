@@ -110,7 +110,7 @@ class MetricsMixin(GarminBase):
         end_date: str | date | None = None,
         aggregation: str = "daily",
     ) -> dict[str, Any]:
-        """Returns Running Lactate Threshold information, including heart rate, power, and speed.
+        """Return running lactate threshold information, including heart rate, power, and speed.
 
         :param bool (Required) - latest: Whether to query for the latest Lactate Threshold info or a range.  False if querying a range
         :param date (Optional) - start_date: The first date in the range to query, format 'YYYY-MM-DD'.  Required if `latest` is False.  Ignored if `latest` is True

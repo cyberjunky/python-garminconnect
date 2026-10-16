@@ -419,21 +419,21 @@ class GarminBase:
 
     @_handle_api_errors("API call")
     def connectapi(self, path: str, **kwargs: Any) -> Any:
-        """Native connectapi call with error translation and optional retries."""
+        """Send a GET to a Connect API path and return the decoded JSON."""
         return self.client.connectapi(path, **kwargs)
 
     @_handle_api_errors("Web proxy call")
     def connectwebproxy(self, path: str, **kwargs: Any) -> Any:
-        """Web proxy request with error translation and optional retries."""
+        """Send a GET to a Connect API path (legacy alias of `connectapi`)."""
         return self.client.request("GET", "connect", path, **kwargs).json()
 
     @_handle_api_errors("Download")
     def download(self, path: str, **kwargs: Any) -> Any:
-        """Native download call with error translation and optional retries."""
+        """Download raw bytes from a Connect API path."""
         return self.client.download(path, **kwargs)
 
     def login(self, /, tokenstore: str | None = None) -> tuple[str | None, str | None]:
-        """Log in natively.
+        """Log in with saved tokens or credentials and load the user profile.
 
         Returns:
             Tuple[str | None, str | None]: (needs_mfa, None) when MFA is required;
@@ -687,7 +687,7 @@ class GarminBase:
     def resume_login(
         self, client_state: dict[str, Any], mfa_code: str
     ) -> tuple[Any, Any]:
-        """Resume login interactively."""
+        """Finish a login that is waiting for an MFA code."""
         mfa_status, _legacy_token = self.client.resume_login(client_state, mfa_code)
 
         # The client already verifies the token against the API tier; if we reach
@@ -789,14 +789,14 @@ class GarminBase:
         return self.now().date()
 
     def get_user_profile(self) -> dict[str, Any]:
-        """Get all users settings."""
+        """Return the user settings (user data, units, formats, sleep times)."""
         url = self.garmin_connect_user_settings_url
         logger.debug("Requesting user profile.")
 
         return self.connectapi(url)
 
     def get_userprofile_settings(self) -> dict[str, Any]:
-        """Get user settings."""
+        """Return the user profile settings (display name, locale, preferences)."""
         url = self.garmin_connect_userprofile_settings_url
         logger.debug("Getting userprofile settings")
 
@@ -820,7 +820,7 @@ class GarminBase:
         return self.client.post("connectapi", url, api=True)
 
     def query_garmin_graphql(self, query: dict[str, Any]) -> dict[str, Any]:
-        """Execute a POST to Garmin's GraphQL endpoint.
+        """Run a query against Garmin's GraphQL gateway.
 
         Args:
             query: A GraphQL request body, e.g. {"query": "...", "variables": {...}}

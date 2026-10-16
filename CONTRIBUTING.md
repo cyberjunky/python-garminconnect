@@ -61,7 +61,10 @@ private VCR recording, and are skipped unless you run `pytest -m integration`.
 6. **Add it to `demo.py`.** Add an entry to the matching category in
    `menu_categories` and a matching key in the `execute_api_call` dispatch
    table. Write methods get a prompt for each input, like the existing ones.
-7. **Update `README.md`.** Recompute the method and category counts from
+7. **Update `README.md`.** Run `python3 scripts/gen_method_reference.py` to
+   regenerate the method reference from the docstrings (a test fails when it
+   is out of date), so give the method a docstring whose first sentence says
+   what it does. Recompute the method and category counts from
    `menu_categories` in `demo.py`, and document new behavior that callers need
    to know about.
 

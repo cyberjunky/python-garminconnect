@@ -130,7 +130,7 @@ class AchievementsMixin(GarminBase):
     def get_non_completed_badge_challenges(
         self, start: int, limit: int
     ) -> dict[str, Any]:
-        """Return badge non-completed challenges for current user."""
+        """Return badge challenges that are not completed yet."""
         start = _validate_positive_integer(start, "start")
         limit = _validate_positive_integer(limit, "limit")
         url = self.garmin_connect_non_completed_badge_challenges_url
@@ -154,7 +154,7 @@ class AchievementsMixin(GarminBase):
     def get_goals(
         self, status: str = "active", start: int = 1, limit: int = 30
     ) -> list[dict[str, Any]]:
-        """Fetch all goals based on status
+        """Return goals by status (active, future or past).
         :param status: Status of goals (valid options are "active", "future", or "past")
         :type status: str
         :param start: 1-based index of the first goal to retrieve

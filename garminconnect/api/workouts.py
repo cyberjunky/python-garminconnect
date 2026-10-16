@@ -74,7 +74,7 @@ class WorkoutsMixin(GarminBase):
         return self.connectapi(url, params=params)
 
     def get_workout_by_id(self, workout_id: int | str) -> dict[str, Any]:
-        """Return workout by id."""
+        """Return one workout from the library."""
         workout_id = _coerce_positive_id(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/{workout_id}"
         return self.connectapi(url)
@@ -87,7 +87,7 @@ class WorkoutsMixin(GarminBase):
         return self.client.delete("connectapi", url, api=True)
 
     def download_workout(self, workout_id: int | str) -> bytes:
-        """Download workout by id."""
+        """Download a workout as a FIT file."""
         workout_id = _coerce_positive_id(workout_id, "workout_id")
         url = f"{self.garmin_workouts}/workout/FIT/{workout_id}"
         logger.debug("Downloading workout from %s", url)
@@ -97,7 +97,7 @@ class WorkoutsMixin(GarminBase):
     def upload_workout(
         self, workout_json: dict[str, Any] | list[Any] | str
     ) -> dict[str, Any]:
-        """Upload workout using json data."""
+        """Upload a workout from a JSON dict or string."""
         url = f"{self.garmin_workouts}/workout"
         logger.debug("Uploading workout using %s", url)
 
@@ -117,7 +117,7 @@ class WorkoutsMixin(GarminBase):
     def update_workout(
         self, workout_id: int | str, workout_json: dict[str, Any] | str
     ) -> dict[str, Any]:
-        """Update (replace) an existing workout in place using json data.
+        """Replace an existing workout in place, keeping its id.
 
         Garmin's workout endpoint replaces the whole workout via PUT, so
         ``workout_json`` must be the complete structure (as returned by
@@ -330,7 +330,7 @@ class WorkoutsMixin(GarminBase):
     def get_scheduled_workouts(
         self, year: int | str, month: int | str
     ) -> dict[str, Any]:
-        """Return scheduled workout by year and month."""
+        """Return the scheduled workouts of a calendar month."""
         year = _coerce_positive_id(year, "year")
         if year < 2000:
             raise ValueError(f"year must be 2000 or later, got: {year}")
@@ -349,7 +349,7 @@ class WorkoutsMixin(GarminBase):
     def get_scheduled_workout_by_id(
         self, scheduled_workout_id: int | str
     ) -> dict[str, Any]:
-        """Return scheduled workout by ID."""
+        """Return one scheduled workout."""
         scheduled_workout_id = _coerce_positive_id(
             scheduled_workout_id, "scheduled_workout_id"
         )

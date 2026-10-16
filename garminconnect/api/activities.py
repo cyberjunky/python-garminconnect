@@ -46,7 +46,7 @@ class ActivitiesMixin(GarminBase):
         activitytype: str | None = None,
         activitysubtype: str | None = None,
     ) -> dict[str, Any] | list[Any]:
-        """Return available activities.
+        """Return a page of activities, newest first, optionally filtered by type.
         :param start: Starting activity offset, where 0 means the most recent activity
         :param limit: Number of activities to return
         :param activitytype: (Optional) Filter activities by type
@@ -87,7 +87,7 @@ class ActivitiesMixin(GarminBase):
         return self.connectapi(url)
 
     def set_activity_name(self, activity_id: str, title: str) -> Any:
-        """Set name for activity with id."""
+        """Set the name of an activity."""
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {"activityId": activity_id, "activityName": title}
@@ -101,6 +101,7 @@ class ActivitiesMixin(GarminBase):
         type_key: str,
         parent_type_id: int,
     ) -> Any:
+        """Change the activity type of an activity."""
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {
@@ -115,7 +116,7 @@ class ActivitiesMixin(GarminBase):
         return self.client.put("connectapi", url, json=payload, api=True)
 
     def set_activity_description(self, activity_id: str, description: str) -> Any:
-        """Set description for activity with id."""
+        """Set the description of an activity."""
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {"activityId": activity_id, "description": description}
@@ -123,6 +124,7 @@ class ActivitiesMixin(GarminBase):
         return self.client.put("connectapi", url, json=payload, api=True)
 
     def create_manual_activity_from_json(self, payload: dict[str, Any]) -> Any:
+        """Create a manual activity from a complete activity payload."""
         url = f"{self.garmin_connect_activity}"
         logger.debug("Uploading manual activity: %s", str(payload))
         return self.client.post("connectapi", url, json=payload, api=True)
@@ -162,7 +164,7 @@ class ActivitiesMixin(GarminBase):
         return self.create_manual_activity_from_json(payload)
 
     def get_last_activity(self) -> dict[str, Any] | None:
-        """Return last activity."""
+        """Return the most recent activity."""
         activities = self.get_activities(0, 1)
         if activities and isinstance(activities, list) and len(activities) > 0:
             return activities[-1]
@@ -174,7 +176,7 @@ class ActivitiesMixin(GarminBase):
         return None
 
     def upload_activity(self, activity_path: str) -> Any:
-        """Upload activity in fit format from file."""
+        """Upload an activity file (FIT, GPX or TCX)."""
         # This code is borrowed from python-garminconnect-enhanced ;-)
 
         # Validate input
@@ -345,7 +347,7 @@ class ActivitiesMixin(GarminBase):
         activitytype: str | None = None,
         sortorder: str | None = None,
     ) -> list[dict[str, Any]]:
-        """Fetch available activities between specific dates
+        """Return activities between two dates, optionally filtered by type.
         :param startdate: String in the format YYYY-MM-DD
         :param enddate: (Optional) String in the format YYYY-MM-DD
         :param activitytype: (Optional) Type of activity you are searching
@@ -403,7 +405,7 @@ class ActivitiesMixin(GarminBase):
         metric: str = "distance",
         groupbyactivities: bool = True,
     ) -> dict[str, Any]:
-        """Fetch progress summary data between specific dates
+        """Return progress totals (distance, duration, ...) between two dates.
         :param startdate: String in the format YYYY-MM-DD
         :param enddate: String in the format YYYY-MM-DD
         :param metric: metric to be calculated in the summary:
@@ -469,6 +471,7 @@ class ActivitiesMixin(GarminBase):
         return self.connectapi(url, params=params)
 
     def get_activity_types(self) -> dict[str, Any]:
+        """Return all activity types and their parent types."""
         url = self.garmin_connect_activity_types
         logger.debug("Requesting activity types")
         return self.connectapi(url)
@@ -478,7 +481,7 @@ class ActivitiesMixin(GarminBase):
         activity_id: str,
         dl_fmt: ActivityDownloadFormat = ActivityDownloadFormat.TCX,
     ) -> bytes:
-        """Downloads activity in requested format and returns the raw bytes. For
+        """Download an activity as the original file (zip), TCX, GPX, KML or CSV. For
         "Original" will return the zip file content, up to user to extract it.
         "CSV" will return a csv of the splits.
         """
@@ -533,7 +536,7 @@ class ActivitiesMixin(GarminBase):
         return self.connectapi(url)
 
     def get_activity_hr_in_timezones(self, activity_id: str) -> dict[str, Any]:
-        """Return activity heartrate in timezones."""
+        """Return the time spent in each heart rate zone during an activity."""
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/hrTimeInZones"
         logger.debug("Requesting HR time-in-zones for activity id %s", activity_id)
@@ -541,7 +544,7 @@ class ActivitiesMixin(GarminBase):
         return self.connectapi(url)
 
     def get_activity_power_in_timezones(self, activity_id: str) -> dict[str, Any]:
-        """Return activity power in timezones."""
+        """Return the time spent in each power zone during an activity."""
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         url = f"{self.garmin_connect_activity}/{activity_id}/powerTimeInZones"
         logger.debug("Requesting Power time-in-zones for activity id %s", activity_id)
@@ -596,7 +599,7 @@ class ActivitiesMixin(GarminBase):
     def set_activity_exercise_sets(
         self, activity_id: int | str, payload: dict[str, Any]
     ) -> Any:
-        """Replace exercise sets for activity with id.
+        """Replace the exercise sets of a strength activity.
 
         `payload` is the full body sent to the server, in the same shape as the
         response from `get_activity_exercise_sets`. Replace-all semantics — the

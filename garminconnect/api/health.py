@@ -27,9 +27,7 @@ class HealthMixin(GarminBase):
     """Daily health and wellness data: summaries, sleep, heart rate, stress, hydration, nutrition, Health Snapshot, ECG, jet lag."""
 
     def get_stats(self, cdate: str) -> dict[str, Any]:
-        """Return user activity summary for 'cdate' format 'YYYY-MM-DD'
-        (compat for garminconnect).
-        """
+        """Return the daily summary for 'cdate' format 'YYYY-MM-DD' (same as `get_user_summary`)."""
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
         return self.get_user_summary(cdate)
@@ -286,7 +284,7 @@ class HealthMixin(GarminBase):
         timestamp: str | None = None,
         cdate: str | None = None,
     ) -> dict[str, Any]:
-        """Add hydration data in ml.  Defaults to current date and current timestamp if left empty
+        """Log a hydration intake in ml (negative values subtract).  Defaults to current date and current timestamp if left empty
         :param float required - value_in_ml: The number of ml of water you wish to add (positive) or subtract (negative)
         :param timestamp optional - timestamp: The timestamp of the hydration update, format 'YYYY-MM-DDThh:mm:ss.ms' Defaults to current timestamp
         :param date optional - cdate: The date of the weigh in, format 'YYYY-MM-DD'. Defaults to current date.

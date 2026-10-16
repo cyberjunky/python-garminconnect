@@ -30,7 +30,7 @@ class WomensHealthMixin(GarminBase):
     def get_menstrual_data_for_date(
         self, fordate: str, today_date: str | None = None
     ) -> dict[str, Any]:
-        """Return menstrual data for date.
+        """Return the menstrual day view for a date.
 
         ``today_date`` is sent as ``todayDate`` like the web app always does
         (it defaults to today in the user's Garmin timezone); Garmin uses it to

@@ -31,9 +31,7 @@ class DevicesMixin(GarminBase):
         return self.connectapi(url)
 
     def get_primary_training_device(self) -> dict[str, Any]:
-        """Return detailed information around primary training devices, included the specified device and the
-        priority of all devices.
-        """
+        """Return the primary training device and the priority order of all devices."""
         url = self.garmin_connect_primary_device_url
         logger.debug("Requesting primary training device information")
 
@@ -62,7 +60,7 @@ class DevicesMixin(GarminBase):
         return resp["deviceSolarInput"]
 
     def get_device_alarms(self) -> list[Any]:
-        """Get list of active alarms from all devices."""
+        """Return the active alarms of all devices."""
         logger.debug("Requesting device alarms")
 
         alarms = []
@@ -75,7 +73,7 @@ class DevicesMixin(GarminBase):
         return alarms
 
     def get_device_last_used(self) -> dict[str, Any]:
-        """Return device last used."""
+        """Return the device that synced last."""
         url = f"{self.garmin_connect_device_url}/mylastused"
         logger.debug("Requesting device last used")
 

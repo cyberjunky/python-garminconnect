@@ -50,7 +50,7 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 330+ methods (snapshot)
+- **Total API Methods**: 330+ methods (snapshot); every method with a one-line description is listed in the [Method Reference](#-method-reference)
 - **Categories**: 15 organized sections
 - **Web-app endpoint map**: 165 methods added in 2026 covering the endpoints the Garmin Connect web app uses, each documented with the exact request it sends and whether it was verified live, in [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md); the dashboard's GraphQL operations are in [docs/graphql_operations.md](docs/graphql_operations.md)
 - **User & Profile**: 4 methods (basic user info, settings)
@@ -581,6 +581,431 @@ activity has photos attached.
 - **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 164+ API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
+
+## 📚 Method Reference
+
+<!-- METHODS:START -->
+335 public methods on `Garmin`, generated from the code by `scripts/gen_method_reference.py`. Click a section to expand it.
+
+<details><summary><b>Login, profile & account</b> (19)</summary>
+
+| Method | Description |
+| --- | --- |
+| `connectapi(path, **kwargs)` | Send a GET to a Connect API path and return the decoded JSON. |
+| `connectwebproxy(path, **kwargs)` | Send a GET to a Connect API path (legacy alias of `connectapi`). |
+| `download(path, **kwargs)` | Download raw bytes from a Connect API path. |
+| `get_full_name()` | Return full name of the authenticated user. |
+| `get_personal_information(include_biometric=True, include_vo2max=True)` | Return personal information: `userInfo` (birth date, gender, locale, timeZone, country), `biometricProfile` and VO2 max. |
+| `get_privacy_settings()` | Return the account's activity, profile and wellness privacy settings. |
+| `get_unit_system()` | Return the user's unit system (e.g. metric). |
+| `get_usage_indicators()` | Return which features the account's devices and data support. |
+| `get_user_profile()` | Return the user settings (user data, units, formats, sleep times). |
+| `get_user_profile_base()` | Return the base profile record (names, birth date, create date, ...). |
+| `get_user_timezone()` | Return the IANA timezone name from the user's Garmin profile. |
+| `get_userprofile_settings()` | Return the user profile settings (display name, locale, preferences). |
+| `login(tokenstore=None)` | Log in with saved tokens or credentials and load the user profile. |
+| `logout(tokenstore=None)` | Clear in-memory auth state and any cached tokens on disk. |
+| `now()` | Return the current time as an aware datetime in the user's timezone. |
+| `query_garmin_graphql(query)` | Run a query against Garmin's GraphQL gateway. |
+| `request_reload(cdate, device_id=None)` | Request reload of data for a specific date. |
+| `resume_login(client_state, mfa_code)` | Finish a login that is waiting for an MFA code. |
+| `today()` | Return today's calendar date in the user's Garmin timezone. |
+
+</details>
+
+<details><summary><b>Daily health & wellness</b> (74)</summary>
+
+| Method | Description |
+| --- | --- |
+| `add_hydration_data(value_in_ml, timestamp=None, cdate=None)` | Log a hydration intake in ml (negative values subtract). |
+| `add_jetlag_trip(start_date, end_date, flights)` | Create a Jet Lag Adviser trip. |
+| `delete_jetlag_trip(trip_id)` | Delete a Jet Lag Adviser trip. |
+| `download_health_snapshot(requested_date)` | Download the Health Snapshot ZIP file for a calendar date. |
+| `download_health_snapshot_session(cdate, snapshot_uuid)` | Download one Health Snapshot session as a FIT file. |
+| `get_all_day_events(cdate)` | Return available daily events data 'cdate' format 'YYYY-MM-DD'. |
+| `get_all_day_stress(cdate)` | Return available all day stress data 'cdate' format 'YYYY-MM-DD'. |
+| `get_body_battery(startdate, enddate=None)` | Return body battery values by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'. |
+| `get_body_battery_events(cdate)` | Return body battery events for date 'cdate' format 'YYYY-MM-DD'. |
+| `get_calorie_summary(start, end, current_date=None)` | Return daily nutrition totals per meal with goals for a date range. |
+| `get_calories_daily(start, end)` | Return daily active + resting (BMR) calories for a date range. |
+| `get_daily_body_battery_stats(start, end)` | Return the daily Body Battery low/high values. |
+| `get_daily_floors_stats(start, end)` | Return floors ascended/descended and the floors goal per day. |
+| `get_daily_heart_rate_stats(start, end)` | Return resting / min / max heart rate per day. |
+| `get_daily_hydration_stats(start, end)` | Return hydration intake per day. |
+| `get_daily_intensity_minutes_stats(start, end)` | Return moderate/vigorous intensity minutes per day with the weekly goal. |
+| `get_daily_movement(cdate=None)` | Return the daily movement chart (movement per 15-minute block). |
+| `get_daily_respiration_stats(start, end)` | Return average waking and sleeping respiration per day. |
+| `get_daily_sleep(cdate=None, non_sleep_buffer_minutes=60)` | Return sleep data for a day from the newer sleep-service endpoint. |
+| `get_daily_stats(start, end, stats_type='STEPS', current_date=None, aggregated=False)` | Return a daily series of steps, pushes or calories with aggregations. |
+| `get_daily_steps(start, end)` | Fetch available steps data 'start' and 'end' format 'YYYY-MM-DD'. |
+| `get_daily_stress_stats(start, end)` | Return overall stress level and stress durations per day. |
+| `get_daily_summaries(start, end)` | Return full daily summaries for a date range in one call. |
+| `get_ecg(ecg_id)` | Return one ECG recording with its waveform. |
+| `get_ecg_daily(start, end)` | Return ECG recordings per day for a date range. |
+| `get_ecg_list(start='2021-01-01', end=None, page_size=20, …)` | Return a page of ECG recordings. |
+| `get_floors(cdate)` | Fetch available floors data 'cDate' format 'YYYY-MM-DD'. |
+| `get_health_snapshot(cdate, snapshot_uuid)` | Return one Health Snapshot session summary. |
+| `get_health_snapshot_epochs(snapshot_uuid)` | Return the per-epoch samples (HR, HRV, SpO2, ...) of a Health Snapshot. |
+| `get_health_snapshots(cdate=None)` | Return Health Snapshot sessions recorded on a day. |
+| `get_health_snapshots_range(start, end)` | Return Health Snapshot sessions recorded in a date range. |
+| `get_heart_rates(cdate)` | Fetch available heart rates data 'cDate' format 'YYYY-MM-DD'. |
+| `get_hourly_intensity_minutes(end=None, days=7)` | Return intensity minutes per hour for up to 7 days ending at `end`. |
+| `get_hrv_data(cdate)` | Return HRV (Heart Rate Variability) data for 'cdate' format 'YYYY-MM-DD'. |
+| `get_hrv_data_range(start, end)` | Return HRV (Heart Rate Variability) data for a date range. |
+| `get_hydration_all_data(cdate=None)` | Return hydration intake, goal, sweat loss and container settings for a day. |
+| `get_hydration_data(cdate)` | Return available hydration data 'cdate' format 'YYYY-MM-DD'. |
+| `get_intensity_minutes_data(cdate)` | Return available Intensity Minutes data 'cdate' format 'YYYY-MM-DD'. |
+| `get_jetlag_status(cdate=None)` | Return the Jet Lag Adviser guidance for a day (empty dict without a trip). |
+| `get_jetlag_trips()` | Return all Jet Lag Adviser trips, each with its flights. |
+| `get_lifestyle_logging_data(cdate)` | Return lifestyle logging data for 'cdate' format 'YYYY-MM-DD'. |
+| `get_lifetime_totals()` | Return lifetime totals (distance, steps, calories, active days, ...). |
+| `get_monthly_steps(end=None, months=12)` | Return monthly step totals for `months` months ending at `end`. |
+| `get_monthly_wellness_stats(start, end, metric_ids=None)` | Return monthly wellness metrics (default: resting heart rate, id 60). |
+| `get_naps(cdate=None, include_overlaps=True)` | Return naps recorded on a day. |
+| `get_nutrition_daily_food_log(cdate, include_goals=True, include_nutrition=True, meal_id=None)` | Return food log summary for 'cdate' format 'YYYY-MM-DD'. |
+| `get_nutrition_daily_meals(cdate)` | Return meals summary for 'cdate' format 'YYYY-MM-DD'. |
+| `get_nutrition_daily_settings(cdate)` | Return nutrition settings for 'cdate' format 'YYYY-MM-DD'. |
+| `get_nutrition_status()` | Return whether nutrition tracking (or MyFitnessPal) is in use. |
+| `get_respiration_data(cdate)` | Return available respiration data 'cdate' format 'YYYY-MM-DD'. |
+| `get_rhr_daily(start, end)` | Return daily resting heart rate for a date range ('start'/'end' format 'YYYY-MM-DD'). |
+| `get_rhr_day(cdate)` | Return resting heart rate data for 'cdate' format 'YYYY-MM-DD'. |
+| `get_sleep_daily(start, end)` | Fetch daily sleep summaries for 'start' and 'end' format 'YYYY-MM-DD'. |
+| `get_sleep_data(cdate)` | Return sleep data for 'cdate' format 'YYYY-MM-DD'. |
+| `get_sleep_stats_overall(start, end)` | Return overall sleep statistics (averages) for a date range. |
+| `get_sleep_stats_weekly(end=None, weeks=52)` | Return weekly sleep statistics (`overallStats` + per-week values). |
+| `get_spo2_data(cdate)` | Return available SpO2 data 'cdate' format 'YYYY-MM-DD'. |
+| `get_stats(cdate)` | Return the daily summary for 'cdate' format 'YYYY-MM-DD' (same as `get_user_summary`). |
+| `get_stats_averages(start, end)` | Return average steps and resting heart rate over a date range. |
+| `get_steps_data(cdate)` | Fetch available steps data 'cDate' format 'YYYY-MM-DD'. |
+| `get_stress_data(cdate)` | Return stress data for 'cdate' format 'YYYY-MM-DD'. |
+| `get_sync_timestamp()` | Return the timestamp (UTC, no offset) of the last device sync. |
+| `get_user_statistics()` | Return the profile statistics block (totals per activity type). |
+| `get_user_summary(cdate)` | Return user activity summary for 'cdate' format 'YYYY-MM-DD'. |
+| `get_week_average_resting_hr(cdate=None)` | Return the 7-day average resting heart rate as of `cdate`. |
+| `get_weekly_calories_stats(end=None, weeks=52)` | Return weekly resting/active/total calories. |
+| `get_weekly_floors_stats(end=None, weeks=52)` | Return weekly floors totals. |
+| `get_weekly_heart_rate_stats(end=None, weeks=52)` | Return weekly heart rate averages (incl. abnormal HR alert counts). |
+| `get_weekly_hydration_stats(end=None, weeks=52)` | Return weekly hydration totals. |
+| `get_weekly_intensity_minutes(start, end)` | Fetch weekly intensity minutes aggregates. |
+| `get_weekly_steps(end, weeks=52)` | Fetch weekly steps aggregates. |
+| `get_weekly_stress(end, weeks=52)` | Fetch weekly stress aggregates. |
+| `get_weekly_wellness_stats(start, end, metric_ids=None)` | Return weekly wellness metrics (default: resting heart rate, id 60). |
+| `update_jetlag_trip(trip_id, start_date, end_date, flights)` | Replace a Jet Lag Adviser trip. |
+
+</details>
+
+<details><summary><b>Performance metrics</b> (44)</summary>
+
+| Method | Description |
+| --- | --- |
+| `get_acclimation_stats(start, end)` | Return SpO2 acclimation statistics over a date range. |
+| `get_activity_power_curve(activity_id)` | Return the power curve of one activity (empty without power data). |
+| `get_biometric_stats(start, end, aggregation='daily', user_first_day='monday')` | Return aggregated biometric statistics (weight, body fat, LT, ...) per period. |
+| `get_critical_swim_speed(cdate=None)` | Return the latest Critical Swim Speed as of `cdate` (default today). |
+| `get_critical_swim_speed_range(start, end, aggregation=None)` | Return Critical Swim Speed history for a date range. |
+| `get_current_biometrics()` | Return the current biometric profile (height, weight, VO2 max, LT, FTP). |
+| `get_cycling_ability(cdate=None)` | Return the latest Cycling Ability profile as of `cdate` (default today). |
+| `get_cycling_ability_range(start, end, aggregation='DAILY')` | Return Cycling Ability history (`cyclingAbilitiesMap` keyed by date). |
+| `get_cycling_ftp()` | Return cycling Functional Threshold Power (FTP) information. |
+| `get_daily_training_status(cdate)` | Return the training status for a single day for the current user. |
+| `get_endurance_score(startdate, enddate=None, aggregation='weekly')` | Return endurance score by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'. |
+| `get_fitness_age_daily(start, end)` | Return daily Fitness Age history (fitness age, RHR, body fat, ...). |
+| `get_fitness_age_details(cdate=None)` | Return Fitness Age with its components and achievable targets. |
+| `get_fitness_age_weekly(end=None, weeks=52)` | Return weekly Fitness Age history for `weeks` weeks ending at `end`. |
+| `get_fitnessage_data(cdate)` | Return Fitness Age data for current user. |
+| `get_functional_threshold_power_range(start, end, sport='RUNNING', aggregation='daily')` | Return historic functional threshold power for a Garmin sport. |
+| `get_glucose_data(cdate)` | Return logged glucose readings for a day (`glucoseList`). |
+| `get_glucose_data_range(start, end)` | Return logged glucose readings for a date range. |
+| `get_heart_rate_zones()` | Return configured heart rate zones for all sport profiles. |
+| `get_heart_rate_zones_v2(generate_defaults=False)` | Return heart rate zones per sport from the v2 endpoint the web app uses. |
+| `get_heat_altitude_acclimation(cdate=None)` | Return heat and altitude acclimation as of `cdate` (default today). |
+| `get_heat_altitude_acclimation_range(start, end, aggregation='daily')` | Return heat and altitude acclimation history for a date range. |
+| `get_hill_score(startdate, enddate=None)` | Return hill score by day from 'startdate' format 'YYYY-MM-DD' to enddate 'YYYY-MM-DD'. |
+| `get_lactate_threshold(latest=True, start_date=None, end_date=None, …)` | Return running lactate threshold information, including heart rate, power, and speed. |
+| `get_max_metrics(cdate)` | Return available max metric data for 'cdate' format 'YYYY-MM-DD'. |
+| `get_max_metrics_latest(cdate=None)` | Return the latest VO2 max record as of `cdate` (default today). |
+| `get_max_metrics_range(start, end, aggregation='daily', sport=None)` | Return max metric data for a date range ('start'/'end' format 'YYYY-MM-DD'). |
+| `get_morning_training_readiness(cdate)` | Return morning training readiness data for current user. |
+| `get_one_rep_max(cdate=None, exercise_type=None)` | Return current estimated one-rep-max values (strength training). |
+| `get_one_rep_max_history(exercise_type, start, end, aggregation='daily')` | Return one-rep-max history for an exercise (`daily` or `monthly`). |
+| `get_power_curve(start, end, sport='cycling')` | Return the power curve (best power per duration) for a date range. |
+| `get_power_zones()` | Return configured power zones for all supported sports. |
+| `get_power_zones_for_sport(sport)` | Return configured power zones for a Garmin sport key. |
+| `get_race_predictions(startdate=None, enddate=None, _type=None)` | Return race predictions for the 5k, 10k, half marathon and marathon. |
+| `get_running_economy(cdate=None)` | Return the latest Running Economy score as of `cdate` (default today). |
+| `get_running_economy_range(start, end, aggregation='daily')` | Return Running Economy history for a date range. |
+| `get_running_tolerance(startdate, enddate, aggregation='weekly')` | Return running tolerance data for date range. |
+| `get_spo2_acclimation_data(cdate=None)` | Return daily pulse ox readings together with acclimation values. |
+| `get_stamina_curve(cdate=None, sport_type='running')` | Return the latest stamina curve for `sport_type` (`running`/`cycling`). |
+| `get_training_four_week_load_balance(cdate)` | Return training load balance (load focus) data for the current user. |
+| `get_training_readiness(cdate)` | Return training readiness data for 'cdate' format 'YYYY-MM-DD'. |
+| `get_training_readiness_range(start, end)` | Return training readiness entries for a date range. |
+| `get_training_status(cdate)` | Return training status data for current user. |
+| `get_weekly_training_status(start, end)` | Return the weekly training status / load history for a date range. |
+
+</details>
+
+<details><summary><b>Weight, body composition & blood pressure</b> (21)</summary>
+
+| Method | Description |
+| --- | --- |
+| `add_body_composition(timestamp, weight, percent_fat=None, percent_hydration=None, visceral_fat_mass=None, …)` | Add a weigh-in with body composition values, uploaded as a FIT file. |
+| `add_weigh_in(weight, unitKey='kg', timestamp='')` | Add a weigh-in (kg by default). |
+| `add_weigh_in_with_timestamps(weight, unitKey='kg', dateTimestamp='', gmtTimestamp='')` | Add a weigh-in with explicit local and GMT timestamps (kg by default). |
+| `delete_blood_pressure(version, cdate)` | Delete one blood pressure reading. |
+| `delete_weigh_in(weight_pk, cdate)` | Delete one weigh-in. |
+| `delete_weigh_ins(cdate, delete_all=False)` | Delete the weigh-ins on 'cdate' (all of them only with `delete_all=True`). |
+| `get_blood_pressure(startdate, enddate=None)` | Return blood pressure by day for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'. |
+| `get_blood_pressure_day(cdate=None)` | Return blood pressure readings for one day. |
+| `get_body_composition(startdate, enddate=None)` | Return available body composition data for 'startdate' format 'YYYY-MM-DD' through enddate 'YYYY-MM-DD'. |
+| `get_daily_last_blood_pressure(start, end)` | Return the last blood pressure reading of each day in a range. |
+| `get_daily_last_weight(start, end)` | Return the last weigh-in of each day in a date range (chart series). |
+| `get_daily_weigh_ins(cdate)` | Get weigh-ins for 'cdate' format 'YYYY-MM-DD'. |
+| `get_first_weight()` | Return the first weigh-in ever recorded on the account. |
+| `get_latest_weight(cdate=None)` | Return the most recent weigh-in as of `cdate` (default today). |
+| `get_power_to_weight_range(start, end, aggregation='daily', sport=None)` | Return power-to-weight history, one series per sport. |
+| `get_stats_and_body(cdate)` | Return the daily summary and body composition for a date. |
+| `get_weekly_blood_pressure(end=None)` | Return weekly blood pressure aggregates for the 52 weeks ending at `end`. |
+| `get_weekly_weight(end=None)` | Return weekly weight aggregates for the 52 weeks ending at `end`. |
+| `get_weigh_ins(startdate, enddate)` | Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'. |
+| `get_weight_snapshot(start, end)` | Return all weigh-ins in a range as `dateWeightList` entries. |
+| `set_blood_pressure(systolic, diastolic, pulse=None, timestamp='', notes='')` | Add a blood pressure reading. |
+
+</details>
+
+<details><summary><b>Activities</b> (45)</summary>
+
+| Method | Description |
+| --- | --- |
+| `count_activities()` | Return total number of activities for the current user account. |
+| `create_manual_activity(start_datetime, time_zone, type_key, distance_km, duration_min, activity_name)` | Create a private activity manually with a few basic parameters. |
+| `create_manual_activity_from_json(payload)` | Create a manual activity from a complete activity payload. |
+| `delete_activity(activity_id)` | Delete activity with specified id. |
+| `download_activity(activity_id, dl_fmt=<ActivityDownloadFormat.TCX: 2>)` | Download an activity as the original file (zip), TCX, GPX, KML or CSV. |
+| `get_activities(start=0, limit=20, activitytype=None, …)` | Return a page of activities, newest first, optionally filtered by type. |
+| `get_activities_by_date(startdate, enddate=None, activitytype=None, sortorder=None)` | Return activities between two dates, optionally filtered by type. |
+| `get_activities_fordate(fordate)` | Return available activities for date. |
+| `get_activity(activity_id)` | Return activity summary, including basic splits. |
+| `get_activity_details(activity_id, maxchart=2000, maxpoly=4000)` | Return activity details. |
+| `get_activity_event_types()` | Return the activity event types (race, training, recreation, ...). |
+| `get_activity_exercise_sets(activity_id)` | Return activity exercise sets. |
+| `get_activity_hr_in_timezones(activity_id)` | Return the time spent in each heart rate zone during an activity. |
+| `get_activity_images(activity_id)` | Return the photos attached to an activity. |
+| `get_activity_jump_details(activity_id)` | Return jump data (jump rope and similar; empty when `jumpCount` is 0). |
+| `get_activity_laps(activity_id)` | Return the laps of an activity (`lapDTOs`). |
+| `get_activity_map_details(activity_id, maxpoly=4000, max_heat_map=4000)` | Return the polyline and heat map of an activity without the charts. |
+| `get_activity_polyline(activity_id)` | Return the encoded track polyline of an activity (`gPolyline`). |
+| `get_activity_power_in_timezones(activity_id)` | Return the time spent in each power zone during an activity. |
+| `get_activity_rounds(activity_id)` | Return rounds with their exercise sets (HIIT, boxing, ...). |
+| `get_activity_segments(activity_id)` | Return the segments matched in an activity. |
+| `get_activity_split_summaries(activity_id)` | Return activity split summaries. |
+| `get_activity_splits(activity_id)` | Return activity splits. |
+| `get_activity_step_details(activity_id)` | Return the per-workout-step details of a structured workout activity. |
+| `get_activity_subsecond_details(activity_id, maxchart=2000)` | Return sub-second samples (only when `metadataDTO.hasSubsecondData`). |
+| `get_activity_swim_details(activity_id, maxchart=2000, maxpoly=4000)` | Return details for a lap-swimming activity. |
+| `get_activity_typed_splits(activity_id)` | Return typed activity splits. |
+| `get_activity_types()` | Return all activity types and their parent types. |
+| `get_activity_weather(activity_id)` | Return activity weather. |
+| `get_adjacent_activities(activity_id)` | Return the ids of the previous and next activity (`None` when absent). |
+| `get_available_metrics(start, end, activity_types=None)` | Return which progress-summary metrics have data per activity type. |
+| `get_fastest_splits(start, end, activity_type='running', number_of_bests=10)` | Return the fastest splits (best times per distance) in a date range. |
+| `get_favorite_activities(limit=5)` | Return activities marked as favorite (`activityList`). |
+| `get_last_activity()` | Return the most recent activity. |
+| `get_progress_summary_between_dates(startdate, enddate, metric='distance', groupbyactivities=True)` | Return progress totals (distance, duration, ...) between two dates. |
+| `get_training_load_activities(startdate, enddate, metrics=None, activitytype=None)` | Fetch individual activities and their training load metrics for a date range. |
+| `get_weekly_activity_stats(start, end, group_by_activity_type=True)` | Return weekly activity aggregates (VO2 max, distance, duration, ...). |
+| `import_activity(activity_path)` | Upload activity as an import (not re-exported to third parties like Strava). |
+| `search_activities(start=0, limit=20, **filters)` | Search activities with the full filter set of the web app's activity list. |
+| `set_activity_description(activity_id, description)` | Set the description of an activity. |
+| `set_activity_exercise_sets(activity_id, payload)` | Replace the exercise sets of a strength activity. |
+| `set_activity_favorite(activity_id, favorite=True)` | Mark or unmark an activity as favorite. |
+| `set_activity_name(activity_id, title)` | Set the name of an activity. |
+| `set_activity_type(activity_id, type_id, type_key, parent_type_id)` | Change the activity type of an activity. |
+| `upload_activity(activity_path)` | Upload an activity file (FIT, GPX or TCX). |
+
+</details>
+
+<details><summary><b>Workouts</b> (24)</summary>
+
+| Method | Description |
+| --- | --- |
+| `copy_workout(workout_id, name)` | Duplicate a workout under a new name and return the copy. |
+| `delete_workout(workout_id)` | Delete a workout template from the workout library. |
+| `download_workout(workout_id)` | Download a workout as a FIT file. |
+| `get_next_scheduled_workout()` | Return the earliest upcoming scheduled workout (today or later). |
+| `get_scheduled_workout_by_id(scheduled_workout_id)` | Return one scheduled workout. |
+| `get_scheduled_workouts(year, month)` | Return the scheduled workouts of a calendar month. |
+| `get_scheduled_workouts_by_period(start, end)` | Return all scheduled workouts between two dates, including adaptive plans. |
+| `get_strength_benchmarks()` | Return the strength benchmark exercises (used for 1RM based targets). |
+| `get_workout_by_id(workout_id)` | Return one workout from the library. |
+| `get_workout_count(include_atp=False)` | Return workout counts per sport (`totalCount`, `runningCount`, ...). |
+| `get_workout_sport_types()` | Return the sport types that have workouts in the library. |
+| `get_workout_types()` | Return the workout dictionaries (step, condition, target, sport, equipment types). |
+| `get_workouts(start=0, limit=100, my_workouts_only=None, …)` | Return workouts starting at offset `start` with at most `limit` results. |
+| `reschedule_workout(scheduled_workout_id, cdate)` | Move a scheduled workout to another date. |
+| `schedule_workout(workout_id, date_str)` | Schedule a workout on a specific date in the Garmin calendar. |
+| `unschedule_workout(scheduled_workout_id)` | Remove a scheduled workout from the calendar without deleting the template. |
+| `update_workout(workout_id, workout_json)` | Replace an existing workout in place, keeping its id. |
+| `upload_cycling_workout(workout)` | Upload a typed cycling workout. |
+| `upload_hiking_workout(workout)` | Upload a typed hiking workout. |
+| `upload_running_workout(workout)` | Upload a typed running workout. |
+| `upload_strength_workout(workout)` | Upload a typed strength training workout. |
+| `upload_swimming_workout(workout)` | Upload a typed swimming workout. |
+| `upload_walking_workout(workout)` | Upload a typed walking workout. |
+| `upload_workout(workout_json)` | Upload a workout from a JSON dict or string. |
+
+</details>
+
+<details><summary><b>Training plans, calendar, courses & reports</b> (32)</summary>
+
+| Method | Description |
+| --- | --- |
+| `convert_activity_to_course(activity_id)` | Return a course object built from an activity's track (not yet saved). |
+| `create_calendar_event(event)` | Create a race / goal event from a full event object (see `get_calendar_event`). |
+| `create_course(course)` | Create a course from a full course object (see `get_course`). |
+| `delete_calendar_event(event_id)` | Delete a calendar event. |
+| `delete_course(course_id)` | Delete a course. |
+| `delete_training_plan(plan_id)` | Remove a scheduled training plan from the calendar. |
+| `download_course(course_id, fmt='gpx')` | Download a course as GPX or FIT. |
+| `download_report(report_id)` | Download a finished report as PDF bytes. |
+| `get_active_training_plans(cdate=None)` | Return the training plans active on a date (`trainingPlanList`). |
+| `get_adaptive_training_plan_by_id(plan_id)` | Return details for a specific adaptive training plan. |
+| `get_calendar_event(event_id)` | Return one calendar event. |
+| `get_calendar_events(start, end)` | Return race / goal events between two dates. |
+| `get_calendar_week(cdate=None, first_day_of_week=1)` | Return the calendar items of the week containing `cdate`. |
+| `get_calendar_year(year)` | Return the year overview (which days have items). |
+| `get_course(course_id)` | Return a course with its geo points. |
+| `get_course_favorites()` | Return courses marked as favorite. |
+| `get_courses()` | Return the user's courses. |
+| `get_pace_bands()` | Return the user's PacePro pace bands. |
+| `get_primary_event()` | Return the primary (focus) race event, or None when there is none. |
+| `get_report_status(report_id)` | Return the progress of a report export (`progress.status`). |
+| `get_training_plan_by_id(plan_id)` | Return details for a specific training plan. |
+| `get_training_plan_tasks(plan_id, locale='en')` | Return the workout tasks of a training plan. |
+| `get_training_plans(limit=None, start=None, status=None)` | Return the user's training plans (`{"trainingPlanList": [...]}`). |
+| `get_upcoming_events(days_forward=90, limit=10)` | Return upcoming race / goal events. |
+| `import_course(file_path)` | Import a course from a GPX, TCX or FIT file. |
+| `move_calendar_item(item_type, item_id, cdate, item=None)` | Move a calendar item (workout, note, ...) to another date. |
+| `request_report(category, start, end, options=None, locale='en-US')` | Start a PDF report export and return `{"reportId", "estimatedTimeForStatusCheck"}`. |
+| `schedule_training_plan(plan_id, start_date)` | Schedule a training plan from the catalogue starting on `start_date`. |
+| `search_training_plans(start=1, limit=20, locale='en', **filters)` | Browse the Garmin training plan catalogue (`trainingPlanList`). |
+| `set_course_favorite(course_id, favorite=True)` | Mark or unmark a course as favorite. |
+| `update_calendar_event(event_id, event)` | Update a calendar event with a full event object. |
+| `update_course(course_id, course)` | Update a course with a full course object. |
+
+</details>
+
+<details><summary><b>Goals, badges & challenges</b> (26)</summary>
+
+| Method | Description |
+| --- | --- |
+| `get_active_adhoc_challenges()` | Return ad-hoc (friend) challenges that are still running. |
+| `get_adhoc_challenges(start, limit)` | Return adhoc challenges for the current user. |
+| `get_available_badge_challenges(start, limit)` | Return available badge challenges. |
+| `get_available_badges()` | Return available (not yet earned) badges for the current user. |
+| `get_available_virtual_challenges(start=1, limit=100)` | Return virtual (expedition) challenges that can be joined. |
+| `get_badge_attributes()` | Return badge metadata: types, categories, difficulties. |
+| `get_badge_challenge(challenge_uuid)` | Return one badge challenge. |
+| `get_badge_challenges(start, limit)` | Return badge challenges for the current user. |
+| `get_badge_detail(badge_id)` | Return the details of one badge. |
+| `get_badges_for_activity(activity_id)` | Return badges earned by one activity. |
+| `get_badges_for_day(cdate=None)` | Return badges earned on a day. |
+| `get_completed_virtual_challenges(start=1, limit=100)` | Return completed virtual (expedition) challenges. |
+| `get_earned_badges()` | Return all earned badges for the current user. |
+| `get_effective_goals(cdate=None)` | Return the daily goals in effect on a day (intensity minutes, floors, hydration, ...). |
+| `get_goals(status='active', start=1, limit=30)` | Return goals by status (active, future or past). |
+| `get_in_progress_badges()` | Return all badges currently in progress for the current user. |
+| `get_inprogress_virtual_challenges(start, limit)` | Return in-progress virtual challenges for current user. |
+| `get_latest_earned_badges(limit=5)` | Return the most recently earned badges. |
+| `get_non_completed_badge_challenges(start, limit)` | Return badge challenges that are not completed yet. |
+| `get_personal_record(include_history=None, months=None)` | Return personal records for current user. |
+| `get_personal_record_candidates()` | Return personal-record candidates awaiting confirmation. |
+| `get_personal_record_types()` | Return the personal-record type definitions (id, key, sport, bounds). |
+| `get_personal_records_for_activity(activity_id)` | Return personal records set by one activity. |
+| `get_steps_goal(cdate=None)` | Return the effective step goal for a day (device vs. user goal). |
+| `get_user_goals()` | Return the user's wellness goals (steps, weight, calories, ...). |
+| `get_weight_goal(start, end)` | Return the weight goal(s) in effect over a date range. |
+
+</details>
+
+<details><summary><b>Devices</b> (18)</summary>
+
+| Method | Description |
+| --- | --- |
+| `get_active_devices()` | Return device info for the currently active devices. |
+| `get_all_devices()` | Return all registered devices including inactive ones. |
+| `get_device_alarms()` | Return the active alarms of all devices. |
+| `get_device_app_info(device_id)` | Return device type and software information. |
+| `get_device_displayed_activities(device_id)` | Return which activity profiles are shown on a device. |
+| `get_device_last_used()` | Return the device that synced last. |
+| `get_device_messages()` | Return the queue of pending device messages (software updates, pushed workouts, ...). |
+| `get_device_settings(device_id)` | Return device settings for device with 'device_id'. |
+| `get_device_solar_data(device_id, startdate, enddate=None)` | Return solar data for compatible device with 'device_id'. |
+| `get_device_solar_gain(device_id, start, end)` | Return daily solar gain for a device over a date range. |
+| `get_devices()` | Return available devices for the current user account. |
+| `get_historical_devices()` | Return devices that were registered in the past. |
+| `get_primary_training_device()` | Return the primary training device and the priority order of all devices. |
+| `get_sensors()` | Return paired external sensors (HRM, power meters, ...). |
+| `get_user_device(device_id)` | Return the device's registration record (last upload/download times). |
+| `push_workout_to_device(workout_id=None, device_id=None)` | Push a workout to a device. |
+| `send_scheduled_workouts_to_devices()` | Push all scheduled workouts to the user's devices. |
+| `update_device_settings(device_id, settings)` | Write (partial) device settings, e.g. alarms or activity tracking options. |
+
+</details>
+
+<details><summary><b>Gear</b> (16)</summary>
+
+| Method | Description |
+| --- | --- |
+| `add_gear_to_activity(gearUUID, activity_id)` | Link gear to an activity. |
+| `create_gear(gear_type, brand, model, name, first_use_date, usage_type='DISTANCE', max_usage_distance_km=None, max_usage_duration_min=None, …)` | Create a new piece of gear (e.g. a pair of shoes) and return it. |
+| `get_activity_gear(activity_id)` | Return the gear linked to an activity. |
+| `get_activity_gear_v2(activity_id)` | Return the gear linked to an activity (v2 endpoint). |
+| `get_gear(userProfileNumber)` | Return the gear of a user profile number. |
+| `get_gear_activities(gearUUID, limit=1000)` | Return the activities a piece of gear was used in. |
+| `get_gear_defaults(userProfileNumber)` | Return the default gear per activity type. |
+| `get_gear_details(gear_uuid)` | Return one piece of gear (v2, dashed uuid). |
+| `get_gear_list(start=0, limit=20, gear_statuses=None, …)` | Return the user's gear from the v2 endpoint the web app uses. |
+| `get_gear_make_models(keywords)` | Search Garmin's make/model catalogue for the gear form's autocomplete. |
+| `get_gear_stats(gearUUID)` | Return statistics (e.g. distance) for specific gear UUID. |
+| `get_gear_types()` | Return the gear types Garmin knows (shoes, bike, ...). |
+| `get_user_gear_types()` | Return the gear types the user actually has (`activeGearTypes`). |
+| `remove_gear_from_activity(gearUUID, activity_id)` | Unlink gear from an activity. |
+| `set_gear_default(activityType, gearUUID, defaultGear=True)` | Make gear the default for an activity type, or remove it as the default. |
+| `set_gear_status(gear_uuid, status)` | Retire or re-activate gear. |
+
+</details>
+
+<details><summary><b>Women's health</b> (11)</summary>
+
+| Method | Description |
+| --- | --- |
+| `confirm_menstrual_period_start(period_start_date, period_length, cycle_length, predicted_cycle=False)` | Confirm a menstrual period start date, including a prediction. |
+| `get_menstrual_calendar_data(startdate, enddate)` | Return summaries of cycles that have days between startdate and enddate. |
+| `get_menstrual_cycle_summary(fordate)` | Return the menstrual cycle summary for `fordate`. |
+| `get_menstrual_data_for_date(fordate, today_date=None)` | Return the menstrual day view for a date. |
+| `get_menstrual_last_confirmed(fordate)` | Return the last confirmed menstrual cycle as of `fordate`. |
+| `get_menstrual_reports(fordate, number_of_cycles=6, next_report=False, report_type='CYCLE', …)` | Return menstrual cycle reports for 1, 6, or 12 cycles ending at date. |
+| `get_pregnancy_summary()` | Return pregnancy summary for the current user. |
+| `init_menstrual_cycle_setup(period_start_date, period_length, cycle_length)` | Initialize menstrual cycle tracking with the first confirmed period. |
+| `update_menstrual_calendar(startdate, enddate, cycle_dates_lists, today_calendar_date=None)` | Replace menstrual period dates in `startdate`..`enddate`. |
+| `update_menstrual_daily_log(calendar_date, symptoms=None, moods=None, flow=None, …)` | Replace the menstrual daily log for `calendar_date`. |
+| `update_menstrual_settings(settings, user_settings_id=None)` | Update `userMenstrualCycleSettings` on the user profile. |
+
+</details>
+
+<details><summary><b>Golf</b> (5)</summary>
+
+| Method | Description |
+| --- | --- |
+| `get_golf_club_stats(limit=1000)` | Return golf club names and statistics. |
+| `get_golf_scorecard(scorecard_id)` | Return golf scorecard detail by scorecard ID. |
+| `get_golf_shot_data(scorecard_id, hole_numbers=None)` | Return golf shot data for a scorecard and specific holes. |
+| `get_golf_summary(start=0, limit=100)` | Return golf scorecard summary. |
+| `get_golf_user_stats()` | Return an overview of the user's golf statistics. |
+
+</details>
+<!-- METHODS:END -->
 
 ## 🙏 Acknowledgments
 

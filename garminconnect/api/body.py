@@ -23,7 +23,7 @@ class BodyMixin(GarminBase):
     """Weight, body composition and blood pressure."""
 
     def get_stats_and_body(self, cdate: str) -> dict[str, Any]:
-        """Return activity data and body composition (compat for garminconnect)."""
+        """Return the daily summary and body composition for a date."""
         # Validate input
         cdate = _validate_date_format(cdate, "cdate")
         stats = self.get_stats(cdate)
@@ -70,6 +70,7 @@ class BodyMixin(GarminBase):
         visceral_fat_rating: float | None = None,
         bmi: float | None = None,
     ) -> dict[str, Any]:
+        """Add a weigh-in with body composition values, uploaded as a FIT file."""
         weight = _validate_positive_number(weight, "weight")
         dt = (
             self._localize(datetime.fromisoformat(timestamp))
@@ -106,7 +107,7 @@ class BodyMixin(GarminBase):
     def add_weigh_in(
         self, weight: int | float, unitKey: str = "kg", timestamp: str = ""
     ) -> dict[str, Any] | None:
-        """Add a weigh-in (default to kg)."""
+        """Add a weigh-in (kg by default)."""
         # Validate inputs
         weight = _validate_positive_number(weight, "weight")
 
@@ -143,7 +144,7 @@ class BodyMixin(GarminBase):
         dateTimestamp: str = "",
         gmtTimestamp: str = "",
     ) -> dict[str, Any] | None:
-        """Add a weigh-in with explicit timestamps (default to kg)."""
+        """Add a weigh-in with explicit local and GMT timestamps (kg by default)."""
         url = f"{self.garmin_connect_weight_url}/user-weight"
 
         if unitKey not in VALID_WEIGHT_UNITS:
@@ -200,7 +201,7 @@ class BodyMixin(GarminBase):
         return self.connectapi(url, params=params)
 
     def delete_weigh_in(self, weight_pk: str, cdate: str) -> Any:
-        """Delete specific weigh-in."""
+        """Delete one weigh-in."""
         cdate = _validate_date_format(cdate, "cdate")
         weight_pk = str(_coerce_positive_id(weight_pk, "weight_pk"))
         url = f"{self.garmin_connect_weight_url}/weight/{cdate}/byversion/{weight_pk}"
@@ -214,7 +215,7 @@ class BodyMixin(GarminBase):
         )
 
     def delete_weigh_ins(self, cdate: str, delete_all: bool = False) -> int | None:
-        """Delete weigh-in for 'cdate' format 'YYYY-MM-DD'.
+        """Delete the weigh-ins on 'cdate' (all of them only with `delete_all=True`).
         Includes option to delete all weigh-ins for that date.
         """
         daily_weigh_ins = self.get_daily_weigh_ins(cdate)
@@ -243,7 +244,7 @@ class BodyMixin(GarminBase):
         timestamp: str = "",
         notes: str = "",
     ) -> dict[str, Any]:
-        """Add blood pressure measurement.
+        """Add a blood pressure reading.
 
         pulse is optional - Garmin Connect's own UI accepts a blood
         pressure entry without a heart rate value (#426).
@@ -281,7 +282,7 @@ class BodyMixin(GarminBase):
     def get_blood_pressure(
         self, startdate: str, enddate: str | None = None
     ) -> dict[str, Any]:
-        """Returns blood pressure by day for 'startdate' format
+        """Return blood pressure by day for 'startdate' format
         'YYYY-MM-DD' through enddate 'YYYY-MM-DD'.
         """
         startdate = _validate_date_format(startdate, "startdate")
@@ -296,7 +297,7 @@ class BodyMixin(GarminBase):
         return self.connectapi(url, params=params)
 
     def delete_blood_pressure(self, version: str, cdate: str) -> dict[str, Any]:
-        """Delete specific blood pressure measurement."""
+        """Delete one blood pressure reading."""
         cdate = _validate_date_format(cdate, "cdate")
         version = str(_coerce_positive_id(version, "version"))
         url = f"{self.garmin_connect_set_blood_pressure_endpoint}/{cdate}/{version}"

@@ -21,7 +21,7 @@ class GearMixin(GarminBase):
     """Gear (shoes, bikes, ...) and its link to activities."""
 
     def get_gear(self, userProfileNumber: str) -> dict[str, Any]:
-        """Return a list of gear for the specified user profile number."""
+        """Return the gear of a user profile number."""
         userProfileNumber = str(
             _coerce_positive_id(userProfileNumber, "userProfileNumber")
         )
@@ -157,6 +157,7 @@ class GearMixin(GarminBase):
             raise
 
     def get_gear_defaults(self, userProfileNumber: str) -> dict[str, Any]:
+        """Return the default gear per activity type."""
         userProfileNumber = str(
             _coerce_positive_id(userProfileNumber, "userProfileNumber")
         )
@@ -169,6 +170,7 @@ class GearMixin(GarminBase):
     def set_gear_default(
         self, activityType: str, gearUUID: str, defaultGear: bool = True
     ) -> Any:
+        """Make gear the default for an activity type, or remove it as the default."""
         activityType = _validate_sport_key(activityType, "activityType")
         gearUUID = _validate_uuid(gearUUID, "gearUUID")
         defaultGearString = "/default/true" if defaultGear else ""
@@ -189,7 +191,7 @@ class GearMixin(GarminBase):
             raise
 
     def get_activity_gear(self, activity_id: int | str) -> dict[str, Any]:
-        """Return gears used for activity id."""
+        """Return the gear linked to an activity."""
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         params = {
             "activityId": activity_id,
@@ -202,7 +204,7 @@ class GearMixin(GarminBase):
     def get_gear_activities(
         self, gearUUID: str, limit: int = 1000
     ) -> list[dict[str, Any]]:
-        """Return activities where gear uuid was used.
+        """Return the activities a piece of gear was used in.
         :param gearUUID: UUID of the gear to get activities for
         :param limit: Maximum number of activities to return (default: 1000)
         :return: List of activities where the specified gear was used.
@@ -229,7 +231,7 @@ class GearMixin(GarminBase):
     def add_gear_to_activity(
         self, gearUUID: str, activity_id: int | str
     ) -> dict[str, Any]:
-        """Associates gear with an activity. Requires a gearUUID and an activity_id.
+        """Link gear to an activity. Requires a gearUUID and an activity_id.
 
         Args:
             gearUUID: UID for gear to add to activity. Findable though the get_gear function
@@ -260,7 +262,7 @@ class GearMixin(GarminBase):
     def remove_gear_from_activity(
         self, gearUUID: str, activity_id: int | str
     ) -> dict[str, Any]:
-        """Removes gear from an activity. Requires a gearUUID and an activity_id.
+        """Unlink gear from an activity. Requires a gearUUID and an activity_id.
 
         Args:
             gearUUID: UID for gear to remove from activity. Findable though the get_gear method.

@@ -122,7 +122,7 @@ class GolfMixin(GarminBase):
         return self.connectapi(url, params=params)
 
     def get_golf_user_stats(self) -> dict[str, Any]:
-        """Return overview of the users golf statistics.
+        """Return an overview of the user's golf statistics.
 
         Returns:
             Dictionary containing user stats such as handicap and strokes gained.
