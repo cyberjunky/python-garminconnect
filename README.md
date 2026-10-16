@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **262 API methods** organized into **15 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **270 API methods** organized into **15 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -39,9 +39,10 @@ Select a category:
   [9] 🎽 Gear & Equipment
   [0] 💧 Hydration & Wellness
   [a] 🔧 System & Export
-  [b] 📅 Training Plans
+  [b] 📅 Training Plans & Calendar
   [c] ⛳ Golf
   [d] ✏️  Activity Editing
+  [e] 🏃 Activity Details & Courses
 
   [q] Exit program
 
@@ -50,23 +51,23 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 330+ methods (snapshot); every method with a one-line description is listed in the [Method Reference](#-method-reference)
+- **Total API Methods**: 348 methods; every method with a one-line description is listed in the [Method Reference](#-method-reference)
 - **Categories**: 15 organized sections
-- **Web-app endpoint map**: 165 methods added in 2026 covering the endpoints the Garmin Connect web app uses, each documented with the exact request it sends and whether it was verified live, in [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md); the dashboard's GraphQL operations are in [docs/graphql_operations.md](docs/graphql_operations.md)
+- **Web-app endpoint map**: the endpoints the Garmin Connect web app uses documented with the exact request it sends and whether it was verified live, in [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md); the dashboard's GraphQL operations are in [docs/graphql_operations.md](docs/graphql_operations.md)
 - **User & Profile**: 8 methods (basic user info, settings)
 - **Daily Health & Activity**: 21 methods (today's health data plus daily calories, resting HR and sleep ranges)
 - **Advanced Health Metrics**: 35 methods (fitness metrics, HRV, VO2, FTP range, training readiness, training zones, running tolerance, training load balance, daily training status, activity training load)
 - **Historical Data & Trends**: 29 methods (date range queries, weekly aggregates)
 - **Activities & Workouts**: 37 methods (comprehensive activity, workout management, typed workout uploads including strength and swim CSS targets, in-place edit, scheduling, push to device, import, activity type/subtype filtering, earliest-upcoming-workout lookup, activity photos)
 - **Body Composition & Weight**: 11 methods (weight tracking, body composition)
-- **Goals & Achievements**: 22 methods (challenges, badges, goals)
-- **Device & Technical**: 12 methods (device info, settings)
-- **Gear & Equipment**: 11 methods (gear management, tracking, creation)
-- **Hydration & Wellness**: 29 methods (hydration, nutrition, blood pressure, menstrual reads and writes, Jet Lag Adviser trips)
+- **Goals & Achievements**: 24 methods (challenges, badges, goals)
+- **Device & Technical**: 13 methods (device info, settings)
+- **Gear & Equipment**: 13 methods (gear management, tracking, creation)
+- **Hydration & Wellness**: 30 methods (hydration, nutrition, blood pressure, menstrual reads and writes, Jet Lag Adviser trips)
 - **System & Export**: 5 methods (reporting, logout, GraphQL, health snapshot download)
-- **Training Plans & Calendar**: 22 methods (calendar weeks/years/events, upcoming and primary race events, active plans and plan tasks, plans, plan by ID, typed strength workout uploads including timed sets, exercise catalog search, in-place workout editing, push to device, workout scheduling management)
+- **Training Plans & Calendar**: 23 methods (calendar weeks/years/events, upcoming and primary race events, active plans and plan tasks, plans, plan by ID, typed strength workout uploads including timed sets, exercise catalog search, in-place workout editing, push to device, workout scheduling management)
 - **Golf**: 5 methods (scorecard summary, scorecard detail, shot data, club stats, user stats)
-- **Activity Editing**: 2 methods (set activity description, set strength-activity exercise sets)
+- **Activity Editing**: 3 methods (set activity description, set strength-activity exercise sets)
 - **Activity Details & Courses**: 13 methods (laps, rounds, step/jump/swim details, map and polyline, activity search, courses)
 
 ### Interactive Features
@@ -130,7 +131,7 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[example]"
 
 python3 ./example.py   # simple getting-started example
-python3 ./demo.py      # comprehensive demo (262 API methods)
+python3 ./demo.py      # comprehensive demo (270 API methods)
 ```
 
 ## 🛠️ Development
@@ -579,7 +580,7 @@ activity has photos attached.
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 262 API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 270 API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
