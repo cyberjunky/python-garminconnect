@@ -128,6 +128,8 @@ class BodyMixin(GarminBase):
         # Apply timezone offset to get UTC/GMT time
         dtGMT = dt.astimezone(UTC)
         payload = {
+            # The web app's weigh-in form sends the local calendar date too.
+            "date": dt.date().isoformat(),
             "dateTimestamp": _fmt_ts(dt),
             "gmtTimestamp": _fmt_ts(dtGMT),
             "unitKey": unitKey,
@@ -278,6 +280,32 @@ class BodyMixin(GarminBase):
         logger.debug("Adding blood pressure")
 
         return self.client.post("connectapi", url, json=payload).json()
+
+    def update_blood_pressure(
+        self, measurement: dict[str, Any], *, notes: str
+    ) -> dict[str, Any]:
+        """Change the note of an existing blood pressure reading.
+
+        PUT /bloodpressure-service/bloodpressure with the measurement object
+        (an entry of ``get_blood_pressure()["measurementSummaries"][i]
+        ["measurements"]``, identified by its ``version``) and the new
+        ``notes``. Verified live: Garmin applies only the note on this call —
+        changed systolic/diastolic/pulse values are echoed back but not
+        stored — so to correct values use :meth:`delete_blood_pressure` and
+        :meth:`set_blood_pressure`.
+        """
+        if not isinstance(measurement, dict) or not measurement.get("version"):
+            raise ValueError(
+                "measurement must be a blood pressure entry with a 'version' "
+                "(see get_blood_pressure)"
+            )
+        if not isinstance(notes, str):
+            raise ValueError("notes must be a string")
+        payload = {**measurement, "notes": notes}
+        logger.debug("Updating blood pressure note for %s", measurement["version"])
+        return self.client.put(
+            "connectapi", self.garmin_connect_set_blood_pressure_endpoint, json=payload
+        ).json()
 
     def get_blood_pressure(
         self, startdate: str, enddate: str | None = None

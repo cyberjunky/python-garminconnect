@@ -9,6 +9,8 @@ from ._common import (
     _validate_date_range,
     _validate_non_negative_integer,
     _validate_positive_integer,
+    _validate_positive_number,
+    _validate_sport_key,
     _validate_uuid,
     logger,
 )
@@ -281,6 +283,32 @@ class AchievementsMixin(GarminBase):
         url = f"{self.garmin_connect_goal_service_url}/user/effective/weightgoal/{start}/{end}"
         logger.debug("Requesting weight goal")
         return self.connectapi(url)
+
+    def set_daily_goal(
+        self, goal_type: str, value: float, cdate: str | None = None
+    ) -> dict[str, Any]:
+        """Set a daily wellness goal such as intensity minutes, floors or hydration.
+
+        PUT /goal-service/goal/user/effective/{goal-type}/{date} with
+        ``{"goalValue": value, "goalType": GOAL_TYPE}``, as the web app's goal
+        editor does. ``goal_type`` is a key from :meth:`get_effective_goals`
+        (``INTENSITY_MINUTES``, ``FLOORS_CLIMBED``, ``HYDRATION`` (ml),
+        ``WEIGHT_GRAMS``); in the path Garmin uses the lower-case dashed form
+        (``floors-climbed``) except for ``WEIGHT_GRAMS``. Verified live for
+        ``FLOORS_CLIMBED``. For steps use :meth:`set_steps_goal`.
+        """
+        goal_type = _validate_sport_key(goal_type, "goal_type")
+        value = _validate_positive_number(value, "value")
+        cdate = self._date_or_today(cdate)
+        slug = (
+            goal_type
+            if goal_type == "WEIGHT_GRAMS"
+            else goal_type.lower().replace("_", "-")
+        )
+        url = f"{self.garmin_connect_goal_service_url}/user/effective/{slug}/{cdate}"
+        payload = {"goalValue": value, "goalType": goal_type}
+        logger.debug("Setting %s goal to %s", goal_type, value)
+        return self.client.put("connectapi", url, json=payload).json()
 
     def get_badge_attributes(self) -> dict[str, Any]:
         """Return badge metadata: types, categories, difficulties.

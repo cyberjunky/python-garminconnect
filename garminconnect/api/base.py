@@ -802,6 +802,45 @@ class GarminBase:
 
         return self.connectapi(url)
 
+    def update_user_settings(self, settings: dict[str, Any]) -> Any:
+        """Write user settings (units, formats, sleep times, training days, ...).
+
+        PUT /userprofile-service/userprofile/user-settings/ with the settings
+        object from :meth:`get_user_profile`; ``settings`` is overlaid on the
+        current object so only the given keys change. ``userData`` is itself
+        a dict and is merged one level deep, e.g.
+        ``update_user_settings({"userData": {"measurementSystem": "metric"}})``.
+        Verified live with an unchanged object (204).
+        """
+        if not isinstance(settings, dict) or not settings:
+            raise ValueError("settings must be a non-empty dictionary")
+        current = self.get_user_profile()
+        payload: dict[str, Any] = dict(current) if isinstance(current, dict) else {}
+        for key, value in settings.items():
+            if isinstance(value, dict) and isinstance(payload.get(key), dict):
+                payload[key] = {**payload[key], **value}
+            else:
+                payload[key] = value
+        logger.debug("Updating user settings: %s", sorted(settings))
+        return self._json_or_none(
+            self.client.put(
+                "connectapi", self.garmin_connect_user_settings_url, json=payload
+            )
+        )
+
+    def set_primary_training_device(self, device_id: int | str) -> Any:
+        """Choose which device Garmin treats as the primary training device.
+
+        PUT /userprofile-service/userprofile/user-settings/primary-training-device
+        with ``{"deviceId": id}``. Verified live.
+        """
+        device_id = _coerce_positive_id(device_id, "device_id")
+        url = f"{self.garmin_connect_user_settings_url}/primary-training-device"
+        logger.debug("Setting primary training device %s", device_id)
+        return self._json_or_none(
+            self.client.put("connectapi", url, json={"deviceId": device_id})
+        )
+
     def request_reload(
         self, cdate: str, device_id: int | str | None = None
     ) -> dict[str, Any]:

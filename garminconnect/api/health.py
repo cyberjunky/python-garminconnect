@@ -348,11 +348,14 @@ class HealthMixin(GarminBase):
             except ValueError:
                 raise
 
-        payload = {
+        payload: dict[str, Any] = {
             "calendarDate": cdate,
             "timestampLocal": timestamp,
             "valueInML": value_in_ml,
         }
+        if self.profile_id is not None:
+            # The web app includes the profile id in the hydration log entry.
+            payload["userProfileId"] = self.profile_id
 
         logger.debug("Adding hydration data")
         return self.client.put("connectapi", url, json=payload).json()
@@ -906,6 +909,32 @@ class HealthMixin(GarminBase):
         url = f"{self.garmin_connect_wellness_url}/dailyMovement"
         logger.debug("Requesting daily movement")
         return self.connectapi(url, params={"calendarDate": cdate})
+
+    def set_steps_goal(
+        self, steps: int | None, cdate: str | None = None
+    ) -> dict[str, Any]:
+        """Set a manual daily step goal, or return to the device's automatic goal.
+
+        PUT /wellness-service/wellness/wellness-goals/consolidated/steps/{date}
+        with the goal object from :meth:`get_steps_goal`. A positive ``steps``
+        value sets ``userGoal`` (Garmin reports it back with
+        ``userGoalCategory: "manual"``); ``None`` or ``0`` restores the
+        automatic goal (``userGoal: 0``, ``userGoalCategory: "my-auto"``).
+        Verified live in both directions.
+        """
+        cdate = self._date_or_today(cdate)
+        url = f"{self.garmin_connect_wellness_url}/wellness-goals/consolidated/steps/{cdate}"
+        current = self.connectapi(url)  # same object get_steps_goal returns
+        payload = dict(current) if isinstance(current, dict) else {"goalType": "STEPS"}
+        if steps:
+            payload["userGoal"] = _validate_positive_integer(steps, "steps")
+            payload["userGoalCategory"] = "manual"
+        else:
+            payload["userGoal"] = 0
+            payload["userGoalCategory"] = "my-auto"
+        url = f"{self.garmin_connect_wellness_url}/wellness-goals/consolidated/steps/{cdate}"
+        logger.debug("Setting steps goal to %s", payload["userGoal"])
+        return self.client.put("connectapi", url, json=payload).json()
 
     def get_sync_timestamp(self) -> str | None:
         """Return the timestamp (UTC, no offset) of the last device sync.

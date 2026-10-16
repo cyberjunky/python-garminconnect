@@ -45,6 +45,8 @@ Not added: `/metrics-service/metrics/eventracetimeprojections/{eventId}/{d1}/{d2
 | Method | Request | Notes | Verified |
 |---|---|---|---|
 | `get_heart_rate_zones_v2(generate_defaults=False)` | `GET /biometric-service/heartRateZones/v2?generateDefaults=` | The web app reads zones from v2; `get_heart_rate_zones` keeps v1. | yes |
+| `update_heart_rate_zones(zones)` | `PUT /biometric-service/heartRateZones/` with a list of per-sport zone objects | Pass the (edited) objects from `get_heart_rate_zones_v2`. | yes (unchanged object) |
+| `update_power_zones(zones)` | `PUT /biometric-service/powerZones/all` with a list of per-sport objects | Pass the (edited) objects from `get_power_zones`. | yes (unchanged object) |
 | `get_biometric_stats(start, end, aggregation="daily", user_first_day="monday")` | `GET /biometric-service/stats?aggregation&userFirstDay&startDate&endDate` | Per-period weight, body fat, LT, FTP statistics. | yes |
 | `get_power_to_weight_range(start, end, aggregation="daily", sport=None)` | `GET /biometric-service/stats/powerToWeight/range/{start}/{end}?aggregation[&sport]` | One series per sport. | yes |
 | `get_critical_swim_speed(cdate=None)` | `GET /biometric-service/criticalSwimSpeed/latest/{date}` | | yes (empty) |
@@ -100,6 +102,7 @@ Not added: `/metrics-service/metrics/eventracetimeprojections/{eventId}/{d1}/{d2
 | `get_spo2_acclimation_data(cdate=None)` | `GET /wellness-service/wellness/daily/spo2acclimation/{date}` | Superset of `get_spo2_data` (whose `daily/spo2` path still works). | yes |
 | `get_daily_movement(cdate=None)` | `GET /wellness-service/wellness/dailyMovement?calendarDate` | | yes |
 | `get_steps_goal(cdate=None)` | `GET /wellness-service/wellness/wellness-goals/consolidated/steps/{date}` | Device vs. user step goal. | yes |
+| `set_steps_goal(steps, cdate=None)` | `PUT /wellness-service/wellness/wellness-goals/consolidated/steps/{date}` with the goal object | Positive value → `userGoal` (`userGoalCategory: manual`); `None`/`0` → back to the device's automatic goal (`my-auto`). | yes |
 | `get_sync_timestamp()` | `GET /wellness-service/wellness/syncTimestamp` | UTC timestamp string. | yes |
 | `get_hourly_intensity_minutes(end=None, days=7)` | `GET /wellness-service/stats/hourly/im/{end}/{days}` | Garmin accepts 1–7 days inside the current week. | yes |
 | `get_acclimation_stats(start, end)` | `GET /wellness-service/stats/daily/acclimation?fromDate&untilDate` | SpO2 acclimation statistics. | yes |
@@ -142,6 +145,7 @@ Not added: `/metrics-service/metrics/eventracetimeprojections/{eventId}/{d1}/{d2
 | `get_blood_pressure_day(cdate=None)` | `GET /bloodpressure-service/bloodpressure/dayview/{date}` | | yes (empty) |
 | `get_daily_last_blood_pressure(start, end)` | `GET /bloodpressure-service/bloodpressure/daily/last/{start}/{end}` | | yes (empty) |
 | `get_weekly_blood_pressure(end=None)` | `GET /bloodpressure-service/bloodpressure/weeklyRange/{end-363d}/{end}` | Same 52-week rule. | yes (empty) |
+| `update_blood_pressure(measurement, *, notes)` | `PUT /bloodpressure-service/bloodpressure` with the measurement object | Garmin stores only the changed `notes`; value changes are echoed but not saved — delete and re-add to correct values. | yes |
 
 ## ECG (`https://ghs.garmin.com/ghs/ecg/v1`)
 
@@ -162,6 +166,7 @@ feature get a 404.
 | `get_effective_goals(cdate=None)` | `GET /goal-service/goal/user/effective/{date}` | Intensity minutes, floors, hydration goals in effect. | yes |
 | `get_user_goals()` | `GET /goal-service/goal/user` | Steps/weight/calorie goals (`userGoalPk`). | yes |
 | `get_weight_goal(start, end)` | `GET /goal-service/goal/user/effective/weightgoal/{start}/{end}` | | yes (empty) |
+| `set_daily_goal(goal_type, value, cdate=None)` | `PUT /goal-service/goal/user/effective/{goal-type}/{date}` `{"goalValue", "goalType"}` | `INTENSITY_MINUTES`, `FLOORS_CLIMBED`, `HYDRATION`, `WEIGHT_GRAMS`; path uses `floors-climbed` style except `WEIGHT_GRAMS`. | yes (`FLOORS_CLIMBED`) |
 | `get_badge_attributes()` | `GET /badge-service/badge/attributes` | Types, categories, difficulties. | yes |
 | `get_badge_detail(badge_id)` | `GET /badge-service/badge/detail/v3/{badgeId}` | | yes |
 | `get_latest_earned_badges(limit=5)` | `GET /badge-service/badge/earned/latest/{displayName}?limit` | | yes |
@@ -181,6 +186,8 @@ feature get a 404.
 | `get_user_profile_base()` | `GET /userprofile-service/userprofile/userProfileBase` | | yes |
 | `get_privacy_settings()` | `GET /privacysettings-service/privacy-settings` | | yes |
 | `get_usage_indicators()` | `GET /web-gateway/snapshot/usageIndicators` | Which features the account's devices support. | yes |
+| `update_user_settings(settings)` | `PUT /userprofile-service/userprofile/user-settings/` with the settings object | Overlaid on `get_user_profile()`; `userData` merged one level deep. | yes (unchanged object) |
+| `set_primary_training_device(device_id)` | `PUT /userprofile-service/userprofile/user-settings/primary-training-device` `{"deviceId"}` | | yes |
 | `get_jetlag_status(cdate=None)` | `GET /jetlag-service/jetlag/status/daily/{date}` | Empty without a trip. | yes (empty) |
 
 ## Activities (`activitylist-service`, `activity-service`, `segment-service`)
@@ -191,6 +198,7 @@ feature get a 404.
 | `get_fastest_splits(start, end, activity_type="running", number_of_bests=10)` | `GET /activitylist-service/activities/fastest-splits?numberOfBests&startDate&endDate&activityType` | | yes |
 | `get_favorite_activities(limit=5)` | `GET /activitylist-service/activities/favorite/{displayName}?limit` | | yes (empty) |
 | `set_activity_favorite(activity_id, favorite=True)` | `PUT /activity-service/activity/{id}` `{"activityId", "metadataDTO": {"favorite"}}` | Same partial update as `set_activity_name`. Read back via `metadataDTO.favorite` and `get_favorite_activities()`. | yes |
+| `update_activity(activity_id, fields)` | `PUT /activity-service/activity/{id}` `{"activityId", **fields}` | Generic partial update (`activityName`, `description`, `activityTypeDTO`, `eventTypeDTO`, `metadataDTO`, `accessControlRuleDTO`). | yes |
 | `get_activity_laps(activity_id)` | `GET /activity-service/activity/{id}/laps` | `lapDTOs`. | yes |
 | `get_activity_rounds(activity_id)` | `GET /activity-service/activity/{id}/rounds` | HIIT/boxing rounds with sets. | yes (empty) |
 | `get_activity_step_details(activity_id)` | `GET /activity-service/activity/{id}/stepdetails` | Structured-workout steps. | yes (empty) |
@@ -211,6 +219,8 @@ feature get a 404.
 | `get_gear_list(start=0, limit=20, gear_statuses=None, gear_type=None, sort_order=None)` | `GET /gear-service/gear/v2/list?start&limit[&gearStatuses&gearType&sortOrder]` | Dashed uuids; `get_gear` returns legacy undashed uuids that v2 does not accept. | yes |
 | `get_gear_details(gear_uuid)` | `GET /gear-service/gear/v2/{uuid}` | | yes |
 | `set_gear_status(gear_uuid, status)` | `PUT /gear-service/gear/v2/{uuid}/status/{ACTIVE\|RETIRED}` | | no |
+| `update_gear(gear_uuid, *, name, brand, model, gear_type, first_use_date, usage_type, max_usage_distance_km, max_usage_duration_min, notes, activity_type_keys)` | `PUT /gear-service/gear/v2/{uuid}` with the complete gear object | Garmin rejects partial bodies (400); the object from `get_gear_details` is sent back with the changed fields. `notes` persists — the legacy `get_gear()` record simply never includes it. | yes |
+| `delete_gear(gear_uuid)` | `DELETE /gear-service/gear/v2/{uuid}` | | no |
 | `get_gear_types()` | `GET /gear-service/gear/types` | | yes |
 | `get_user_gear_types()` | `GET /gear-service/gear/v2/user-gear-types` | | yes |
 | `get_gear_make_models(keywords)` | `GET /gear-service/gear/makemodels?keywords` | Autocomplete for the gear form. | yes |
@@ -268,6 +278,7 @@ feature get a 404.
 | `get_calendar_event(event_id)` | `GET /calendar-service/event/{eventId}` | | yes |
 | `create_calendar_event(event)` / `update_calendar_event(event_id, event)` / `delete_calendar_event(event_id)` | `POST /calendar-service/event`, `PUT`/`DELETE /calendar-service/event/{eventId}` | Full event object as returned by `get_calendar_event`. | no |
 | `move_calendar_item(item_type, item_id, cdate, item=None)` | `PUT /calendar-service/calendarItem/{itemType}/{id}/date/{date}` | | no |
+| `create_calendar_note(cdate, name, content="")` / `update_calendar_note(note_id, cdate, name, content="")` / `delete_calendar_note(note_id)` | `POST /calendar-service/note`, `PUT`/`DELETE /calendar-service/note/{id}` `{"noteName", "content", "date"[, "id"]}` | | yes |
 
 ## Courses (`course-service`)
 

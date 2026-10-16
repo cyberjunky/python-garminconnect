@@ -586,9 +586,9 @@ activity has photos attached.
 ## 📚 Method Reference
 
 <!-- METHODS:START -->
-335 public methods on `Garmin`, generated from the code by `scripts/gen_method_reference.py`. Click a section to expand it.
+348 public methods on `Garmin`, generated from the code by `scripts/gen_method_reference.py`. Click a section to expand it.
 
-<details><summary><b>Login, profile & account</b> (19)</summary>
+<details><summary><b>Login, profile & account</b> (21)</summary>
 
 | Method | Description |
 | --- | --- |
@@ -610,11 +610,13 @@ activity has photos attached.
 | `query_garmin_graphql(query)` | Run a query against Garmin's GraphQL gateway. |
 | `request_reload(cdate, device_id=None)` | Request reload of data for a specific date. |
 | `resume_login(client_state, mfa_code)` | Finish a login that is waiting for an MFA code. |
+| `set_primary_training_device(device_id)` | Choose which device Garmin treats as the primary training device. |
 | `today()` | Return today's calendar date in the user's Garmin timezone. |
+| `update_user_settings(settings)` | Write user settings (units, formats, sleep times, training days, ...). |
 
 </details>
 
-<details><summary><b>Daily health & wellness</b> (74)</summary>
+<details><summary><b>Daily health & wellness</b> (75)</summary>
 
 | Method | Description |
 | --- | --- |
@@ -691,11 +693,12 @@ activity has photos attached.
 | `get_weekly_steps(end, weeks=52)` | Fetch weekly steps aggregates. |
 | `get_weekly_stress(end, weeks=52)` | Fetch weekly stress aggregates. |
 | `get_weekly_wellness_stats(start, end, metric_ids=None)` | Return weekly wellness metrics (default: resting heart rate, id 60). |
+| `set_steps_goal(steps, cdate=None)` | Set a manual daily step goal, or return to the device's automatic goal. |
 | `update_jetlag_trip(trip_id, start_date, end_date, flights)` | Replace a Jet Lag Adviser trip. |
 
 </details>
 
-<details><summary><b>Performance metrics</b> (44)</summary>
+<details><summary><b>Performance metrics</b> (46)</summary>
 
 | Method | Description |
 | --- | --- |
@@ -743,10 +746,12 @@ activity has photos attached.
 | `get_training_readiness_range(start, end)` | Return training readiness entries for a date range. |
 | `get_training_status(cdate)` | Return training status data for current user. |
 | `get_weekly_training_status(start, end)` | Return the weekly training status / load history for a date range. |
+| `update_heart_rate_zones(zones)` | Write heart rate zones for one or more sports. |
+| `update_power_zones(zones)` | Write power zones for one or more sports. |
 
 </details>
 
-<details><summary><b>Weight, body composition & blood pressure</b> (21)</summary>
+<details><summary><b>Weight, body composition & blood pressure</b> (22)</summary>
 
 | Method | Description |
 | --- | --- |
@@ -771,10 +776,11 @@ activity has photos attached.
 | `get_weigh_ins(startdate, enddate)` | Get weigh-ins between startdate and enddate using format 'YYYY-MM-DD'. |
 | `get_weight_snapshot(start, end)` | Return all weigh-ins in a range as `dateWeightList` entries. |
 | `set_blood_pressure(systolic, diastolic, pulse=None, timestamp='', notes='')` | Add a blood pressure reading. |
+| `update_blood_pressure(measurement, notes)` | Change the note of an existing blood pressure reading. |
 
 </details>
 
-<details><summary><b>Activities</b> (45)</summary>
+<details><summary><b>Activities</b> (46)</summary>
 
 | Method | Description |
 | --- | --- |
@@ -822,6 +828,7 @@ activity has photos attached.
 | `set_activity_favorite(activity_id, favorite=True)` | Mark or unmark an activity as favorite. |
 | `set_activity_name(activity_id, title)` | Set the name of an activity. |
 | `set_activity_type(activity_id, type_id, type_key, parent_type_id)` | Change the activity type of an activity. |
+| `update_activity(activity_id, fields)` | Change one or more fields of an activity in a single call. |
 | `upload_activity(activity_path)` | Upload an activity file (FIT, GPX or TCX). |
 
 </details>
@@ -857,14 +864,16 @@ activity has photos attached.
 
 </details>
 
-<details><summary><b>Training plans, calendar, courses & reports</b> (32)</summary>
+<details><summary><b>Training plans, calendar, courses & reports</b> (35)</summary>
 
 | Method | Description |
 | --- | --- |
 | `convert_activity_to_course(activity_id)` | Return a course object built from an activity's track (not yet saved). |
 | `create_calendar_event(event)` | Create a race / goal event from a full event object (see `get_calendar_event`). |
+| `create_calendar_note(cdate, name, content='')` | Add a note to a calendar day. |
 | `create_course(course)` | Create a course from a full course object (see `get_course`). |
 | `delete_calendar_event(event_id)` | Delete a calendar event. |
+| `delete_calendar_note(note_id)` | Delete a calendar note. |
 | `delete_course(course_id)` | Delete a course. |
 | `delete_training_plan(plan_id)` | Remove a scheduled training plan from the calendar. |
 | `download_course(course_id, fmt='gpx')` | Download a course as GPX or FIT. |
@@ -892,11 +901,12 @@ activity has photos attached.
 | `search_training_plans(start=1, limit=20, locale='en', **filters)` | Browse the Garmin training plan catalogue (`trainingPlanList`). |
 | `set_course_favorite(course_id, favorite=True)` | Mark or unmark a course as favorite. |
 | `update_calendar_event(event_id, event)` | Update a calendar event with a full event object. |
+| `update_calendar_note(note_id, cdate, name, content='')` | Change a calendar note's date, name or content. |
 | `update_course(course_id, course)` | Update a course with a full course object. |
 
 </details>
 
-<details><summary><b>Goals, badges & challenges</b> (26)</summary>
+<details><summary><b>Goals, badges & challenges</b> (27)</summary>
 
 | Method | Description |
 | --- | --- |
@@ -926,6 +936,7 @@ activity has photos attached.
 | `get_steps_goal(cdate=None)` | Return the effective step goal for a day (device vs. user goal). |
 | `get_user_goals()` | Return the user's wellness goals (steps, weight, calories, ...). |
 | `get_weight_goal(start, end)` | Return the weight goal(s) in effect over a date range. |
+| `set_daily_goal(goal_type, value, cdate=None)` | Set a daily wellness goal such as intensity minutes, floors or hydration. |
 
 </details>
 
@@ -954,15 +965,16 @@ activity has photos attached.
 
 </details>
 
-<details><summary><b>Gear</b> (16)</summary>
+<details><summary><b>Gear</b> (18)</summary>
 
 | Method | Description |
 | --- | --- |
 | `add_gear_to_activity(gearUUID, activity_id)` | Link gear to an activity. |
 | `create_gear(gear_type, brand, model, name, first_use_date, usage_type='DISTANCE', max_usage_distance_km=None, max_usage_duration_min=None, …)` | Create a new piece of gear (e.g. a pair of shoes) and return it. |
+| `delete_gear(gear_uuid)` | Delete a piece of gear. |
 | `get_activity_gear(activity_id)` | Return the gear linked to an activity. |
 | `get_activity_gear_v2(activity_id)` | Return the gear linked to an activity (v2 endpoint). |
-| `get_gear(userProfileNumber)` | Return the gear of a user profile number. |
+| `get_gear(userProfileNumber)` | Return the gear of a user profile number (legacy `filterGear` endpoint). |
 | `get_gear_activities(gearUUID, limit=1000)` | Return the activities a piece of gear was used in. |
 | `get_gear_defaults(userProfileNumber)` | Return the default gear per activity type. |
 | `get_gear_details(gear_uuid)` | Return one piece of gear (v2, dashed uuid). |
@@ -974,6 +986,7 @@ activity has photos attached.
 | `remove_gear_from_activity(gearUUID, activity_id)` | Unlink gear from an activity. |
 | `set_gear_default(activityType, gearUUID, defaultGear=True)` | Make gear the default for an activity type, or remove it as the default. |
 | `set_gear_status(gear_uuid, status)` | Retire or re-activate gear. |
+| `update_gear(gear_uuid, name=None, brand=None, model=None, …)` | Edit a piece of gear and return the updated gear object. |
 
 </details>
 

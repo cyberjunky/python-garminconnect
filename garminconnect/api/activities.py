@@ -86,6 +86,28 @@ class ActivitiesMixin(GarminBase):
 
         return self.connectapi(url)
 
+    def update_activity(self, activity_id: int | str, fields: dict[str, Any]) -> Any:
+        """Change one or more fields of an activity in a single call.
+
+        PUT /activity-service/activity/{activityId} with ``{"activityId": id,
+        **fields}`` — the partial update the web app's activity editor sends
+        and that :meth:`set_activity_name`, :meth:`set_activity_description`,
+        :meth:`set_activity_type` and :meth:`set_activity_favorite` each use
+        for one field. ``fields`` may hold e.g. ``activityName``,
+        ``description``, ``activityTypeDTO``, ``eventTypeDTO``,
+        ``metadataDTO`` (``favorite``) or ``accessControlRuleDTO`` (privacy),
+        with the value shapes seen in :meth:`get_activity`. Verified live.
+        """
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
+        if not isinstance(fields, dict) or not fields:
+            raise ValueError("fields must be a non-empty dictionary")
+        if any(not isinstance(k, str) or not k for k in fields):
+            raise ValueError("fields must be keyed by non-empty strings")
+        url = f"{self.garmin_connect_activity}/{activity_id}"
+        payload = {**fields, "activityId": activity_id}
+        logger.debug("Updating activity %s: %s", activity_id, sorted(fields))
+        return self.client.put("connectapi", url, json=payload, api=True)
+
     def set_activity_name(self, activity_id: str, title: str) -> Any:
         """Set the name of an activity."""
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))

@@ -613,6 +613,45 @@ class MetricsMixin(GarminBase):
         logger.debug("Requesting stamina curve")
         return self.connectapi(url, params=params)
 
+    def update_heart_rate_zones(self, zones: list[dict[str, Any]]) -> Any:
+        """Write heart rate zones for one or more sports.
+
+        PUT /biometric-service/heartRateZones/ with a list of the per-sport
+        zone objects as returned by :meth:`get_heart_rate_zones_v2` (fields
+        ``sport``, ``trainingMethod`` HR_MAX | HR_RESERVE | LACTATE_THRESHOLD,
+        ``maxHeartRateUsed``, ``restingHeartRateUsed``,
+        ``lactateThresholdHeartRateUsed``, ``zone1Floor`` … ``zone5Floor``).
+        Read the current objects, change the fields you need and pass only the
+        changed sports. Verified live with an unchanged object (204).
+        """
+        if (
+            not isinstance(zones, list)
+            or not zones
+            or not all(isinstance(z, dict) for z in zones)
+        ):
+            raise ValueError("zones must be a non-empty list of zone objects")
+        url = f"{self.garmin_connect_biometric_service_url}/heartRateZones/"
+        logger.debug("Updating heart rate zones for %d sport(s)", len(zones))
+        return self._json_or_none(self.client.put("connectapi", url, json=zones))
+
+    def update_power_zones(self, zones: list[dict[str, Any]]) -> Any:
+        """Write power zones for one or more sports.
+
+        PUT /biometric-service/powerZones/all with a list of the per-sport
+        objects as returned by :meth:`get_power_zones` (``sport``,
+        ``functionalThresholdPower``, ``zone1Floor`` … ``zone7Floor``).
+        Verified live with the unchanged list (204).
+        """
+        if (
+            not isinstance(zones, list)
+            or not zones
+            or not all(isinstance(z, dict) for z in zones)
+        ):
+            raise ValueError("zones must be a non-empty list of zone objects")
+        url = f"{self.garmin_connect_biometric_service_url}/powerZones/all"
+        logger.debug("Updating power zones for %d sport(s)", len(zones))
+        return self._json_or_none(self.client.put("connectapi", url, json=zones))
+
     def get_heart_rate_zones_v2(
         self, generate_defaults: bool = False
     ) -> list[dict[str, Any]]:

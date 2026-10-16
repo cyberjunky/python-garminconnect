@@ -16,12 +16,75 @@ from ._common import (
 )
 from .base import GarminBase
 
+# Fields of a gear-service v2 gear object that ``update_gear`` lets callers
+# change; everything else (uuid, usage counters, images, ...) is read-only.
+_GEAR_EDITABLE_FIELDS = frozenset(
+    {
+        "gearType",
+        "brand",
+        "model",
+        "name",
+        "firstUseDate",
+        "usageType",
+        "maxUsageDistanceMeters",
+        "maxUsageDurationSeconds",
+        "notes",
+        "associatedActivityTypes",
+    }
+)
+
+
+def _gear_distance_meters(max_usage_distance_km: float) -> int:
+    """Convert a retirement threshold in km to the integer meters Garmin stores."""
+    meters = round(
+        _validate_positive_number(max_usage_distance_km, "max_usage_distance_km") * 1000
+    )
+    if meters < 1:
+        raise ValueError(
+            "max_usage_distance_km must be at least 0.001 (1 meter) — "
+            "a smaller value would round down to 0, which means "
+            "'no threshold' rather than the value requested"
+        )
+    return meters
+
+
+def _gear_duration_seconds(max_usage_duration_min: float) -> int:
+    """Convert a retirement threshold in minutes to the integer seconds Garmin stores."""
+    seconds = round(
+        _validate_positive_number(max_usage_duration_min, "max_usage_duration_min") * 60
+    )
+    if seconds < 1:
+        raise ValueError(
+            "max_usage_duration_min must be at least 1/60 (1 second) — "
+            "a smaller value would round down to 0, which means "
+            "'no threshold' rather than the value requested"
+        )
+    return seconds
+
+
+def _gear_activity_types(activity_type_keys: list[str] | None) -> list[dict[str, Any]]:
+    """Build the ``associatedActivityTypes`` list from lowercase activity type keys."""
+    if activity_type_keys is not None and not isinstance(activity_type_keys, list):
+        raise ValueError("activity_type_keys must be a list of strings")
+    result = []
+    for key in activity_type_keys or []:
+        if not isinstance(key, str) or not key.strip():
+            raise ValueError("activity_type_keys entries must be non-empty strings")
+        result.append(
+            {"activityTypeKey": key, "defaultGear": True, "preferredGear": False}
+        )
+    return result
+
 
 class GearMixin(GarminBase):
     """Gear (shoes, bikes, ...) and its link to activities."""
 
     def get_gear(self, userProfileNumber: str) -> dict[str, Any]:
-        """Return the gear of a user profile number."""
+        """Return the gear of a user profile number (legacy ``filterGear`` endpoint).
+
+        This record does not include ``notes``; use :meth:`get_gear_list` or
+        :meth:`get_gear_details` (gear-service v2) for the full gear object.
+        """
         userProfileNumber = str(
             _coerce_positive_id(userProfileNumber, "userProfileNumber")
         )
@@ -78,47 +141,6 @@ class GearMixin(GarminBase):
             raise ValueError("name must be a non-empty string")
         first_use_date = _validate_date_format(first_use_date, "first_use_date")
 
-        max_usage_distance_meters = 0
-        if max_usage_distance_km is not None:
-            max_usage_distance_meters = round(
-                _validate_positive_number(
-                    max_usage_distance_km, "max_usage_distance_km"
-                )
-                * 1000
-            )
-            if max_usage_distance_meters < 1:
-                raise ValueError(
-                    "max_usage_distance_km must be at least 0.001 (1 meter) — "
-                    "a smaller value would round down to 0, which means "
-                    "'no threshold' rather than the value requested"
-                )
-
-        max_usage_duration_seconds = 0
-        if max_usage_duration_min is not None:
-            max_usage_duration_seconds = round(
-                _validate_positive_number(
-                    max_usage_duration_min, "max_usage_duration_min"
-                )
-                * 60
-            )
-            if max_usage_duration_seconds < 1:
-                raise ValueError(
-                    "max_usage_duration_min must be at least 1/60 (1 second) — "
-                    "a smaller value would round down to 0, which means "
-                    "'no threshold' rather than the value requested"
-                )
-
-        if activity_type_keys is not None and not isinstance(activity_type_keys, list):
-            raise ValueError("activity_type_keys must be a list of strings")
-
-        associated_activity_types = []
-        for key in activity_type_keys or []:
-            if not isinstance(key, str) or not key.strip():
-                raise ValueError("activity_type_keys entries must be non-empty strings")
-            associated_activity_types.append(
-                {"activityTypeKey": key, "defaultGear": True, "preferredGear": False}
-            )
-
         payload = {
             "uuid": None,
             "gearType": gear_type,
@@ -127,11 +149,19 @@ class GearMixin(GarminBase):
             "name": name,
             "firstUseDate": first_use_date,
             "maxUsageDate": None,
-            "maxUsageDistanceMeters": max_usage_distance_meters,
-            "maxUsageDurationSeconds": max_usage_duration_seconds,
+            "maxUsageDistanceMeters": (
+                _gear_distance_meters(max_usage_distance_km)
+                if max_usage_distance_km is not None
+                else 0
+            ),
+            "maxUsageDurationSeconds": (
+                _gear_duration_seconds(max_usage_duration_min)
+                if max_usage_duration_min is not None
+                else 0
+            ),
             "usageType": usage_type,
             "notes": notes,
-            "associatedActivityTypes": associated_activity_types,
+            "associatedActivityTypes": _gear_activity_types(activity_type_keys),
         }
 
         url = f"{self.garmin_connect_gear_baseurl}/v2"
@@ -170,7 +200,14 @@ class GearMixin(GarminBase):
     def set_gear_default(
         self, activityType: str, gearUUID: str, defaultGear: bool = True
     ) -> Any:
-        """Make gear the default for an activity type, or remove it as the default."""
+        """Make gear the default for an activity type, or remove it as the default.
+
+        Uses the legacy ``gear-service/gear/{uuid}/activityType/...`` endpoint
+        with the undashed uuid from :meth:`get_gear`. Gear created through the
+        v2 API (``create_gear`` / the current web app) is not found there
+        (404); for such gear set ``activity_type_keys`` with
+        :meth:`update_gear` instead, which writes ``associatedActivityTypes``.
+        """
         activityType = _validate_sport_key(activityType, "activityType")
         gearUUID = _validate_uuid(gearUUID, "gearUUID")
         defaultGearString = "/default/true" if defaultGear else ""
@@ -337,6 +374,96 @@ class GearMixin(GarminBase):
         url = f"{self.garmin_connect_gear_service_url}/gear/v2/{gear_uuid}/status/{status}"
         logger.debug("Setting gear %s status %s", gear_uuid, status)
         return self._json_or_none(self.client.put("connectapi", url))
+
+    def update_gear(
+        self,
+        gear_uuid: str,
+        *,
+        name: str | None = None,
+        brand: str | None = None,
+        model: str | None = None,
+        gear_type: str | None = None,
+        first_use_date: str | None = None,
+        usage_type: str | None = None,
+        max_usage_distance_km: float | None = None,
+        max_usage_duration_min: float | None = None,
+        notes: str | None = None,
+        activity_type_keys: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Edit a piece of gear and return the updated gear object.
+
+        PUT /gear-service/gear/v2/{uuid} with the **complete** gear object —
+        Garmin rejects partial bodies (HTTP 400), so the current object is
+        fetched with :meth:`get_gear_details`, the given fields are replaced
+        and the whole thing is sent back, exactly like the web app's edit
+        form. Only the given keyword arguments change; ``notes=""`` clears the
+        note, ``max_usage_distance_km=0`` / ``max_usage_duration_min=0``
+        remove a retirement threshold. Use :meth:`set_gear_status` to retire
+        or re-activate gear. Verified live: the note persists and is shown
+        in Garmin Connect.
+
+        Args:
+            gear_uuid: dashed uuid from :meth:`get_gear_list` /
+                :meth:`get_gear_details`.
+            activity_type_keys: lowercase activity type keys (e.g.
+                ``["running"]``) this gear is the default for; replaces the
+                current association list.
+
+        """
+        gear_uuid = _validate_uuid(gear_uuid, "gear_uuid")
+        current = self.get_gear_details(gear_uuid)
+        if not isinstance(current, dict) or not current:
+            raise GarminConnectConnectionError(f"Gear {gear_uuid} not found")
+        payload = dict(current)
+
+        for key, value in (("name", name), ("brand", brand), ("model", model)):
+            if value is not None:
+                if not isinstance(value, str) or not value.strip():
+                    raise ValueError(f"{key} must be a non-empty string")
+                payload[key] = value
+        if gear_type is not None:
+            payload["gearType"] = _validate_sport_key(gear_type, "gear_type")
+        if usage_type is not None:
+            payload["usageType"] = _validate_sport_key(usage_type, "usage_type")
+        if first_use_date is not None:
+            payload["firstUseDate"] = _validate_date_format(
+                first_use_date, "first_use_date"
+            )
+        if max_usage_distance_km is not None:
+            payload["maxUsageDistanceMeters"] = (
+                0
+                if max_usage_distance_km == 0
+                else _gear_distance_meters(max_usage_distance_km)
+            )
+        if max_usage_duration_min is not None:
+            payload["maxUsageDurationSeconds"] = (
+                0
+                if max_usage_duration_min == 0
+                else _gear_duration_seconds(max_usage_duration_min)
+            )
+        if notes is not None:
+            if not isinstance(notes, str):
+                raise ValueError("notes must be a string")
+            payload["notes"] = notes
+        if activity_type_keys is not None:
+            payload["associatedActivityTypes"] = _gear_activity_types(
+                activity_type_keys
+            )
+
+        url = f"{self.garmin_connect_gear_service_url}/gear/v2/{gear_uuid}"
+        logger.debug("Updating gear %s", gear_uuid)
+        self.client.put("connectapi", url, json=payload)
+        return self.get_gear_details(gear_uuid)
+
+    def delete_gear(self, gear_uuid: str) -> Any:
+        """Delete a piece of gear.
+
+        DELETE /gear-service/gear/v2/{uuid} (the web app's "Delete gear").
+        """
+        gear_uuid = _validate_uuid(gear_uuid, "gear_uuid")
+        url = f"{self.garmin_connect_gear_service_url}/gear/v2/{gear_uuid}"
+        logger.debug("Deleting gear %s", gear_uuid)
+        return self._json_or_none(self.client.delete("connectapi", url))
 
     def get_gear_types(self) -> list[dict[str, Any]]:
         """Return the gear types Garmin knows (shoes, bike, ...).

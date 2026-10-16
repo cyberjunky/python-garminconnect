@@ -228,6 +228,52 @@ class TrainingMixin(GarminBase):
         logger.debug("Moving calendar item %s/%s to %s", item_type, item_id, cdate)
         return self._json_or_none(self.client.put("connectapi", url, json=payload))
 
+    def create_calendar_note(
+        self, cdate: str, name: str, content: str = ""
+    ) -> dict[str, Any]:
+        """Add a note to a calendar day.
+
+        POST /calendar-service/note ``{"noteName", "content", "date"}``;
+        returns the note with its ``id``. Verified live.
+        """
+        cdate = _validate_date_format(cdate, "cdate")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("name must be a non-empty string")
+        if not isinstance(content, str):
+            raise ValueError("content must be a string")
+        url = f"{self.garmin_connect_calendar_url}/note"
+        payload = {"noteName": name, "content": content, "date": cdate}
+        logger.debug("Creating calendar note on %s", cdate)
+        return self.client.post("connectapi", url, json=payload, api=True)
+
+    def update_calendar_note(
+        self, note_id: int | str, cdate: str, name: str, content: str = ""
+    ) -> Any:
+        """Change a calendar note's date, name or content.
+
+        PUT /calendar-service/note/{id} ``{"id", "noteName", "content", "date"}``.
+        """
+        note_id = _coerce_positive_id(note_id, "note_id")
+        cdate = _validate_date_format(cdate, "cdate")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("name must be a non-empty string")
+        if not isinstance(content, str):
+            raise ValueError("content must be a string")
+        url = f"{self.garmin_connect_calendar_url}/note/{note_id}"
+        payload = {"id": note_id, "noteName": name, "content": content, "date": cdate}
+        logger.debug("Updating calendar note %s", note_id)
+        return self._json_or_none(self.client.put("connectapi", url, json=payload))
+
+    def delete_calendar_note(self, note_id: int | str) -> Any:
+        """Delete a calendar note.
+
+        DELETE /calendar-service/note/{id}. Verified live.
+        """
+        note_id = _coerce_positive_id(note_id, "note_id")
+        url = f"{self.garmin_connect_calendar_url}/note/{note_id}"
+        logger.debug("Deleting calendar note %s", note_id)
+        return self._json_or_none(self.client.delete("connectapi", url))
+
     def get_courses(self) -> list[dict[str, Any]]:
         """Return the user's courses.
 
