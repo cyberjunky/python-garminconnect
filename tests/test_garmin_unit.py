@@ -2067,6 +2067,25 @@ class TestHttpErrorMapping:
             c._run_request("GET", "x")
         assert not isinstance(exc_info.value, garminconnect.GarminConnectNotFoundError)
 
+    def test_upload_failure_message_text_is_used(self, monkeypatch):
+        body = {
+            "detailedImportResult": {
+                "failures": [
+                    {"messages": [{"code": 202, "content": "Duplicate Activity."}]}
+                ]
+            }
+        }
+        c = self._client(monkeypatch, _FakeResp(409, body))
+        with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
+            c._run_request("POST", "upload-service/upload")
+        assert str(exc_info.value) == "API Error 409 - Duplicate Activity."
+
+    def test_non_text_error_detail_is_left_out(self, monkeypatch):
+        c = self._client(monkeypatch, _FakeResp(400, {"message": {"user": 123}}))
+        with pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info:
+            c._run_request("GET", "x")
+        assert str(exc_info.value) == "API Error 400"
+
     def _garmin(self, monkeypatch, resp):
         g = garminconnect.Garmin()
         monkeypatch.setattr(g.client, "get_api_headers", dict)

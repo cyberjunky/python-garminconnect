@@ -35,8 +35,11 @@ page.
 ### Fixed
 
 - **"Today" no longer follows the machine clock**: every default date and timestamp the library fills in itself (the lactate-threshold and power-to-weight lookups, the next scheduled workout, menstrual reports and calendar updates, and the local timestamps of new weigh-ins, body-composition entries, blood-pressure readings and hydration logs) is now computed in your Garmin profile timezone. On a host running in UTC these used to lag behind your real day every evening, so "today" silently returned or wrote yesterday's data. Timestamps you pass in without an offset are now also read as your profile's local time rather than the host's. Nothing changes when the host and your profile share a timezone.
+- **README**: the demo method and category counts match the demo again (262 methods in 15 categories).
 - **Demo**: dates are evaluated when a menu option runs, not once at startup, so a session left open overnight no longer keeps using yesterday; once logged in they follow your profile timezone.
 - **`get_progress_summary_between_dates()` sends `groupByParentActivityType` as `true`/`false`**, the form the web app uses, instead of Python's `True`/`False`.
+- **Walking and hiking workouts raise a clear error instead of uploading without a sport type**: Garmin has no walking or hiking workout sport type (see `get_workout_types()["workoutSportTypes"]`), so `upload_walking_workout()` and `upload_hiking_workout()` sent IDs Garmin discarded and the workout was stored with no sport type. Both now raise `ValueError`; `WalkingWorkout` and `HikingWorkout` stay importable. The demo's walking and hiking sample uploads are removed.
+- **Upload errors show Garmin's message text**: a rejected upload such as a duplicate now raises `API Error 409 - Duplicate Activity.` instead of including the raw `{'code': 202, 'content': ...}` structure, and error details that are not text are left out.
 - **Clearer error when `curl_cffi` is missing**: login warns up front that the browser-impersonating strategies are unavailable, and the final "all login strategies exhausted" error names the missing package as the likely cause, instead of only reporting a Cloudflare 403.
 
 ## [0.3.18] - 2026-10-15

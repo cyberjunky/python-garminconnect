@@ -13,6 +13,12 @@ from ._common import (
 )
 from .base import GarminBase
 
+_NO_WORKOUT_SPORT_TYPE = (
+    "Garmin has no {sport} workout sport type, so the workout would be stored "
+    "without one. Use a sport type from get_workout_types()['workoutSportTypes'] "
+    "instead, such as running or other."
+)
+
 
 class WorkoutsMixin(GarminBase):
     """Workout library, typed workout uploads, scheduling and pushing to devices."""
@@ -241,49 +247,35 @@ class WorkoutsMixin(GarminBase):
                 "Install it with: pip install pydantic or pip install garminconnect[workout]"
             ) from None
 
-    def upload_walking_workout(self, workout: Any) -> dict[str, Any]:
-        """Upload a typed walking workout.
+    def upload_walking_workout(self, workout: Any) -> dict[str, Any]:  # noqa: ARG002
+        """Not supported: Garmin has no walking workout sport type; always raises.
 
-        Args:
-            workout: WalkingWorkout instance from garminconnect.workout
+        Garmin's workout dictionary (``get_workout_types()["workoutSportTypes"]``)
+        has no walking type, so an uploaded walking workout was stored without a
+        sport type. Build the workout with a type Garmin supports instead, for
+        example ``RunningWorkout`` or a workout with the ``other`` sport type
+        sent through :meth:`upload_workout`.
 
-        Returns:
-            Dictionary containing the uploaded workout data
-
-        """
-        try:
-            from ..workout import WalkingWorkout
-
-            if not isinstance(workout, WalkingWorkout):
-                raise TypeError("workout must be a WalkingWorkout instance")
-            return self.upload_workout(workout.to_dict())
-        except ImportError:
-            raise ImportError(
-                "Pydantic is required for typed workouts. "
-                "Install it with: pip install pydantic or pip install garminconnect[workout]"
-            ) from None
-
-    def upload_hiking_workout(self, workout: Any) -> dict[str, Any]:
-        """Upload a typed hiking workout.
-
-        Args:
-            workout: HikingWorkout instance from garminconnect.workout
-
-        Returns:
-            Dictionary containing the uploaded workout data
+        Raises:
+            ValueError: always.
 
         """
-        try:
-            from ..workout import HikingWorkout
+        raise ValueError(_NO_WORKOUT_SPORT_TYPE.format(sport="walking"))
 
-            if not isinstance(workout, HikingWorkout):
-                raise TypeError("workout must be a HikingWorkout instance")
-            return self.upload_workout(workout.to_dict())
-        except ImportError:
-            raise ImportError(
-                "Pydantic is required for typed workouts. "
-                "Install it with: pip install pydantic or pip install garminconnect[workout]"
-            ) from None
+    def upload_hiking_workout(self, workout: Any) -> dict[str, Any]:  # noqa: ARG002
+        """Not supported: Garmin has no hiking workout sport type; always raises.
+
+        Garmin's workout dictionary (``get_workout_types()["workoutSportTypes"]``)
+        has no hiking type, so an uploaded hiking workout was stored without a
+        sport type. Build the workout with a type Garmin supports instead, for
+        example ``RunningWorkout`` or a workout with the ``other`` sport type
+        sent through :meth:`upload_workout`.
+
+        Raises:
+            ValueError: always.
+
+        """
+        raise ValueError(_NO_WORKOUT_SPORT_TYPE.format(sport="hiking"))
 
     def upload_strength_workout(self, workout: Any) -> dict[str, Any]:
         """Upload a typed strength training workout.

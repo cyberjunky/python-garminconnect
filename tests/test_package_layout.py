@@ -13,7 +13,7 @@ pytest.importorskip("pydantic")
 
 TEST_DATA = Path(__file__).parent.parent / "test_data"
 
-TYPED_UPLOADS = ["running", "cycling", "swimming", "walking", "hiking", "strength"]
+TYPED_UPLOADS = ["running", "cycling", "swimming", "strength"]
 
 
 @pytest.mark.parametrize("kind", TYPED_UPLOADS)
@@ -41,6 +41,22 @@ def test_typed_workout_upload_rejects_other_types(kind):
     garmin = garminconnect.Garmin("test@example.com", "password")
     with pytest.raises(TypeError, match="Workout instance"):
         getattr(garmin, f"upload_{kind}_workout")({"workoutName": "plain dict"})
+
+
+@pytest.mark.parametrize("kind", ["walking", "hiking"])
+def test_walking_and_hiking_uploads_raise(kind):
+    """Garmin has no walking/hiking workout sport type; nothing is sent."""
+    from garminconnect import workout as workout_mod
+
+    cls = getattr(workout_mod, f"{kind.capitalize()}Workout")
+    w = cls(workoutName="w", estimatedDurationInSecs=60, workoutSegments=[])
+    garmin = garminconnect.Garmin("test@example.com", "password")
+    with (
+        patch.object(garmin, "upload_workout") as up,
+        pytest.raises(ValueError, match=f"no {kind} workout sport type"),
+    ):
+        getattr(garmin, f"upload_{kind}_workout")(w)
+    up.assert_not_called()
 
 
 @pytest.mark.parametrize(

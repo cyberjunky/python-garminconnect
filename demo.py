@@ -599,14 +599,6 @@ menu_categories = {
                 "desc": "Upload typed swimming workout (sample)",
                 "key": "upload_swimming_workout",
             },
-            "y": {
-                "desc": "Upload typed walking workout (sample)",
-                "key": "upload_walking_workout",
-            },
-            "z": {
-                "desc": "Upload typed hiking workout (sample)",
-                "key": "upload_hiking_workout",
-            },
             "A": {
                 "desc": "Get activities filtered by type/subtype (interactive)",
                 "key": "get_activities_filtered",
@@ -3047,80 +3039,6 @@ def upload_swimming_css_workout_data(api: Garmin) -> None:
         print(f"❌ Error uploading swimming CSS workout: {e}")
 
 
-def upload_walking_workout_data(api: Garmin) -> None:
-    """Upload a typed walking workout."""
-    try:
-        import sys
-        from pathlib import Path
-
-        # Add test_data to path for imports
-        test_data_path = Path(__file__).parent / "test_data"
-        if str(test_data_path) not in sys.path:
-            sys.path.insert(0, str(test_data_path))
-
-        from sample_walking_workout import create_sample_walking_workout
-
-        print("🚶 Creating and uploading walking workout...")
-        workout = create_sample_walking_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
-
-        result = api.upload_walking_workout(workout)
-
-        if result:
-            print("✅ Walking workout uploaded successfully!")
-            call_and_display(
-                lambda: result,
-                method_name="upload_walking_workout",
-                api_call_desc="api.upload_walking_workout(workout)",
-            )
-        else:
-            print("❌ Failed to upload walking workout")
-    except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
-    except Exception as e:
-        print(f"❌ Error uploading walking workout: {e}")
-
-
-def upload_hiking_workout_data(api: Garmin) -> None:
-    """Upload a typed hiking workout."""
-    try:
-        import sys
-        from pathlib import Path
-
-        # Add test_data to path for imports
-        test_data_path = Path(__file__).parent / "test_data"
-        if str(test_data_path) not in sys.path:
-            sys.path.insert(0, str(test_data_path))
-
-        from sample_hiking_workout import create_sample_hiking_workout
-
-        print("🥾 Creating and uploading hiking workout...")
-        workout = create_sample_hiking_workout()
-        print(f"📤 Uploading workout: {workout.workoutName}")
-
-        result = api.upload_hiking_workout(workout)
-
-        if result:
-            print("✅ Hiking workout uploaded successfully!")
-            call_and_display(
-                lambda: result,
-                method_name="upload_hiking_workout",
-                api_call_desc="api.upload_hiking_workout(workout)",
-            )
-        else:
-            print("❌ Failed to upload hiking workout")
-    except ImportError as e:
-        print(f"❌ Error: {e}")
-        print(
-            "💡 Install pydantic with: pip install pydantic or pip install garminconnect[workout]"
-        )
-    except Exception as e:
-        print(f"❌ Error uploading hiking workout: {e}")
-
-
 def search_exercise_catalog_data(api: Garmin) -> None:
     """Search the bundled strength-exercise catalog."""
     from garminconnect import exercises
@@ -5534,8 +5452,6 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "upload_swimming_css_workout": lambda: upload_swimming_css_workout_data(
                 api
             ),
-            "upload_walking_workout": lambda: upload_walking_workout_data(api),
-            "upload_hiking_workout": lambda: upload_hiking_workout_data(api),
             "upload_strength_workout": lambda: upload_strength_workout_data(api),
             "upload_timed_strength_workout": lambda: upload_timed_strength_workout_data(
                 api

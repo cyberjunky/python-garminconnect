@@ -190,7 +190,7 @@ feature get a 404.
 | `search_activities(start=0, limit=20, **filters)` | `GET /activitylist-service/activities/search/activities?start&limit&…` | Full web filter set: `activityType`, `activitySubType`, `startDate`, `endDate`, `search`, `favorite=1`, `sortBy`/`sortOrder`, `minDistance`/`maxDistance`, `minDuration`/`maxDuration`, `minElevation`/`maxElevation`, `eventType`, `excludeChildren`. | yes |
 | `get_fastest_splits(start, end, activity_type="running", number_of_bests=10)` | `GET /activitylist-service/activities/fastest-splits?numberOfBests&startDate&endDate&activityType` | | yes |
 | `get_favorite_activities(limit=5)` | `GET /activitylist-service/activities/favorite/{displayName}?limit` | | yes (empty) |
-| `set_activity_favorite(activity_id, favorite=True)` | `PUT /activity-service/activity/{id}` `{"activityId", "metadataDTO": {"favorite"}}` | Same partial update as `set_activity_name`. | no |
+| `set_activity_favorite(activity_id, favorite=True)` | `PUT /activity-service/activity/{id}` `{"activityId", "metadataDTO": {"favorite"}}` | Same partial update as `set_activity_name`. Read back via `metadataDTO.favorite` and `get_favorite_activities()`. | yes |
 | `get_activity_laps(activity_id)` | `GET /activity-service/activity/{id}/laps` | `lapDTOs`. | yes |
 | `get_activity_rounds(activity_id)` | `GET /activity-service/activity/{id}/rounds` | HIIT/boxing rounds with sets. | yes (empty) |
 | `get_activity_step_details(activity_id)` | `GET /activity-service/activity/{id}/stepdetails` | Structured-workout steps. | yes (empty) |
@@ -241,8 +241,8 @@ feature get a 404.
 | `get_workout_sport_types()` | `GET /workout-service/workouts/sport-types` | | yes |
 | `get_workout_types()` | `GET /workout-service/workout/types` | Source of the ids in `garminconnect.workout`. | yes |
 | `get_strength_benchmarks()` | `GET /workout-service/benchmarks` | | yes |
-| `copy_workout(workout_id, name)` | `POST /workout-service/workout/copy/{workoutId}` (text/plain name) | | no |
-| `reschedule_workout(scheduled_workout_id, cdate)` | `PUT /workout-service/schedule/{scheduleId}` | Existing entry + `calendarDate`. | no |
+| `copy_workout(workout_id, name)` | `POST /workout-service/workout/copy/{workoutId}` (text/plain name) | Returns the new workout with its `workoutId`. | yes |
+| `reschedule_workout(scheduled_workout_id, cdate)` | `PUT /workout-service/schedule/{scheduleId}` | Existing entry + `calendarDate`. | yes |
 | `send_scheduled_workouts_to_devices()` | `PUT /workout-service/schedule/sendtodevices` | | no |
 
 ## Training plans (`trainingplan-service`)

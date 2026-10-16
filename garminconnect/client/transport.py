@@ -249,13 +249,18 @@ class ApiTransportMixin(_ClientState):
             try:
                 error_data = resp.json()
                 if isinstance(error_data, dict):
-                    safe_detail = (
+                    detail = (
                         error_data.get("message")
                         or error_data.get("content")
                         or error_data.get("detailedImportResult", {})
                         .get("failures", [{}])[0]
                         .get("messages", [""])[0]
-                    ) or ""
+                    )
+                    # Upload failures carry {"code": ..., "content": "..."};
+                    # use the text, and never put other structures in errors.
+                    if isinstance(detail, dict):
+                        detail = detail.get("content") or detail.get("message")
+                    safe_detail = detail if isinstance(detail, str) else ""
             except Exception as e:
                 _LOGGER.debug("Could not extract safe error detail: %s", e)
             if safe_detail:
