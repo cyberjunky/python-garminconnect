@@ -27,7 +27,7 @@ page.
 - **GraphQL**: all 53 operations the web dashboard sends to the GraphQL gateway are documented in [docs/graphql_operations.md](docs/graphql_operations.md) for use with `query_garmin_graphql()`.
 - **User timezone helpers**: new `get_user_timezone()` returns the IANA timezone from your Garmin profile (for example `Europe/Paris`), and `today()` / `now()` give the current date and time in that timezone. Garmin evaluates "today" in the profile timezone, so use `api.today()` rather than `date.today()` when asking for today's data.
 - **Method reference in the README**: every public method, grouped by domain, with its parameters and a one-line description. `scripts/gen_method_reference.py` generates it from the docstrings and a test fails when it is out of date. Unclear or missing docstrings were rewritten for it.
-- **Demo**: the 100 new read methods are available from the existing menu categories (Training Plans is now "Training Plans & Calendar"), plus a new "Activity Details & Courses" category for per-activity details, activity search and courses.
+- **Demo**: the 100 new read methods are available from the existing menu categories (Training Plans is now "Training Plans & Calendar"), plus a new "Activity Details & Courses" category for per-activity details, activity search and courses. Interactive entries for the edit calls (gear notes, delete gear, step and daily goals, calendar note, blood pressure note, primary training device, rename activity) ask before writing.
 
 ### Changed
 

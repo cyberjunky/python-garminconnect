@@ -700,6 +700,14 @@ menu_categories = {
                 "key": "get_personal_record_candidates",
             },
             "l": {"desc": "Personal record types", "key": "get_personal_record_types"},
+            "m": {
+                "desc": "Set or reset the step goal (interactive)",
+                "key": "set_steps_goal",
+            },
+            "n": {
+                "desc": "Set a daily goal: intensity minutes, floors, hydration (interactive)",
+                "key": "set_daily_goal",
+            },
         },
     },
     "8": {
@@ -723,6 +731,10 @@ menu_categories = {
             "0": {"desc": "Active devices", "key": "get_active_devices"},
             "a": {"desc": "Paired sensors", "key": "get_sensors"},
             "b": {"desc": "Device message queue", "key": "get_device_messages"},
+            "c": {
+                "desc": "Set primary training device (interactive)",
+                "key": "set_primary_training_device",
+            },
         },
     },
     "9": {
@@ -750,6 +762,14 @@ menu_categories = {
             "a": {
                 "desc": "Gear on latest activity (v2)",
                 "key": "get_activity_gear_v2",
+            },
+            "b": {
+                "desc": "Update gear notes (interactive)",
+                "key": "update_gear_notes",
+            },
+            "c": {
+                "desc": "Delete gear (interactive, confirms by name)",
+                "key": "delete_gear",
             },
         },
     },
@@ -854,6 +874,10 @@ menu_categories = {
             },
             "s": {"desc": "ECG recordings list", "key": "get_ecg_list"},
             "t": {"desc": "Jet lag status for today", "key": "get_jetlag_status"},
+            "u": {
+                "desc": "Edit the note of a blood pressure reading (interactive)",
+                "key": "update_blood_pressure",
+            },
         },
     },
     "a": {
@@ -933,6 +957,10 @@ menu_categories = {
             "j": {"desc": "Calendar events this year", "key": "get_calendar_events"},
             "k": {"desc": "Upcoming events", "key": "get_upcoming_events"},
             "l": {"desc": "Primary race event", "key": "get_primary_event"},
+            "m": {
+                "desc": "Add a calendar note for today (interactive)",
+                "key": "calendar_note",
+            },
         },
     },
     "c": {
@@ -958,6 +986,10 @@ menu_categories = {
             "2": {
                 "desc": "Set activity exercise sets (strength activity)",
                 "key": "set_activity_exercise_sets",
+            },
+            "3": {
+                "desc": "Rename latest activity via update_activity (interactive)",
+                "key": "update_activity",
             },
         },
     },
@@ -5106,6 +5138,214 @@ def track_gear_usage_data(api: Garmin) -> None:
         print(f"❌ Error getting gear for track_gear_usage_data: {e}")
 
 
+# --- Interactive helpers for the edit calls (write to the account; each asks first) ---
+
+
+def _pick(items: list, label: str, show) -> Any | None:
+    """Let the user pick one item from a short numbered list (or cancel)."""
+    if not items:
+        print(f"❌ No {label} found")
+        return None
+    for i, item in enumerate(items, 1):
+        print(f"  [{i}] {show(item)}")
+    choice = input(f"Choose a {label} (1-{len(items)}, Enter to cancel): ").strip()
+    if not choice.isdigit() or not 1 <= int(choice) <= len(items):
+        print("Cancelled")
+        return None
+    return items[int(choice) - 1]
+
+
+def update_gear_notes_data(api: Garmin) -> None:
+    """Edit the notes of a piece of gear (gear-service v2)."""
+    try:
+        gear = _pick(
+            api.get_gear_list(0, 50),
+            "gear item",
+            lambda g: (
+                f"{g.get('name')} ({g.get('brand')} {g.get('model')}) notes={g.get('notes')!r}"
+            ),
+        )
+        if not gear:
+            return
+        notes = input("New notes (Enter to keep, '-' to clear): ").strip()
+        if not notes:
+            print("Cancelled")
+            return
+        notes = "" if notes == "-" else notes
+        call_and_display(
+            api.update_gear,
+            gear["uuid"],
+            notes=notes,
+            method_name="update_gear",
+            api_call_desc=f"api.update_gear('{gear['uuid']}', notes={notes!r})",
+        )
+    except Exception as e:
+        print(f"❌ Error updating gear: {e}")
+
+
+def delete_gear_data(api: Garmin) -> None:
+    """Delete a piece of gear after typing its name to confirm."""
+    try:
+        gear = _pick(
+            api.get_gear_list(0, 50),
+            "gear item",
+            lambda g: (
+                f"{g.get('name')} ({g.get('brand')} {g.get('model')}, {g.get('status')})"
+            ),
+        )
+        if not gear:
+            return
+        if (
+            input(f"Type the gear name '{gear['name']}' to delete it: ").strip()
+            != gear["name"]
+        ):
+            print("Cancelled")
+            return
+        call_and_display(
+            api.delete_gear,
+            gear["uuid"],
+            method_name="delete_gear",
+            api_call_desc=f"api.delete_gear('{gear['uuid']}')",
+        )
+    except Exception as e:
+        print(f"❌ Error deleting gear: {e}")
+
+
+def set_steps_goal_data(api: Garmin) -> None:
+    """Set a manual step goal or return to the automatic one."""
+    try:
+        current = api.get_steps_goal()
+        print(f"Current goal: {current}")
+        value = input("Manual step goal (Enter for automatic goal): ").strip()
+        steps = int(value) if value else None
+        call_and_display(
+            api.set_steps_goal,
+            steps,
+            method_name="set_steps_goal",
+            api_call_desc=f"api.set_steps_goal({steps})",
+        )
+    except Exception as e:
+        print(f"❌ Error setting step goal: {e}")
+
+
+def set_daily_goal_data(api: Garmin) -> None:
+    """Set an intensity-minutes, floors or hydration goal."""
+    try:
+        goals = api.get_effective_goals()
+        print(f"Effective goals: {goals}")
+        goal = _pick(goals, "goal", lambda g: f"{g['goalType']} = {g['goalValue']}")
+        if not goal:
+            return
+        value = input(f"New value for {goal['goalType']}: ").strip()
+        if not value:
+            print("Cancelled")
+            return
+        call_and_display(
+            api.set_daily_goal,
+            goal["goalType"],
+            float(value),
+            method_name="set_daily_goal",
+            api_call_desc=f"api.set_daily_goal('{goal['goalType']}', {value})",
+        )
+    except Exception as e:
+        print(f"❌ Error setting goal: {e}")
+
+
+def calendar_note_data(api: Garmin) -> None:
+    """Add a calendar note for today and optionally delete it again."""
+    try:
+        name = input("Note title (default: 'Demo note'): ").strip() or "Demo note"
+        content = input("Note content (optional): ").strip()
+        note = api.create_calendar_note(_today(), name, content)
+        _display_single(
+            f"api.create_calendar_note('{_today()}', {name!r}, {content!r})", note
+        )
+        if note and input("Delete it again? (y/N): ").strip().lower() == "y":
+            call_and_display(
+                api.delete_calendar_note,
+                note["id"],
+                method_name="delete_calendar_note",
+                api_call_desc=f"api.delete_calendar_note({note['id']})",
+            )
+    except Exception as e:
+        print(f"❌ Error with calendar note: {e}")
+
+
+def update_blood_pressure_note_data(api: Garmin) -> None:
+    """Edit the note of a blood pressure reading from the last 30 days."""
+    try:
+        data = api.get_blood_pressure(_month_ago(), _today())
+        readings = [
+            m
+            for day in (data or {}).get("measurementSummaries", [])
+            for m in day.get("measurements", [])
+        ]
+        reading = _pick(
+            readings,
+            "reading",
+            lambda m: (
+                f"{m.get('measurementTimestampLocal')} {m.get('systolic')}/{m.get('diastolic')} notes={m.get('notes')!r}"
+            ),
+        )
+        if not reading:
+            return
+        notes = input("New note: ").strip()
+        call_and_display(
+            api.update_blood_pressure,
+            reading,
+            notes=notes,
+            method_name="update_blood_pressure",
+            api_call_desc=f"api.update_blood_pressure(<reading {reading.get('version')}>, notes={notes!r})",
+        )
+    except Exception as e:
+        print(f"❌ Error updating blood pressure note: {e}")
+
+
+def set_primary_training_device_data(api: Garmin) -> None:
+    """Choose the primary training device."""
+    try:
+        device = _pick(
+            api.get_devices(),
+            "device",
+            lambda d: f"{d.get('productDisplayName')} (id {d.get('deviceId')})",
+        )
+        if not device:
+            return
+        call_and_display(
+            api.set_primary_training_device,
+            device["deviceId"],
+            method_name="set_primary_training_device",
+            api_call_desc=f"api.set_primary_training_device({device['deviceId']})",
+        )
+    except Exception as e:
+        print(f"❌ Error setting primary training device: {e}")
+
+
+def update_activity_name_data(api: Garmin) -> None:
+    """Rename the latest activity through the generic update call."""
+    try:
+        activity = api.get_last_activity()
+        if not activity:
+            print("❌ No activities found")
+            return
+        print(
+            f"Latest activity: {activity.get('activityName')} ({activity.get('activityId')})"
+        )
+        name = input("New name (Enter to cancel): ").strip()
+        if not name:
+            print("Cancelled")
+            return
+        call_and_display(
+            api.update_activity,
+            activity["activityId"],
+            {"activityName": name},
+            method_name="update_activity",
+            api_call_desc=f"api.update_activity({activity['activityId']}, {{'activityName': {name!r}}})",
+        )
+    except Exception as e:
+        print(f"❌ Error updating activity: {e}")
+
+
 def execute_api_call(api: Garmin, key: str) -> None:
     """Execute an API call based on the key."""
     if not api:
@@ -5742,6 +5982,17 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "download_health_snapshot": lambda: download_health_snapshot_file(api),
             # GraphQL Queries
             "query_garmin_graphql": lambda: query_garmin_graphql_data(api),
+            # Edit calls (interactive)
+            "update_gear_notes": lambda: update_gear_notes_data(api),
+            "delete_gear": lambda: delete_gear_data(api),
+            "set_steps_goal": lambda: set_steps_goal_data(api),
+            "set_daily_goal": lambda: set_daily_goal_data(api),
+            "calendar_note": lambda: calendar_note_data(api),
+            "update_blood_pressure": lambda: update_blood_pressure_note_data(api),
+            "set_primary_training_device": lambda: set_primary_training_device_data(
+                api
+            ),
+            "update_activity": lambda: update_activity_name_data(api),
             # Endpoints the Garmin Connect web app uses, see docs/API_ENDPOINTS.md
             "get_max_metrics_latest": _web(api, "get_max_metrics_latest"),
             "get_training_readiness_range": _web(
