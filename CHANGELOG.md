@@ -40,6 +40,7 @@ page.
 - **`get_progress_summary_between_dates()` sends `groupByParentActivityType` as `true`/`false`**, the form the web app uses, instead of Python's `True`/`False`.
 - **Walking and hiking workouts raise a clear error instead of uploading without a sport type**: Garmin has no walking or hiking workout sport type (see `get_workout_types()["workoutSportTypes"]`), so `upload_walking_workout()` and `upload_hiking_workout()` sent IDs Garmin discarded and the workout was stored with no sport type. Both now raise `ValueError`; `WalkingWorkout` and `HikingWorkout` stay importable. The demo's walking and hiking sample uploads are removed.
 - **Upload errors show Garmin's message text**: a rejected upload such as a duplicate now raises `API Error 409 - Duplicate Activity.` instead of including the raw `{'code': 202, 'content': ...}` structure, and error details that are not text are left out.
+- **HTTP errors keep their response**, so `get_gear_activities()` and `get_gear_stats()` return their empty result on a 404 instead of raising, and `import_activity()` reports a duplicate upload (409) as such. Thanks [@mifuha](https://github.com/mifuha)! (#470)
 - **Clearer error when `curl_cffi` is missing**: login warns up front that the browser-impersonating strategies are unavailable, and the final "all login strategies exhausted" error names the missing package as the likely cause, instead of only reporting a Cloudflare 403.
 
 ## [0.3.18] - 2026-10-15

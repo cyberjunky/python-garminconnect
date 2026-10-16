@@ -270,8 +270,12 @@ class ApiTransportMixin(_ClientState):
             # above was specifically trying to avoid exposing.
             _LOGGER.debug("API error response: status=%s", resp.status_code)
             # A 404 is a missing resource, not a connectivity failure.
+            error: GarminConnectConnectionError
             if resp.status_code == 404:
-                raise GarminConnectNotFoundError(error_msg)
-            raise GarminConnectConnectionError(error_msg)
+                error = GarminConnectNotFoundError(error_msg)
+            else:
+                error = GarminConnectConnectionError(error_msg)
+            error.response = resp
+            raise error
 
         return resp
