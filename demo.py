@@ -71,8 +71,6 @@ else:
 
 _LOGGER = logging.getLogger("demo")
 
-api: Garmin | None = None
-
 
 def _open_private(path: str | Path, mode: str, encoding: str | None = None):
     """Open a new or existing export file with owner-only permissions."""
@@ -131,6 +129,8 @@ class Config:
     """Configuration class for the Garmin Connect API demo."""
 
     def __init__(self):
+        # The logged-in client, set by main(); today follows its profile timezone.
+        self.api: Garmin | None = None
         # Load environment variables
         self.email = os.getenv("GARMIN_EMAIL") or os.getenv("EMAIL")
         self.password = os.getenv("GARMIN_PASSWORD") or os.getenv("PASSWORD")
@@ -156,9 +156,9 @@ class Config:
     # follow the user's Garmin profile timezone rather than the machine clock.
     @property
     def today(self) -> datetime.date:
-        if api is not None and api.display_name:
+        if self.api is not None and self.api.display_name:
             try:
-                return api.today()
+                return self.api.today()
             except Exception as e:
                 _LOGGER.debug("Falling back to machine date: %s", e)
         return datetime.date.today()
@@ -6370,6 +6370,8 @@ def main():
     print("📄 All API responses are written to: 'response.json'")
 
     api_instance = init_api(config.email, config.password)
+    # Lets config.today follow the Garmin profile timezone instead of the host.
+    config.api = api_instance
     current_category = None
 
     while True:

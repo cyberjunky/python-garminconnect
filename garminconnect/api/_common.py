@@ -559,7 +559,9 @@ def _handle_api_errors(
                     # Retry only transient failures: a 5xx, or no status but a
                     # network error in the cause chain. A status-less local
                     # error (rejected URL, invalid response) cannot succeed.
-                    retryable = status >= 500 if status else _has_network_cause(e)
+                    retryable = (
+                        _has_network_cause(e) if status is None else status >= 500
+                    )
                     if retryable and attempt < attempts:
                         delay = _backoff_delay(attempt, self)
                         logger.warning(
