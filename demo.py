@@ -618,7 +618,7 @@ menu_categories = {
         },
     },
     "6": {
-        "name": "⚖️  Body Composition & Weight",
+        "name": "⚖️ Body Composition & Weight",
         "options": {
             "1": {
                 "desc": "Get body composition for '{today}'",
@@ -977,7 +977,7 @@ menu_categories = {
         },
     },
     "d": {
-        "name": "✏️  Activity Editing",
+        "name": "✏️ Activity Editing",
         "options": {
             "1": {
                 "desc": "Set activity description (latest activity)",
@@ -4435,7 +4435,7 @@ def set_activity_exercise_sets_data(api: Garmin) -> None:
 
         print(f"Activity {activity_id} has {len(sets)} exercise set(s).")
         print(
-            "⚠️  This REPLACES all exercise sets (replace-all). The demo re-submits "
+            "⚠️ This REPLACES all exercise sets (replace-all). The demo re-submits "
             "the same payload unchanged, so nothing actually changes."
         )
         confirm = input("Re-submit current sets? (yes/no): ").strip().lower()
