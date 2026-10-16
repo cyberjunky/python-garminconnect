@@ -29,6 +29,7 @@ from typing import Any
 from unittest.mock import call, patch
 
 import pytest
+from requests import Response
 
 import garminconnect
 from garminconnect import client as client_mod
@@ -2038,6 +2039,73 @@ class _FakeResp:
 
     def json(self):
         return self._payload
+
+
+class TestGearActivityHttpResponses:
+    """Exercise gear retrieval through the native HTTP error handling path."""
+
+    gear_uuid = "c3f494a1-2d18-4df2-9b42-26efc8cc9158"
+
+    def _garmin_response(self, status, payload):
+        g = garminconnect.Garmin(retry_attempts=0)
+        g.client.di_token = "offline-test-token"
+        response = Response()
+        response.status_code = status
+        response._content = json.dumps(payload).encode()
+        return g, response
+
+    def test_gear_activities_404_returns_empty(self):
+        g, response = self._garmin_response(404, {"message": "Not Found"})
+        with patch.object(
+            g.client._api_session, "request", return_value=response
+        ) as req:
+            assert g.get_gear_activities(self.gear_uuid) == []
+        assert req.call_count == 1
+
+    def test_gear_stats_404_returns_empty(self):
+        g, response = self._garmin_response(404, {"message": "Not Found"})
+        with patch.object(g.client._api_session, "request", return_value=response):
+            assert g.get_gear_stats(self.gear_uuid) == {}
+
+    @pytest.mark.parametrize(
+        "activities",
+        [
+            [],
+            [{"activityId": 2, "distance": 0.0}, {"activityId": 1, "distance": 5000.0}],
+        ],
+    )
+    def test_gear_activities_success_preserves_data(self, activities):
+        g, response = self._garmin_response(200, activities)
+        with patch.object(
+            g.client._api_session, "request", return_value=response
+        ) as req:
+            assert g.get_gear_activities(self.gear_uuid, limit=10) == activities
+        assert req.call_count == 1
+        assert req.call_args.args == (
+            "GET",
+            f"https://connectapi.garmin.com/activitylist-service/activities/{self.gear_uuid}/gear",
+        )
+        assert req.call_args.kwargs["params"] == {"start": 0, "limit": 10}
+
+    @pytest.mark.parametrize("status", [403, 500])
+    def test_gear_activities_other_errors_preserve_response(self, status):
+        g, response = self._garmin_response(status, {"message": "Request failed"})
+        with (
+            patch.object(g.client._api_session, "request", return_value=response),
+            pytest.raises(garminconnect.GarminConnectConnectionError) as exc_info,
+        ):
+            g.get_gear_activities(self.gear_uuid)
+        assert type(exc_info.value) is garminconnect.GarminConnectConnectionError
+        assert exc_info.value.response is response
+
+    def test_connectapi_404_preserves_response_and_exception_type(self):
+        g, response = self._garmin_response(404, {"message": "Not Found"})
+        with (
+            patch.object(g.client._api_session, "request", return_value=response),
+            pytest.raises(garminconnect.GarminConnectNotFoundError) as exc_info,
+        ):
+            g.connectapi(f"/activitylist-service/activities/{self.gear_uuid}/gear")
+        assert exc_info.value.response is response
 
 
 class TestHttpErrorMapping:
