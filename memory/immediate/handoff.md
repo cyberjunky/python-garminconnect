@@ -64,16 +64,17 @@ Decision vigente: `memory/mid/decisions.md#DEC-008` y
 
 ## Estado de producto y proximo ciclo
 
-SPEC-002 y PLAN-002 completados al 100%, auditados por Viewer independiente con
-veredicto APROBAR e integrados en `master` mediante merge humano en commit `26de2fb`.
-- T-0025 / T-0026 (I-UI / V-UI): Centrado responsive en Safari y 0.4.0-rc.1 (done 🟢).
-- T-0027 / T-0028 (I-SERVER / V-SERVER): Backend de historial privado, auth RLS, modelo exclusivo gpt-6-luna High, Clean Architecture P22 y 0.4.0-rc.2 (done 🟢).
-- T-0029 / T-0030 (I-CLIENT / V-INTEGRAL): ViewModel MVVM desacoplado, UI de chat sincronizado, login Supabase Auth OTP, importación opt-in con preservación byte a byte de localStorage, retiro de selectores de modelos y versión final 0.4.0 (done 🟢).
-- 58/58 tests pasando, build Next.js 15 código 0 y 0 drift de allowlist.
+SPEC-003 y PLAN-003 completados al 100%, auditados por Viewer independiente con
+veredicto APROBAR e integrados en `master` en commit `b4068f2`:
+- T-0031 (PLANNER): Especificación EARS de 20 requisitos y plan técnico riguroso de 4 tasks (done 🟢).
+- T-0032 (I-DOMAIN-RETOS): Motor de recomendaciones de ciencia deportiva fisiológica en «Qué atender», tarjeta «Macrociclo» en 4 bloques delimitados, retiro de tendencia 14d en `/retos` y 15 tests unitarios (done 🟢).
+- T-0033 (I-TENDENCIA-NAV): Nueva ruta `/tendencia`, menú lateral `DashboardNav.tsx`, barra de distribución de zonas tricolor, resumen de métricas clave a 30 días, tabla con `tabular-nums` y fechas `es-CO`, y 9 tests de arquitectura/tendencia (done 🟢).
+- T-0034 (I-RELEASE-050): Bump SemVer 0.5.0 MINOR en grupo R (`package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`, `version.test.mjs`), runner unificado `tendencia-macrociclo.test.mjs` y 0 dependencias nuevas (done 🟢).
+- T-0035 (V-INTEGRAL-050): Auditoría independiente en solo lectura, 82/82 tests pasando (100%), build Next.js 15 código 0, Clean Architecture P22, geometría centrada max 1120px (ADR-003), 0 BLOCKING y veredicto canónico APROBAR (done 🟢).
 
-Siguiente ciclo de desarrollo: Creación y especificación formal de `SPEC-003` (versión 0.5.0 MINOR) para implementar la cola de producto solicitada en este handoff («Qué atender», tarjeta «Macrociclo» de 4 bloques y nueva ruta `/tendencia`).
+La cola de producto solicitada el 2026-10-17 («Qué atender», «Macrociclo» y «Tendencia») queda formalmente completada y verificada.
 
-Despliegue de 0.4.0 a producción: Reservado a ejecución humana siguiendo PLAN-002 §8 (migración SQL en Supabase cloud, configuración de OTP por invitación y despliegue a Vercel con OPENAI_API_KEY).
+Despliegue de 0.5.0 a producción: Reservado a ejecución humana siguiendo PLAN-003 §8 (validación de build de producción, verificación de variables de entorno y despliegue a Vercel).
 
 ## Cola de actualizaciones solicitadas por el humano (2026-10-17)
 
