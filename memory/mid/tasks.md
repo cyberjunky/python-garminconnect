@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 28
+next_id: 29
 source: ies-cli
-last_updated: '2026-10-17T13:55:47Z'
+last_updated: '2026-10-17T14:37:48Z'
 ---
 
 # Task Ledger
@@ -1673,7 +1673,7 @@ title: 'I-SERVER: Backend de historial privado, auth RLS y modelo exclusivo (SPE
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: 'Ejecutar exclusivamente la etapa I-SERVER (G2) de specs/002-layout-responsive/{spec.md,plan.md}
   aprobados en DEC-009 (propuesta T-0022, PLAN-002 seccion 4), trabajando estrictamente
   dentro del worktree aislado .ies/worktrees/T-0027. 1. Orden tests-first: escribir
@@ -1755,17 +1755,99 @@ allowlist:
 - supabase/migrations/20261017_coach_history.sql
 - supabase/tests/coach_history
 created_at: '2026-10-17T13:55:47Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-17T14:37:45Z'
+completed_at: '2026-10-17T14:37:45Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0027.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: bc8c2bf653fb149816b39ce213fcb65b76519831
+  git_after: bc8c2bf653fb149816b39ce213fcb65b76519831
+  result: success
+edits: []
+```
+
+## T-0028 — V-SERVER: Verificación viewer independiente de T-0027 sobre commit 3fc506c
+
+```yaml
+id: T-0028
+title: 'V-SERVER: Verificación viewer independiente de T-0027 sobre commit 3fc506c'
+project_id: python-garminconnect
+origin: coordinator
+destination: viewer
+status: done
+input: 'Auditar en modo solo lectura el commit exacto 3fc506c9e430bc28b2a13aa7dad0a55cbfbab54e
+  en el worktree .ies/worktrees/T-0027 y su entrega deliverables/T-0027.md (referenciando
+  la entrega de T-0027 sin marcarla done). Revisar todos los criterios de T-0027 y
+  reproducir rigurosamente: 1. Cumplimiento estricto de allowlist con ies git verify
+  --task T-0027 (0 drift). 2. Cumplimiento de constitución con ies constitution check
+  --task T-0028 (0 BLOCKING). 3. Gate de máquina con ies gate --task T-0027 (PASS).
+  4. Pruebas unitarias de apps/web con npm test (37 tests pasando, 0 fallos). 5. Build
+  de producción de apps/web con npm run build (código de salida 0). 6. Auditoría de
+  migración SQL aditiva en supabase/migrations/20261017_coach_history.sql, verificando
+  constraints, revocación a rol anon y políticas RLS auth.uid()=owner_id. 7. Auditoría
+  de forzado exclusivo de gpt-6-luna con reasoning_effort high en lib/infra/coach/openAiCoachProvider.ts
+  sin tools ni fallback. 8. Verificación de regla de dependencia Clean Architecture
+  P22 en apps/web/lib/chat/ y apps/web/lib/infra/. 9. Verificación de coherencia SemVer
+  0.4.0-rc.2 en package.json, lock, README, CHANGELOG y version.test.mjs. Emitir veredicto
+  canónico APROBAR | CORREGIR | BLOQUEAR en deliverables/T-0028.md.'
+expected_output: deliverables/T-0028.md con informe de auditoría solo lectura, tabla
+  de reproducción de criterios, comprobaciones estáticas y dinámicas, hallazgos BLOCKING/NON_BLOCKING
+  y veredicto canónico APROBAR | CORREGIR | BLOQUEAR.
+parent_task: T-0022
+dependencies: []
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/standards.md
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- long/adr/ADR-004-private-history.md
+- long/adr/ADR-005-exclusive-chat-model.md
+- long/adr/ADR-006-tool-context-models.md
+- mid/decisions.md
+- immediate/handoff.md
+acceptance_criteria:
+- Revisión independiente en solo lectura del commit 3fc506c y deliverables/T-0027.md
+  sin mutaciones en el repositorio
+- Auditoría de allowlist (ies git verify --task T-0027) con 0 drift y verificación
+  de gate de máquina (ies gate --task T-0027 PASS)
+- Reproducción de pruebas npm test (37 tests) y npm run build con código de salida
+  0
+- Auditoría de migración SQL aditiva, constraints de validación, revocación anon y
+  políticas RLS auth.uid()=owner_id
+- Auditoría de forzado exclusivo en servidor de gpt-6-luna High sin tools ni fallback
+  (REQ-015, REQ-016)
+- Auditoría de regla de dependencias Clean Architecture P22 en capas de dominio, aplicación
+  e infraestructura
+- Veredicto canónico formal (APROBAR | CORREGIR | BLOQUEAR) con clasificación de severidad
+  en deliverables/T-0028.md
+allowlist: []
+created_at: '2026-10-17T14:30:49Z'
+started_at: '2026-10-17T14:37:48Z'
+completed_at: '2026-10-17T14:37:48Z'
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: deliverables/T-0028.md
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics:
+  git_before: bc8c2bf653fb149816b39ce213fcb65b76519831
+  git_after: bc8c2bf653fb149816b39ce213fcb65b76519831
+  result: success
 edits: []
 ```
