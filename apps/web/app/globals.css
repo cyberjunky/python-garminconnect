@@ -163,12 +163,22 @@ table,
 }
 
 .dash-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
   color: var(--muted);
   text-decoration: none;
   padding: 0.55rem 0.75rem;
   border-radius: 8px;
   font-size: 0.95rem;
   transition: color 0.15s, background-color 0.15s;
+}
+
+.dash-nav-icon {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  flex-shrink: 0;
 }
 
 .dash-nav-link:hover {
@@ -1384,3 +1394,178 @@ a.coach-history-item {
   justify-content: flex-end;
   margin-top: 0.5rem;
 }
+
+/* ==========================================================================
+   Tendencia mensual (/tendencia) - SPEC-003 / PLAN-003
+   ========================================================================== */
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* Barra horizontal de distribución de zonas */
+.section-title-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.zone-compliance-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.825rem;
+  font-weight: 600;
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--verde);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.zone-bar-track {
+  display: flex;
+  width: 100%;
+  height: 16px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 1rem 0 0.85rem;
+}
+
+.zone-bar-segment {
+  height: 100%;
+  min-width: 0;
+  transition: width 0.3s ease;
+}
+
+.segment-verde {
+  background: var(--verde);
+}
+
+.segment-amarillo {
+  background: var(--amarillo);
+}
+
+.segment-rojo {
+  background: var(--rojo);
+}
+
+.zone-bar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.dot-verde {
+  background: var(--verde);
+}
+
+.dot-amarillo {
+  background: var(--amarillo);
+}
+
+.dot-rojo {
+  background: var(--rojo);
+}
+
+.legend-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.legend-value {
+  color: var(--muted);
+}
+
+/* Grid de métricas clave de resumen mensual */
+.trend-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.trend-metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.metric-card-label {
+  font-size: 0.825rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.metric-card-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.metric-card-target {
+  font-size: 0.775rem;
+  color: var(--muted);
+}
+
+.metric-card-status {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-top: 0.25rem;
+}
+
+/* Tabla de evolución diaria */
+.trend-table-wrap {
+  overflow-x: auto;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 0.75rem;
+}
+
+.trend-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.trend-table th,
+.trend-table td {
+  padding: 0.65rem 0.75rem;
+  white-space: nowrap;
+}
+
+.trend-table .cell-date {
+  font-weight: 500;
+  color: var(--text);
+}
+
