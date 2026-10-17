@@ -3,7 +3,7 @@ schema_version: 1
 project_id: python-garminconnect
 next_id: 34
 source: ies-cli
-last_updated: '2026-10-17T16:13:14Z'
+last_updated: '2026-10-17T16:25:57Z'
 ---
 
 # Task Ledger
@@ -2208,7 +2208,7 @@ title: 'I-TENDENCIA-NAV: Ruta /tendencia, menú lateral, distribución de zonas 
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: Implementar la lógica y tipos de tendencia mensual en apps/web/lib/tendencia.ts
   (distribución de zonas y agregación de métricas), agregar la ruta /tendencia en
   apps/web/components/DashboardNav.tsx, crear la vista apps/web/app/(dashboard)/tendencia/page.tsx
@@ -2249,17 +2249,20 @@ allowlist:
 - apps/web/tests/tendencia-macrociclo/architecture.test.mjs
 - deliverables/T-0033.md
 created_at: '2026-10-17T16:13:14Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-17T16:25:57Z'
+completed_at: '2026-10-17T16:25:57Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0033.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: 609c523cd381eccf83c62dc8f6e3ce0ce1632431
+  git_after: 609c523cd381eccf83c62dc8f6e3ce0ce1632431
+  result: success
 edits: []
 ```
