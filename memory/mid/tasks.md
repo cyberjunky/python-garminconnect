@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 21
+next_id: 26
 source: ies-cli
-last_updated: '2026-10-15T10:07:27Z'
+last_updated: '2026-10-17T12:56:19Z'
 ---
 
 # Task Ledger
@@ -1090,6 +1090,489 @@ allowlist:
 - apps/web/.dependency-cruiser.cjs
 - .ies/gate.yaml
 created_at: '2026-10-15T10:07:27Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+edits: []
+```
+
+## T-0021 — Especificar correccion visual y responsive de Tri-Coach (SPEC-002)
+
+```yaml
+id: T-0021
+title: Especificar correccion visual y responsive de Tri-Coach (SPEC-002)
+project_id: python-garminconnect
+origin: coordinator
+destination: planner
+status: ready
+input: 'Preparar exclusivamente la propuesta completa de SPEC-002 layout-responsive
+  y PLAN-002 para corregir la distribucion a la izquierda de Tri-Coach reportada por
+  el humano en Safari. Aprobacion recibida: ''Aprobado, HITL por gate hasta nueva
+  orden''. Esta etapa termina con entrega de planner y gate humano; no implementacion,
+  cierre automatico, merge, push ni deploy. Baseline observada aeaa5da, checkout limpio
+  antes de crear la spec. Causa probable: apps/web/app/globals.css main max-width:880px
+  y margin:0; dashboard comparte layout y chat usa layout separado. Antecedente Safari
+  reportado por otro chat: produccion v0.3.0 aeaa5da, viewport 1280, espacio izquierdo
+  28px y derecho 188px; no es verificacion independiente ni prueba de defecto exclusivo
+  Safari. Consultar T-0014/deliverables/T-0014.md solo como evidencia historica Chrome;
+  no reabrir sus gates.
+
+  Proponer REQ-001 equilibrio de margenes y ancho util en /, /retos, /mesociclos,
+  /70-3-cartagena; REQ-002 responsive sin overflow global ni controles recortados
+  (conservar scroll interno intencional de graficas); REQ-003 preservar chat independiente,
+  navegacion y controles; REQ-004 evidencia visual Safari real antes/despues y regresion
+  focalizada; REQ-005 SemVer/CHANGELOG y trazabilidad. Definir umbrales medibles y
+  matriz proporcional 375,768,1280,1440 px con capturas Safari reales; distinguir
+  WebKit automatizado de Safari. No probar chat con datos de salud ni modificar conversacion
+  o datos persistentes: proponer prueba sintetica con respuesta controlada. Planear
+  un implementer en worktree y viewer independiente; revisar conflictos de allowlist/version
+  con T-0017 y T-0020 (sin modificar esas tasks) y proponer orden explicito sin bloquear
+  por deuda ajena. Evaluar al menos dos alternativas CSS/layout, proponer solucion
+  minima, requisitos EARS, test por criterio, version objetivo compatible con ramas
+  pendientes, ADR propuesto, rollback y entrega humana a produccion. Ninguna dependencia
+  nueva ni refactor backend. Parar y reportar si requiere ampliar alcance, secretos
+  o mutaciones de datos. Lee codigo solo para planificacion, sin arrancar servicios,
+  ejecutar builds ni navegador en esta fase.
+
+  Tu unica escritura es deliverables/T-0021.md (envelope canonico y SDLC), incluyendo
+  contenido completo propuesto de spec.md, plan.md y ADR dentro de la entrega. Mantener
+  specs/002-layout-responsive en draft sin editarlos: coordinator materializara el
+  contenido tras aprobacion humana. No generar otras tasks, no subagentes, no editar
+  memoria/ledger.'
+expected_output: deliverables/T-0021.md con SPEC-002 y PLAN-002 completos propuestos,
+  ADR, matriz REQ-test, tasks hijas con allowlists/dependencias y decision humana
+  requerida; sin codigo ni aprobaciones
+parent_task: null
+dependencies: []
+priority: medium
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/architecture.md
+- long/standards.md
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- mid/decisions.md
+- mid/risks.md
+- mid/open-questions.md
+acceptance_criteria:
+- 'REQ-001/002: especificar geometria y responsive medibles para las cuatro vistas
+  dashboard y chat separado.'
+- 'REQ-003/004: matriz Safari real antes/despues, pruebas por criterio y regresion
+  navegacion/chat sintetica sin datos persistentes.'
+- 'REQ-005: plan SemVer/CHANGELOG, resolucion de solapes T-0017/T-0020, rollback y
+  procedimiento humano de release.'
+- 'SPEC-002/PLAN-002: alternativas, ADR propuesto, tasks con REQ/input/output/allowlist/dependencias,
+  SDLC y HITL por gate; entrega unica sin modificar implementacion.'
+allowlist:
+- deliverables/T-0021.md
+created_at: '2026-10-16T20:53:29Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+edits: []
+```
+
+## T-0022 — Plan integral de centrado Safari, historial sincronizado y GPT-6 Luna High (SPEC-002)
+
+```yaml
+id: T-0022
+title: Plan integral de centrado Safari, historial sincronizado y GPT-6 Luna High
+  (SPEC-002)
+project_id: python-garminconnect
+origin: coordinator
+destination: planner
+status: ready
+input: 'Preparacion aprobada por humano el 2026-10-17: SI al paquete de planificacion
+  ampliado (centrado Safari + historial entre dispositivos), manteniendo HITL por
+  gate. Nueva instruccion explicita: HITL es sesion humana de dudas/instrucciones
+  a Coordinator; HITL y Coordinator modelo solicitado gpt-6-astra esfuerzo High. Coordinator
+  unico agente principal que crea tasks, no implementa. Planner planifica, implementer
+  codifica en su worktree, viewer QA/revision. Todos cumplen contratos IES, SDLC,
+  EARS, Clean Code, Clean Architecture, HITL y WORKING_DISCIPLINE; multiagentes segun
+  necesidad y paralelismo solo independiente. Chat de Tri-Coach usara UNICAMENTE gpt-6-luna
+  con esfuerzo high, sin selector ni fallback a otro modelo. Esto es requisito de
+  producto, no modelo de todos los subagentes.
+
+  Entrega UNICA de planificacion en deliverables/T-0022.md. Usa T-0021 y deliverables/T-0021.md
+  como antecedente no aprobado, sin sobrescribirlos ni repetir auditoria. Completa
+  propuesta integral SPEC-002/PLAN-002 o descomposicion documentada en specs si indispensable,
+  lista para gate humano, con contenido completo y ADR propuestos dentro de tu entrega.
+  Specs actuales quedan draft intactas hasta aprobacion. No codigo, tareas hijas reales,
+  servicios, tests runtime, navegador, llamadas de inferencia, cambios de bindings/ledger/memoria,
+  Git de escritura, migraciones, backups de datos reales, importacion, merge, push
+  ni deploy.
+
+  Evidencia reutilizable: checkout aeaa5da; modificaciones previas solo ledger T-0021,
+  draft specs/002-layout-responsive y entrega T-0021. Safari real abierto el 2026-10-17
+  en https://web-chi-eight-31.vercel.app/ confirma v0.3.0 aeaa5da, dashboard concentrado
+  a izquierda, pantalla amplia. Una conversacion del 16 permanece con pregunta/respuesta;
+  no copiar contenido personal. CSS main max-width880 y margin0; chat separado. coachStorage.ts
+  MAX_CHATS4, slice en lectura/escritura/upsert, localStorage sin sincronizacion,
+  lectura fallida => [] y escritura sin manejo robusto. Limite proviene del commit
+  eba5365. API chat recibe mensajes, devuelve respuesta, no persiste historial de
+  app. No atribuir la perdida particular del humano a una causa no reproducida ni
+  prometer recuperar datos ya descartados.
+
+  Nuevo alcance: historial duradero sincronizado por identidad autenticada, acceso
+  exclusivo por usuario y validacion server-side/RLS; no usar UUID MVP compartido
+  como identidad ni confiar en user_id de payload. Migracion idempotente y conservadora
+  de conversaciones locales sobrevivientes a cuenta confirmada, sin borrado ni sobrescritura
+  ni importacion automatica a cuenta equivocada, control de fallos/cuota/concurrencia
+  y feedback de guardado, paginacion sin truncado destructivo. Definir retencion sin
+  borrado automatico; distinguir retencion de mensajes de ventana de contexto al modelo.
+  Especificar pruebas >4 chats, recargar/reabrir, dos navegadores misma cuenta, aislamiento
+  dos usuarios, errores escritura/red y reintentos sin duplicados. Minimizar acceso
+  a datos existentes; auth/configuracion cloud/migraciones/importacion real y despliegue
+  tienen gates humanos propios, solo se planifican. El schema MVP local tiene policies
+  USING(true) sobre tablas existentes y user fijo: no asumir que live tiene igual
+  politica ni reutilizar ese patron para historial; no ampliar a auditoria/refactor
+  general. Si asegurar contexto de salud del chat requiere identidad del usuario MVP,
+  declarar ese vinculo acotado como requisito, no permitir acceso arbitrario tras
+  login.
+
+  Centrado: conservar propuesta 1120px de T-0021 como decision no aceptada, revisar
+  viewport amplio observado ademas de movil, mediciones centradas respecto a area
+  principal y evidencia Safari real; validacion proporcional, no repetir 40 capturas
+  o construir proxy/harness grande por inercia. Cambia la antigua prohibicion de persistencia
+  de fixtures: nuevos tests DEBEN probar persistencia sintetica real en almacenamiento
+  de test aislado, autorizacion de esta planificacion NO toca datos de usuario. Separar
+  pruebas backend/API, Safari y UI, sin inferencia cloud real en esta fase.
+
+  Modelo app: documentacion oficial obtenida por coordinator https://developers.openai.com/api/docs/models/gpt-6-luna
+  confirma ID gpt-6-luna, high soportado, endpoints responses y chat_completions;
+  function calling en Chat Completions solo reasoning_effort none (no hay tools en
+  route actual). Especificar parametro high segun endpoint elegido y verificacion
+  del payload en servidor, sin temperature/top_p incompatibles, no aceptar modelo/esfuerzo
+  arbitrario del cliente/env/preferencia vieja; fallo visible si modelo no disponible,
+  no sustitucion. Acceso de la cuenta a modelo NO_VERIFICADO hasta gate de prueba
+  autorizado. El actual lib/openaiModels.ts mezcla modelos de env/API y acepta requested
+  probable, y route no envia reasoning effort.
+
+  Gobernanza: .ies/models.yaml y .ies/environment.yaml aun declaran Gemini/Antigravity.
+  Registrar discrepancia con Astra6 High/Codex solicitado, preparar propuesta acotada
+  de alineacion (fuentes canonicas/CLI; no editar adaptadores generados ni contratos
+  framework). No afirmar que configuracion deseada cambie modelo efectivo de sesiones.
+  HITL no es rol ejecutor que se agregue arbitrariamente al registry. Modelos de planner/implementer/viewer
+  NO fueron fijados por el humano: no inventar cambio masivo, proponer conservar bindings
+  o herencia observada con divergencia declarada. Esta discrepancia de identidad sola
+  NON_BLOCKING para planificar.
+
+  Resolver version/orden frente T-0017/T-0020 sin modificarlas ni integrarlas, considerando
+  si alcance historial/modelo corresponde MINOR en vez de simple PATCH0.3.2. Dimensionar
+  tareas/allowlists disjuntas o seriales, un implementer por task, viewer independiente;
+  REQ EARS por comportamiento, criterios ejecutables, tests-first, backups/rollback
+  no destructivos, gates por fase. Respetar CleanArchitecture al tocar lib/openaiModels.ts/supabase.ts
+  (ADR002), separar dominio/infra/presentacion solo lo necesario. Una aprobacion del
+  futuro plan no aprueba automaticamente implementacion, viewer, cambios cloud o deploy:
+  indicar con precision que gate aprueba cada accion. Entrega concisa y ejecutable,
+  no perfeccionamiento documental; para preguntas materiales ofrecer recomendacion
+  y gate claro. Termina con decision requerida.'
+expected_output: 'deliverables/T-0022.md: spec y plan integrales propuestos, ADR,
+  causas confirmadas vs hipotesis, tasks con allowlists/dependencias, matriz REQ-pruebas,
+  migracion conservadora, modelo exclusivo, roles/modelos solicitados vs efectivos,
+  gates HITL y decision humana; cero implementacion'
+parent_task: null
+dependencies: []
+priority: medium
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/architecture.md
+- long/standards.md
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- mid/decisions.md
+- mid/risks.md
+- mid/open-questions.md
+acceptance_criteria:
+- 'REQ-UI: geometria centrada Safari real, responsive y chat sin regresion; matriz
+  proporcional con ancho grande.'
+- 'REQ-HIST: identidad autenticada, aislamiento, persistencia entre navegadores, mas
+  de4 chats, migracion idempotente preservando originales, fallos y concurrencia;
+  test por criterio.'
+- 'REQ-MODEL: exclusivamente gpt-6-luna high forzado en servidor, sin selector/fallback/override
+  cliente; contrato API y cuenta disponible separados de plan.'
+- 'REQ-GOV: roles solicitados y discrepancias de bindings trazadas; todos los gates
+  HITL, SDLC/EARS/CleanArchitecture; tareas separables con allowlist y dependencia.'
+- 'REQ-RELEASE: version/orden coherentes con T-0017/T-0020, rollback y gate de datos/cloud;
+  entrega completa propuesta sin cambios fuera de allowlist.'
+allowlist:
+- deliverables/T-0022.md
+created_at: '2026-10-17T12:04:35Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+edits: []
+```
+
+## T-0023 — Alinear contexto Codex y conservar seleccion Gemini para Antigravity
+
+```yaml
+id: T-0023
+title: Alinear contexto Codex y conservar seleccion Gemini para Antigravity
+project_id: python-garminconnect
+origin: human
+destination: coordinator
+status: ready
+input: 'Instruccion humana explicita del 2026-10-17: al usar Antigravity conservar
+  Gemini; al usar Codex aplicar normas acordadas, actualizar para evitar bloqueos/ambiguedades.
+  Scope administrativo de coordinator: activar Codex mediante ies env set con principal
+  gpt-6-astra/high, subagentes predeterminado heredado gpt-6-astra/high sin imponer
+  un modelo distinto por rol (ajustable mediante gate de task), autonomy hitl; conservar/restaurar
+  seleccion Antigravity gemini-3.8-flash/high para principal/subagentes mediante comando
+  canonico documentado. Respaldar primero environment/models y comprobar que roles
+  no SDD, tier, modos, max_iterations, especialistas y fuentes generadas conservan
+  contenido. No nueva fuente paralela de bindings: unica autoridad .ies/models.yaml,
+  environment como configurador; decisiones/ADR contienen politica y receta de seleccion,
+  no autocambio nativo ficticio. Documentar un entorno activo compartido, cambio deliberado
+  por Coordinator, no conmutacion concurrente durante una task; prompts emitidos preservan
+  contexto de origen. Registrar en DEC-008, ADR-006 de proyecto y handoff la separacion
+  HITL/Coordinator/planner/implementer/viewer, herencia subagentes, SDLC/EARS/CleanCode/CleanArchitecture/WorkingDiscipline
+  y HITL por gate, multiactor solo por tasks canónicas con worktrees. Distinguir binding
+  de modelo efectivo de sesion, diferencia aislada NON_BLOCKING; metadato native_subagents
+  false heredado del catalogo IES no impide herramientas nativas observadas. No editar
+  framework/adaptadores a mano ni cambiar API de producto: requisito gpt-6-luna/high
+  queda pendiente de implementar segun T-0022, no se migra a Astra. No aprobar SPEC002
+  ni disparar implementers/viewers de producto. Validar ies models validate, memory
+  validate, doctor, constitution task, Git scope y prompts coordinator/planner compilados
+  con modelo correcto. Verificar retorno Gemini en copia temporal con CLI sin alternar
+  el repo vivo. Sin inferencia ni evaluacion de calidad, sin secretos, commit/push/merge/deploy;
+  reportar limitacion de evals y selector vivo en entrega. Si CLI fuerza cambio fuera
+  de scope o permiso requerido, detener esa parte y conservar evidencia. Unica entrega
+  deliverables/T-0023.md; no cerrar task automaticamente.'
+expected_output: Configuracion Codex activa con gpt-6-astra/high y HITL; politica
+  persistida Antigravity Gemini, evidencia CLI/validacion/prompt, respaldo y vuelta
+  verificable, roles ajenos preservados; deliverables/T-0023.md.
+parent_task: null
+dependencies: []
+priority: medium
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- mid/decisions.md
+- long/constitution.md
+- immediate/handoff.md
+acceptance_criteria:
+- 'REQ-CTX-001: Codex principal Astra6 High y herencia subagentes, Antigravity Gemini
+  conservado/restaurable por CLI; no afirmar autodeteccion.'
+- 'REQ-CTX-002: roles, HITL, gates y responsabilidades persistidos; ninguna aprobacion
+  de producto inferida.'
+- 'REQ-CTX-003: modelos/memoria/doctor y compilacion coherentes; scope verificado
+  y backup, sin cambios en app/framework.'
+allowlist:
+- .ies/models.yaml
+- .ies/environment.yaml
+- memory/mid/decisions.md
+- memory/immediate/handoff.md
+- memory/long/adr/ADR-006-tool-context-models.md
+- deliverables/T-0023.md
+created_at: '2026-10-17T12:11:20Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+edits: []
+```
+
+## T-0024 — Materializar aprobacion G0 de SPEC-002 y PLAN-002
+
+```yaml
+id: T-0024
+title: Materializar aprobacion G0 de SPEC-002 y PLAN-002
+project_id: python-garminconnect
+origin: human
+destination: coordinator
+status: ready
+input: 'El humano aprobo el plan integral con Adelante, aprobado tras confirmar el
+  siguiente gate. Ejecutar solo G0 de deliverables/T-0022.md: materializar SPEC-002/PLAN-002
+  y ADR003/004/005, actualizar standards segun ADR004, registrar DEC009 y aprobacion
+  con ies spec approve. Incorporar como precedencia explicita DEC008/ADR006/T0023
+  ya aceptados para evitar reabrir G1 o contradecir herencia de modelos. Preservar
+  identidad/version/estado de specs hasta CLI; no modificar estado a mano. Prohibido
+  codigo, despacho implementer/viewer, cloud, inferencia, commits, merge, push y deploy.
+  Validar fidelidad de 22 requisitos y pruebas, memoria, constitucion y aprobacion
+  CLI. Detener ante contradiccion material del alcance aprobado; resolver solo ajustes
+  documentales. Preparar propuesta cerrada I-UI para siguiente gate, sin ejecutarla.'
+expected_output: SPEC-002 y PLAN-002 materializados y approved por CLI; ADR003/004/005
+  aceptados; standards y DEC009/handoff consistentes; deliverable propia con evidencia
+  y siguiente gate I-UI.
+parent_task: T-0022
+dependencies: []
+priority: medium
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/standards.md
+- mid/decisions.md
+- immediate/handoff.md
+acceptance_criteria:
+- 'REQ-G0-001: 22 requisitos EARS y P01-P22 preservados con trazabilidad y gates HITL;
+  sin codigo.'
+- 'REQ-G0-002: decision humana trazable, aprobacion por CLI, memoria valida y modelos
+  no alterados.'
+allowlist:
+- specs/002-layout-responsive
+- memory/long/adr/ADR-003-centered-container.md
+- memory/long/adr/ADR-004-private-history.md
+- memory/long/adr/ADR-005-exclusive-chat-model.md
+- memory/long/standards.md
+- memory/mid/decisions.md
+- memory/immediate/handoff.md
+- deliverables/T-0024.md
+created_at: '2026-10-17T12:16:09Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+edits: []
+```
+
+## T-0025 — I-UI: Centrado responsive en Safari y SemVer 0.4.0-rc.1 (SPEC-002)
+
+```yaml
+id: T-0025
+title: 'I-UI: Centrado responsive en Safari y SemVer 0.4.0-rc.1 (SPEC-002)'
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: 'Ejecutar exclusivamente la etapa I-UI (G2) de specs/002-layout-responsive/{spec.md,plan.md}
+  aprobados en DEC-009 (propuesta T-0022, propuesta cerrada en deliverables/T-0024.md),
+  trabajando estrictamente dentro del worktree aislado .ies/worktrees/T-0025 desde
+  el baseline de codigo aeaa5da9a02c0070cb4f4259da13f1cb27ba16ab. 1. Orden tests-first:
+  escribir primero pruebas automatizadas en apps/web/lib/layout-responsive.test.mjs
+  (y/o apps/web/tests/layout-responsive/) que fallen ante el defecto de centrado/geometria
+  y verifiquen la regla de dependencia de archivos tocados (P22), luego aplicar la
+  correccion minima en apps/web/app/globals.css (y apps/web/app/(dashboard)/layout.tsx
+  solo si es necesario) para centrar el contenedor del dashboard en su area disponible
+  (.app-main) con max-width 1120px y padding 28px (>800px) / 16px (<=800px), preservando
+  el layout independiente del chat (compositor max 880px centrado y burbujas por rol).
+  2. Actualizar la version candidata a 0.4.0-rc.1 en apps/web/package.json, ambos
+  niveles de apps/web/package-lock.json, apps/web/lib/version.test.mjs, apps/web/README.md
+  y apps/web/CHANGELOG.md, sin anadir dependencias nuevas. 3. Levantar servidor local
+  aislado con fixtures sinteticas (sin consultar ni escribir en servicios reales,
+  sin inferencia cloud ni tocar datos de usuario) y ejecutar en Safari real las mediciones
+  de las 14 celdas de la matriz S (SPEC-002 seccion 5: cuatro rutas dashboard y chat
+  a 375px y 1600px, mas Inicio y chat a 800px y 801px), verificando P01 (desvio de
+  ancho/padding <=2px, diferencia de margenes izq/der <=2px), P02 (overflow horizontal
+  global <=1px, controles accesibles, scroll interno de graficas intacto) y P03 (ciclo
+  de navegacion dashboard -> chat con ID -> historial -> chat -> volver a 375px y
+  1600px). Guardar las capturas requeridas y mediciones en deliverables/evidence/T-0025/.
+  4. Ejecutar npm --prefix apps/web test, npm --prefix apps/web run build e IES_ACTOR=implementer
+  ies git verify --task T-0025 (0 drift). 5. Entregar deliverables/T-0025.md con envelope
+  SDLC completo y realizar commit local en la rama task/T-0025 sin atribucion a IA
+  (CLAUDE.md), sin merge, sin push y sin deploy.'
+expected_output: CSS/layout centrado en Safari real (max 1120px, padding 28/16 en
+  breakpoint 800px), chat preservado (compositor 880px), version candidata 0.4.0-rc.1
+  coherente, pruebas automatizadas y build en verde, 14 celdas medidas y capturas
+  Safari real en deliverables/evidence/T-0025/, deliverables/T-0025.md completo y
+  commit local en task/T-0025 con 0 drift.
+parent_task: T-0022
+dependencies: []
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/standards.md
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- long/adr/ADR-003-centered-container.md
+- long/adr/ADR-006-tool-context-models.md
+- mid/decisions.md
+- immediate/handoff.md
+acceptance_criteria:
+- 'REQ-001 / P01: MIENTRAS se muestre una ruta dashboard incluida (/, /retos, /mesociclos,
+  /70-3-cartagena), el sistema centra su contenedor en el area principal (.app-main)
+  con W=min(A,1120) y padding 28px (>800px) o W=A y padding 16px (<=800px), con desvio
+  <=2px y diferencia de margenes izq/der <=2px en las 14 celdas de la matriz S en
+  Safari real.'
+- 'REQ-002 / P02: MIENTRAS se muestre una ruta incluida, los controles permanecen
+  accesibles sin overflow horizontal global (max(body.scrollWidth,documentElement.scrollWidth)-documentElement.clientWidth
+  <=1px), sin recorte ni solapamiento y conservando el scroll interno de graficas.'
+- 'REQ-003 / P03: CUANDO se active una navegacion incluida, muestra el destino esperado
+  en el ciclo cuatro rutas dashboard -> chat con ID -> historial -> chat -> volver
+  a 375px y 1600px, conservando en chat el compositor centrado (max 880px) y roles
+  de burbuja.'
+- 'REQ-020 / P20: Version candidata 0.4.0-rc.1 coherente en apps/web/package.json,
+  ambos niveles de apps/web/package-lock.json, version visible, apps/web/lib/version.test.mjs,
+  apps/web/README.md y apps/web/CHANGELOG.md, sin nuevas dependencias.'
+- 'REQ-022 / P22: El codigo nuevo o tocado respeta la direccion de dependencias declarada
+  (Clean Architecture, ADR-002/003/004), verificado por prueba ejecutable y revision
+  de imports junto con npm test, npm run build e IES_ACTOR=implementer ies git verify
+  --task T-0025 en PASS (0 drift).'
+allowlist:
+- apps/web/app/globals.css
+- apps/web/app/(dashboard)/layout.tsx
+- apps/web/tests/layout-responsive
+- apps/web/lib/layout-responsive.test.mjs
+- apps/web/package.json
+- apps/web/package-lock.json
+- apps/web/lib/version.test.mjs
+- apps/web/README.md
+- apps/web/CHANGELOG.md
+- deliverables/T-0025.md
+- deliverables/evidence/T-0025
+created_at: '2026-10-17T12:56:19Z'
 started_at: null
 completed_at: null
 blocked_reason: null

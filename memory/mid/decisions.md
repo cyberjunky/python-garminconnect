@@ -2,12 +2,33 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: mid
-last_updated: '2026-10-13T18:35:00Z'
+last_updated: '2026-10-17T12:16:50Z'
 source: coordinator
 confidence: alta
 ---
 
 # Decisions
+
+## DEC-009: Aprobacion humana G0 de SPEC-002 y PLAN-002
+
+- **Fecha**: 2026-10-17. **Task**: T-0024, propuesta T-0022.
+- **Autoridad**: el humano respondio «Adelante, aprobado» al siguiente gate presentado: aprobar el plan de centrado Safari, historial sincronizado y Luna High exclusivo. Se registra G0 de la propuesta T-0022; no se transforma HITL en autonomia.
+- **Decision**: aceptar SPEC-002/PLAN-002 integral, maximo 1120px, Supabase Auth por invitacion/RLS privado, importacion opt-in conservando originales, GPT-6 Luna High fijo, ViewModel de chat y paquete final 0.4.0 con etapas seriales. Aceptar ADR-003/004/005 y actualizar standards segun ADR-004. Materializar documentos y registrar con `IES_ACTOR=coordinator ies spec approve 002-layout-responsive --decision-ref memory/mid/decisions.md#dec-009-aprobacion-humana-g0-de-spec-002-y-plan-002`.
+- **Precedencia**: DEC-008/ADR-006 y configuracion T-0023 ya aceptados resuelven C-GOV/G1; se conserva seleccion Codex/Astra y Antigravity/Gemini, incluida herencia declarada. No repetir configuracion ni inferir modelo efectivo de sesiones.
+- **Limites**: G0 no despacha implementers ni viewers. G2 por implementer, G3 viewer, G4 aceptacion/merge humano, G5 datos/Auth, G6 prueba sintetica modelo, G7 release humano y G8 importacion por usuario conservan gates propios. No se autorizan codigo, cloud, inferencia, commits, merge, push ni deploy en T-0024.
+- **Versionado**: prioridad al paquete; R serial. T-0017/T-0020 quedan fuera; antes de retomarlos resolver su version por gate propio, sin downgrade desde 0.4.x.
+- **Evidencia**: `deliverables/T-0024.md`; 22 requisitos y pruebas P01-P22 conservados, aprobacion de specs por CLI. El producto sigue pendiente de implementacion.
+
+## DEC-008: Seleccion de entorno Codex / Antigravity y separacion de roles
+
+- **Fecha**: 2026-10-17. **Task**: T-0023. **ADR**: `memory/long/adr/ADR-006-tool-context-models.md`.
+- **Autoridad**: instruccion humana de conservar Gemini al usar Antigravity y aplicar las normas acordadas al usar Codex, con actualizacion explicita para evitar ambiguedades. No aprueba SPEC-002 ni su implementacion.
+- **Decision**: usar el contexto de herramienta, no sustituir globalmente Gemini por Astra. En Codex, HITL y Coordinator usan la seleccion solicitada GPT-6 Astra / High; los subagentes sin override tienen como predeterminado la misma seleccion del principal. En Antigravity se conserva Gemini 3.8 Flash / High para principal y equipo SDD. La herencia de subagentes Codex es un predeterminado operativo, no una eleccion humana de modelos distintos por rol; cualquier override por task se declara bajo Working Discipline.
+- **Fuentes**: `.ies/models.yaml` contiene los bindings activos; `.ies/environment.yaml` declara herramienta y esfuerzo. IES solo tiene un entorno activo por proyecto: la seleccion requiere `ies env set`, no autodetecta la aplicacion. Las recetas exactas de cambio y retorno estan en ADR-006. El Coordinator es el unico escritor de esa configuracion y no la conmuta durante tareas concurrentes; prompts emitidos conservan su contexto y no se reejecutan por un cambio de entorno.
+- **Roles**: HITL aclara y transmite instrucciones, no genera tasks. Coordinator crea tasks y prompts canonicos, delega y consolida, no codifica. Planner especifica; Implementer codifica/tests en su worktree; Viewer revisa y hace QA independiente. Todos cumplen SDLC segun contrato, EARS, Clean Code, Clean Architecture y Working Discipline. HITL por gate hasta nueva orden. Multiagentes por task y paralelismo solo con allowlists y worktrees independientes.
+- **Capacidad efectiva**: el catalogo IES conserva `native_subagents: false` para Codex. Es metadato descriptivo desactualizado respecto a las delegaciones nativas T-0021/T-0022 observadas; no es prohibicion de usar el transporte disponible ni prueba de aislamiento. La identidad de modelo distinta o no observable se declara NON_BLOCKING; una carencia real de herramienta, permiso o aislamiento conserva sus gates. El YAML no cambia el selector de sesiones abiertas.
+- **Producto separado**: el chat de Tri-Coach debe usar exclusivamente GPT-6 Luna / High segun T-0022; esta actualizacion no implementa ese requisito ni cambia produccion.
+- **Evidencia**: Codex activado por CLI; compilacion coordinator/planner emite `openai/gpt-6-astra`, High. Retorno Antigravity ensayado por CLI en copia temporal recupera exactamente los bindings previos. Roles no SDD, contratos, proveedores, MLX y 64 archivos de adaptadores/protegidos intactos. No se realizaron inferencias ni evals comparativas de calidad; no se declara equivalencia de calidad ni modelo efectivo de las sesiones. Ver `deliverables/T-0023.md`.
 
 ## DEC-001: Aprobación de entrega T-0008 y política estricta contra amend + force-push
 
