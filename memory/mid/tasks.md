@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 26
+next_id: 28
 source: ies-cli
-last_updated: '2026-10-17T12:56:19Z'
+last_updated: '2026-10-17T13:55:47Z'
 ---
 
 # Task Ledger
@@ -1492,7 +1492,7 @@ title: 'I-UI: Centrado responsive en Safari y SemVer 0.4.0-rc.1 (SPEC-002)'
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: 'Ejecutar exclusivamente la etapa I-UI (G2) de specs/002-layout-responsive/{spec.md,plan.md}
   aprobados en DEC-009 (propuesta T-0022, propuesta cerrada en deliverables/T-0024.md),
   trabajando estrictamente dentro del worktree aislado .ies/worktrees/T-0025 desde
@@ -1573,6 +1573,188 @@ allowlist:
 - deliverables/T-0025.md
 - deliverables/evidence/T-0025
 created_at: '2026-10-17T12:56:19Z'
+started_at: '2026-10-17T13:47:57Z'
+completed_at: '2026-10-17T13:47:57Z'
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: deliverables/T-0025.md
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics:
+  git_before: 8139f9bb74c5d101f39ea303f34533a84c1486dd
+  git_after: 8139f9bb74c5d101f39ea303f34533a84c1486dd
+  result: success
+edits: []
+```
+
+## T-0026 — V-UI: Verificación viewer independiente de T-0025 sobre commit 2dcd4ee
+
+```yaml
+id: T-0026
+title: 'V-UI: Verificación viewer independiente de T-0025 sobre commit 2dcd4ee'
+project_id: python-garminconnect
+origin: coordinator
+destination: viewer
+status: done
+input: 'Auditar en modo solo lectura el commit exacto 2dcd4eed848e8e9806c846b6928896940fa21401
+  en el worktree .ies/worktrees/T-0025 y su entrega deliverables/T-0025.md (referenciando
+  la entrega de T-0025 sin marcarla done). Revisar todos los criterios de T-0025 y
+  reproducir rigurosamente: 1. Cumplimiento estricto de allowlist con ies git verify
+  --task T-0025. 2. Cumplimiento de constitucion con ies constitution check --task
+  T-0026. 3. Gate de maquina con ies gate --task T-0025. 4. Pruebas unitarias de apps/web
+  con npm test (18 tests pasando, 0 fallos). 5. Build de produccion de apps/web con
+  npm run build (codigo de salida 0). 6. Auditoria de las 14 celdas de la matriz S
+  en Safari real y ciclo de navegacion P03 en deliverables/evidence/T-0025/. 7. Verificacion
+  de version candidata SemVer 0.4.0-rc.1 en package.json, package-lock.json, README.md,
+  CHANGELOG.md y version.test.mjs. 8. Verificacion de direccion de dependencias Clean
+  Architecture P22 en archivos tocados. Emitir veredicto canonico APROBAR | CORREGIR
+  | BLOQUEAR en deliverables/T-0026.md.'
+expected_output: deliverables/T-0026.md con informe de auditoria solo lectura, tabla
+  de reproduccion de criterios, comprobaciones estaticas y dinamicas, hallazgos BLOCKING/NON_BLOCKING
+  y veredicto canonico APROBAR | CORREGIR | BLOQUEAR.
+parent_task: T-0022
+dependencies: []
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/standards.md
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- long/adr/ADR-003-centered-container.md
+- long/adr/ADR-006-tool-context-models.md
+- mid/decisions.md
+- immediate/handoff.md
+acceptance_criteria:
+- Revision independiente en solo lectura del commit 2dcd4ee y deliverables/T-0025.md
+  sin mutaciones en el repositorio
+- Auditoria de allowlist (ies git verify) con 0 drift y verificacion de gate de maquina
+  (ies gate --task T-0025 PASS)
+- Reproduccion de pruebas npm test (18 tests) y npm run build con codigo de salida
+  0
+- Auditoria de las 14 celdas de la matriz S y ciclo de navegacion P03 en Safari real
+  y evidencia fotografica
+- Auditoria de coherencia SemVer 0.4.0-rc.1 y regla de dependencia Clean Architecture
+  P22
+- Veredicto canonico formal (APROBAR | CORREGIR | BLOQUEAR) con clasificacion de severidad
+  en deliverables/T-0026.md
+allowlist: []
+created_at: '2026-10-17T13:34:17Z'
+started_at: '2026-10-17T13:48:05Z'
+completed_at: '2026-10-17T13:48:05Z'
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: deliverables/T-0026.md
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics:
+  git_before: 8139f9bb74c5d101f39ea303f34533a84c1486dd
+  git_after: 8139f9bb74c5d101f39ea303f34533a84c1486dd
+  result: success
+edits: []
+```
+
+## T-0027 — I-SERVER: Backend de historial privado, auth RLS y modelo exclusivo (SPEC-002)
+
+```yaml
+id: T-0027
+title: 'I-SERVER: Backend de historial privado, auth RLS y modelo exclusivo (SPEC-002)'
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: 'Ejecutar exclusivamente la etapa I-SERVER (G2) de specs/002-layout-responsive/{spec.md,plan.md}
+  aprobados en DEC-009 (propuesta T-0022, PLAN-002 seccion 4), trabajando estrictamente
+  dentro del worktree aislado .ies/worktrees/T-0027. 1. Orden tests-first: escribir
+  primero pruebas automatizadas en apps/web/tests/chat-server/ y apps/web/lib/chat-server.test.mjs
+  para contratos de dominio y puertos de aplicación (ConversationRepository, Identity,
+  HealthContext, CoachProvider), RLS y aislamiento de usuario (REQ-004, REQ-005, P04,
+  P05), persistencia y operaciones idempotentes (REQ-009, REQ-010, P09, P10), forzado
+  exclusivo de modelo gpt-6-luna con reasoning_effort high sin tools (REQ-015, REQ-016,
+  P15, P16), vínculo de salud (REQ-014, P14), retención/ventana 12 mensajes (REQ-018,
+  P18), y regla de dependencias P22 (Clean Architecture: lib/chat/ puro, lib/chat/application/
+  puertos, lib/infra/ adaptadores). 2. Implementar schema aditivo en supabase/migrations/20261017_coach_history.sql
+  con tablas coach_conversations, coach_messages, coach_operations, coach_imports,
+  coach_profile_links, RLS auth.uid()=owner_id, constraints y tests en supabase/tests/coach_history/.
+  3. Implementar endpoints API en apps/web/app/api/conversations/ y apps/web/app/api/chat/
+  con respuestas tipadas, cache no-store y sin exponer tokens/claves ni service-role.
+  4. Refactorizar apps/web/lib/supabase.ts y apps/web/lib/openaiModels.ts hacia apps/web/lib/infra/
+  según ADR-002, actualizando llamadas en condition.ts, dashboard.ts y mesocycle.ts
+  sin romper compatibilidad. 5. Actualizar versión candidata a 0.4.0-rc.2 en apps/web/package.json,
+  ambos niveles de package-lock.json, version.test.mjs, README.md y CHANGELOG.md sin
+  dependencias externas nuevas. 6. Ejecutar pruebas unitarias, build de producción
+  y verificación de arquitectura con cero drift (ies git verify).'
+expected_output: deliverables/T-0027.md con frontmatter YAML reglamentario, envelope
+  SDLC, tabla REQ->evidencia P04-P07, P09-P12, P14-P16, P18-P22, commit local en task/T-0027
+  con candidato 0.4.0-rc.2, pruebas automatizadas en tests/chat-server/, migración
+  aditiva SQL y suite de tests ejecutada con código 0.
+parent_task: T-0022
+dependencies:
+- T-0025
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/standards.md
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- long/adr/ADR-004-private-history.md
+- long/adr/ADR-005-exclusive-chat-model.md
+- long/adr/ADR-006-tool-context-models.md
+- mid/decisions.md
+- immediate/handoff.md
+acceptance_criteria:
+- Implementación de dominio, puertos y adaptadores de chat en apps/web/lib/chat/ y
+  apps/web/lib/infra/ respetando Clean Architecture (P22)
+- Migración SQL aditiva supabase/migrations/20261017_coach_history.sql con RLS auth.uid()=owner_id,
+  claves únicas y pruebas de aislamiento (REQ-004, REQ-005, P04, P05)
+- Endpoints API /api/conversations y /api/chat con control de concurrencia, idempotencia
+  de operaciones y cache no-store (REQ-009, REQ-010, P09, P10)
+- Forzado exclusivo en servidor de gpt-6-luna con reasoning_effort high sin tools
+  ni fallback (REQ-015, REQ-016, P15, P16)
+- Aislamiento de contexto de salud MVP por vínculo owner (REQ-014, P14) y ventana
+  de 12 mensajes sin truncar historial DB (REQ-018, P18)
+- Versionado SemVer coherente 0.4.0-rc.2 en paquete, lock, README, CHANGELOG y version.test.mjs
+  (REQ-020, P20)
+- Pruebas unitarias pasando, npm run build código 0 e ies git verify con 0 drift en
+  worktree aislado
+allowlist:
+- apps/web/package.json
+- apps/web/package-lock.json
+- apps/web/lib/version.test.mjs
+- apps/web/README.md
+- apps/web/CHANGELOG.md
+- deliverables/T-0027.md
+- deliverables/evidence/T-0027
+- apps/web/lib/chat
+- apps/web/lib/infra
+- apps/web/lib/condition.ts
+- apps/web/lib/dashboard.ts
+- apps/web/lib/mesocycle.ts
+- apps/web/lib/supabase.ts
+- apps/web/lib/openaiModels.ts
+- apps/web/app/api/chat
+- apps/web/app/api/conversations
+- apps/web/app/(dashboard)
+- apps/web/tests/chat-server
+- apps/web/lib/chat-server.test.mjs
+- supabase/migrations/20261017_coach_history.sql
+- supabase/tests/coach_history
+created_at: '2026-10-17T13:55:47Z'
 started_at: null
 completed_at: null
 blocked_reason: null

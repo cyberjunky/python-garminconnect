@@ -2,8 +2,8 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: immediate
-last_updated: '2026-10-17T12:51:45Z'
-source: instruccion humana de guardar estado y handoff, pausa y traslado a Antigravity
+last_updated: '2026-10-17T13:14:00Z'
+source: instruccion humana en HITL - Tri-Coach (cola de 3 actualizaciones de producto + ratificacion de 8 reglas de Working Discipline y modelos)
 confidence: alta para configuracion y evidencia declaradas; runtime de modelos no verificado
 ---
 
@@ -79,3 +79,40 @@ merge o deploy implicitos. No declarar conversaciones recuperadas.
 T-0017/T-0020 conservan estado y alcance; reservar archivos de version de forma
 serial, sin downgrade. Para estados formales consultar ledger vivo; las entregas
 aceptadas no equivalen a cierre done sin gate/viewer y transicion CLI.
+
+## Cola de actualizaciones solicitadas por el humano (2026-10-17)
+
+Instruccion humana recibida en sesion HITL para incluir en cola y entregar a
+Coordinator:
+
+1. **Qué atender (`apps/web/app/(dashboard)/retos/page.tsx` y `apps/web/lib/dashboard.ts`)**:
+   - Incluir para cada alerta/indicador en «Qué atender» una recomendacion accionable en una frase corta fundamentada en investigacion de ciencia deportiva (modulacion parasimpatica/HRV, higiene y deuda de sueno, recarga autonomica/Body Battery, control de ratio de carga aguda:cronica ACWR < 1.3 para prevencion de lesiones, y descarga ante sobreesfuerzo/overreaching).
+2. **Macrociclo (`apps/web/app/(dashboard)/retos/page.tsx` y logica de dominio asociada)**:
+   - Ampliar la tarjeta «Macrociclo» para que incluya cuatro bloques claros:
+     a) breve descripcion de que es un macrociclo;
+     b) explicacion del momento/fase actual (`code`, `name`, `focus`, deporte y techo de FC/duracion);
+     c) como mejorarlo (recomendacion practica alineada con la fase activa y el estado actual);
+     d) cuando termina (fecha de cierre de la fase actual en formato `es-CO`, dias restantes y referencia al cierre del macrociclo).
+3. **Tendencia mensual en menu lateral nuevo (`apps/web/components/DashboardNav.tsx`, `apps/web/app/(dashboard)/retos/page.tsx` y nueva ruta `apps/web/app/(dashboard)/tendencia/page.tsx`)**:
+   - Retirar la tarjeta «Tendencia 14d» de la vista `/retos`.
+   - Incluir un item nuevo «Tendencia» (`/tendencia`) en el menu lateral (`DashboardNav`).
+   - Mostrar en una sola hoja (`/tendencia`) los avances del mes (ultimos 30 dias / mes en curso): barra y conteo de distribucion de zonas (`VERDE`, `AMARILLO`, `ROJO`), resumen de avances del mes en metricas clave (HRV, sueno, Body Battery, estres, ACWR/VO2max) y tabla mensual con fechas `es-CO` y `tabular-nums`.
+
+Orden y gobernanza para Coordinator:
+- Mantener la disciplina SDD/EARS/Clean Architecture (logica pura en `apps/web/lib/`, presentacion en `app/(dashboard)/` y `components/`) y la reserva serial del grupo `R` (`package.json`, `package-lock.json`, `CHANGELOG.md`, `README.md`, `version.test.mjs`).
+- Coordinar el orden respecto a `SPEC-002` (`PLAN-002` G2 `I-UI` ya propuesto en `deliverables/T-0024.md` y creado como `T-0025`): encadenar como nueva spec SDD (`SPEC-003`) o integrar secuencialmente tras el gate activo sin colision de allowlists ni worktrees, verificando que la nueva ruta `/tendencia` cumpla tambien la geometria centrada de `ADR-003`.
+
+## Confirmacion de Working Discipline, roles y modelos vigentes (2026-10-17)
+
+Reglas ratificadas explicitamente por el humano en `HITL - Tri-Coach` para trabajar en adelante:
+
+1. **HITL - Tri-Coach**: sesion humana para clarificar dudas y enviar instrucciones cerradas a Coordinator; modelo preferido **Astra 6 High** (`gpt-6-astra` / `high`). No crea tasks en el ledger ni muta codigo.
+2. **Garmin - Coordinator**: Agente Principal con la autorizacion exclusiva para crear tareas (`ies task add`), compilar prompts (`ies prompt`), gestionar checkpoints/worktrees y consolidar entregas:
+   - En **Antigravity**: **Gemini 4 Argon Max** (actualizar referencia en `ADR-006` / `.ies/environment.yaml` / `.ies/models.yaml` cuando opere en Antigravity).
+   - En **Codex**: **Astra 6 High** (`gpt-6-astra` / `high`).
+3. **Implementer**: subagente encargado de codificar y ejecutar pruebas (*tests-first*) dentro de su worktree aislado y su `allowlist`.
+4. **Planner**: subagente encargado de la planificacion de detalles (`spec.md` EARS, `plan.md`, ADRs, matriz de pruebas y descomposicion de tasks).
+5. **Viewer**: subagente independiente en solo lectura encargado de revisoria y QA (`ies git verify`, `ies constitution check`, `ies gate`, veredicto formal).
+6. **Cumplimiento normativo**: cada agente y subagente debe cumplir estrictamente su rol siguiendo **SDLC**, **EARS**, **Clean Code**, **Clean Architecture** (`ADR-002`) y **HITL** por gate.
+7. **Multiagentes**: se usaran multiagentes cuando las tareas y la separacion de responsabilidades o paralelismo (con worktrees y allowlists disjuntos) lo requieran.
+8. **Working Discipline**: seguir siempre la disciplina descrita en `/Users/alarcondiegof/ies-projects/ies-framework/docs/WORKING_DISCIPLINE.md`.
