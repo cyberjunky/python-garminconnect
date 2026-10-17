@@ -3,7 +3,7 @@ schema_version: 1
 project_id: python-garminconnect
 next_id: 33
 source: ies-cli
-last_updated: '2026-10-17T15:53:57Z'
+last_updated: '2026-10-17T16:10:13Z'
 ---
 
 # Task Ledger
@@ -2137,7 +2137,7 @@ title: 'I-DOMAIN-RETOS: Recomendaciones accionables y macrociclo en 4 bloques (S
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: Implementar el motor de recomendaciones accionables de ciencia deportiva en
   apps/web/lib/dashboard.ts, la lógica y tipos de macrociclo en 4 bloques en apps/web/lib/mesocycle.ts,
   y actualizar la vista apps/web/app/(dashboard)/retos/page.tsx retirando la tendencia
@@ -2181,17 +2181,20 @@ allowlist:
 - apps/web/tests/tendencia-macrociclo/macrocycle.test.mjs
 - deliverables/T-0032.md
 created_at: '2026-10-17T15:53:57Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-17T16:10:13Z'
+completed_at: '2026-10-17T16:10:13Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0032.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: 43de96b9a7bf0cbdccf50777e4792a318adb25f9
+  git_after: 43de96b9a7bf0cbdccf50777e4792a318adb25f9
+  result: success
 edits: []
 ```
