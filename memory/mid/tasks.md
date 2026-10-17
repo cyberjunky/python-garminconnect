@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 29
+next_id: 30
 source: ies-cli
-last_updated: '2026-10-17T14:37:48Z'
+last_updated: '2026-10-17T14:46:53Z'
 ---
 
 # Task Ledger
@@ -1849,5 +1849,112 @@ metrics:
   git_before: bc8c2bf653fb149816b39ce213fcb65b76519831
   git_after: bc8c2bf653fb149816b39ce213fcb65b76519831
   result: success
+edits: []
+```
+
+## T-0029 — I-CLIENT: UI, ViewModel, historial sincronizado, migración opt-in y SemVer 0.4.0 (SPEC-002)
+
+```yaml
+id: T-0029
+title: 'I-CLIENT: UI, ViewModel, historial sincronizado, migración opt-in y SemVer
+  0.4.0 (SPEC-002)'
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: 'Ejecutar exclusivamente la etapa I-CLIENT (G2) de specs/002-layout-responsive/{spec.md,plan.md}
+  aprobados en DEC-009 (propuesta T-0022, PLAN-002 seccion 4), trabajando estrictamente
+  dentro del worktree aislado .ies/worktrees/T-0029. 1. Orden tests-first: escribir
+  primero pruebas en apps/web/tests/chat-client/ y apps/web/lib/chat-client.test.mjs
+  cubriendo ViewModel de chat, estados de sincronización, importación opt-in, ausencia
+  de selector de modelos y preservación de layout y dirección de dependencias P22.
+  2. Implementar pantalla de login en apps/web/app/login/ (Supabase Auth email OTP)
+  y manejo de sesión/logout (REQ-004, REQ-013). 3. Refactorizar componentes de chat
+  (CoachChat.tsx, CoachChatScreen.tsx) y hook dedicado useCoachConversation en apps/web/hooks/
+  para conectar con los endpoints /api/conversations y /api/chat desarrollados en
+  I-SERVER, mostrando historial sincronizado, estados ''Guardado'', reintento ante
+  conflicto 409 y paginación (REQ-006, REQ-007, REQ-008, REQ-009, REQ-010). 4. Implementar
+  flujo de importación opt-in desde localStorage (coachStorage.ts): lectura de conversaciones
+  locales supervivientes, validación de digest, confirmación explícita de cuenta destino,
+  copia a servidor sin modificar ni limpiar el almacenamiento local (REQ-011, REQ-012).
+  5. Retirar selector de modelos (CoachModelSelect.tsx) y fijar etiqueta informativa
+  estática GPT-6 Luna · High (REQ-017). 6. Verificar preservación del contenedor centrado
+  y responsive en globals.css y rutas de chat (P01, P02, P03). 7. Actualizar versión
+  a 0.4.0 final en apps/web/package.json, package-lock.json, README.md, CHANGELOG.md
+  y version.test.mjs. 8. Ejecutar suite de pruebas completa y build de producción
+  con 0 errores y 0 drift.'
+expected_output: deliverables/T-0029.md con frontmatter YAML reglamentario, envelope
+  SDLC, tabla REQ->evidencia P01-P22, commit local en task/T-0029 con versión 0.4.0
+  final, pruebas automatizadas en tests/chat-client/, build Next.js código 0 e ies
+  git verify con 0 drift.
+parent_task: T-0022
+dependencies:
+- T-0027
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/standards.md
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- long/adr/ADR-003-centered-container.md
+- long/adr/ADR-004-private-history.md
+- long/adr/ADR-005-exclusive-chat-model.md
+- long/adr/ADR-006-tool-context-models.md
+- mid/decisions.md
+- immediate/handoff.md
+acceptance_criteria:
+- Implementación de ViewModel de chat y hook desacoplado en apps/web/hooks/ y componentes
+  de UI respetando Clean Architecture (ADR-002, P22)
+- Pantalla de login con OTP / sesión Supabase Auth y protección de rutas privadas
+  (REQ-004, P04, P13)
+- Historial sincronizado entre sesiones/navegadores, paginación y manejo de errores
+  visible sin pérdida de borradores (REQ-006, REQ-007, REQ-008, P06, P07, P08)
+- Flujo de importación local opt-in con confirmación de cuenta destino, validación
+  de digest, sin alterar localStorage original (REQ-011, REQ-012, P11, P12)
+- Retiro definitivo del selector de modelos e identificación estática exclusiva de
+  GPT-6 Luna · High (REQ-017, P17)
+- Preservación del layout responsive centrado max 1120px y compositor max 880px centrado
+  sin overflow (REQ-001, REQ-002, REQ-003, P01, P02, P03)
+- Sincronización SemVer final 0.4.0 en paquete, lock, README, CHANGELOG y version.test.mjs
+  (REQ-020, P20)
+- Pruebas unitarias pasando, build Next.js con código 0 y 0 drift con ies git verify
+  en worktree aislado
+allowlist:
+- apps/web/package.json
+- apps/web/package-lock.json
+- apps/web/lib/version.test.mjs
+- apps/web/README.md
+- apps/web/CHANGELOG.md
+- deliverables/T-0029.md
+- deliverables/evidence/T-0029
+- apps/web/components/CoachChat.tsx
+- apps/web/components/CoachChatScreen.tsx
+- apps/web/components/CoachModelSelect.tsx
+- apps/web/hooks
+- apps/web/app/login
+- apps/web/app/(chat)
+- apps/web/app/globals.css
+- apps/web/lib/coachStorage.ts
+- apps/web/lib/infra/auth
+- apps/web/lib/infra/chat
+- apps/web/tests/chat-client
+- apps/web/lib/chat-client.test.mjs
+created_at: '2026-10-17T14:46:53Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
 edits: []
 ```
