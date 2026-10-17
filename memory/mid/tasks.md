@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 32
+next_id: 33
 source: ies-cli
-last_updated: '2026-10-17T15:48:04Z'
+last_updated: '2026-10-17T15:53:57Z'
 ---
 
 # Task Ledger
@@ -2126,5 +2126,72 @@ metrics:
   git_before: 2768faeb336bc2526f00be1bbad6d85fccb6940b
   git_after: 2768faeb336bc2526f00be1bbad6d85fccb6940b
   result: success
+edits: []
+```
+
+## T-0032 — I-DOMAIN-RETOS: Recomendaciones accionables y macrociclo en 4 bloques (SPEC-003)
+
+```yaml
+id: T-0032
+title: 'I-DOMAIN-RETOS: Recomendaciones accionables y macrociclo en 4 bloques (SPEC-003)'
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: Implementar el motor de recomendaciones accionables de ciencia deportiva en
+  apps/web/lib/dashboard.ts, la lógica y tipos de macrociclo en 4 bloques en apps/web/lib/mesocycle.ts,
+  y actualizar la vista apps/web/app/(dashboard)/retos/page.tsx retirando la tendencia
+  histórica de 14 días y renderizando la nueva tarjeta de Macrociclo según SPEC-003
+  y PLAN-003.
+expected_output: Suites de tests unitarios apps/web/tests/tendencia-macrociclo/recommendations.test.mjs
+  y macrocycle.test.mjs pasando al 100%, Clean Architecture P22 preservada, renderizado
+  verificado y deliverable deliverables/T-0032.md con evidencia completa.
+parent_task: T-0031
+dependencies: []
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- 'REQ-001: Alertas de sueño con recomendación fisiológica de higiene y recuperación
+  de deuda'
+- 'REQ-002: Alertas de HRV con recomendación de modulación autonómica y estimulación
+  vagal'
+- 'REQ-003: Alertas de Body Battery con pautas de carga parasimpática y pausas activas'
+- 'REQ-004: Alertas de ACWR > 1.3 con reducción de Gabbett (<1.3 seguro, >1.5 peligro)'
+- 'REQ-005: Detección de sobreesfuerzo agudo y descarga activa obligatoria'
+- 'REQ-006: Validación y recomendación afirmativa para estado VERDE'
+- 'REQ-007: Tarjeta de macrociclo en 4 bloques visuales delimitados'
+- 'REQ-008: Explicación pedagógica del concepto de macrociclo en Bloque A'
+- 'REQ-009: Detalle de momento/fase actual con techo de FC y duración máxima en Bloque
+  B'
+- 'REQ-010: Recomendación práctica contextualizada según fase y fatiga en Bloque C'
+- 'REQ-011: Fecha fin en formato es-CO, días restantes y lista de hitos en Bloque
+  D'
+- 'REQ-012: Retiro de tendencia histórica de 14d en /retos preservando el resto de
+  tarjetas'
+allowlist:
+- apps/web/lib/dashboard.ts
+- apps/web/lib/mesocycle.ts
+- apps/web/app/(dashboard)/retos/page.tsx
+- apps/web/tests/tendencia-macrociclo/recommendations.test.mjs
+- apps/web/tests/tendencia-macrociclo/macrocycle.test.mjs
+- deliverables/T-0032.md
+created_at: '2026-10-17T15:53:57Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
 edits: []
 ```
