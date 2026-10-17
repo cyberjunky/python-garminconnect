@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 36
+next_id: 39
 source: ies-cli
-last_updated: '2026-10-17T16:41:29Z'
+last_updated: '2026-10-17T17:19:20Z'
 ---
 
 # Task Ledger
@@ -2385,5 +2385,189 @@ metrics:
   git_before: cd5b006fc4f00e1d3536345801dfa4808e5531ec
   git_after: cd5b006fc4f00e1d3536345801dfa4808e5531ec
   result: success
+edits: []
+```
+
+## T-0036 — Especificar y planificar correcciones 0.5.1 (SPEC-004)
+
+```yaml
+id: T-0036
+title: Especificar y planificar correcciones 0.5.1 (SPEC-004)
+project_id: python-garminconnect
+origin: coordinator
+destination: planner
+status: done
+input: 'Redactar spec.md y plan.md para SPEC-004 cubriendo los 3 puntos de handoff.md:
+  corrección de desborde PUNTUACIÓN DE SUEÑO, posicionamiento de CoachChat en el primer
+  cuarto de Inicio, y sincronización reactiva de token/historial local en useCoachConversation
+  y componentes de chat.'
+expected_output: specs/004-patch-layout-chat/spec.md y plan.md completos y deliverable
+  deliverables/T-0036.md con propuesta cerrada para Gate G0.
+parent_task: null
+dependencies: []
+priority: high
+profile: fast-track
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- spec.md con requisitos EARS para desborde métricas, jerarquía de chat e historial
+- plan.md con descomposición en implementer y viewer, allowlists disjuntas y reserva
+  grupo R
+allowlist:
+- specs/004-patch-layout-chat/spec.md
+- specs/004-patch-layout-chat/plan.md
+- deliverables/T-0036.md
+created_at: '2026-10-17T17:07:59Z'
+started_at: '2026-10-17T17:16:36Z'
+completed_at: '2026-10-17T17:16:36Z'
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: deliverables/T-0036.md
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics:
+  git_before: 385b1edb1126078190b92399064b0478b7e983b8
+  git_after: 385b1edb1126078190b92399064b0478b7e983b8
+  result: success
+edits: []
+```
+
+## T-0037 — I-PATCH-051: Corrección de desborde métricas, jerarquía de chat, historial y SemVer 0.5.1
+
+```yaml
+id: T-0037
+title: 'I-PATCH-051: Corrección de desborde métricas, jerarquía de chat, historial
+  y SemVer 0.5.1'
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: Implementar las correcciones de desborde en PUNTUACIÓN DE SUEÑO, posicionamiento
+  compacto de CoachChat al inicio (~25vh) antes de TodayCard, reactividad de token
+  e historial local en chat, y bump SemVer 0.5.1 PATCH en Grupo R según SPEC-004 y
+  PLAN-004.
+expected_output: Suites de tests unitarios y de integración pasando al 100%, build
+  de Next.js limpio, 0 regresiones y deliverable deliverables/T-0037.md con evidencia
+  completa.
+parent_task: T-0036
+dependencies: []
+priority: high
+profile: fast-track
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- 'REQ-001: Ausencia de desborde horizontal (scrollWidth <= clientWidth) en .metrics-grid
+  y celdas métricas en viewports de 375px a 1600px'
+- 'REQ-002: Reglas CSS canónicas minmax(7.5rem, 1fr), min-width 0, overflow-wrap break-word,
+  line-height 1.25 y flex-shrink 0 en badge'
+- 'REQ-003: Posicionamiento de CoachChat como primer componente en Inicio tras page-header
+  y antes de TodayCard'
+- 'REQ-004: Dimensionamiento compacto de CoachChat a ~25vh con max-height 28vh, min-height
+  180px, compositor 2 filas y scroll en historial'
+- 'REQ-005: Sincronización reactiva de accessToken en CoachConversationViewModel y
+  recarga de conversaciones'
+- 'REQ-006: Captura resiliente de respuestas no exitosas en loadConversations() sin
+  crash ni estado bloqueado'
+- 'REQ-007: Merge deduplicado de conversaciones remotas y locales supervivientes de
+  localStorage en CoachChat y CoachChatScreen'
+- 'REQ-008: Respaldo inmediato en localStorage con upsertChat al enviar y recibir
+  mensajes en el chat'
+- 'REQ-009: Versionado sincronizado SemVer 0.5.1 PATCH en package.json, lock, README,
+  CHANGELOG y version.test.mjs'
+allowlist:
+- apps/web/app/globals.css
+- apps/web/components/TodayCard.tsx
+- apps/web/app/(dashboard)/page.tsx
+- apps/web/components/CoachChat.tsx
+- apps/web/components/CoachChatScreen.tsx
+- apps/web/hooks/useCoachConversation.ts
+- apps/web/lib/coachStorage.ts
+- apps/web/package.json
+- apps/web/package-lock.json
+- apps/web/README.md
+- apps/web/CHANGELOG.md
+- apps/web/lib/version.test.mjs
+- apps/web/tests/patch-layout-chat
+- apps/web/lib/patch-layout-chat.test.mjs
+- deliverables/T-0037.md
+created_at: '2026-10-17T17:19:10Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+edits: []
+```
+
+## T-0038 — V-VIEWER-051: Auditoría viewer integral independiente de SPEC-004 (SemVer 0.5.1)
+
+```yaml
+id: T-0038
+title: 'V-VIEWER-051: Auditoría viewer integral independiente de SPEC-004 (SemVer
+  0.5.1)'
+project_id: python-garminconnect
+origin: coordinator
+destination: viewer
+status: ready
+input: Realizar una auditoría independiente en modo solo lectura de la implementación
+  de T-0037 (commit en task/T-0037), ejecutando la suite de pruebas (npm test), build
+  de Next.js, verificación de Clean Architecture, geometría centrada, ausencia de
+  desbordamientos en PUNTUACIÓN DE SUEÑO, posición de CoachChat, reactividad del historial
+  y bump SemVer 0.5.1 PATCH, emitiendo veredicto canónico en deliverables/T-0038.md.
+expected_output: Informe de auditoría integral en deliverables/T-0038.md con envelope
+  SDLC completo, tabla de requisitos EARS vs evidencia, evaluación de constitución
+  y machine gate, y veredicto formal canónico.
+parent_task: T-0036
+dependencies:
+- T-0037
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- 'REQ-001..009: Auditoría integral independiente de los 9 requisitos EARS de SPEC-004'
+- 'TESTS: Ejecución y verificación del 100% de tests unitarios y de integración pasando
+  con 0 fallos'
+- 'BUILD: Compilación limpia Next.js 15 App Router sin errores'
+- 'GEOMETRY: Ausencia de desborde horizontal (scrollWidth <= clientWidth) en TodayCard
+  y contenedor centrado ADR-003'
+- 'SEMVER: Versión 0.5.1 PATCH sincronizada en package.json, lock, README, CHANGELOG
+  y version.test.mjs'
+- 'VEREDICTO: Emisión de veredicto canónico (APROBAR | CORREGIR | BLOQUEAR) en deliverables/T-0038.md'
+allowlist:
+- deliverables/T-0038.md
+created_at: '2026-10-17T17:19:20Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
 edits: []
 ```

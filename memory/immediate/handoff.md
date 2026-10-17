@@ -2,8 +2,8 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: immediate
-last_updated: '2026-10-17T13:14:00Z'
-source: instruccion humana en HITL - Tri-Coach (cola de 3 actualizaciones de producto + ratificacion de 8 reglas de Working Discipline y modelos)
+last_updated: '2026-10-17T17:03:00Z'
+source: instruccion humana en HITL - Tri-Coach (correcciones urgentes 0.5.1: desborde sueno, posicion chat 25% superior e historial de conversaciones)
 confidence: alta para configuracion y evidencia declaradas; runtime de modelos no verificado
 ---
 
@@ -112,3 +112,24 @@ Reglas ratificadas explicitamente por el humano en `HITL - Tri-Coach` para traba
 6. **Cumplimiento normativo**: cada agente y subagente debe cumplir estrictamente su rol siguiendo **SDLC**, **EARS**, **Clean Code**, **Clean Architecture** (`ADR-002`) y **HITL** por gate.
 7. **Multiagentes**: se usaran multiagentes cuando las tareas y la separacion de responsabilidades o paralelismo (con worktrees y allowlists disjuntos) lo requieran.
 8. **Working Discipline**: seguir siempre la disciplina descrita en `/Users/alarcondiegof/ies-projects/ies-framework/docs/WORKING_DISCIPLINE.md`.
+
+## Correcciones urgentes en cola (post-0.5.0 -> 0.5.1, 2026-10-17)
+
+Instruccion humana recibida en `HITL - Tri-Coach` con capturas adjuntas para ejecucion prioritaria (ASAP) por `Garmin - Coordinator`:
+
+1. **Corregir desborde visual en subcomponente «PUNTUACIÓN DE SUEÑO» (`apps/web/app/globals.css`, `apps/web/components/TodayCard.tsx`)**:
+   - *Causa raiz*: `.metrics-grid` usa `grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr))` y `.metric-cell` / `.metric-label` carecen de `min-width: 0` y `overflow-wrap: break-word`. La palabra indivisible en mayusculas `PUNTUACIÓN` (~76 px) mas el gap y el icono `✓` exceden el ancho de columna (~88-100 px), empujando el check verde `✓` fuera del borde derecho de la celda sobre la tarjeta contigua (`HRV`).
+   - *Solucion*: ampliar `minmax` de `.metrics-grid` (p. ej. `repeat(auto-fit, minmax(7.5rem, 1fr))`), agregar `min-width: 0; overflow: hidden;` en `.metric-cell`, `align-items: flex-start; gap: 0.35rem; min-width: 0;` en `.metric-label-row`, `min-width: 0; flex: 1 1 auto; overflow-wrap: break-word; line-height: 1.25;` en `.metric-label` y `flex-shrink: 0;` en `.metric-status-badge`.
+
+2. **Posicionar el componente de Chat al inicio de la pagina ocupando el primer cuarto (`apps/web/app/(dashboard)/page.tsx`, `apps/web/app/globals.css`, `apps/web/components/CoachChat.tsx`)**:
+   - *Cambio*: en `HomePage` (`apps/web/app/(dashboard)/page.tsx`), mover `<CoachChat />` arriba como primer bloque inmediatamente despues de `<header className="page-header">` y antes de `<TodayCard />` (revoca el orden anterior de T-0013 por instruccion humana explicita).
+   - *Dimensionamiento*: ajustar estilos de `.coach-chat` en Inicio para que ocupe de forma compacta y equilibrada el **primer cuarto de la pagina** (~22vh-25vh, con `min-height`/`max-height` acotados, textarea compacto de 2 filas e historial reciente con scroll interno limpio si supera el alto) dejando visible `<TodayCard />` inmediatamente debajo.
+
+3. **Restaurar y sincronizar la aparicion del historial de conversaciones (`apps/web/hooks/useCoachConversation.ts`, `apps/web/components/CoachChat.tsx`, `apps/web/components/CoachChatScreen.tsx`)**:
+   - *Causa raiz diagnosticada (3 factores combinados)*:
+     a) **Token congelado en `null` en `useCoachConversation.ts`**: `CoachConversationViewModel` se instancia una sola vez en `vmRef.current` durante el primer render cuando `accessToken` aun es `null` (`useState(null)` antes de que resuelva `authService.getSession()`) y guarda `private readonly accessToken: string | null` sin actualizarlo nunca cuando llega el token de sesion. Por ello, `loadConversations()` envia siempre peticiones sin `Authorization: Bearer ...` y recibe `401`.
+     b) **Fallo silencioso en `loadConversations()` (`useCoachConversation.ts:138-165`)**: cuando `/api/conversations` responde `401` (sin sesion Supabase Auth) o error (p. ej. si las tablas remotas `coach_conversations` aun no tienen filas o no hay sesion iniciada), `if (res.ok)` no tiene rama `else`, dejando `conversations = []` sin aviso ni fallback.
+     c) **Ignorado del historial local superviviente (`localStorage["fitness-coach-chats"]`) en `CoachChat.tsx`**: al migrar `CoachChat.tsx` en `SPEC-002`, se elimino la lectura de `getSurvivingLegacyChats()` / `loadChats()` en la vista de Inicio. Como resultado, las conversaciones guardadas localmente en el navegador no se muestran en «Últimas conversaciones» ni pueden abrirse en `/chat?conversation=<id>` si aun no han sido importadas a una sesion autenticada de Supabase.
+   - *Solucion*:
+     a) En `useCoachConversation.ts`: permitir actualizar dinamicamente `accessToken` en `CoachConversationViewModel` (`vm.setAccessToken(options.accessToken ?? null)`) cada vez que cambie la prop y recargar conversaciones.
+     b) En `CoachChat.tsx` y `CoachChatScreen.tsx`: hacer merge/fallback con `getSurvivingLegacyChats()` de `localStorage` para que las conversaciones locales existentes en el navegador aparezcan siempre en «Últimas conversaciones» (deduplicadas frente a las remotas) y puedan abrirse y continuarse en `/chat?conversation=<id>` incluso antes de autenticar/importar, ademas de persistir localmente en `localStorage` como respaldo inmediato cuando una conversacion se crea o actualiza y mostrar un enlace discreto a `/login` cuando la sincronizacion cloud requiera sesion.

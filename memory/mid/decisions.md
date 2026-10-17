@@ -2,12 +2,21 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: mid
-last_updated: '2026-10-17T12:16:50Z'
+last_updated: '2026-10-17T17:18:30Z'
 source: coordinator
 confidence: alta
 ---
 
 # Decisions
+
+## DEC-011: Aprobacion humana G0 de SPEC-004 y PLAN-004
+
+- **Fecha**: 2026-10-17. **Task**: T-0036.
+- **Autoridad**: el humano respondio «Ok, Adelante, Parobado» a la propuesta de aprobacion de Gate G0 presentada por el Coordinator tras la entrega del planificador T-0036. No se transforma HITL en autonomia; cada gate conserva aprobacion propia.
+- **Decision**: aceptar SPEC-004/PLAN-004 integralmente para la version 0.5.1 PATCH: (1) correccion de desborde de metricas en TodayCard con minmax 7.5rem, min-width 0, overflow-wrap break-word, line-height 1.25, badge flex-shrink 0 y verificacion geometrica scrollWidth <= clientWidth; (2) CoachChat en primer cuarto superior (~25vh) de Inicio inmediatamente antes de TodayCard con compositor compacto de 2 filas y scroll interno en historial; (3) sincronizacion reactiva de accessToken en useCoachConversation (setAccessToken), captura resiliente de errores HTTP, merge deduplicado con conversaciones locales supervivientes de localStorage en CoachChat y CoachChatScreen con fallback local y respaldo inmediato con upsertChat; (4) Clean Architecture (ADR-002, P22), geometria centrada responsive (ADR-003) y paquete SemVer 0.5.1 PATCH en Grupo R. Aprobar la spec mediante `IES_ACTOR=coordinator ies spec approve 004-patch-layout-chat --decision-ref memory/mid/decisions.md#dec-011-aprobacion-humana-g0-de-spec-004-y-plan-004`.
+- **Descomposicion**: autorizar las tasks hijas T-0037 (I-PATCH-051, implementer en worktree aislado) y T-0038 (V-VIEWER-051, viewer en solo lectura).
+- **Limites**: G0 no autoriza codigo de aplicacion directo por coordinator ni merge o deploy automatico. Cada implementer opera en su worktree aislado y su allowlist disjunta. Despliegue a produccion queda reservado a ejecucion humana (PLAN-004 seccion 8).
+- **Evidencia**: `deliverables/T-0036.md`, `specs/004-patch-layout-chat/spec.md` (9 requisitos EARS REQ-001..009, pruebas P01..P09) y `specs/004-patch-layout-chat/plan.md`.
 
 ## DEC-010: Aprobacion humana G0 de SPEC-003 y PLAN-003
 
