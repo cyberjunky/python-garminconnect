@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 31
+next_id: 32
 source: ies-cli
-last_updated: '2026-10-17T15:31:15Z'
+last_updated: '2026-10-17T15:48:04Z'
 ---
 
 # Task Ledger
@@ -2044,6 +2044,87 @@ approval:
 metrics:
   git_before: 8f70c6d1991c39f7c3425028f354cdbd4032bac7
   git_after: 8f70c6d1991c39f7c3425028f354cdbd4032bac7
+  result: success
+edits: []
+```
+
+## T-0031 — Especificar y planificar tendencia mensual, macrociclo y recomendaciones (SPEC-003)
+
+```yaml
+id: T-0031
+title: Especificar y planificar tendencia mensual, macrociclo y recomendaciones (SPEC-003)
+project_id: python-garminconnect
+origin: coordinator
+destination: planner
+status: done
+input: 'Especificar formalmente en specs/003-tendencia-macrociclo/spec.md y planificar
+  en specs/003-tendencia-macrociclo/plan.md la implementación de las tres funcionalidades
+  de producto de la cola de handoff.md para la versión 0.5.0 MINOR: 1. ''Qué atender''
+  (apps/web/app/(dashboard)/retos/page.tsx y apps/web/lib/dashboard.ts): incorporar
+  para cada alerta/indicador una recomendación accionable en una frase corta basada
+  en ciencia deportiva (modulación parasimpática/HRV, higiene y deuda de sueño, recarga
+  autonómica/Body Battery, ratio de carga aguda:crónica ACWR < 1.3 para prevención
+  de lesiones y descarga ante sobreesfuerzo/overreaching). 2. Tarjeta ''Macrociclo''
+  (apps/web/app/(dashboard)/retos/page.tsx y lógica de dominio en apps/web/lib/mesocycle.ts):
+  4 bloques claros: a) breve descripción de qué es un macrociclo; b) momento/fase
+  actual (código, nombre, foco, deporte, techo FC/duración); c) cómo mejorarla (recomendación
+  práctica alineada con la fase activa y el estado actual); d) cuándo termina (fecha
+  de cierre de fase en formato es-CO, días restantes y referencia al cierre del macrociclo).
+  3. Nueva ruta ''/tendencia'' y navegación (DashboardNav.tsx, retos/page.tsx, apps/web/app/(dashboard)/tendencia/page.tsx
+  y apps/web/lib/tendencia.ts): retirar tendencia 14d de /retos, agregar ítem ''Tendencia''
+  (/tendencia) en el menú lateral, mostrar en una sola hoja avances del mes (últimos
+  30 días / mes en curso): barra y conteo de distribución de zonas (VERDE, AMARILLO,
+  ROJO), resumen mensual de métricas clave (HRV, sueño, Body Battery, estrés, ACWR/VO2max)
+  y tabla mensual con fechas es-CO y tabular-nums. 4. Respetar Clean Architecture
+  (lógica pura en lib/, componentes en app/(dashboard) y components/), geometría centrada
+  responsive (ADR-003, max-width 1120px) y versionado SemVer 0.5.0.'
+expected_output: deliverables/T-0031.md con propuesta de G0, specs/003-tendencia-macrociclo/spec.md
+  con requisitos EARS completos y specs/003-tendencia-macrociclo/plan.md con alternativas,
+  matriz de pruebas y descomposición en tasks implementer/viewer.
+parent_task: null
+dependencies: []
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/standards.md
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- long/adr/ADR-003-centered-container.md
+- long/adr/ADR-006-tool-context-models.md
+- mid/decisions.md
+- immediate/handoff.md
+acceptance_criteria:
+- spec.md con requisitos EARS completos, no-objetivos claros y criterios Pxx para
+  las 3 funcionalidades de producto
+- plan.md con análisis de alternativas, Clean Architecture P22, matriz de pruebas
+  y descomposición en tasks con allowlists disjuntas
+- Diseño de recomendaciones accionables de ciencia deportiva en Qué atender fundamentadas
+  en HRV, sueño, Body Battery y ACWR
+- 'Diseño de tarjeta Macrociclo en 4 bloques: descripción, momento/fase actual, cómo
+  mejorarla y cuándo termina (es-CO)'
+- Diseño de nueva ruta /tendencia en menú lateral con zonas VERDE/AMARILLO/ROJO, resumen
+  mensual y tabla tabular-nums centrada (ADR-003)
+- deliverables/T-0031.md con propuesta de G0 y envelope SDLC reglamentario
+allowlist: []
+created_at: '2026-10-17T15:41:10Z'
+started_at: '2026-10-17T15:48:04Z'
+completed_at: '2026-10-17T15:48:04Z'
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: deliverables/T-0031.md
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics:
+  git_before: 2768faeb336bc2526f00be1bbad6d85fccb6940b
+  git_after: 2768faeb336bc2526f00be1bbad6d85fccb6940b
   result: success
 edits: []
 ```

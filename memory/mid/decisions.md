@@ -9,6 +9,15 @@ confidence: alta
 
 # Decisions
 
+## DEC-010: Aprobacion humana G0 de SPEC-003 y PLAN-003
+
+- **Fecha**: 2026-10-17. **Task**: T-0031.
+- **Autoridad**: el humano respondio «adelante» a la propuesta de aprobacion de Gate G0 presentada por el Coordinator tras la entrega del planificador T-0031. No se transforma HITL en autonomia; cada gate conserva aprobacion propia.
+- **Decision**: aceptar SPEC-003/PLAN-003 integralmente: (1) motor de recomendaciones accionables de ciencia deportiva en «Qué atender» basado en fisiologia (HRV, sueno, Body Battery, ACWR < 1.3, sobreesfuerzo); (2) tarjeta «Macrociclo» en 4 bloques (definicion, momento/fase actual con techo FC/duracion, como mejorarla y cierre es-CO); (3) nueva ruta `/tendencia` en menu lateral DashboardNav con barra de zonas VERDE/AMARILLO/ROJO, resumen mensual de metricas clave y tabla tabular-nums centrada; (4) Clean Architecture (ADR-002, P22), contenedor centrado responsive max 1120px (ADR-003) y paquete SemVer 0.5.0 MINOR. Aprobar la spec mediante `IES_ACTOR=coordinator ies spec approve 003-tendencia-macrociclo --decision-ref memory/mid/decisions.md#dec-010-aprobacion-humana-g0-de-spec-003-y-plan-003`.
+- **Descomposicion**: autorizar las tasks hijas de implementacion y verificacion: T-0032 (I-DOMAIN-RETOS), T-0033 (I-TENDENCIA-NAV), T-0034 (I-RELEASE-050 con reserva serial de grupo R) y T-0035 (V-INTEGRAL-050, viewer en solo lectura).
+- **Limites**: G0 no autoriza codigo de aplicacion directo por coordinator ni merge o deploy automatico. Cada implementer opera en su worktree aislado y su allowlist disjunta. Despliegue a produccion queda reservado a ejecucion humana (PLAN-003 seccion 8).
+- **Evidencia**: `deliverables/T-0031.md`, `specs/003-tendencia-macrociclo/spec.md` (20 requisitos EARS REQ-001..020, pruebas P01..P20) y `specs/003-tendencia-macrociclo/plan.md`.
+
 ## DEC-009: Aprobacion humana G0 de SPEC-002 y PLAN-002
 
 - **Fecha**: 2026-10-17. **Task**: T-0024, propuesta T-0022.
