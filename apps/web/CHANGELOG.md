@@ -14,6 +14,32 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [0.4.0] - 2026-10-17
+
+Versión final integral de `SPEC-002` (`PLAN-002`, `DEC-009`, `ADR-002`, `ADR-003`, `ADR-004`, `ADR-005`), consolidando las tres etapas (`I-UI`, `I-SERVER`, `I-CLIENT`):
+- Centrado responsive del dashboard a un ancho máximo de 1120px en Safari y móvil.
+- Historial sincronizado privado y persistente en Supabase con Row Level Security y control de concurrencia e idempotencia.
+- Flujo de autenticación Supabase Auth mediante email OTP (`apps/web/app/login/page.tsx`).
+- ViewModel desacoplado (`apps/web/hooks/useCoachConversation.ts`) según Clean Architecture (MVVM).
+- Estados de guardado visibles («Guardado»), manejo de errores sin pérdida de borradores y reintento idempotente.
+- Paginación continua del historial sin límite de cuatro entradas ni descarte de mensajes.
+- Importación local opt-in con confirmación explícita de cuenta destino y comparación de digests, conservando el `localStorage` original 100% íntegro e inalterado byte a byte.
+- Retiro definitivo del selector de modelos y fijación estática de la etiqueta informativa «GPT-6 Luna · High».
+
+### Añadido
+- **Pantalla de login y sesión privada (`apps/web/app/login/page.tsx`)**: Formulario con solicitud y verificación de código OTP por email, integración con `ClientAuthService` (`apps/web/lib/infra/auth/clientAuthService.ts`), soporte de redirecciones y limpieza de sesión segura (`REQ-004`, `REQ-013`, `P04`, `P13`).
+- **ViewModel de chat y desacoplamiento de componentes (`apps/web/hooks/useCoachConversation.ts`)**: Implementación del ViewModel interactivo para `CoachChat` y `CoachChatScreen` aislando llamadas de red, estado de guardado, actualización optimista y resolución de conflictos 409 (`REQ-022`, `P22`).
+- **Estados de sincronización y reintento en chat**: Notificación visual de guardado confirmado en servidor, preservación de borradores ante fallos de red o 5xx, y reintento con reutilización de `operationId` para evitar duplicados (`REQ-006`, `REQ-008`, `REQ-009`, `REQ-010`, `P06`, `P08`, `P09`, `P10`).
+- **Paginación de conversaciones**: Carga por páginas (`limit=20`, `offset`) sin truncar ni descartar conversaciones existentes en el cliente (`REQ-007`, `P07`).
+- **Importación local opt-in segura (`apps/web/lib/coachStorage.ts`)**: Funciones `getSurvivingLegacyChats`, `computeChatDigest` y `executeOptInImport` que exigen confirmación de cuenta, detectan snapshots idénticos mediante digest SHA-256, gestionan errores parciales y garantizan que el almacenamiento `localStorage` original permanezca estrictamente inalterado byte a byte (`REQ-011`, `REQ-012`, `P11`, `P12`).
+- **Etiqueta estática de modelo exclusivo (`CoachModelSelect.tsx`)**: Sustitución definitiva del selector interactivo `<select>` por una insignia estática que identifica «GPT-6 Luna · High» (`REQ-017`, `P17`).
+- **Estilos globales responsivos (`apps/web/app/globals.css`)**: Estilos para la vista de login, modal de importación opt-in, badges de guardado y botones de reintento, preservando el centrado max 1120px en dashboard y 880px en compositor.
+
+### Modificado
+- **Componentes de UI de chat (`CoachChat.tsx`, `CoachChatScreen.tsx`)**: Migración de llamadas directas y almacenamiento local hacia `useCoachConversation`, integrando opciones de importación, historial sincronizado y cierre de sesión.
+
+---
+
 ## [0.4.0-rc.2] - 2026-10-17
 
 Candidato de release de la etapa `I-SERVER` de `SPEC-002` (`PLAN-002`, `ADR-002`, `ADR-004`, `ADR-005`), enfocado en la persistencia privada en base de datos bajo Supabase Auth con RLS, endpoints de historial y chat con control de concurrencia e idempotencia, forzado exclusivo de `gpt-6-luna` con `reasoning_effort: high` sin tools, aislamiento de contexto de salud MVP por vínculo owner y ventana de 12 mensajes.

@@ -1,36 +1,17 @@
 "use client";
 
-import { savePreferredModel } from "@/lib/openaiModels";
-
 type Props = {
-  models: string[];
-  value: string;
-  onChange: (model: string) => void;
+  models?: string[];
+  value?: string;
+  onChange?: (model: string) => void;
   disabled?: boolean;
 };
 
-export function CoachModelSelect({ models, value, onChange, disabled }: Props) {
-  if (models.length === 0) return null;
-
+export function CoachModelSelect(_props: Props = {}) {
   return (
-    <label className="coach-model-select">
-      <span className="coach-model-icon" aria-hidden>✦</span>
-      <select
-        value={value}
-        disabled={disabled}
-        onChange={(event) => {
-          const next = event.target.value;
-          savePreferredModel(next);
-          onChange(next);
-        }}
-        aria-label="Modelo de OpenAI"
-      >
-        {models.map((model) => (
-          <option key={model} value={model}>
-            {model}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="coach-model-select coach-model-static" aria-label="Modelo exclusivo">
+      <span className="coach-model-icon" aria-hidden="true">✦</span>
+      <span className="coach-model-badge">GPT-6 Luna · High</span>
+    </div>
   );
 }

@@ -4,40 +4,39 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CoachModelSelect } from "@/components/CoachModelSelect";
-import {
-  type StoredChat,
-  chatHref,
-  loadChats,
-  setPendingFirstMessage,
-} from "@/lib/coachStorage";
+import { chatHref, setPendingFirstMessage } from "@/lib/coachStorage";
 import { formatDateEsCO } from "@/lib/lastUpdated";
-import { loadPreferredModel } from "@/lib/openaiModels";
+import { useCoachConversation } from "@/hooks/useCoachConversation";
+import { ClientAuthService } from "@/lib/infra/auth/clientAuthService";
 
 export function CoachChat() {
   const router = useRouter();
   const [draft, setDraft] = useState("");
-  const [chats, setChats] = useState<StoredChat[]>([]);
-  const [apiOk, setApiOk] = useState<boolean | null>(null);
-  const [models, setModels] = useState<string[]>(["gpt-4o-mini"]);
-  const [model, setModel] = useState("gpt-4o-mini");
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
+  const authService = new ClientAuthService();
 
   useEffect(() => {
-    setChats(loadChats());
-    void fetch("/api/chat")
-      .then((res) => res.json())
-      .then((body: { configured?: boolean; models?: string[]; defaultModel?: string }) => {
-        setApiOk(Boolean(body.configured));
-        const defaultModel = body.defaultModel || "gpt-4o-mini";
-        setModels(body.models?.length ? body.models : [defaultModel]);
-        const list = body.models?.length ? body.models : [defaultModel];
-        setModel(loadPreferredModel(defaultModel, list));
-      })
-      .catch(() => setApiOk(false));
+    void authService.getSession().then((session) => {
+      setAccessToken(session?.access_token ?? null);
+    });
   }, []);
 
-  function openChat(id: string, firstMessage?: string) {
-    if (firstMessage) setPendingFirstMessage(id, firstMessage);
-    router.push(chatHref(id));
+  const { conversations, loadConversations, createConversation, isLoading, error } =
+    useCoachConversation({
+      accessToken,
+    });
+
+  useEffect(() => {
+    void loadConversations({ limit: 10, offset: 0 });
+  }, [loadConversations, accessToken]);
+
+  async function openNewChat(firstMessage?: string) {
+    const newId = crypto.randomUUID();
+    if (firstMessage) {
+      setPendingFirstMessage(newId, firstMessage);
+    }
+    router.push(chatHref(newId));
   }
 
   return (
@@ -49,7 +48,7 @@ export function CoachChat() {
           const text = draft.trim();
           if (!text) return;
           setDraft("");
-          openChat(crypto.randomUUID(), text);
+          void openNewChat(text);
         }}
       >
         <label htmlFor="coach-draft-input" className="sr-only">
@@ -64,11 +63,11 @@ export function CoachChat() {
           rows={3}
         />
         <div className="coach-composer-bar">
-          <CoachModelSelect models={models} value={model} onChange={setModel} />
+          <CoachModelSelect />
           <button
             type="button"
             className="coach-new"
-            onClick={() => openChat(crypto.randomUUID())}
+            onClick={() => void openNewChat()}
           >
             Nueva conversación
           </button>
@@ -78,22 +77,24 @@ export function CoachChat() {
         </div>
       </form>
 
-      {apiOk === false ? (
+      {error ? (
         <p className="dash-refresh-status error mt-0" role="alert" style={{ marginTop: "0.5rem" }}>
-          El servicio del entrenador no está disponible en este momento. Intenta de nuevo más tarde.
+          {error}
         </p>
       ) : null}
 
       <h2 className="coach-history-title">Últimas conversaciones</h2>
-      {chats.length === 0 ? (
-        <p className="muted">Aún no hay conversaciones en este navegador. Al enviar, se abre la pantalla de chat.</p>
+      {isLoading && conversations.length === 0 ? (
+        <p className="muted">Cargando historial…</p>
+      ) : conversations.length === 0 ? (
+        <p className="muted">Aún no hay conversaciones registradas. Al enviar, se abre la pantalla de chat.</p>
       ) : (
         <ul className="coach-history">
-          {chats.map((chat) => (
+          {conversations.map((chat) => (
             <li key={chat.id}>
               <Link href={chatHref(chat.id)} className="coach-history-item">
                 <span>{chat.title}</span>
-                <span className="muted">{formatDateEsCO(chat.updatedAt)}</span>
+                <span className="muted">{chat.updatedAt ? formatDateEsCO(chat.updatedAt) : ""}</span>
               </Link>
             </li>
           ))}

@@ -527,13 +527,10 @@ a.coach-history-item {
   font-size: 0.75rem;
 }
 
-.coach-model-select select {
-  border: 0;
-  background: transparent;
+.coach-model-badge {
+  font-weight: 500;
   color: var(--text);
-  font: inherit;
-  cursor: pointer;
-  max-width: min(14rem, 42vw);
+  font-size: 0.8rem;
 }
 
 @media (max-width: 800px) {
@@ -1093,4 +1090,297 @@ a.coach-history-item {
 
 .gap-warn {
   color: #fca5a5;
+}
+
+/* --- Login View --- */
+.login-main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--bg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+.login-header {
+  margin-bottom: 1.5rem;
+}
+
+.login-back {
+  display: inline-block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.login-back:hover {
+  color: var(--text);
+}
+
+.login-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.login-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.login-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.login-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  font-size: 1rem;
+}
+
+.login-input:focus {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 1px;
+}
+
+.login-input-otp {
+  font-size: 1.5rem;
+  letter-spacing: 0.25em;
+  text-align: center;
+}
+
+.login-submit {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.login-resend {
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.login-alert {
+  margin-bottom: 1rem;
+}
+
+/* --- Chat Status & Badges --- */
+.user-email-badge {
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-login-link {
+  font-size: 0.85rem;
+  color: var(--carrera);
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.chat-login-link:hover {
+  text-decoration: underline;
+}
+
+.chat-logout-btn {
+  color: var(--muted);
+}
+
+.chat-logout-btn:hover {
+  color: var(--rojo);
+}
+
+.chat-import-btn {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: var(--verde);
+  color: #86efac;
+}
+
+.chat-status-bar {
+  padding: 0.35rem 1.25rem;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.chat-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+.chat-status-badge.saved {
+  color: var(--verde);
+}
+
+.chat-status-badge.saving {
+  color: var(--muted);
+}
+
+.chat-status-badge.conflict {
+  background: rgba(234, 179, 8, 0.1);
+  color: var(--amarillo);
+  border: 1px solid var(--amarillo);
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+}
+
+.chat-message-error-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed rgba(239, 68, 68, 0.4);
+  font-size: 0.75rem;
+}
+
+.error-text {
+  color: #fca5a5;
+}
+
+.chat-retry-btn,
+.chat-retry-inline-btn {
+  background: transparent;
+  color: var(--border-focus);
+  border: 1px solid var(--border-focus);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.chat-retry-btn:hover,
+.chat-retry-inline-btn:hover {
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.chat-history-panel-wrap {
+  background: #0f172a;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 0.5rem;
+}
+
+.chat-load-more {
+  display: block;
+  width: calc(100% - 2rem);
+  margin: 0.5rem auto 0;
+  padding: 0.45rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: center;
+}
+
+.chat-load-more:hover:not(:disabled) {
+  background: #273549;
+}
+
+/* --- Opt-in Import Modal --- */
+.optin-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 1rem;
+}
+
+.optin-modal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  max-width: 480px;
+  width: 100%;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+.optin-modal-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.optin-modal-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.optin-modal-target {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.optin-modal-warning {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #86efac;
+}
+
+.optin-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
 }

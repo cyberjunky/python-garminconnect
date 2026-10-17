@@ -1,0 +1,3 @@
+OK: 23 cambio(s) dentro de la allowlist (checkpoint 8f70c6d199 -> HEAD 8f70c6d199)
+allowlist: apps/web/package.json, apps/web/package-lock.json, apps/web/lib/version.test.mjs, apps/web/README.md, apps/web/CHANGELOG.md, deliverables/T-0029.md, deliverables/evidence/T-0029, apps/web/components/CoachChat.tsx, apps/web/components/CoachChatScreen.tsx, apps/web/components/CoachModelSelect.tsx, apps/web/hooks, apps/web/app/login, apps/web/app/(chat), apps/web/app/globals.css, apps/web/lib/coachStorage.ts, apps/web/lib/infra/auth, apps/web/lib/infra/chat, apps/web/tests/chat-client, apps/web/lib/chat-client.test.mjs
+excluidos: PROMPT.md

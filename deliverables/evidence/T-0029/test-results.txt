@@ -1,0 +1,94 @@
+
+> tri-coach-web@0.4.0 test
+> node --test lib/*.test.mjs
+
+(node:87568) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+✔ REQ-022 / P22: Hook useCoachConversation existe y reside en apps/web/hooks/ (0.764709ms)
+✔ REQ-022 / P22: CoachChat y CoachChatScreen usan useCoachConversation y no llaman fetch a /api/chat o /api/conversations directamente (1.330166ms)
+✔ REQ-022 / P22: apps/web/lib/chat/domain se mantiene puro sin dependencias de UI o frameworks (2.535458ms)
+✔ REQ-006 & REQ-008 / P06 & P08: Envío exitoso guarda mensaje, muestra estado 'Guardado' y agrega respuesta del coach (12.356875ms)
+✔ REQ-008 / P08: Fallo de red o 500 no marca 'Guardado', preserva mensaje y permite reintento (6.933334ms)
+✔ REQ-009 / P09: Reintento utiliza el mismo operationId (idempotencia) (8.554667ms)
+✔ REQ-010 / P10: Conflicto 409 refresca historial, actualiza revisión y conserva borrador/mensaje (0.479667ms)
+✔ REQ-007 / P07: Paginación carga siguientes páginas sin descartar conversaciones existentes ni truncar a 4 (0.310166ms)
+✔ REQ-011 / P11: getSurvivingLegacyChats lee todas las conversaciones sin recortar a 4 (0.130709ms)
+✔ REQ-011 / P11: computeChatDigest genera hash determinista reproducible según contenido (0.298125ms)
+✔ REQ-011 / P11: executeOptInImport exige confirmación explícita de cuenta y preserva localStorage byte a byte (0.518292ms)
+✔ REQ-011 / P11: Mismo digest no duplica (idempotencia de snapshot) (0.07875ms)
+✔ REQ-012 / P12: Interrupción a mitad de lote emite informe por entrada y permite reanudar (0.233416ms)
+✔ REQ-012 / P12: JSON inválido o corrupto en localStorage no lanza excepción y preserva fuente (0.253792ms)
+✔ REQ-017 / P17: CoachModelSelect.tsx es puramente estático e informativo sin elementos <select> (0.129417ms)
+✔ REQ-017 / P17: Ambas vistas CoachChat y CoachChatScreen carecen de selectores de modelos (0.098ms)
+✔ REQ-004 & REQ-013 / P04 & P13: apps/web/app/login/page.tsx implementa formulario OTP y estado de autenticación (0.081459ms)
+✔ REQ-013 / P13: Cambio de sesión o logout limpia inmediatamente historial y borradores de la cuenta previa (0.033708ms)
+✔ REQ-004 / P04: ClientAuthService gestiona OTP con Supabase Auth sin exponer secretos ni service role (0.138417ms)
+✔ REQ-001 & REQ-002 / P01 & P02: globals.css preserva centrado max-width 1120px en dashboard y 880px en compositor de chat (0.242125ms)
+✔ REQ-003 / P03: Componentes de chat conservan burbujas y roles accesibles (0.061916ms)
+(node:87568) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0029/apps/web/hooks/useCoachConversation.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0029/apps/web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[COACH_AUDIT] time=2026-10-17T14:59:53.865Z result=unauthorized status=401 duration=2ms code=UNAUTHORIZED
+[COACH_AUDIT] time=2026-10-17T14:59:53.866Z result=unauthorized status=401 duration=0ms code=UNAUTHORIZED
+[COACH_AUDIT] time=2026-10-17T14:59:53.872Z result=unauthorized status=401 duration=0ms code=UNAUTHORIZED
+(node:87569) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[COACH_AUDIT] time=2026-10-17T14:59:53.876Z result=unauthorized status=401 duration=4ms code=UNAUTHORIZED
+✔ REQ-022 / P22: Dominio en lib/chat/domain es TypeScript puro sin dependencias externas (1.495458ms)
+✔ REQ-022 / P22: Aplicacion en lib/chat/application depende solo del dominio y puertos, no de adaptadores (0.570167ms)
+✔ REQ-022 / P22: lib/condition.ts conserva calculos y prompt puros sin importar Supabase (0.262667ms)
+✔ REQ-022 / P22: Adaptadores de infraestructura en lib/infra implementan puertos y no son importados por dominio (0.191792ms)
+✔ REQ-006 / P06: Mensaje nuevo maximo 4000 caracteres, rechaza excedente sin truncar (50.40975ms)
+✔ REQ-018 / P18: selectContextWindow extrae los ultimos 12 mensajes sin alterar la coleccion completa (1.612291ms)
+✔ REQ-009 / REQ-010 / P09 / P10: Reglas de estado de operacion y lease de concurrencia (1.007625ms)
+✔ REQ-004 & REQ-005 / P04 & P05: Usuario A no accede a conversaciones de usuario B (2.9015ms)
+✔ REQ-014 / P14: Usuario sin vinculo a salud recibe 403 y no llama al modelo ni lee salud (0.296ms)
+✔ REQ-009 / P09: Operacion repetida con mismo operationId devuelve resultado guardado sin duplicar inferencia (0.34ms)
+✔ REQ-010 / P10: Escritura sobre revision desactualizada genera conflicto 409 (0.20625ms)
+✔ REQ-018 / P18: Envio al coach selecciona maximo ultimos 12 mensajes preservando historial en DB (0.1955ms)
+✔ REQ-016 / P16: Fallo en proveedor rechaza sin sustituir modelo y deja mensaje usuario (0.18925ms)
+✔ REQ-015 / P15: OpenAiCoachProvider fuerza exclusivamente gpt-6-luna con reasoning_effort high sin tools (1.434959ms)
+✔ REQ-016 / P16: OpenAiCoachProvider ante error HTTP lanza error tipificado sin fallback (0.375209ms)
+✔ REQ-019 / P19: Logging tecnico registra solo metadatos opacos sin salud, emails, tokens ni texto (0.759334ms)
+✔ API /api/conversations rechaza 401 sin sesion y responde no-store (29.728083ms)
+✔ API /api/chat valida payload, auth y cache no-store (10.044458ms)
+✔ Migracion 20261017_coach_history.sql contiene las 5 tablas, RLS, checks y revoke de anon (0.447833ms)
+(node:87569) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0029/apps/web/lib/chat/domain/validation.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0029/apps/web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ REQ-001 / P01: globals.css centra .app-main > main con max-width 1120px y paddings 28px (>800px) / 16px (<=800px) (1.04875ms)
+✔ REQ-001 / P01: evaluador geometrico pasa las 14 celdas de la matriz S con la regla nueva y detecta el sesgo de 880px/margin:0 (0.359834ms)
+✔ REQ-002 / P02 & REQ-003 / P03: preserva scroll interno de graficas y layout independiente del chat (0.227125ms)
+✔ REQ-022 / P22: verificacion de direccion de dependencias (Clean Architecture) en archivos tocados y dominio (5.982ms)
+✔ REQ-001..003 / P01..P03: evidencia de las 14 celdas de la matriz S y navegacion P03 en Safari real (0.377167ms)
+(node:87571) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0029/apps/web/lib/lastActivity.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0029/apps/web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ formatActivityWhen formats local time without 5-hour offset (9.317417ms)
+✔ todayBogotaIso calculates date in America/Bogota timezone (0.335583ms)
+✔ BB change sign formatting logic prevents +-12 (0.053625ms)
+(node:87572) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0029/apps/web/lib/lastUpdated.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0029/apps/web/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ formatDateEsCO formats dates with Spanish locale (9.083083ms)
+✔ formatLastUpdatedLabel produces friendly Spanish text (0.59575ms)
+✔ sportLabel translates raw English sports to Spanish (0.104917ms)
+✔ formatGarminStatus translates raw Garmin training status to Spanish (0.054584ms)
+✔ globals.css mobile layout enforces minmax(0, 1fr) and min-width: 0 (0.815583ms)
+✔ chat API route returns friendly Spanish copy and no technical leaks (0.173875ms)
+✔ apps/web/package.json y package-lock.json tienen version 0.4.0 (0.931084ms)
+✔ apps/web/CHANGELOG.md cubre 0.1.0, 0.2.0, 0.3.0, 0.4.0-rc.1, 0.4.0-rc.2 y 0.4.0 con alcance integral del stack (0.271708ms)
+✔ apps/web/README.md contiene seccion 'Version y cambios' con version 0.4.0 y enlace a CHANGELOG.md (0.138041ms)
+✔ La version del dashboard en package.json genera 'v0.4.0' (0.103709ms)
+ℹ tests 58
+ℹ suites 0
+ℹ pass 58
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 214.196042

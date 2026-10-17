@@ -1,0 +1,39 @@
+
+> tri-coach-web@0.4.0 build
+> next build
+
+   ▲ Next.js 15.5.25
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 704ms
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+┌ ƒ /                                    1.16 kB         176 kB
+├ ○ /_not-found                            999 B         103 kB
+├ ○ /70-3-cartagena                        146 B         103 kB
+├ ƒ /api/chat                              146 B         103 kB
+├ ƒ /api/conversations                     146 B         103 kB
+├ ƒ /api/conversations/[id]/messages       146 B         103 kB
+├ ƒ /api/refresh                           146 B         103 kB
+├ ƒ /chat                                2.99 kB         178 kB
+├ ○ /login                               1.97 kB         172 kB
+├ ƒ /mesociclos                            146 B         103 kB
+└ ƒ /retos                                 146 B         103 kB
++ First Load JS shared by all             102 kB
+  ├ chunks/741-9f25fd377a33f4bd.js       46.3 kB
+  ├ chunks/ab97f641-4a53b87e50522f04.js  54.2 kB
+  └ other shared chunks (total)          1.92 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

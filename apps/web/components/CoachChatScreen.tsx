@@ -5,54 +5,86 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CoachModelSelect } from "@/components/CoachModelSelect";
 import {
-  type ChatMessage,
-  type StoredChat,
   chatHref,
-  getChat,
-  loadChats,
+  getSurvivingLegacyChats,
+  executeOptInImport,
   takePendingFirstMessage,
-  upsertChat,
+  type StoredChat,
 } from "@/lib/coachStorage";
 import { formatDateEsCO } from "@/lib/lastUpdated";
-import { loadPreferredModel } from "@/lib/openaiModels";
-
-type ApiStatus = {
-  configured: boolean;
-  models: string[];
-  defaultModel: string;
-};
-
-async function fetchReply(
-  messages: ChatMessage[],
-  model: string
-): Promise<{ reply: string } | { error: string }> {
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages, model }),
-  });
-  const body = (await res.json()) as { ok?: boolean; reply?: string; error?: string };
-  if (!res.ok || !body.ok || !body.reply) {
-    return { error: body.error || "No se pudo consultar al coach" };
-  }
-  return { reply: body.reply };
-}
+import { useCoachConversation } from "@/hooks/useCoachConversation";
+import { ClientAuthService } from "@/lib/infra/auth/clientAuthService";
 
 export function CoachChatScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const conversationId = searchParams.get("conversation");
 
-  const [draft, setDraft] = useState("");
-  const [chat, setChat] = useState<StoredChat | null>(null);
-  const [history, setHistory] = useState<StoredChat[]>([]);
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [apiStatus, setApiStatus] = useState<ApiStatus | null>(null);
-  const [model, setModel] = useState("gpt-4o-mini");
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+
+  // Opt-in import state
+  const [legacyChats, setLegacyChats] = useState<StoredChat[]>([]);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importStatus, setImportStatus] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+
   const threadEndRef = useRef<HTMLDivElement>(null);
   const bootstrappedRef = useRef<string | null>(null);
+  const authService = new ClientAuthService();
+
+  // Gestión de sesión de usuario
+  useEffect(() => {
+    void authService.getSession().then((session) => {
+      if (session?.user) {
+        setAccessToken(session.access_token);
+        setUserEmail(session.user.email ?? null);
+        setUserId(session.user.id);
+      }
+    });
+
+    const { unsubscribe } = authService.onAuthStateChange((session) => {
+      setAccessToken(session?.access_token ?? null);
+      setUserEmail(session?.user?.email ?? null);
+      setUserId(session?.user?.id ?? null);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Detectar conversaciones supervivientes locales para importación opt-in (REQ-011)
+  useEffect(() => {
+    const surviving = getSurvivingLegacyChats();
+    if (surviving.length > 0) {
+      setLegacyChats(surviving);
+    }
+  }, []);
+
+  // ViewModel de la conversación
+  const {
+    conversation,
+    conversations,
+    totalConversations,
+    messages,
+    draft,
+    setDraft,
+    sendMessage,
+    retryLastMessage,
+    loadConversations,
+    loadNextPage,
+    loadMessages,
+    clearState,
+    isSending,
+    isLoading,
+    error,
+    saveStatus,
+    hasConflict,
+  } = useCoachConversation({
+    conversationId,
+    accessToken,
+  });
 
   const scrollToEnd = useCallback(() => {
     const prefersReducedMotion =
@@ -63,114 +95,80 @@ export function CoachChatScreen() {
     });
   }, []);
 
-  useEffect(() => {
-    void fetch("/api/chat")
-      .then((res) => res.json())
-      .then((body: { configured?: boolean; models?: string[]; defaultModel?: string }) => {
-        const defaultModel = body.defaultModel || "gpt-4o-mini";
-        const models = body.models?.length ? body.models : [defaultModel];
-        setApiStatus({
-          configured: Boolean(body.configured),
-          models,
-          defaultModel,
-        });
-        setModel(loadPreferredModel(defaultModel, models));
-      })
-      .catch(() =>
-        setApiStatus({ configured: false, models: ["gpt-4o-mini"], defaultModel: "gpt-4o-mini" })
-      );
-  }, []);
-
-  useEffect(() => {
-    setHistory(loadChats());
-  }, []);
-
+  // Redirección si falta conversación
   useEffect(() => {
     if (!conversationId) {
       router.replace("/");
-      return;
     }
-    const existing = getChat(conversationId);
-    const base: StoredChat = existing ?? {
-      id: conversationId,
-      title: "Nueva conversación",
-      updatedAt: new Date().toISOString(),
-      messages: [],
-    };
-    setChat(base);
-    setError(null);
-    bootstrappedRef.current = null;
   }, [conversationId, router]);
 
-  const persistAndSet = useCallback((next: StoredChat) => {
-    setChat(next);
-    setHistory(upsertChat(next));
-  }, []);
-
-  const sendText = useCallback(
-    async (text: string, current: StoredChat) => {
-      const trimmed = text.trim();
-      if (!trimmed || sending) return;
-
-      if (apiStatus && !apiStatus.configured) {
-        setError("El servicio del entrenador no está disponible en este momento. Intenta de nuevo más tarde.");
-        return;
-      }
-
-      setSending(true);
-      setError(null);
-      const userMessage: ChatMessage = { role: "user", content: trimmed };
-      const withUser: StoredChat = {
-        ...current,
-        title: current.messages.length === 0 ? trimmed.slice(0, 80) : current.title,
-        updatedAt: new Date().toISOString(),
-        messages: [...current.messages, userMessage],
-      };
-      persistAndSet(withUser);
-      setDraft("");
-
-      const result = await fetchReply(withUser.messages, model);
-      if ("error" in result) {
-        setError(result.error);
-        setSending(false);
-        return;
-      }
-
-      persistAndSet({
-        ...withUser,
-        updatedAt: new Date().toISOString(),
-        messages: [...withUser.messages, { role: "assistant", content: result.reply }],
-      });
-      setSending(false);
-      scrollToEnd();
-    },
-    [apiStatus, model, persistAndSet, scrollToEnd, sending]
-  );
-
+  // Enviar primer mensaje pendiente si viene de Hoy
   useEffect(() => {
-    if (!conversationId || !chat) return;
+    if (!conversationId) return;
     if (bootstrappedRef.current === conversationId) return;
     bootstrappedRef.current = conversationId;
 
     const pending = takePendingFirstMessage(conversationId);
-    if (pending && chat.messages.length === 0) {
-      void sendText(pending, chat);
+    if (pending) {
+      void sendMessage(pending);
     }
-  }, [chat, conversationId, sendText]);
+  }, [conversationId, sendMessage]);
 
+  // Carga de historial en panel
+  useEffect(() => {
+    if (historyOpen) {
+      void loadConversations({ limit: 20, offset: 0 });
+    }
+  }, [historyOpen, loadConversations]);
+
+  // Auto-scroll al recibir mensajes
   useEffect(() => {
     scrollToEnd();
-  }, [chat?.messages.length, scrollToEnd]);
+  }, [messages.length, scrollToEnd]);
 
   function startNewChat() {
     router.push(chatHref(crypto.randomUUID()));
   }
 
-  if (!conversationId || !chat) {
-    return null;
+  async function handleLogout() {
+    clearState();
+    await authService.signOut();
+    router.replace("/login");
   }
 
-  const models = apiStatus?.models ?? [model];
+  async function handleConfirmImport() {
+    if (!userId) {
+      setImportStatus("Debes iniciar sesión para importar tus conversaciones.");
+      return;
+    }
+
+    setIsImporting(true);
+    setImportStatus("Importando conversaciones de forma segura…");
+
+    try {
+      const report = await executeOptInImport({
+        targetUserId: userId,
+        targetAccountLabel: userEmail ?? undefined,
+        confirmed: true,
+        authToken: accessToken ?? undefined,
+      });
+
+      setImportStatus(
+        `Importación completada: ${report.imported} importadas, ${report.skipped} omitidas (duplicadas), ${report.errors} errores. Tu almacenamiento local original permanece 100% intacto.`
+      );
+      void loadConversations({ limit: 20, offset: 0 });
+    } catch (err) {
+      setImportStatus(
+        err instanceof Error ? err.message : "Error inesperado durante la importación"
+      );
+    } finally {
+      setIsImporting(false);
+    }
+  }
+
+  if (!conversationId) {
+    return null;
+  }
 
   return (
     <main className="chat-main">
@@ -180,9 +178,33 @@ export function CoachChatScreen() {
             ←
           </Link>
           <h1 className="chat-title">Tri-Coach</h1>
+          {userEmail ? (
+            <span className="muted user-email-badge" title={`Sesión activa: ${userEmail}`}>
+              {userEmail}
+            </span>
+          ) : (
+            <Link href={`/login?next=${encodeURIComponent(chatHref(conversationId))}`} className="chat-login-link">
+              Iniciar sesión
+            </Link>
+          )}
         </div>
         <div className="chat-header-actions">
-          <button type="button" className="chat-header-btn" onClick={startNewChat} disabled={sending}>
+          {legacyChats.length > 0 ? (
+            <button
+              type="button"
+              className="chat-header-btn chat-import-btn"
+              onClick={() => setShowImportModal(true)}
+              title="Importar historial de este navegador"
+            >
+              📥 Importar ({legacyChats.length})
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="chat-header-btn"
+            onClick={startNewChat}
+            disabled={isSending}
+          >
             + Nuevo chat
           </button>
           <button
@@ -191,66 +213,181 @@ export function CoachChatScreen() {
             onClick={() => setHistoryOpen((open) => !open)}
             aria-expanded={historyOpen}
           >
-            Historial
+            Historial ({totalConversations || conversations.length})
           </button>
+          {userEmail ? (
+            <button
+              type="button"
+              className="chat-header-btn chat-logout-btn"
+              onClick={handleLogout}
+              title="Cerrar sesión (REQ-013)"
+            >
+              Salir
+            </button>
+          ) : null}
         </div>
       </header>
 
-      {apiStatus && !apiStatus.configured ? (
-        <p className="chat-api-hint dash-refresh-status error" role="alert">
-          El servicio del coach no está disponible en este momento. Intenta de nuevo más tarde.
-        </p>
+      {/* Modal de importación opt-in (REQ-011, REQ-012) */}
+      {showImportModal ? (
+        <div className="optin-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="import-title">
+          <div className="optin-modal-card">
+            <h2 id="import-title" className="optin-modal-title">
+              Importar conversaciones de este navegador
+            </h2>
+            <p className="optin-modal-desc">
+              Hemos detectado <strong>{legacyChats.length} conversaciones</strong> guardadas
+              previamente en este navegador.
+            </p>
+            <div className="optin-modal-target">
+              <span className="muted">Cuenta destino confirmada:</span>
+              <strong>{userEmail || "Sesión no autenticada"}</strong>
+            </div>
+            <p className="optin-modal-warning muted">
+              ✓ Esta operación es una copia segura: tus datos originales de este navegador permanecerán intactos
+              byte a byte.
+            </p>
+            {importStatus ? (
+              <div className="dash-refresh-banner login-alert" role="status">
+                {importStatus}
+              </div>
+            ) : null}
+            <div className="optin-modal-actions">
+              <button
+                type="button"
+                className="coach-send"
+                onClick={handleConfirmImport}
+                disabled={isImporting || !userEmail}
+              >
+                {isImporting ? "Importando…" : `Confirmar copia a ${userEmail || "mi cuenta"}`}
+              </button>
+              <button
+                type="button"
+                className="coach-new"
+                onClick={() => {
+                  setShowImportModal(false);
+                  setImportStatus(null);
+                }}
+                disabled={isImporting}
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
+      {/* Panel lateral o desplegable de historial sincronizado */}
       {historyOpen ? (
-        <ul className="chat-history-panel">
-          {history.length === 0 ? (
-            <li className="muted">Sin conversaciones guardadas.</li>
-          ) : (
-            history.map((item) => (
-              <li key={item.id}>
-                <Link
-                  href={chatHref(item.id)}
-                  className={item.id === conversationId ? "coach-history-item active" : "coach-history-item"}
-                  onClick={() => setHistoryOpen(false)}
-                >
-                  <span>{item.title}</span>
-                  <span className="muted">{formatDateEsCO(item.updatedAt)}</span>
-                </Link>
+        <div className="chat-history-panel-wrap">
+          <ul className="chat-history-panel">
+            {conversations.length === 0 ? (
+              <li className="muted">
+                {isLoading ? "Cargando conversaciones…" : "Sin conversaciones guardadas en el servidor."}
               </li>
-            ))
-          )}
-        </ul>
+            ) : (
+              conversations.map((item) => (
+                <li key={item.id}>
+                  <Link
+                    href={chatHref(item.id)}
+                    className={item.id === conversationId ? "coach-history-item active" : "coach-history-item"}
+                    onClick={() => setHistoryOpen(false)}
+                  >
+                    <span>{item.title}</span>
+                    <span className="muted">{item.updatedAt ? formatDateEsCO(item.updatedAt) : ""}</span>
+                  </Link>
+                </li>
+              ))
+            )}
+          </ul>
+          {conversations.length < totalConversations ? (
+            <button
+              type="button"
+              className="chat-load-more"
+              onClick={() => void loadNextPage()}
+              disabled={isLoading}
+            >
+              {isLoading ? "Cargando…" : "Cargar más conversaciones"}
+            </button>
+          ) : null}
+        </div>
       ) : null}
 
+      {/* Hilo de conversación */}
       <div className="chat-thread" role="log" aria-live="polite">
-        {chat.messages.length === 0 && !sending ? (
-          <p className="muted chat-empty">Escribe tu primera pregunta sobre condición, sesión o retos.</p>
+        {messages.length === 0 && !isSending ? (
+          <p className="muted chat-empty">Escribe tu pregunta sobre condición, sesión o retos.</p>
         ) : null}
-        {chat.messages.map((message, index) => (
+
+        {messages.map((message) => (
           <div
-            key={`${chat.id}-${index}`}
+            key={message.id}
             className={message.role === "user" ? "chat-row chat-row-user" : "chat-row chat-row-assistant"}
           >
             {message.role === "assistant" ? <span className="chat-sender">Coach</span> : null}
-            <p className={`coach-bubble coach-${message.role}`}>{message.content}</p>
+            <div className={`coach-bubble coach-${message.role}`}>
+              <p className="m-0">{message.content}</p>
+              {message.role === "user" && message.status === "error" ? (
+                <div className="chat-message-error-bar">
+                  <span className="error-text">No guardado</span>
+                  <button
+                    type="button"
+                    className="chat-retry-btn"
+                    onClick={() => void retryLastMessage()}
+                  >
+                    Reintentar
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         ))}
-        {sending ? <p className="muted chat-thinking">Pensando…</p> : null}
+
+        {isSending ? <p className="muted chat-thinking">Pensando…</p> : null}
         <div ref={threadEndRef} />
       </div>
 
-      {error ? (
-        <p className="dash-refresh-status error chat-error" role="alert" aria-live="assertive">
-          {error}
-        </p>
-      ) : null}
+      {/* Estados visibles de guardado / conflicto / error */}
+      <div className="chat-status-bar">
+        {saveStatus === "saved" ? (
+          <span className="chat-status-badge saved" role="status">
+            ✓ Guardado
+          </span>
+        ) : saveStatus === "saving" ? (
+          <span className="chat-status-badge saving" role="status">
+            Guardando…
+          </span>
+        ) : saveStatus === "conflict" || hasConflict ? (
+          <div className="chat-status-badge conflict" role="alert">
+            <span>⚠ Conflicto de sincronización con el servidor.</span>
+            <button
+              type="button"
+              className="chat-retry-inline-btn"
+              onClick={() => void retryLastMessage()}
+            >
+              Reenviar borrador
+            </button>
+          </div>
+        ) : error ? (
+          <div className="dash-refresh-status error chat-error" role="alert" aria-live="assertive">
+            <span>{error}</span>
+            <button
+              type="button"
+              className="chat-retry-inline-btn"
+              onClick={() => void retryLastMessage()}
+            >
+              Reintentar
+            </button>
+          </div>
+        ) : null}
+      </div>
 
+      {/* Compositor centrado max 880px */}
       <form
         className="chat-composer-wrap"
         onSubmit={(event) => {
           event.preventDefault();
-          void sendText(draft, chat);
+          void sendMessage();
         }}
       >
         <div className="coach-composer chat-composer">
@@ -264,17 +401,12 @@ export function CoachChatScreen() {
             onChange={(event) => setDraft(event.target.value)}
             placeholder="Pregunta lo que quieras sobre tu entrenamiento"
             rows={3}
-            disabled={sending}
+            disabled={isSending}
           />
           <div className="coach-composer-bar">
-            <CoachModelSelect
-              models={models}
-              value={model}
-              onChange={setModel}
-              disabled={sending}
-            />
-            <button type="submit" className="coach-send" disabled={sending || !draft.trim()}>
-              Enviar
+            <CoachModelSelect />
+            <button type="submit" className="coach-send" disabled={isSending || !draft.trim()}>
+              {isSending ? "Enviando…" : "Enviar"}
             </button>
           </div>
         </div>
