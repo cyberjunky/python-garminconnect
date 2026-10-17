@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CoachModelSelect } from "@/components/CoachModelSelect";
-import { chatHref, setPendingFirstMessage } from "@/lib/coachStorage";
+import {
+  chatHref,
+  getSurvivingLegacyChats,
+  mergeConversations,
+  setPendingFirstMessage,
+  type StoredChat,
+} from "@/lib/coachStorage";
 import { formatDateEsCO } from "@/lib/lastUpdated";
 import { useCoachConversation } from "@/hooks/useCoachConversation";
 import { ClientAuthService } from "@/lib/infra/auth/clientAuthService";
@@ -13,10 +19,12 @@ export function CoachChat() {
   const router = useRouter();
   const [draft, setDraft] = useState("");
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [localChats, setLocalChats] = useState<StoredChat[]>([]);
 
   const authService = new ClientAuthService();
 
   useEffect(() => {
+    setLocalChats(getSurvivingLegacyChats());
     void authService.getSession().then((session) => {
       setAccessToken(session?.access_token ?? null);
     });
@@ -30,6 +38,8 @@ export function CoachChat() {
   useEffect(() => {
     void loadConversations({ limit: 10, offset: 0 });
   }, [loadConversations, accessToken]);
+
+  const displayConversations = mergeConversations(conversations, localChats);
 
   async function openNewChat(firstMessage?: string) {
     const newId = crypto.randomUUID();
@@ -60,7 +70,7 @@ export function CoachChat() {
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           placeholder="Pregunta por tu condición, la sesión o el próximo reto"
-          rows={3}
+          rows={2}
         />
         <div className="coach-composer-bar">
           <CoachModelSelect />
@@ -84,13 +94,13 @@ export function CoachChat() {
       ) : null}
 
       <h2 className="coach-history-title">Últimas conversaciones</h2>
-      {isLoading && conversations.length === 0 ? (
+      {isLoading && displayConversations.length === 0 ? (
         <p className="muted">Cargando historial…</p>
-      ) : conversations.length === 0 ? (
+      ) : displayConversations.length === 0 ? (
         <p className="muted">Aún no hay conversaciones registradas. Al enviar, se abre la pantalla de chat.</p>
       ) : (
         <ul className="coach-history">
-          {conversations.map((chat) => (
+          {displayConversations.map((chat) => (
             <li key={chat.id}>
               <Link href={chatHref(chat.id)} className="coach-history-item">
                 <span>{chat.title}</span>

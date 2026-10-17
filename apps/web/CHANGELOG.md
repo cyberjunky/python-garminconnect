@@ -14,6 +14,26 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [0.5.1] - 2026-10-17
+
+Versión de parche de `SPEC-004` (`PLAN-004`, `DEC-011`, `ADR-002`, `ADR-003`, `ADR-008`), corrigiendo el desborde geométrico en la tarjeta de Hoy, reposicionando el chat del coach al inicio de forma compacta y sincronizando reactivamente el historial de conversaciones:
+- Corrección geométrica y tipográfica integral de `.metrics-grid` y celdas métricas en `TodayCard` eliminando el desborde horizontal de la celda «PUNTUACIÓN DE SUEÑO» (`scrollWidth <= clientWidth`) en cualquier resolución de 375px a 1600px.
+- Reposicionamiento prioritario de `CoachChat` como primer componente en la vista de Inicio inmediatamente tras `page-header` y antes de `TodayCard`, con altura compacta acotada a ~25vh (`max-height: 28vh`, `min-height: 180px`), compositor de 2 filas y scroll vertical interno en historial.
+- Sincronización reactiva de `accessToken` en `CoachConversationViewModel` vía `setAccessToken(token)` para emitir llamadas autenticadas con cabecera `Authorization: Bearer <token>` tan pronto se resuelve la sesión.
+- Captura y manejo resiliente de respuestas no exitosas (401/500) y fallos de red en `loadConversations()` sin lanzar excepciones no controladas.
+- Función de utilidad pura `mergeConversations(remote, local)` en `lib/coachStorage.ts` para unificar y deduplicar conversaciones remotas y locales supervivientes de `localStorage["fitness-coach-chats"]` en `CoachChat` y `CoachChatScreen`.
+- Fallback automático a conversaciones y mensajes locales en `CoachChatScreen` ante sesiones no autenticadas o fallos 401.
+- Respaldo local inmediato en `localStorage` con `upsertChat` al enviar y recibir mensajes para garantizar cero pérdida de datos.
+- Suite de pruebas de regresión y validación de patch `apps/web/lib/patch-layout-chat.test.mjs` cubriendo requisitos `REQ-001` a `REQ-009` (`P01` a `P09`).
+
+### Corregido
+- **Desborde métricas en TodayCard (`apps/web/app/globals.css`)**: Columnas ampliadas con `repeat(auto-fit, minmax(7.5rem, 1fr))`, contención con `min-width: 0; overflow: hidden;` en `.metric-cell`, alineación flexible con `align-items: flex-start; gap: 0.35rem; min-width: 0;` en `.metric-label-row`, quiebre seguro de palabra indivisible con `overflow-wrap: break-word; line-height: 1.25;` en `.metric-label` y badge protegido contra compresión con `flex-shrink: 0;` (`REQ-001`, `REQ-002`, `P01`, `P02`).
+- **Jerarquía y altura de CoachChat en Inicio (`apps/web/app/(dashboard)/page.tsx`, `apps/web/app/globals.css`, `apps/web/components/CoachChat.tsx`)**: Reubicación antes de `TodayCard`, dimensionamiento acotado con `max-height: 28vh; min-height: 180px;`, compositor compacto de 2 filas (`rows={2}`) y scroll interno (`overflow-y: auto`) en `.coach-history` (`REQ-003`, `REQ-004`, `P03`, `P04`).
+- **Sincronización de token y resiliencia en ViewModel (`apps/web/hooks/useCoachConversation.ts`)**: Adición de `setAccessToken(token: string | null)` reactivo, manejo seguro de respuestas 401 y 500 en `loadConversations()` y `loadMessages()` sin excepciones no capturadas (`REQ-005`, `REQ-006`, `P05`, `P06`).
+- **Historial unificado y persistencia inmediata (`apps/web/lib/coachStorage.ts`, `apps/web/components/CoachChat.tsx`, `apps/web/components/CoachChatScreen.tsx`)**: Implementación de `mergeConversations(remote, local)`, lectura de conversaciones locales supervivientes con `getSurvivingLegacyChats()`, visualización unificada en Inicio y barra lateral, fallback a mensajes locales y persistencia inmediata de mensajes en `localStorage` vía `upsertChat` (`REQ-007`, `REQ-008`, `P07`, `P08`).
+
+---
+
 ## [0.5.0] - 2026-10-17
 
 Versión final integral de `SPEC-003` (`PLAN-003`, `DEC-010`, `ADR-002`, `ADR-003`, `ADR-007`), introduciendo el motor de recomendaciones fisiológicas, la tarjeta Macrociclo en 4 bloques y la nueva ruta analítica de tendencia mensual:

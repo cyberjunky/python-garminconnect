@@ -59,7 +59,7 @@ export class CoachConversationViewModel implements CoachConversationState {
   pendingRetryContent: string | null = null;
 
   private lastAttemptedUserMessage: MessageViewModel | null = null;
-  private readonly accessToken: string | null;
+  private accessToken: string | null;
   private readonly customFetch?: typeof fetch;
   private readonly apiBaseUrl: string;
   private readonly onStateChange?: () => void;
@@ -76,6 +76,13 @@ export class CoachConversationViewModel implements CoachConversationState {
         title: "Conversación",
         revision: options.initialRevision ?? 1,
       };
+    }
+  }
+
+  setAccessToken(token: string | null): void {
+    if (this.accessToken !== token) {
+      this.accessToken = token;
+      this.notify();
     }
   }
 
@@ -161,6 +168,12 @@ export class CoachConversationViewModel implements CoachConversationState {
             }
           }
         }
+      } else if (res.status === 401) {
+        // Sesión no autenticada en nube: no es crash, permite continuar con almacenamiento local
+        this.error = null;
+      } else {
+        const errBody = (await res.json().catch(() => ({}))) as { error?: string };
+        this.error = errBody.error || `Error del servidor (${res.status})`;
       }
     } catch (err) {
       this.error = err instanceof Error ? err.message : "Error al cargar conversaciones";
@@ -209,6 +222,11 @@ export class CoachConversationViewModel implements CoachConversationState {
             createdAt: m.createdAt,
           }));
         }
+      } else if (res.status === 401) {
+        this.error = null;
+      } else {
+        const errBody = (await res.json().catch(() => ({}))) as { error?: string };
+        this.error = errBody.error || `Error del servidor (${res.status})`;
       }
     } catch (err) {
       this.error = err instanceof Error ? err.message : "Error al cargar mensajes";
@@ -410,6 +428,11 @@ export function useCoachConversation(options: UseCoachConversationOptions = {}) 
 
   const vm = vmRef.current;
 
+  // Sincronización reactiva del accessToken cuando cambia en el cliente (REQ-005)
+  useEffect(() => {
+    vm.setAccessToken(options.accessToken ?? null);
+  }, [options.accessToken, vm]);
+
   // Carga inicial o cambios de conversación
   useEffect(() => {
     if (options.conversationId) {
@@ -440,5 +463,6 @@ export function useCoachConversation(options: UseCoachConversationOptions = {}) 
     loadMessages: useCallback((id: string) => vm.loadMessages(id), [vm]),
     createConversation: useCallback((title?: string) => vm.createConversation(title), [vm]),
     clearState: useCallback(() => vm.clearState(), [vm]),
+    setAccessToken: useCallback((token: string | null) => vm.setAccessToken(token), [vm]),
   };
 }
