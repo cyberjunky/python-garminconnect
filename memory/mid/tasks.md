@@ -3,7 +3,7 @@ schema_version: 1
 project_id: python-garminconnect
 next_id: 35
 source: ies-cli
-last_updated: '2026-10-17T16:26:44Z'
+last_updated: '2026-10-17T16:32:49Z'
 ---
 
 # Task Ledger
@@ -2276,7 +2276,7 @@ title: 'I-RELEASE-050: Bump SemVer 0.5.0, sincronización grupo R y suite consol
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: Actualizar la versión de la aplicación a SemVer 0.5.0 MINOR en apps/web/package.json,
   ambos niveles de package-lock.json, README.md y CHANGELOG.md documentando las 3
   mejoras de SPEC-003 (recomendaciones accionables de ciencia deportiva, tarjeta macrociclo
@@ -2308,17 +2308,20 @@ allowlist:
 - apps/web/lib/tendencia-macrociclo.test.mjs
 - deliverables/T-0034.md
 created_at: '2026-10-17T16:26:44Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-17T16:32:49Z'
+completed_at: '2026-10-17T16:32:49Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0034.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: 3c9ef5a4db9a3de4a95a3177ccdd468829cbf712
+  git_after: 3c9ef5a4db9a3de4a95a3177ccdd468829cbf712
+  result: success
 edits: []
 ```
