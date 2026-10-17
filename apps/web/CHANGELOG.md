@@ -14,6 +14,18 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [0.4.0-rc.1] - 2026-10-17
+
+Candidato de release de la etapa `I-UI` de `SPEC-002` (`PLAN-002`, `ADR-003`), centrado en corregir la distribución responsive del contenedor principal del dashboard en Safari preservando la composición independiente del chat.
+
+### Corregido
+- **Centrado y ancho útil responsive del dashboard (SPEC-002 / REQ-001, REQ-002, REQ-003)**: Acotación del contenedor `.app-main > main` con `width: 100%`, `max-width: 1120px`, `margin: 0 auto` y `padding` lateral de `28px` en viewports `> 800px` y `16px` en `<= 800px`, eliminando el desplazamiento hacia la izquierda en pantallas amplias de Safari sin alterar el layout independiente de `/chat` (`.chat-main` a ancho completo, compositor `.chat-composer` centrado hasta `880px` y burbujas alineadas por rol) ni el scroll horizontal interno de gráficas (`.prep-chart-wrap`) y tablas (`.projection-table-wrap`).
+
+### Añadido
+- **Pruebas de geometría y arquitectura (`layout-responsive.test.mjs`)**: Verificación automatizada de las reglas de geometría `G` en las 14 celdas de la matriz `S` (SPEC-002 §5), preservación del layout de chat y comprobación ejecutable de la regla de dependencia de Clean Architecture (`REQ-022` / `P22`).
+
+---
+
 ## [0.3.0] - 2026-10-13
 
 Versión introducida en el PR #2 (rama `ux/audit-2026-10`), enfocada en resolver integralmente la auditoría UX (P1, P2 y P3), unificar la identidad visual de la marca Tri-Coach y asegurar consistencia de datos en Supabase.

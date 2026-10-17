@@ -118,10 +118,11 @@ table,
   min-width: 0;
 }
 
-main {
-  max-width: 880px;
-  margin: 0;
-  padding: 1.5rem 1.75rem 3rem;
+.app-main > main {
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1.5rem 28px 3rem;
 }
 
 .dash-nav-container {
@@ -646,8 +647,8 @@ a.coach-history-item {
     width: 100%;
   }
 
-  main {
-    padding: 1.25rem 1rem 2.5rem;
+  .app-main > main {
+    padding: 1.25rem 16px 2.5rem;
     max-width: 100%;
     min-width: 0;
     box-sizing: border-box;

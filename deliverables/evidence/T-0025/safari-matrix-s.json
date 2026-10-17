@@ -1,0 +1,619 @@
+{
+  "taskId": "T-0025",
+  "spec": "SPEC-002",
+  "stage": "I-UI",
+  "candidateVersion": "0.4.0-rc.1",
+  "checkpointSha": "8139f9bb74c5d101f39ea303f34533a84c1486dd",
+  "baselineCodeSha": "aeaa5da9a02c0070cb4f4259da13f1cb27ba16ab",
+  "browser": {
+    "app": "/Applications/Safari.app",
+    "safariVersion": "27.0.1",
+    "driverMode": "launchservices-safari-runner",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.0.1 Safari/605.1.15",
+    "zoom": "100%"
+  },
+  "isolation": {
+    "supabaseEndpoint": "http://127.0.0.1:44199",
+    "nextEndpoint": "http://127.0.0.1:3125",
+    "runnerOrigin": "http://127.0.0.1:3126",
+    "cloudCalls": 0,
+    "personalDataUsed": false
+  },
+  "baselineComparative": [
+    {
+      "kind": "dashboard",
+      "route": "/",
+      "innerWidth": 1600,
+      "clientWidth": 1600,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": false,
+      "scrollWidth": 1600,
+      "globalOverflow": 0,
+      "appMainWidth": 1360,
+      "mainWidth": 880,
+      "paddingLeft": 28,
+      "paddingRight": 28,
+      "contentWidth": 824,
+      "marginLeft": 0,
+      "marginRight": 480,
+      "marginDiff": 480,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "baseline-inicio-1600.png",
+      "evaluation": {
+        "pass": false,
+        "errors": [
+          "mainWidth 880 deviates >2px from expected 1120",
+          "margin asymmetry |0 - 480| = 480px exceeds 2px",
+          "marginLeft 0 deviates >2px from expected 120"
+        ]
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/",
+      "innerWidth": 375,
+      "clientWidth": 375,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": true,
+      "scrollWidth": 375,
+      "globalOverflow": 0,
+      "appMainWidth": 375,
+      "mainWidth": 375,
+      "paddingLeft": 16,
+      "paddingRight": 16,
+      "contentWidth": 343,
+      "marginLeft": 0,
+      "marginRight": 0,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "baseline-inicio-375.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "chat",
+      "route": "/chat?conversation=layout-synthetic",
+      "innerWidth": 1600,
+      "clientWidth": 1600,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": false,
+      "scrollWidth": 1600,
+      "globalOverflow": 0,
+      "chatMainWidth": 1600,
+      "composerWidth": 880,
+      "composerMarginLeft": 340,
+      "composerMarginRight": 340,
+      "composerMarginDiff": 0,
+      "userAlignSelf": "flex-end",
+      "assistantAlignSelf": "flex-start",
+      "controlsOutOfBounds": [],
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "baseline-chat-1600.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    }
+  ],
+  "candidateMatrixS": [
+    {
+      "kind": "dashboard",
+      "route": "/",
+      "innerWidth": 375,
+      "clientWidth": 375,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": true,
+      "scrollWidth": 375,
+      "globalOverflow": 0,
+      "appMainWidth": 375,
+      "mainWidth": 375,
+      "paddingLeft": 16,
+      "paddingRight": 16,
+      "contentWidth": 343,
+      "marginLeft": 0,
+      "marginRight": 0,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "candidate-inicio-375.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/",
+      "innerWidth": 800,
+      "clientWidth": 800,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": true,
+      "scrollWidth": 800,
+      "globalOverflow": 0,
+      "appMainWidth": 800,
+      "mainWidth": 800,
+      "paddingLeft": 16,
+      "paddingRight": 16,
+      "contentWidth": 768,
+      "marginLeft": 0,
+      "marginRight": 0,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "candidate-inicio-800.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/",
+      "innerWidth": 801,
+      "clientWidth": 801,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": false,
+      "scrollWidth": 801,
+      "globalOverflow": 0,
+      "appMainWidth": 561,
+      "mainWidth": 561,
+      "paddingLeft": 28,
+      "paddingRight": 28,
+      "contentWidth": 505,
+      "marginLeft": 0,
+      "marginRight": 0,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "candidate-inicio-801.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/",
+      "innerWidth": 1600,
+      "clientWidth": 1600,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": false,
+      "scrollWidth": 1600,
+      "globalOverflow": 0,
+      "appMainWidth": 1360,
+      "mainWidth": 1120,
+      "paddingLeft": 28,
+      "paddingRight": 28,
+      "contentWidth": 1064,
+      "marginLeft": 120,
+      "marginRight": 120,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "candidate-inicio-1600.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/retos",
+      "innerWidth": 375,
+      "clientWidth": 375,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": true,
+      "scrollWidth": 375,
+      "globalOverflow": 0,
+      "appMainWidth": 375,
+      "mainWidth": 375,
+      "paddingLeft": 16,
+      "paddingRight": 16,
+      "contentWidth": 343,
+      "marginLeft": 0,
+      "marginRight": 0,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": {
+        "selector": ".prep-chart-wrap",
+        "scrollWidth": 680,
+        "clientWidth": 303,
+        "maxScroll": 377,
+        "reachedScrollLeft": 377,
+        "canReachEnd": true,
+        "docScrollLeftAfter": 0
+      },
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": null,
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/retos",
+      "innerWidth": 1600,
+      "clientWidth": 1600,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": false,
+      "scrollWidth": 1600,
+      "globalOverflow": 0,
+      "appMainWidth": 1360,
+      "mainWidth": 1120,
+      "paddingLeft": 28,
+      "paddingRight": 28,
+      "contentWidth": 1064,
+      "marginLeft": 120,
+      "marginRight": 120,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": {
+        "selector": ".prep-chart-wrap",
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "maxScroll": 0,
+        "reachedScrollLeft": 0,
+        "canReachEnd": true,
+        "docScrollLeftAfter": 0
+      },
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "candidate-retos-1600.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/mesociclos",
+      "innerWidth": 375,
+      "clientWidth": 375,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": true,
+      "scrollWidth": 375,
+      "globalOverflow": 0,
+      "appMainWidth": 375,
+      "mainWidth": 375,
+      "paddingLeft": 16,
+      "paddingRight": 16,
+      "contentWidth": 343,
+      "marginLeft": 0,
+      "marginRight": 0,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": null,
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/mesociclos",
+      "innerWidth": 1600,
+      "clientWidth": 1600,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": false,
+      "scrollWidth": 1600,
+      "globalOverflow": 0,
+      "appMainWidth": 1360,
+      "mainWidth": 1120,
+      "paddingLeft": 28,
+      "paddingRight": 28,
+      "contentWidth": 1064,
+      "marginLeft": 120,
+      "marginRight": 120,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "candidate-mesociclos-1600.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/70-3-cartagena",
+      "innerWidth": 375,
+      "clientWidth": 375,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": true,
+      "scrollWidth": 375,
+      "globalOverflow": 0,
+      "appMainWidth": 375,
+      "mainWidth": 375,
+      "paddingLeft": 16,
+      "paddingRight": 16,
+      "contentWidth": 343,
+      "marginLeft": 0,
+      "marginRight": 0,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": null,
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "dashboard",
+      "route": "/70-3-cartagena",
+      "innerWidth": 1600,
+      "clientWidth": 1600,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": false,
+      "scrollWidth": 1600,
+      "globalOverflow": 0,
+      "appMainWidth": 1360,
+      "mainWidth": 1120,
+      "paddingLeft": 28,
+      "paddingRight": 28,
+      "contentWidth": 1064,
+      "marginLeft": 120,
+      "marginRight": 120,
+      "marginDiff": 0,
+      "controlsOutOfBounds": [],
+      "internalScroll": null,
+      "versionText": "v0.4.0-rc.1",
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "candidate-cartagena-1600.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "chat",
+      "route": "/chat?conversation=layout-synthetic",
+      "innerWidth": 375,
+      "clientWidth": 375,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": true,
+      "scrollWidth": 375,
+      "globalOverflow": 0,
+      "chatMainWidth": 375,
+      "composerWidth": 335,
+      "composerMarginLeft": 0,
+      "composerMarginRight": 0,
+      "composerMarginDiff": 0,
+      "userAlignSelf": "flex-end",
+      "assistantAlignSelf": "flex-start",
+      "controlsOutOfBounds": [],
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "candidate-chat-375-historial.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "chat",
+      "route": "/chat?conversation=layout-synthetic",
+      "innerWidth": 800,
+      "clientWidth": 800,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": true,
+      "scrollWidth": 800,
+      "globalOverflow": 0,
+      "chatMainWidth": 800,
+      "composerWidth": 760,
+      "composerMarginLeft": 0,
+      "composerMarginRight": 0,
+      "composerMarginDiff": 0,
+      "userAlignSelf": "flex-end",
+      "assistantAlignSelf": "flex-start",
+      "controlsOutOfBounds": [],
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": null,
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "chat",
+      "route": "/chat?conversation=layout-synthetic",
+      "innerWidth": 801,
+      "clientWidth": 801,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": false,
+      "scrollWidth": 801,
+      "globalOverflow": 0,
+      "chatMainWidth": 801,
+      "composerWidth": 761,
+      "composerMarginLeft": 0,
+      "composerMarginRight": 0,
+      "composerMarginDiff": 0,
+      "userAlignSelf": "flex-end",
+      "assistantAlignSelf": "flex-start",
+      "controlsOutOfBounds": [],
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": null,
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    },
+    {
+      "kind": "chat",
+      "route": "/chat?conversation=layout-synthetic",
+      "innerWidth": 1600,
+      "clientWidth": 1600,
+      "devicePixelRatio": 1,
+      "mediaMaxWidth800": false,
+      "scrollWidth": 1600,
+      "globalOverflow": 0,
+      "chatMainWidth": 1600,
+      "composerWidth": 880,
+      "composerMarginLeft": 340,
+      "composerMarginRight": 340,
+      "composerMarginDiff": 0,
+      "userAlignSelf": "flex-end",
+      "assistantAlignSelf": "flex-start",
+      "controlsOutOfBounds": [],
+      "viewportMethod": "safari-real-viewport-frame",
+      "screenshot": "candidate-chat-1600.png",
+      "evaluation": {
+        "pass": true,
+        "errors": []
+      }
+    }
+  ],
+  "navigationCyclesP03": [
+    {
+      "viewport": "375x812",
+      "allPass": true,
+      "steps": [
+        {
+          "step": "dashboard:/",
+          "route": "/",
+          "mainWidth": 375,
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "dashboard:/retos",
+          "route": "/retos",
+          "mainWidth": 375,
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "dashboard:/mesociclos",
+          "route": "/mesociclos",
+          "mainWidth": 375,
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "dashboard:/70-3-cartagena",
+          "route": "/70-3-cartagena",
+          "mainWidth": 375,
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "chat:open-with-id",
+          "route": "/chat?conversation=layout-synthetic",
+          "chatMainWidth": 375,
+          "composerWidth": 335,
+          "userAlignSelf": "flex-end",
+          "assistantAlignSelf": "flex-start",
+          "pass": true
+        },
+        {
+          "step": "chat:history-open",
+          "route": "/chat?conversation=layout-synthetic",
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "chat:select-history-item",
+          "route": "/chat?conversation=layout-synthetic-history-2",
+          "composerWidth": 335,
+          "pass": true
+        },
+        {
+          "step": "chat:back-to-dashboard",
+          "route": "/",
+          "mainWidth": 375,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "viewport": "1600x900",
+      "allPass": true,
+      "steps": [
+        {
+          "step": "dashboard:/",
+          "route": "/",
+          "mainWidth": 1120,
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "dashboard:/retos",
+          "route": "/retos",
+          "mainWidth": 1120,
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "dashboard:/mesociclos",
+          "route": "/mesociclos",
+          "mainWidth": 1120,
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "dashboard:/70-3-cartagena",
+          "route": "/70-3-cartagena",
+          "mainWidth": 1120,
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "chat:open-with-id",
+          "route": "/chat?conversation=layout-synthetic",
+          "chatMainWidth": 1600,
+          "composerWidth": 880,
+          "userAlignSelf": "flex-end",
+          "assistantAlignSelf": "flex-start",
+          "pass": true
+        },
+        {
+          "step": "chat:history-open",
+          "route": "/chat?conversation=layout-synthetic",
+          "globalOverflow": 0,
+          "pass": true
+        },
+        {
+          "step": "chat:select-history-item",
+          "route": "/chat?conversation=layout-synthetic-history-2",
+          "composerWidth": 880,
+          "pass": true
+        },
+        {
+          "step": "chat:back-to-dashboard",
+          "route": "/",
+          "mainWidth": 1120,
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalMatrixCells": 14,
+    "passedMatrixCells": 14,
+    "p03NavigationPass": true
+  }
+}
