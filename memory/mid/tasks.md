@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 30
+next_id: 31
 source: ies-cli
-last_updated: '2026-10-17T14:46:53Z'
+last_updated: '2026-10-17T15:31:15Z'
 ---
 
 # Task Ledger
@@ -1861,7 +1861,7 @@ title: 'I-CLIENT: UI, ViewModel, historial sincronizado, migración opt-in y Sem
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: 'Ejecutar exclusivamente la etapa I-CLIENT (G2) de specs/002-layout-responsive/{spec.md,plan.md}
   aprobados en DEC-009 (propuesta T-0022, PLAN-002 seccion 4), trabajando estrictamente
   dentro del worktree aislado .ies/worktrees/T-0029. 1. Orden tests-first: escribir
@@ -1944,17 +1944,106 @@ allowlist:
 - apps/web/tests/chat-client
 - apps/web/lib/chat-client.test.mjs
 created_at: '2026-10-17T14:46:53Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-17T15:31:09Z'
+completed_at: '2026-10-17T15:31:09Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0029.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: 8f70c6d1991c39f7c3425028f354cdbd4032bac7
+  git_after: 8f70c6d1991c39f7c3425028f354cdbd4032bac7
+  result: success
+edits: []
+```
+
+## T-0030 — V-INTEGRAL: Verificación viewer integral de T-0029 sobre commit d595e52
+
+```yaml
+id: T-0030
+title: 'V-INTEGRAL: Verificación viewer integral de T-0029 sobre commit d595e52'
+project_id: python-garminconnect
+origin: coordinator
+destination: viewer
+status: done
+input: 'Auditar en modo solo lectura el commit exacto d595e52dcbd19e3b20c9aa8db8bb703a6cde50eb
+  en el worktree .ies/worktrees/T-0029 y su entrega deliverables/T-0029.md (referenciando
+  la entrega de T-0029 sin marcarla done). Revisar todos los criterios de T-0029 y
+  reproducir rigurosamente: 1. Cumplimiento estricto de allowlist con ies git verify
+  --task T-0029 (0 drift). 2. Cumplimiento de constitución con ies constitution check
+  --task T-0030 (0 BLOCKING). 3. Gate de máquina con ies gate --task T-0029 (PASS).
+  4. Pruebas unitarias de apps/web con npm test (58 tests pasando, 0 fallos). 5. Build
+  de producción de apps/web con npm run build (código de salida 0). 6. Auditoría de
+  ViewModel useCoachConversation y desacoplamiento de componentes CoachChat/CoachChatScreen
+  (Clean Architecture P22). 7. Auditoría de login OTP y logout en apps/web/app/login/page.tsx.
+  8. Auditoría de flujo de importación opt-in conservador en coachStorage.ts. 9. Auditoría
+  de insignia estática GPT-6 Luna · High sin selectores en CoachModelSelect.tsx. 10.
+  Auditoría de preservación de geometría centrada en globals.css. 11. Verificación
+  de versión final SemVer 0.4.0 en package.json, lock, README, CHANGELOG y version.test.mjs.
+  Emitir veredicto canónico APROBAR | CORREGIR | BLOQUEAR en deliverables/T-0030.md.'
+expected_output: deliverables/T-0030.md con informe de auditoría solo lectura, tabla
+  de reproducción integral de criterios P01-P22, comprobaciones estáticas y dinámicas,
+  hallazgos BLOCKING/NON_BLOCKING y veredicto canónico APROBAR | CORREGIR | BLOQUEAR.
+parent_task: T-0022
+dependencies: []
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs:
+- long/constitution.md
+- long/standards.md
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- long/adr/ADR-003-centered-container.md
+- long/adr/ADR-004-private-history.md
+- long/adr/ADR-005-exclusive-chat-model.md
+- long/adr/ADR-006-tool-context-models.md
+- mid/decisions.md
+- immediate/handoff.md
+acceptance_criteria:
+- Revisión independiente en solo lectura del commit d595e52 y deliverables/T-0029.md
+  sin mutaciones en el repositorio
+- Auditoría de allowlist (ies git verify --task T-0029) con 0 drift y verificación
+  de gate de máquina (ies gate --task T-0029 PASS)
+- Reproducción de pruebas npm test (58 tests) y npm run build con código de salida
+  0
+- Auditoría de ViewModel de chat useCoachConversation, patrón MVVM y Clean Architecture
+  P22
+- Auditoría de login Supabase Auth OTP, flujo de sesión y logout seguro (REQ-004,
+  REQ-013)
+- Auditoría de importación opt-in conservadora, verificación de digest y preservación
+  byte a byte de localStorage (REQ-011, REQ-012)
+- Auditoría de retiro de selector de modelos y etiqueta informativa estática GPT-6
+  Luna · High (REQ-017)
+- Auditoría de preservación de centrado responsive max 1120px y compositor max 880px
+  sin overflow (REQ-001, REQ-002, REQ-003)
+- Auditoría de coherencia SemVer 0.4.0 final en paquete, lock, README, CHANGELOG y
+  version.test.mjs (REQ-020, P20)
+- Veredicto canónico formal (APROBAR | CORREGIR | BLOQUEAR) con clasificación de severidad
+  en deliverables/T-0030.md
+allowlist: []
+created_at: '2026-10-17T15:25:29Z'
+started_at: '2026-10-17T15:31:14Z'
+completed_at: '2026-10-17T15:31:15Z'
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: deliverables/T-0030.md
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics:
+  git_before: 8f70c6d1991c39f7c3425028f354cdbd4032bac7
+  git_after: 8f70c6d1991c39f7c3425028f354cdbd4032bac7
+  result: success
 edits: []
 ```
