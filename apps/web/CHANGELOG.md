@@ -14,6 +14,28 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [0.5.0] - 2026-10-17
+
+Versión final integral de `SPEC-003` (`PLAN-003`, `DEC-010`, `ADR-002`, `ADR-003`, `ADR-007`), introduciendo el motor de recomendaciones fisiológicas, la tarjeta Macrociclo en 4 bloques y la nueva ruta analítica de tendencia mensual:
+- Motor de recomendaciones accionables de ciencia deportiva en «Qué atender» basadas en modulación parasimpática, cronobiología del sueño, recarga autonómica y ratio ACWR de Gabbett.
+- Tarjeta «Macrociclo» enriquecida pedagógicamente en 4 bloques: definición conceptual, momento/fase actual con techos fisiológicos (FC y duración), pauta práctica de optimización y fecha de término en formato `es-CO` con cuenta regresiva a hitos de la temporada.
+- Nueva ruta dedicada `/tendencia` en menú lateral `DashboardNav` con distribución visual de zonas (30 días), resumen mensual consolidado y tabla con números tabulares (`tabular-nums`) en contenedor centrado max 1120px (ADR-003).
+- Runner unificado de pruebas `apps/web/lib/tendencia-macrociclo.test.mjs` que integra las suites de SPEC-003 bajo `npm test`.
+
+### Añadido
+- **Recomendaciones accionables de ciencia deportiva (`apps/web/lib/dashboard.ts`)**: Funciones puras tipadas `buildFocusRecommendations` y `buildFocusItems` que emiten directrices de entrenamiento precisas según umbrales fisiológicos (`REQ-001`, `REQ-002`, `REQ-003`, `REQ-004`, `REQ-005`, `REQ-006`, `P01`–`P06`).
+- **Tarjeta Macrociclo en 4 bloques (`apps/web/lib/mesocycle.ts`, `apps/web/app/(dashboard)/retos/page.tsx`)**: Función de dominio `getMacrocycleDetails` y renderizado de bloques A (definición), B (fase actual con código, foco, deporte, techo FC y duración máxima), C (cómo mejorarla según fase y fatiga) y D (cierre de fase en formato `es-CO`, días restantes y cuenta regresiva a mmB, Reto Letras y 70.3 Cartagena) (`REQ-007`, `REQ-008`, `REQ-009`, `REQ-010`, `REQ-011`, `P07`–`P11`).
+- **Ruta dedicada `/tendencia` (`apps/web/app/(dashboard)/tendencia/page.tsx`)**: Server Component analítico con barra horizontal interactiva de zonas (verde, amarillo, rojo), tarjetas de resumen fisiológico mensual y tabla diaria de los últimos 30 días (`REQ-014`, `REQ-015`, `REQ-016`, `REQ-017`, `REQ-018`, `P14`–`P18`).
+- **Cálculo puro y agregador de tendencia (`apps/web/lib/tendencia.ts`)**: Funciones puras `calculateMonthlyZoneDistribution`, `calculateMonthlySummary` y formateador de tabla con tolerancia a datos parciales o vacíos, más adaptador de lectura `fetchMonthlyTrend` (`REQ-015`, `REQ-016`, `REQ-018`, `REQ-019`).
+- **Navegación permanente en menú lateral (`apps/web/components/DashboardNav.tsx`)**: Enlace permanente hacia `/tendencia` con icono de tendencia, etiqueta textual y estado activo dinámico con `aria-current="page"` (`REQ-013`, `P13`).
+- **Suite runner de pruebas consolidada (`apps/web/lib/tendencia-macrociclo.test.mjs`)**: Suite nativa que ejecuta las pruebas de recomendaciones, macrociclo, tendencia mensual y Clean Architecture bajo `npm test` (`REQ-020`, `P20`).
+
+### Modificado
+- **Vista de retos (`apps/web/app/(dashboard)/retos/page.tsx`)**: Retiro de la tarjeta «Tendencia 14d» para descongestionar la pantalla operativa, integrando las nuevas recomendaciones en «Qué atender» y la tarjeta Macrociclo en 4 bloques (`REQ-012`, `P12`).
+- **Estilos globales (`apps/web/app/globals.css`)**: Estilos para la barra proporcional de zonas, badges de porcentaje, grid de resumen mensual y soporte de tipografía `font-variant-numeric: tabular-nums` en celdas numéricas.
+
+---
+
 ## [0.4.0] - 2026-10-17
 
 Versión final integral de `SPEC-002` (`PLAN-002`, `DEC-009`, `ADR-002`, `ADR-003`, `ADR-004`, `ADR-005`), consolidando las tres etapas (`I-UI`, `I-SERVER`, `I-CLIENT`):
