@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 35
+next_id: 36
 source: ies-cli
-last_updated: '2026-10-17T16:32:49Z'
+last_updated: '2026-10-17T16:33:27Z'
 ---
 
 # Task Ledger
@@ -2323,5 +2323,64 @@ metrics:
   git_before: 3c9ef5a4db9a3de4a95a3177ccdd468829cbf712
   git_after: 3c9ef5a4db9a3de4a95a3177ccdd468829cbf712
   result: success
+edits: []
+```
+
+## T-0035 — V-INTEGRAL-050: Auditoría viewer integral independiente de SPEC-003 (SemVer 0.5.0)
+
+```yaml
+id: T-0035
+title: 'V-INTEGRAL-050: Auditoría viewer integral independiente de SPEC-003 (SemVer
+  0.5.0)'
+project_id: python-garminconnect
+origin: coordinator
+destination: viewer
+status: ready
+input: Realizar una auditoría independiente en modo solo lectura de la implementación
+  completa de SPEC-003 (commits de T-0032, T-0033 y T-0034 integrados en master),
+  ejecutando las suites de tests (npm test), el build de producción, la verificación
+  de Clean Architecture P22, la geometría centrada ADR-003, el versionado SemVer 0.5.0
+  y emitiendo el veredicto formal en deliverables/T-0035.md.
+expected_output: Informe de auditoría integral en deliverables/T-0035.md con envelope
+  SDLC completo, tabla de requisitos EARS vs evidencia verificada, evaluación de constitución
+  y machine gate, y veredicto canónico formal.
+parent_task: T-0031
+dependencies:
+- T-0034
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- 'REQ-001..020: Auditoría integral independiente de los 20 requisitos EARS de SPEC-003'
+- 'P01..P20: Ejecución y verificación de 82 tests unitarios pasando al 100% con 0
+  fallos'
+- 'BUILD: Compilación limpia Next.js 15 App Router con generación estática y dinámica
+  exitosa'
+- 'CLEAN-ARCH: Verificación Clean Architecture P22 sin imports de React/Next/Supabase
+  en lib/'
+- 'GEOMETRY: Verificación de contenedor centrado max-width 1120px responsive (ADR-003)'
+- 'SEMVER: Verificación de versión 0.5.0 sincronizada en package.json, lock, README
+  y CHANGELOG'
+- 'GATE: Evaluación de machine gate y constitución IES (0 BLOCKING)'
+- 'VEREDICTO: Emisión de veredicto canónico (APROBAR | CORREGIR | BLOQUEAR) en deliverables/T-0035.md'
+allowlist:
+- deliverables/T-0035.md
+created_at: '2026-10-17T16:33:27Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
 edits: []
 ```
