@@ -3,7 +3,7 @@ schema_version: 1
 project_id: python-garminconnect
 next_id: 36
 source: ies-cli
-last_updated: '2026-10-17T16:33:27Z'
+last_updated: '2026-10-17T16:41:29Z'
 ---
 
 # Task Ledger
@@ -2335,7 +2335,7 @@ title: 'V-INTEGRAL-050: Auditoría viewer integral independiente de SPEC-003 (Se
 project_id: python-garminconnect
 origin: coordinator
 destination: viewer
-status: ready
+status: done
 input: Realizar una auditoría independiente en modo solo lectura de la implementación
   completa de SPEC-003 (commits de T-0032, T-0033 y T-0034 integrados en master),
   ejecutando las suites de tests (npm test), el build de producción, la verificación
@@ -2370,17 +2370,20 @@ acceptance_criteria:
 allowlist:
 - deliverables/T-0035.md
 created_at: '2026-10-17T16:33:27Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-17T16:41:29Z'
+completed_at: '2026-10-17T16:41:29Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0035.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: cd5b006fc4f00e1d3536345801dfa4808e5531ec
+  git_after: cd5b006fc4f00e1d3536345801dfa4808e5531ec
+  result: success
 edits: []
 ```
