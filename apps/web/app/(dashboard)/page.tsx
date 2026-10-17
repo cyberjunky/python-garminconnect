@@ -90,6 +90,8 @@ export default async function HomePage() {
         <p className="muted page-subtitle">{lastUpdatedLabel}</p>
       </header>
 
+      <CoachChat />
+
       <TodayCard
         zone={zone}
         scoreOk={readiness?.score_ok ?? null}
@@ -109,8 +111,6 @@ export default async function HomePage() {
         phaseCode={payload.macrocycle?.code}
         phaseName={payload.macrocycle?.name}
       />
-
-      <CoachChat />
 
       <section className="card">
         <h2 className="mt-0">Regla del día</h2>

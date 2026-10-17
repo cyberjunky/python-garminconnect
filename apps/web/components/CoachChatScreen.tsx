@@ -7,8 +7,11 @@ import { CoachModelSelect } from "@/components/CoachModelSelect";
 import {
   chatHref,
   getSurvivingLegacyChats,
+  mergeConversations,
   executeOptInImport,
   takePendingFirstMessage,
+  upsertChat,
+  getChat,
   type StoredChat,
 } from "@/lib/coachStorage";
 import { formatDateEsCO } from "@/lib/lastUpdated";
@@ -86,6 +89,34 @@ export function CoachChatScreen() {
     accessToken,
   });
 
+  // Fallback a mensajes locales si la conversación no está en nube o ante 401
+  const localChat = conversationId ? getChat(conversationId) : null;
+  const effectiveMessages =
+    messages.length > 0
+      ? messages
+      : (localChat?.messages.map((m, idx) => ({
+          id: `local-${idx}`,
+          role: m.role,
+          content: m.content,
+          status: "saved" as const,
+        })) ?? []);
+
+  // Respaldo local inmediato en localStorage mediante upsertChat al enviar y recibir mensajes (REQ-008)
+  useEffect(() => {
+    if (!conversationId) return;
+    if (messages.length > 0) {
+      upsertChat({
+        id: conversationId,
+        title: conversation?.title || localChat?.title || "Conversación",
+        updatedAt: new Date().toISOString(),
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      });
+      setLegacyChats(getSurvivingLegacyChats());
+    }
+  }, [conversationId, messages, conversation?.title, localChat?.title]);
+
+  const mergedHistory = mergeConversations(conversations, legacyChats);
+
   const scrollToEnd = useCallback(() => {
     const prefersReducedMotion =
       typeof window !== "undefined" &&
@@ -117,6 +148,7 @@ export function CoachChatScreen() {
   // Carga de historial en panel
   useEffect(() => {
     if (historyOpen) {
+      setLegacyChats(getSurvivingLegacyChats());
       void loadConversations({ limit: 20, offset: 0 });
     }
   }, [historyOpen, loadConversations]);
@@ -124,7 +156,7 @@ export function CoachChatScreen() {
   // Auto-scroll al recibir mensajes
   useEffect(() => {
     scrollToEnd();
-  }, [messages.length, scrollToEnd]);
+  }, [effectiveMessages.length, scrollToEnd]);
 
   function startNewChat() {
     router.push(chatHref(crypto.randomUUID()));
@@ -213,7 +245,7 @@ export function CoachChatScreen() {
             onClick={() => setHistoryOpen((open) => !open)}
             aria-expanded={historyOpen}
           >
-            Historial ({totalConversations || conversations.length})
+            Historial ({mergedHistory.length})
           </button>
           {userEmail ? (
             <button
@@ -281,12 +313,12 @@ export function CoachChatScreen() {
       {historyOpen ? (
         <div className="chat-history-panel-wrap">
           <ul className="chat-history-panel">
-            {conversations.length === 0 ? (
+            {mergedHistory.length === 0 ? (
               <li className="muted">
-                {isLoading ? "Cargando conversaciones…" : "Sin conversaciones guardadas en el servidor."}
+                {isLoading ? "Cargando conversaciones…" : "Sin conversaciones registradas."}
               </li>
             ) : (
-              conversations.map((item) => (
+              mergedHistory.map((item) => (
                 <li key={item.id}>
                   <Link
                     href={chatHref(item.id)}
@@ -315,11 +347,11 @@ export function CoachChatScreen() {
 
       {/* Hilo de conversación */}
       <div className="chat-thread" role="log" aria-live="polite">
-        {messages.length === 0 && !isSending ? (
+        {effectiveMessages.length === 0 && !isSending ? (
           <p className="muted chat-empty">Escribe tu pregunta sobre condición, sesión o retos.</p>
         ) : null}
 
-        {messages.map((message) => (
+        {effectiveMessages.map((message) => (
           <div
             key={message.id}
             className={message.role === "user" ? "chat-row chat-row-user" : "chat-row chat-row-assistant"}

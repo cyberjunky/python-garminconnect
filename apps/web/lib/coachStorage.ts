@@ -318,3 +318,50 @@ export function takePendingFirstMessage(chatId: string): string | null {
 export function chatHref(id: string) {
   return `/chat?conversation=${encodeURIComponent(id)}`;
 }
+
+export interface RemoteConversationItem {
+  id: string;
+  title?: string;
+  updatedAt?: string;
+}
+
+export interface MergedConversationItem {
+  id: string;
+  title: string;
+  updatedAt?: string;
+  isLocal?: boolean;
+}
+
+export function mergeConversations(
+  remote: RemoteConversationItem[],
+  local: StoredChat[]
+): MergedConversationItem[] {
+  const remoteIds = new Set(remote.map((c) => c.id));
+  const merged: MergedConversationItem[] = [
+    ...remote.map((r) => ({
+      id: r.id,
+      title: r.title || "Conversación",
+      updatedAt: r.updatedAt,
+      isLocal: false,
+    })),
+  ];
+
+  for (const l of local) {
+    if (!remoteIds.has(l.id)) {
+      merged.push({
+        id: l.id,
+        title: l.title || "Conversación en este dispositivo",
+        updatedAt: l.updatedAt,
+        isLocal: true,
+      });
+    }
+  }
+
+  // Ordenar descendentemente por fecha de actualización
+  return merged.sort((a, b) => {
+    const timeA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+    const timeB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+    return timeB - timeA;
+  });
+}
+

@@ -21,7 +21,11 @@ No Garmin credentials on Vercel — data comes from Supabase only.
 
 ## Versión y cambios
 
-- **Versión actual**: `0.5.0`
+- **Versión actual**: `0.5.1`
+- **Novedades en 0.5.1 (SPEC-004)**:
+  - **Corrección de desborde métricas en TodayCard**: Cuadrícula con `repeat(auto-fit, minmax(7.5rem, 1fr))`, contención flexible `min-width: 0; overflow: hidden;` en celdas, y quiebre tipográfico seguro `overflow-wrap: break-word` que previene cualquier desborde horizontal de la celda de Puntuación de Sueño (`scrollWidth <= clientWidth`) en resoluciones de 375px a 1600px.
+  - **Acceso prioritario y compacto a CoachChat en Inicio**: Reubicación de `CoachChat` inmediatamente tras el encabezado de página y antes de `TodayCard`, con altura acotada a ~25vh (`max-height: 28vh`, `min-height: 180px`), compositor compacto de 2 filas y scroll vertical interno en historial.
+  - **Historial sincronizado y respaldo local inmediato**: Sincronización reactiva del `accessToken` JWT en `CoachConversationViewModel` vía `setAccessToken(token)`, unificación deduplicada de conversaciones remotas y locales supervivientes de `localStorage` (`mergeConversations`), fallback local ante fallos de conexión o 401, y persistencia inmediata con `upsertChat` al enviar y recibir mensajes.
 - **Novedades en 0.5.0 (SPEC-003)**:
   - **Recomendaciones accionables de ciencia deportiva**: Alertas en «Qué atender» basadas en modulación parasimpática (HRV), cronobiología y deuda de sueño, recarga de Body Battery y ratio de carga aguda:crónica (ACWR < 1.3 de Gabbett).
   - **Tarjeta «Macrociclo» en 4 bloques**: Definición conceptual, momento y fase actual (con techo de FC y duración máxima), pauta práctica de optimización y fecha de culminación en formato `es-CO` con cuenta regresiva a hitos mayores (mmB 2027, Reto Letras 2027, Ironman 70.3 Cartagena 2027).
