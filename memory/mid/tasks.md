@@ -3,7 +3,7 @@ schema_version: 1
 project_id: python-garminconnect
 next_id: 39
 source: ies-cli
-last_updated: '2026-10-17T17:19:20Z'
+last_updated: '2026-10-17T17:49:19Z'
 ---
 
 # Task Ledger
@@ -2448,7 +2448,7 @@ title: 'I-PATCH-051: Corrección de desborde métricas, jerarquía de chat, hist
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: done
 input: Implementar las correcciones de desborde en PUNTUACIÓN DE SUEÑO, posicionamiento
   compacto de CoachChat al inicio (~25vh) antes de TodayCard, reactividad de token
   e historial local en chat, y bump SemVer 0.5.1 PATCH en Grupo R según SPEC-004 y
@@ -2501,18 +2501,21 @@ allowlist:
 - apps/web/lib/patch-layout-chat.test.mjs
 - deliverables/T-0037.md
 created_at: '2026-10-17T17:19:10Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-17T17:42:55Z'
+completed_at: '2026-10-17T17:42:55Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0037.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: 7b173861c16619dc83f88a6edcf2c236a7246f48
+  git_after: 7b173861c16619dc83f88a6edcf2c236a7246f48
+  result: success
 edits: []
 ```
 
@@ -2525,7 +2528,7 @@ title: 'V-VIEWER-051: Auditoría viewer integral independiente de SPEC-004 (SemV
 project_id: python-garminconnect
 origin: coordinator
 destination: viewer
-status: ready
+status: done
 input: Realizar una auditoría independiente en modo solo lectura de la implementación
   de T-0037 (commit en task/T-0037), ejecutando la suite de pruebas (npm test), build
   de Next.js, verificación de Clean Architecture, geometría centrada, ausencia de
@@ -2557,17 +2560,20 @@ acceptance_criteria:
 allowlist:
 - deliverables/T-0038.md
 created_at: '2026-10-17T17:19:20Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-17T17:49:18Z'
+completed_at: '2026-10-17T17:49:19Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0038.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  git_before: 7b173861c16619dc83f88a6edcf2c236a7246f48
+  git_after: 7b173861c16619dc83f88a6edcf2c236a7246f48
+  result: success
 edits: []
 ```
