@@ -90,34 +90,121 @@ export function zoneClass(zone: string) {
   return `badge badge-${zone}`;
 }
 
-export function buildFocusItems(readiness: ReadinessRow | null, payload: SnapshotPayload): string[] {
-  const items: string[] = [];
+export type FocusSeverity = "warning" | "danger" | "info";
+
+export type FocusRecommendation = {
+  metric: "sleep" | "sleep_score" | "hrv" | "bb_change" | "acwr" | "overreaching" | "all_aligned";
+  severity: FocusSeverity;
+  observation: string;
+  recommendation: string;
+  fullText: string;
+};
+
+export function buildFocusRecommendations(
+  readiness: ReadinessRow | null,
+  payload: SnapshotPayload
+): FocusRecommendation[] {
+  const recs: FocusRecommendation[] = [];
   const th = readiness?.thresholds || payload.thresholds || {};
   const r = readiness;
 
   if (r?.sleep_h != null && th.sleep_h != null && r.sleep_h < th.sleep_h) {
-    items.push(`Sueño ${r.sleep_h.toFixed(1)} h — meta ≥${th.sleep_h} h`);
+    const observation = `Sueño ${r.sleep_h.toFixed(1)} h — meta ≥${th.sleep_h.toFixed(1)} h`;
+    const recommendation =
+      "Mitiga la deuda de sueño acumulada: adelanta 45 min la hora de acostarte y retira pantallas y luz azul 1 h antes de dormir para favorecer la secreción de melatonina.";
+    recs.push({
+      metric: "sleep",
+      severity: "warning",
+      observation,
+      recommendation,
+      fullText: `${observation} — ${recommendation}`,
+    });
   }
+
   if (r?.sleep_score != null && th.sleep_score != null && r.sleep_score < th.sleep_score) {
-    items.push(`Puntuación de sueño ${r.sleep_score} — meta ≥${th.sleep_score}`);
+    const observation = `Puntuación de sueño ${r.sleep_score} — meta ≥${th.sleep_score}`;
+    const recommendation =
+      "Optimiza la higiene de sueño y recuperación: mantén la habitación fresca y en completa oscuridad, y evita estímulos cognitivos y pantallas antes del descanso nocturno.";
+    recs.push({
+      metric: "sleep_score",
+      severity: "warning",
+      observation,
+      recommendation,
+      fullText: `${observation} — ${recommendation}`,
+    });
   }
+
   if (r?.hrv != null && th.hrv != null && r.hrv < th.hrv) {
-    items.push(`HRV ${r.hrv.toFixed(0)} ms — meta ≥${th.hrv} ms`);
+    const observation = `HRV ${r.hrv.toFixed(0)} ms — meta ≥${th.hrv} ms`;
+    const recommendation =
+      "Tono vagal deprimido: modula la intensidad del entrenamiento, prioriza recuperación activa en Z1 o respiración diafragmática para restaurar el balance autonómico parasimpático.";
+    recs.push({
+      metric: "hrv",
+      severity: "warning",
+      observation,
+      recommendation,
+      fullText: `${observation} — ${recommendation}`,
+    });
   }
+
   if (r?.bb_change != null && th.bb_change != null && r.bb_change < th.bb_change) {
-    items.push(`Body Battery +${r.bb_change} — meta ≥+${th.bb_change}`);
+    const observation = `Body Battery +${r.bb_change} — meta ≥+${th.bb_change}`;
+    const recommendation =
+      "Recarga parasimpática insuficiente: mitiga estresores nocturnos evitando comidas pesadas o alcohol antes de dormir y optimiza el entorno de descanso para regeneración celular.";
+    recs.push({
+      metric: "bb_change",
+      severity: "warning",
+      observation,
+      recommendation,
+      fullText: `${observation} — ${recommendation}`,
+    });
   }
+
   const acwr = payload.training_load?.acwr;
   if (acwr != null && acwr > 1.3) {
-    items.push(`ACWR ${acwr.toFixed(1)} — meta <1.3 (descanso hasta baje)`);
+    const observation = `ACWR ${acwr.toFixed(2)} — meta < 1.3 (modelo Gabbett)`;
+    const recommendation =
+      "Riesgo de lesión elevado según Gabbett: reduce el volumen semanal entre 20% y 30% y evita picos de intensidad hasta descender al rango seguro (< 1.3).";
+    recs.push({
+      metric: "acwr",
+      severity: acwr > 1.5 ? "danger" : "warning",
+      observation,
+      recommendation,
+      fullText: `${observation} — ${recommendation}`,
+    });
   }
+
   if (payload.training_load?.status_phrase === "OVERREACHING") {
-    items.push("Garmin: Sobreesfuerzo — cero intensidad");
+    const observation = "Garmin: Sobreesfuerzo agudo (fatiga no funcional)";
+    const recommendation =
+      "Prescripción obligatoria ante fatiga no funcional: 24 a 48 h de descarga estricta o rodajes regenerativos Z1 de muy bajo impacto sin intensidad.";
+    recs.push({
+      metric: "overreaching",
+      severity: "danger",
+      observation,
+      recommendation,
+      fullText: `${observation} — ${recommendation}`,
+    });
   }
-  if (items.length === 0 && r?.zone === "VERDE") {
-    items.push("Indicadores alineados — puedes confirmar sesión del día");
+
+  if (recs.length === 0 && r?.zone === "VERDE") {
+    const observation = "Indicadores alineados en rango objetivo (zona VERDE)";
+    const recommendation =
+      "Condición fisiológica óptima: confirmada y autorizada la ejecución de la sesión planificada del día según el macrociclo.";
+    recs.push({
+      metric: "all_aligned",
+      severity: "info",
+      observation,
+      recommendation,
+      fullText: `Indicadores alineados — condición óptima para confirmar y ejecutar la sesión planificada del día según el macrociclo.`,
+    });
   }
-  return items;
+
+  return recs;
+}
+
+export function buildFocusItems(readiness: ReadinessRow | null, payload: SnapshotPayload): string[] {
+  return buildFocusRecommendations(readiness, payload).map((r) => r.fullText);
 }
 
 export function buildWins(readiness: ReadinessRow | null, payload: SnapshotPayload): string[] {
