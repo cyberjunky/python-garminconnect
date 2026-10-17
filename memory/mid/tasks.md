@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 33
+next_id: 34
 source: ies-cli
-last_updated: '2026-10-17T16:10:13Z'
+last_updated: '2026-10-17T16:13:14Z'
 ---
 
 # Task Ledger
@@ -2196,5 +2196,70 @@ metrics:
   git_before: 43de96b9a7bf0cbdccf50777e4792a318adb25f9
   git_after: 43de96b9a7bf0cbdccf50777e4792a318adb25f9
   result: success
+edits: []
+```
+
+## T-0033 — I-TENDENCIA-NAV: Ruta /tendencia, menú lateral, distribución de zonas y resumen mensual (SPEC-003)
+
+```yaml
+id: T-0033
+title: 'I-TENDENCIA-NAV: Ruta /tendencia, menú lateral, distribución de zonas y resumen
+  mensual (SPEC-003)'
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: Implementar la lógica y tipos de tendencia mensual en apps/web/lib/tendencia.ts
+  (distribución de zonas y agregación de métricas), agregar la ruta /tendencia en
+  apps/web/components/DashboardNav.tsx, crear la vista apps/web/app/(dashboard)/tendencia/page.tsx
+  con la barra de distribución, tarjetas de resumen y tabla con tabular-nums y fechas
+  es-CO, y estilos asociados en globals.css según SPEC-003 y PLAN-003.
+expected_output: Suites de tests unitarios apps/web/tests/tendencia-macrociclo/trend-monthly.test.mjs
+  y architecture.test.mjs pasando al 100%, Clean Architecture P22 preservada, renderizado
+  verificado y deliverable deliverables/T-0033.md con evidencia completa.
+parent_task: T-0031
+dependencies:
+- T-0032
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- 'REQ-013: Enlace /tendencia en menú lateral DashboardNav con icono e indicador de
+  estado activo'
+- 'REQ-014: Layout centrado max-width 1120px y padding responsive en /tendencia (ADR-003)'
+- 'REQ-015: Barra de distribución mensual de zonas VERDE/AMARILLO/ROJO con porcentajes
+  y días'
+- 'REQ-016: Resumen consolidado mensual de 30 días de HRV, sueño, Body Battery, estrés
+  y ACWR'
+- 'REQ-017: Tabla de evolución diaria con fechas es-CO, badges de zona y números tabulares
+  (tabular-nums)'
+- 'REQ-018: Tolerancia a datos incompletos o errores con estado vacío explicativo
+  amigable'
+- 'REQ-019: Clean Architecture (ADR-002, P22) con funciones puras en lib/tendencia.ts'
+allowlist:
+- apps/web/lib/tendencia.ts
+- apps/web/components/DashboardNav.tsx
+- apps/web/app/(dashboard)/tendencia/page.tsx
+- apps/web/app/globals.css
+- apps/web/tests/tendencia-macrociclo/trend-monthly.test.mjs
+- apps/web/tests/tendencia-macrociclo/architecture.test.mjs
+- deliverables/T-0033.md
+created_at: '2026-10-17T16:13:14Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
 edits: []
 ```
