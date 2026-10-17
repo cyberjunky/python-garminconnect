@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 34
+next_id: 35
 source: ies-cli
-last_updated: '2026-10-17T16:25:57Z'
+last_updated: '2026-10-17T16:26:44Z'
 ---
 
 # Task Ledger
@@ -2264,5 +2264,61 @@ metrics:
   git_before: 609c523cd381eccf83c62dc8f6e3ce0ce1632431
   git_after: 609c523cd381eccf83c62dc8f6e3ce0ce1632431
   result: success
+edits: []
+```
+
+## T-0034 — I-RELEASE-050: Bump SemVer 0.5.0, sincronización grupo R y suite consolidada (SPEC-003)
+
+```yaml
+id: T-0034
+title: 'I-RELEASE-050: Bump SemVer 0.5.0, sincronización grupo R y suite consolidada
+  (SPEC-003)'
+project_id: python-garminconnect
+origin: coordinator
+destination: implementer
+status: ready
+input: Actualizar la versión de la aplicación a SemVer 0.5.0 MINOR en apps/web/package.json,
+  ambos niveles de package-lock.json, README.md y CHANGELOG.md documentando las 3
+  mejoras de SPEC-003 (recomendaciones accionables de ciencia deportiva, tarjeta macrociclo
+  en 4 bloques y ruta /tendencia con navegación), agregar la suite runner apps/web/lib/tendencia-macrociclo.test.mjs
+  para integración con npm test, y verificar que pasen todas las pruebas sin dependencias
+  nuevas.
+expected_output: Versión 0.5.0 sincronizada en todos los archivos del grupo R, apps/web/lib/tendencia-macrociclo.test.mjs
+  ejecutando todas las pruebas de tendencia-macrociclo con npm test, 0 dependencias
+  añadidas, build exitoso y deliverable deliverables/T-0034.md con evidencia completa.
+parent_task: T-0031
+dependencies:
+- T-0033
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- 'REQ-020: Versionado SemVer 0.5.0 MINOR en package.json, package-lock.json (ambos
+  niveles), version.test.mjs, README.md y entrada formal en CHANGELOG.md'
+allowlist:
+- apps/web/package.json
+- apps/web/package-lock.json
+- apps/web/lib/version.test.mjs
+- apps/web/README.md
+- apps/web/CHANGELOG.md
+- apps/web/lib/tendencia-macrociclo.test.mjs
+- deliverables/T-0034.md
+created_at: '2026-10-17T16:26:44Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
 edits: []
 ```
