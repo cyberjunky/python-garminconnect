@@ -62,23 +62,18 @@ Decision vigente: `memory/mid/decisions.md#DEC-008` y
   de codificar; un nombre de modelo distinto no es bloqueo por si solo.
 - Configuracion deseada no prueba el modelo efectivo del selector de una sesion.
 
-## Estado de producto y proximo gate
+## Estado de producto y proximo ciclo
 
-G0 aprobado por el humano («Adelante, aprobado»), DEC-009. T-0024 materializa
-SPEC-002/PLAN-002 y ADR-003/004/005, actualiza standards y registra la aprobacion
-por CLI. Ver status/decision_ref en specs para la evidencia del registro.
-T-0021 conserva valor de antecedente; T-0022 es la propuesta integral aceptada.
-G1 de configuracion ya aplicado y aceptado mediante T-0023/DEC-008/ADR-006.
+SPEC-002 y PLAN-002 completados al 100%, auditados por Viewer independiente con
+veredicto APROBAR e integrados en `master` mediante merge humano en commit `26de2fb`.
+- T-0025 / T-0026 (I-UI / V-UI): Centrado responsive en Safari y 0.4.0-rc.1 (done 🟢).
+- T-0027 / T-0028 (I-SERVER / V-SERVER): Backend de historial privado, auth RLS, modelo exclusivo gpt-6-luna High, Clean Architecture P22 y 0.4.0-rc.2 (done 🟢).
+- T-0029 / T-0030 (I-CLIENT / V-INTEGRAL): ViewModel MVVM desacoplado, UI de chat sincronizado, login Supabase Auth OTP, importación opt-in con preservación byte a byte de localStorage, retiro de selectores de modelos y versión final 0.4.0 (done 🟢).
+- 58/58 tests pasando, build Next.js 15 código 0 y 0 drift de allowlist.
 
-Siguiente gate: G2 I-UI, propuesta cerrada en deliverables/T-0024.md. Crear task
-implementer, prompt y worktree solo tras su aprobacion. No despachar viewer hasta
-G3. Historial/Auth/Luna requieren las etapas servidor y cliente del plan; el
-producto aun no esta corregido. HITL por gate, sin inferencia, datos reales,
-merge o deploy implicitos. No declarar conversaciones recuperadas.
+Siguiente ciclo de desarrollo: Creación y especificación formal de `SPEC-003` (versión 0.5.0 MINOR) para implementar la cola de producto solicitada en este handoff («Qué atender», tarjeta «Macrociclo» de 4 bloques y nueva ruta `/tendencia`).
 
-T-0017/T-0020 conservan estado y alcance; reservar archivos de version de forma
-serial, sin downgrade. Para estados formales consultar ledger vivo; las entregas
-aceptadas no equivalen a cierre done sin gate/viewer y transicion CLI.
+Despliegue de 0.4.0 a producción: Reservado a ejecución humana siguiendo PLAN-002 §8 (migración SQL en Supabase cloud, configuración de OTP por invitación y despliegue a Vercel con OPENAI_API_KEY).
 
 ## Cola de actualizaciones solicitadas por el humano (2026-10-17)
 
