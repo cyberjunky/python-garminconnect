@@ -1,147 +1,269 @@
-import { NextResponse } from "next/server";
-import { conditionPrompt, loadCondition } from "@/lib/condition";
-import { pickModel, serverModelCatalog } from "@/lib/openaiModels";
+import { SupabaseIdentityService } from "@/lib/infra/auth/supabaseIdentityService";
+import { SupabaseConversationRepository } from "@/lib/infra/chat/supabaseConversationRepository";
+import { SupabaseHealthContext } from "@/lib/infra/health/supabaseHealthContext";
+import { OpenAiCoachProvider } from "@/lib/infra/coach/openAiCoachProvider";
+import { SendMessageUseCase } from "@/lib/chat/application/sendMessageUseCase";
+import {
+  ConcurrencyConflictError,
+  HealthProfileNotLinkedError,
+  NotFoundError,
+  OperationLeaseActiveError,
+  UnauthorizedError,
+  ValidationError,
+  CoachProviderError,
+} from "@/lib/chat/domain/errors";
+import { logTechnicalEvent } from "@/lib/infra/logging";
 
 export const dynamic = "force-dynamic";
 
-type IncomingMessage = { role?: string; content?: string };
-
-const MAX_MESSAGES = 12;
-const MAX_CHARS = 4000;
-
-function sanitize(messages: IncomingMessage[]) {
-  return messages
-    .filter((message) => message.role === "user" || message.role === "assistant")
-    .map((message) => ({
-      role: message.role as "user" | "assistant",
-      content: String(message.content || "").slice(0, MAX_CHARS),
-    }))
-    .filter((message) => message.content.trim().length > 0)
-    .slice(-MAX_MESSAGES);
-}
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store",
+};
 
 export async function GET() {
-  const configured = Boolean(process.env.OPENAI_API_KEY);
-  const { models, defaultModel } = await serverModelCatalog();
-  return NextResponse.json({
-    ok: true,
-    configured,
-    models,
-    defaultModel,
-    modelsFromAccount: configured && models.length > 4,
-  });
-}
-
-const FIXED_TEMP_MODELS = /^(o\d|gpt-5|gpt-6|chatgpt-)/i;
-
-async function executeOpenAiChatCompletion(
-  apiKey: string,
-  model: string,
-  messages: { role: "system" | "user" | "assistant"; content: string }[]
-) {
-  const initialUseTemp = !FIXED_TEMP_MODELS.test(model);
-
-  const sendRequest = async (useTemp: boolean) => {
-    const payload: {
-      model: string;
-      messages: { role: string; content: string }[];
-      temperature?: number;
-    } = {
-      model,
-      messages,
-    };
-    if (useTemp) {
-      payload.temperature = 0.4;
-    }
-
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      cache: "no-store",
-    });
-
-    let body: {
-      error?: { message?: string };
-      choices?: { message?: { content?: string } }[];
-    } = {};
-    try {
-      body = (await res.json()) as typeof body;
-    } catch {
-      // non-JSON body
-    }
-
-    return { res, body, usedTemp: useTemp };
-  };
-
-  let outcome = await sendRequest(initialUseTemp);
-
-  // Reintento automático resiliente si falla por incompatibilidad de temperature
-  if (!outcome.res.ok && outcome.usedTemp) {
-    const errorDetails = `${outcome.body.error?.message || ""} ${outcome.res.statusText || ""}`;
-    if (/temperature/i.test(errorDetails)) {
-      outcome = await sendRequest(false);
-    }
-  }
-
-  return outcome;
+  return Response.json(
+    {
+      ok: true,
+      model: "gpt-6-luna",
+      reasoning_effort: "high",
+    },
+    { headers: NO_STORE_HEADERS }
+  );
 }
 
 export async function POST(request: Request) {
+  const start = Date.now();
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     console.error("Missing OPENAI_API_KEY in environment");
-    return NextResponse.json(
-      { ok: false, error: "El servicio del entrenador no está disponible en este momento. Intenta de nuevo más tarde." },
-      { status: 503 }
+    return Response.json(
+      {
+        ok: false,
+        error: "El servicio del entrenador no está disponible en este momento. Intenta de nuevo más tarde.",
+      },
+      { status: 503, headers: NO_STORE_HEADERS }
     );
   }
 
-  let payload: { messages?: IncomingMessage[]; model?: string };
+  const authHeader = request.headers.get("Authorization");
+  const identityService = new SupabaseIdentityService();
+  let ownerId: string;
   try {
-    payload = (await request.json()) as { messages?: IncomingMessage[]; model?: string };
-  } catch {
-    return NextResponse.json({ ok: false, error: "JSON inválido" }, { status: 400 });
-  }
-
-  const messages = sanitize(payload.messages || []);
-  if (messages.length === 0 || messages[messages.length - 1].role !== "user") {
-    return NextResponse.json({ ok: false, error: "Falta el mensaje" }, { status: 400 });
-  }
-
-  let system: string;
-  try {
-    const condition = await loadCondition();
-    system = conditionPrompt(condition);
+    const auth = await identityService.authenticateUser(authHeader);
+    ownerId = auth.userId;
   } catch (err) {
-    const error = err instanceof Error ? err.message : "No se pudo leer la condición";
-    return NextResponse.json({ ok: false, error }, { status: 502 });
+    const durationMs = Date.now() - start;
+    logTechnicalEvent({
+      statusCode: 401,
+      durationMs,
+      result: "unauthorized",
+      code: err instanceof UnauthorizedError ? err.code : "UNAUTHORIZED",
+    });
+    return Response.json(
+      { ok: false, error: "Sesión no válida o no autenticada" },
+      { status: 401, headers: NO_STORE_HEADERS }
+    );
   }
 
-  const catalog = await serverModelCatalog();
-  const model = pickModel(payload.model, catalog.models, catalog.defaultModel);
+  let payload: Record<string, unknown> = {};
   try {
-    const chatMessages: { role: "system" | "user" | "assistant"; content: string }[] = [
-      { role: "system", content: system },
-      ...messages,
-    ];
-    const outcome = await executeOpenAiChatCompletion(apiKey, model, chatMessages);
-    if (!outcome.res.ok) {
-      return NextResponse.json(
-        { ok: false, error: outcome.body.error?.message || `OpenAI respondió ${outcome.res.status}` },
-        { status: 502 }
+    payload = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return Response.json(
+      { ok: false, error: "JSON inválido" },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  // Extracción y mapeo de campos con soporte retrocompatible
+  let content = typeof payload.content === "string" ? payload.content : "";
+  if (!content && Array.isArray(payload.messages) && payload.messages.length > 0) {
+    const last = payload.messages[payload.messages.length - 1];
+    if (last && typeof last.content === "string") {
+      content = last.content;
+    }
+  }
+
+  const conversationId =
+    typeof payload.conversation_id === "string"
+      ? payload.conversation_id
+      : typeof payload.conversationId === "string"
+        ? payload.conversationId
+        : "";
+
+  const operationId =
+    typeof payload.operation_id === "string"
+      ? payload.operation_id
+      : typeof payload.operationId === "string"
+        ? payload.operationId
+        : "";
+
+  const expectedRevision =
+    typeof payload.expected_revision === "number"
+      ? payload.expected_revision
+      : typeof payload.expectedRevision === "number"
+        ? payload.expectedRevision
+        : 1;
+
+  if (!content.trim()) {
+    return Response.json(
+      { ok: false, error: "Falta el mensaje" },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  if (content.length > 4000) {
+    return Response.json(
+      { ok: false, error: "El mensaje supera el límite máximo permitido de 4000 caracteres" },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  if (!conversationId) {
+    return Response.json(
+      { ok: false, error: "Falta el identificador de conversación" },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  if (!operationId) {
+    return Response.json(
+      { ok: false, error: "Falta el identificador de operación" },
+      { status: 400, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  const repo = new SupabaseConversationRepository();
+  const healthPort = new SupabaseHealthContext();
+  const coachPort = new OpenAiCoachProvider({ apiKey });
+
+  const useCase = new SendMessageUseCase({
+    conversationRepository: repo,
+    healthContextPort: healthPort,
+    coachProviderPort: coachPort,
+  });
+
+  try {
+    const result = await useCase.execute({
+      ownerId,
+      conversationId,
+      content,
+      operationId,
+      expectedRevision,
+    });
+
+    const durationMs = Date.now() - start;
+    logTechnicalEvent({
+      operationId,
+      conversationId,
+      statusCode: 200,
+      durationMs,
+      result: "success",
+    });
+
+    return Response.json(
+      {
+        ok: true,
+        message: result.assistantMessage,
+        revision: result.conversation.revision,
+        cached: result.cached,
+        reply: result.assistantMessage.content,
+        model: "gpt-6-luna",
+      },
+      { status: 200, headers: NO_STORE_HEADERS }
+    );
+  } catch (err) {
+    const durationMs = Date.now() - start;
+
+    if (err instanceof HealthProfileNotLinkedError) {
+      logTechnicalEvent({
+        operationId,
+        conversationId,
+        statusCode: 403,
+        durationMs,
+        result: "forbidden",
+        code: err.code,
+      });
+      return Response.json(
+        { ok: false, error: err.message },
+        { status: 403, headers: NO_STORE_HEADERS }
       );
     }
-    const reply = outcome.body.choices?.[0]?.message?.content?.trim();
-    if (!reply) {
-      return NextResponse.json({ ok: false, error: "OpenAI no devolvió texto" }, { status: 502 });
+
+    if (err instanceof ConcurrencyConflictError || err instanceof OperationLeaseActiveError) {
+      logTechnicalEvent({
+        operationId,
+        conversationId,
+        statusCode: 409,
+        durationMs,
+        result: "conflict",
+        code: err.code,
+      });
+      return Response.json(
+        { ok: false, error: err.message, code: err.code },
+        { status: 409, headers: NO_STORE_HEADERS }
+      );
     }
-    return NextResponse.json({ ok: true, reply, model });
-  } catch (err) {
-    const error = err instanceof Error ? err.message : "No se pudo consultar OpenAI";
-    return NextResponse.json({ ok: false, error }, { status: 502 });
+
+    if (err instanceof NotFoundError) {
+      logTechnicalEvent({
+        operationId,
+        conversationId,
+        statusCode: 404,
+        durationMs,
+        result: "not_found",
+        code: err.code,
+      });
+      return Response.json(
+        { ok: false, error: err.message },
+        { status: 404, headers: NO_STORE_HEADERS }
+      );
+    }
+
+    if (err instanceof ValidationError) {
+      logTechnicalEvent({
+        operationId,
+        conversationId,
+        statusCode: 400,
+        durationMs,
+        result: "error",
+        code: err.code,
+      });
+      return Response.json(
+        { ok: false, error: err.message },
+        { status: 400, headers: NO_STORE_HEADERS }
+      );
+    }
+
+    if (err instanceof CoachProviderError) {
+      logTechnicalEvent({
+        operationId,
+        conversationId,
+        statusCode: err.statusCode,
+        durationMs,
+        result: "error",
+        code: err.code,
+      });
+      return Response.json(
+        { ok: false, error: err.message },
+        { status: err.statusCode >= 500 ? 502 : err.statusCode, headers: NO_STORE_HEADERS }
+      );
+    }
+
+    const errorMsg = err instanceof Error ? err.message : "Error inesperado en el servidor";
+    logTechnicalEvent({
+      operationId,
+      conversationId,
+      statusCode: 500,
+      durationMs,
+      result: "error",
+      code: "INTERNAL_ERROR",
+    });
+
+    return Response.json(
+      { ok: false, error: errorMsg },
+      { status: 500, headers: NO_STORE_HEADERS }
+    );
   }
 }

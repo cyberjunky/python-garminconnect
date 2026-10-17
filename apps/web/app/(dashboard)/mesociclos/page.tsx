@@ -1,7 +1,7 @@
 import { MesocycleVolumeChart } from "@/components/MesocycleVolumeChart";
 import { formatDateEsCO, todayBogotaIso } from "@/lib/lastUpdated";
 import { MESOCYCLE_ANCHOR, mergePlannedExecuted, mondayOf, type WeeklySportRow } from "@/lib/mesocycle";
-import { MVP_USER_ID, supabase } from "@/lib/supabase";
+import { MVP_USER_ID, supabase } from "@/lib/infra/supabase";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;

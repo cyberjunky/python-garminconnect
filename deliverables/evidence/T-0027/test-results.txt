@@ -1,0 +1,252 @@
+
+> tri-coach-web@0.4.0-rc.2 test
+> node --test lib/*.test.mjs
+
+TAP version 13
+# Subtest: REQ-022 / P22: Dominio en lib/chat/domain es TypeScript puro sin dependencias externas
+ok 1 - REQ-022 / P22: Dominio en lib/chat/domain es TypeScript puro sin dependencias externas
+  ---
+  duration_ms: 1.635125
+  type: 'test'
+  ...
+# Subtest: REQ-022 / P22: Aplicacion en lib/chat/application depende solo del dominio y puertos, no de adaptadores
+ok 2 - REQ-022 / P22: Aplicacion en lib/chat/application depende solo del dominio y puertos, no de adaptadores
+  ---
+  duration_ms: 0.550208
+  type: 'test'
+  ...
+# Subtest: REQ-022 / P22: lib/condition.ts conserva calculos y prompt puros sin importar Supabase
+ok 3 - REQ-022 / P22: lib/condition.ts conserva calculos y prompt puros sin importar Supabase
+  ---
+  duration_ms: 0.146083
+  type: 'test'
+  ...
+# Subtest: REQ-022 / P22: Adaptadores de infraestructura en lib/infra implementan puertos y no son importados por dominio
+ok 4 - REQ-022 / P22: Adaptadores de infraestructura en lib/infra implementan puertos y no son importados por dominio
+  ---
+  duration_ms: 0.231458
+  type: 'test'
+  ...
+# (node:78166) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0027/apps/web/lib/chat/domain/validation.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0027/apps/web/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: REQ-006 / P06: Mensaje nuevo maximo 4000 caracteres, rechaza excedente sin truncar
+ok 5 - REQ-006 / P06: Mensaje nuevo maximo 4000 caracteres, rechaza excedente sin truncar
+  ---
+  duration_ms: 61.675416
+  type: 'test'
+  ...
+# Subtest: REQ-018 / P18: selectContextWindow extrae los ultimos 12 mensajes sin alterar la coleccion completa
+ok 6 - REQ-018 / P18: selectContextWindow extrae los ultimos 12 mensajes sin alterar la coleccion completa
+  ---
+  duration_ms: 5.071166
+  type: 'test'
+  ...
+# Subtest: REQ-009 / REQ-010 / P09 / P10: Reglas de estado de operacion y lease de concurrencia
+ok 7 - REQ-009 / REQ-010 / P09 / P10: Reglas de estado de operacion y lease de concurrencia
+  ---
+  duration_ms: 0.925458
+  type: 'test'
+  ...
+# Subtest: REQ-004 & REQ-005 / P04 & P05: Usuario A no accede a conversaciones de usuario B
+ok 8 - REQ-004 & REQ-005 / P04 & P05: Usuario A no accede a conversaciones de usuario B
+  ---
+  duration_ms: 6.763375
+  type: 'test'
+  ...
+# Subtest: REQ-014 / P14: Usuario sin vinculo a salud recibe 403 y no llama al modelo ni lee salud
+ok 9 - REQ-014 / P14: Usuario sin vinculo a salud recibe 403 y no llama al modelo ni lee salud
+  ---
+  duration_ms: 0.836334
+  type: 'test'
+  ...
+# Subtest: REQ-009 / P09: Operacion repetida con mismo operationId devuelve resultado guardado sin duplicar inferencia
+ok 10 - REQ-009 / P09: Operacion repetida con mismo operationId devuelve resultado guardado sin duplicar inferencia
+  ---
+  duration_ms: 0.494333
+  type: 'test'
+  ...
+# Subtest: REQ-010 / P10: Escritura sobre revision desactualizada genera conflicto 409
+ok 11 - REQ-010 / P10: Escritura sobre revision desactualizada genera conflicto 409
+  ---
+  duration_ms: 0.704084
+  type: 'test'
+  ...
+# Subtest: REQ-018 / P18: Envio al coach selecciona maximo ultimos 12 mensajes preservando historial en DB
+ok 12 - REQ-018 / P18: Envio al coach selecciona maximo ultimos 12 mensajes preservando historial en DB
+  ---
+  duration_ms: 0.291375
+  type: 'test'
+  ...
+# Subtest: REQ-016 / P16: Fallo en proveedor rechaza sin sustituir modelo y deja mensaje usuario
+ok 13 - REQ-016 / P16: Fallo en proveedor rechaza sin sustituir modelo y deja mensaje usuario
+  ---
+  duration_ms: 0.289541
+  type: 'test'
+  ...
+# Subtest: REQ-015 / P15: OpenAiCoachProvider fuerza exclusivamente gpt-6-luna con reasoning_effort high sin tools
+ok 14 - REQ-015 / P15: OpenAiCoachProvider fuerza exclusivamente gpt-6-luna con reasoning_effort high sin tools
+  ---
+  duration_ms: 1.622333
+  type: 'test'
+  ...
+# Subtest: REQ-016 / P16: OpenAiCoachProvider ante error HTTP lanza error tipificado sin fallback
+ok 15 - REQ-016 / P16: OpenAiCoachProvider ante error HTTP lanza error tipificado sin fallback
+  ---
+  duration_ms: 1.126041
+  type: 'test'
+  ...
+# Subtest: REQ-019 / P19: Logging tecnico registra solo metadatos opacos sin salud, emails, tokens ni texto
+ok 16 - REQ-019 / P19: Logging tecnico registra solo metadatos opacos sin salud, emails, tokens ni texto
+  ---
+  duration_ms: 1.347667
+  type: 'test'
+  ...
+# [COACH_AUDIT] time=2026-10-17T14:24:40.039Z result=unauthorized status=401 duration=2ms code=UNAUTHORIZED
+# [COACH_AUDIT] time=2026-10-17T14:24:40.040Z result=unauthorized status=401 duration=0ms code=UNAUTHORIZED
+# Subtest: API /api/conversations rechaza 401 sin sesion y responde no-store
+ok 17 - API /api/conversations rechaza 401 sin sesion y responde no-store
+  ---
+  duration_ms: 58.906875
+  type: 'test'
+  ...
+# [COACH_AUDIT] time=2026-10-17T14:24:40.061Z result=unauthorized status=401 duration=0ms code=UNAUTHORIZED
+# [COACH_AUDIT] time=2026-10-17T14:24:40.064Z result=unauthorized status=401 duration=2ms code=UNAUTHORIZED
+# Subtest: API /api/chat valida payload, auth y cache no-store
+ok 18 - API /api/chat valida payload, auth y cache no-store
+  ---
+  duration_ms: 24.555542
+  type: 'test'
+  ...
+# Subtest: Migracion 20261017_coach_history.sql contiene las 5 tablas, RLS, checks y revoke de anon
+ok 19 - Migracion 20261017_coach_history.sql contiene las 5 tablas, RLS, checks y revoke de anon
+  ---
+  duration_ms: 0.465583
+  type: 'test'
+  ...
+# Subtest: REQ-001 / P01: globals.css centra .app-main > main con max-width 1120px y paddings 28px (>800px) / 16px (<=800px)
+ok 20 - REQ-001 / P01: globals.css centra .app-main > main con max-width 1120px y paddings 28px (>800px) / 16px (<=800px)
+  ---
+  duration_ms: 0.947792
+  type: 'test'
+  ...
+# Subtest: REQ-001 / P01: evaluador geometrico pasa las 14 celdas de la matriz S con la regla nueva y detecta el sesgo de 880px/margin:0
+ok 21 - REQ-001 / P01: evaluador geometrico pasa las 14 celdas de la matriz S con la regla nueva y detecta el sesgo de 880px/margin:0
+  ---
+  duration_ms: 0.451084
+  type: 'test'
+  ...
+# Subtest: REQ-002 / P02 & REQ-003 / P03: preserva scroll interno de graficas y layout independiente del chat
+ok 22 - REQ-002 / P02 & REQ-003 / P03: preserva scroll interno de graficas y layout independiente del chat
+  ---
+  duration_ms: 0.182542
+  type: 'test'
+  ...
+# Subtest: REQ-022 / P22: verificacion de direccion de dependencias (Clean Architecture) en archivos tocados y dominio
+ok 23 - REQ-022 / P22: verificacion de direccion de dependencias (Clean Architecture) en archivos tocados y dominio
+  ---
+  duration_ms: 6.007625
+  type: 'test'
+  ...
+# Subtest: REQ-001..003 / P01..P03: evidencia de las 14 celdas de la matriz S y navegacion P03 en Safari real
+ok 24 - REQ-001..003 / P01..P03: evidencia de las 14 celdas de la matriz S y navegacion P03 en Safari real
+  ---
+  duration_ms: 0.445541
+  type: 'test'
+  ...
+# (node:78168) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0027/apps/web/lib/lastActivity.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0027/apps/web/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: formatActivityWhen formats local time without 5-hour offset
+ok 25 - formatActivityWhen formats local time without 5-hour offset
+  ---
+  duration_ms: 8.801625
+  type: 'test'
+  ...
+# Subtest: todayBogotaIso calculates date in America/Bogota timezone
+ok 26 - todayBogotaIso calculates date in America/Bogota timezone
+  ---
+  duration_ms: 0.352125
+  type: 'test'
+  ...
+# Subtest: BB change sign formatting logic prevents +-12
+ok 27 - BB change sign formatting logic prevents +-12
+  ---
+  duration_ms: 0.101792
+  type: 'test'
+  ...
+# (node:78169) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0027/apps/web/lib/lastUpdated.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /Users/alarcondiegof/ies-projects/python-garminconnect/.ies/worktrees/T-0027/apps/web/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: formatDateEsCO formats dates with Spanish locale
+ok 28 - formatDateEsCO formats dates with Spanish locale
+  ---
+  duration_ms: 8.649625
+  type: 'test'
+  ...
+# Subtest: formatLastUpdatedLabel produces friendly Spanish text
+ok 29 - formatLastUpdatedLabel produces friendly Spanish text
+  ---
+  duration_ms: 0.578667
+  type: 'test'
+  ...
+# Subtest: sportLabel translates raw English sports to Spanish
+ok 30 - sportLabel translates raw English sports to Spanish
+  ---
+  duration_ms: 0.097334
+  type: 'test'
+  ...
+# Subtest: formatGarminStatus translates raw Garmin training status to Spanish
+ok 31 - formatGarminStatus translates raw Garmin training status to Spanish
+  ---
+  duration_ms: 0.087208
+  type: 'test'
+  ...
+# Subtest: globals.css mobile layout enforces minmax(0, 1fr) and min-width: 0
+ok 32 - globals.css mobile layout enforces minmax(0, 1fr) and min-width: 0
+  ---
+  duration_ms: 0.518875
+  type: 'test'
+  ...
+# Subtest: chat API route returns friendly Spanish copy and no technical leaks
+ok 33 - chat API route returns friendly Spanish copy and no technical leaks
+  ---
+  duration_ms: 0.159125
+  type: 'test'
+  ...
+# Subtest: apps/web/package.json y package-lock.json tienen version 0.4.0-rc.2
+ok 34 - apps/web/package.json y package-lock.json tienen version 0.4.0-rc.2
+  ---
+  duration_ms: 0.954875
+  type: 'test'
+  ...
+# Subtest: apps/web/CHANGELOG.md cubre 0.1.0, 0.2.0, 0.3.0, 0.4.0-rc.1 y 0.4.0-rc.2 con alcance integral del stack
+ok 35 - apps/web/CHANGELOG.md cubre 0.1.0, 0.2.0, 0.3.0, 0.4.0-rc.1 y 0.4.0-rc.2 con alcance integral del stack
+  ---
+  duration_ms: 0.309792
+  type: 'test'
+  ...
+# Subtest: apps/web/README.md contiene seccion 'Version y cambios' con version 0.4.0-rc.2 y enlace a CHANGELOG.md
+ok 36 - apps/web/README.md contiene seccion 'Version y cambios' con version 0.4.0-rc.2 y enlace a CHANGELOG.md
+  ---
+  duration_ms: 0.141666
+  type: 'test'
+  ...
+# Subtest: La version del dashboard en package.json genera 'v0.4.0-rc.2'
+ok 37 - La version del dashboard en package.json genera 'v0.4.0-rc.2'
+  ---
+  duration_ms: 0.138583
+  type: 'test'
+  ...
+1..37
+# tests 37
+# suites 0
+# pass 37
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 217.303584

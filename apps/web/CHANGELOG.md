@@ -14,6 +14,24 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [0.4.0-rc.2] - 2026-10-17
+
+Candidato de release de la etapa `I-SERVER` de `SPEC-002` (`PLAN-002`, `ADR-002`, `ADR-004`, `ADR-005`), enfocado en la persistencia privada en base de datos bajo Supabase Auth con RLS, endpoints de historial y chat con control de concurrencia e idempotencia, forzado exclusivo de `gpt-6-luna` con `reasoning_effort: high` sin tools, aislamiento de contexto de salud MVP por vínculo owner y ventana de 12 mensajes.
+
+### Añadido
+- **Migración SQL aditiva y RLS privado (`20261017_coach_history.sql`)**: Creación de tablas `coach_conversations`, `coach_messages`, `coach_operations`, `coach_imports` y `coach_profile_links` con Row Level Security habilitado (`auth.uid() = owner_id`), claves foráneas compuestas de aislamiento de propietario y revocación estricta de permisos para rol `anon` (`REQ-004`, `REQ-005`, `P04`, `P05`).
+- **Arquitectura limpia de chat (`apps/web/lib/chat/` e `infra/`)**: Implementación de entidades de dominio puras (`Conversation`, `Message`, `Operation`, validación de 4000 caracteres), puertos de aplicación (`IConversationRepository`, `IIdentityService`, `IHealthContextPort`, `ICoachProviderPort`) y adaptadores en `lib/infra/` (`chat`, `auth`, `health`, `coach`) bajo la regla de dependencia P22 (`ADR-002`).
+- **Endpoints de API privados con cache `no-store`**: Rutas `/api/conversations` (listar y crear conversaciones) y `/api/conversations/[id]/messages` (historial cronológico de mensajes) con autenticación Supabase Bearer JWT, paginación y cabecera `Cache-Control: no-store` (`REQ-007`).
+- **Idempotencia y control de concurrencia con lease**: Reclamación transaccional de operaciones en `/api/chat` con lease de 30 segundos; reintentos o doble clic devuelven la respuesta persistida sin duplicar inferencia ni mensajes en DB (`REQ-009`, `P09`), y colisiones de revisión responden deterministamente con HTTP 409 (`REQ-010`, `P10`).
+- **Forzado exclusivo de modelo en servidor (`OpenAiCoachProvider`)**: Ejecución fija de `gpt-6-luna` con `reasoning_effort: high`, sin `temperature`, sin `tools` ni function calling, y sin fallback a modelos alternativos ante errores del proveedor (`REQ-015`, `REQ-016`, `P15`, `P16`).
+- **Aislamiento de salud y retención íntegra**: Verificación estricta de vínculo a perfil MVP en servidor (`REQ-014`, `P14`); retención íntegra de mensajes en base de datos mientras se entrega una ventana de los últimos 12 mensajes al coach (`REQ-018`, `P18`).
+- **Logging técnico sanitizado**: Formateo estructurado de logs de auditoría conteniendo únicamente metadatos opacos (`operation_id`, `conversation_id`, duración, código de estado), sin registrar datos de salud, emails ni tokens (`REQ-019`, `P19`).
+
+### Modificado
+- **Refactorización de infraestructura**: Reubicación de `apps/web/lib/supabase.ts` y `apps/web/lib/openaiModels.ts` hacia `apps/web/lib/infra/` conforme a `ADR-002`, actualizando importaciones en `condition.ts`, `dashboard.ts` y páginas del dashboard sin romper compatibilidad.
+
+---
+
 ## [0.4.0-rc.1] - 2026-10-17
 
 Candidato de release de la etapa `I-UI` de `SPEC-002` (`PLAN-002`, `ADR-003`), centrado en corregir la distribución responsive del contenedor principal del dashboard en Safari preservando la composición independiente del chat.

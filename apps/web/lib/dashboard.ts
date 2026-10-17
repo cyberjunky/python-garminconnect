@@ -1,5 +1,5 @@
 import { buildActualSeries } from "@/lib/preparation";
-import { MVP_USER_ID, supabase } from "@/lib/supabase";
+import { MVP_USER_ID, supabase } from "@/lib/infra/supabase";
 import { formatGarminStatus } from "@/lib/lastActivity";
 
 export { formatGarminStatus };
