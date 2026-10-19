@@ -44,7 +44,7 @@ def _mfa_page(title, mfa_method, code_sent_to=None, customer_guid="cg-123"):
         vars_.append(f'var codeSentTo = "{code_sent_to}";')
     return (
         f'<html><head><title>{title}</title></head><body>'
-        f'<script>{" ".join(vars_)}</script></body></html>'
+        f'<script>{" ".join(vars_)}</script>{_CSRF_HTML}</body></html>'
     )
 
 
@@ -108,7 +108,7 @@ def test_mfa_titles_trigger_mfa(title, method):
         c._widget_web_login("e@x.com", "pw")
 
     assert c._mfa_flow == "widget"
-    assert c._widget_last_resp is not None
+    assert c._widget_csrf_token == "tok123"
 
 
 def test_email_mfa_requests_code_when_not_already_sent():
@@ -194,7 +194,7 @@ def test_unexpected_title_still_errors():
 
 def _set_widget_mfa_context(c, verify_text):
     """Prime the widget-MFA state as ``_widget_web_login`` leaves it on MFA."""
-    c._widget_last_resp = _resp(text=_CSRF_HTML)  # carries the CSRF token
+    c._widget_csrf_token = "tok123"
     c._mfa_session = _FakeSession(verify_text)  # POST returns the verify page
     c._mfa_login_params = {}
     c._mfa_post_headers = {}

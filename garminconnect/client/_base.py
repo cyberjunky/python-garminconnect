@@ -51,7 +51,7 @@ class _ClientState:
     _mfa_service_url: Any
     _mfa_flow: Any
     _mfa_method: Any
-    _widget_last_resp: Any
+    _widget_csrf_token: str | None
 
     @property
     def is_authenticated(self) -> bool:

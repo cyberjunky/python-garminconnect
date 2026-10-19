@@ -74,7 +74,7 @@ class SessionMixin(_ClientState):
             "_mfa_service_url",
             "_mfa_flow",
             "_mfa_method",
-            "_widget_last_resp",
+            "_widget_csrf_token",
         ):
             setattr(self, attr, None)
 

@@ -29,7 +29,8 @@ from typing import Any
 from unittest.mock import call, patch
 
 import pytest
-from requests import Response
+from requests import Response, Session
+from requests.cookies import create_cookie
 
 import garminconnect
 from garminconnect import client as client_mod
@@ -705,6 +706,31 @@ class TestCredentialLifecycle:
 # ---------------------------------------------------------------------------
 
 
+def _widget_mfa_state(impersonate: str | None) -> dict[str, Any]:
+    """Client state as login(return_on_mfa=True) returns it for the widget flow."""
+    return {
+        "domain": "garmin.com",
+        "flow": "widget",
+        "method": "email",
+        "login_params": {"id": "gauth-widget"},
+        "post_headers": {"Referer": "https://sso.garmin.com/sso/signin"},
+        "service_url": None,
+        "csrf_token": "tok123",
+        "impersonate": impersonate,
+        "cookies": [
+            {
+                "name": "SESSIONID",
+                "value": "s1",
+                "domain": "sso.garmin.com",
+                "path": "/sso",
+                "secure": False,
+                "expires": None,
+                "domain_specified": True,
+            }
+        ],
+    }
+
+
 class TestResumeLogin:
     """Two-step MFA resume_login must verify the token and propagate failures."""
 
@@ -841,6 +867,149 @@ class TestResumeLogin:
         mock_complete.assert_called_once_with("123456")
         assert c._mfa_pending is False
 
+    @pytest.mark.parametrize(
+        "impersonate", ["safari15_5", None], ids=["curl_cffi", "requests"]
+    )
+    def test_client_resume_login_rebuilds_pending_login_from_state(
+        self, impersonate: str | None
+    ):
+        """A new instance (e.g. in another process) finishes the login."""
+        state = _widget_mfa_state(impersonate)
+        c = client_mod.Client(verify_login=False)
+        seen: dict[str, Any] = {}
+
+        def fake_complete(code):
+            sess = c._mfa_session
+            seen["impersonate"] = getattr(sess, "impersonate", None)
+            seen["cookies"] = {
+                (k.name, k.value, k.domain, k.path)
+                for k in getattr(sess.cookies, "jar", sess.cookies)
+            }
+            seen["csrf_token"] = c._widget_csrf_token
+            seen["flow"] = c._mfa_flow
+            seen["login_params"] = c._mfa_login_params
+            seen["post_headers"] = c._mfa_post_headers
+
+        with patch.object(
+            c, "_complete_mfa", side_effect=fake_complete
+        ) as mock_complete:
+            assert c.resume_login(json.loads(json.dumps(state)), "123456") == (
+                None,
+                None,
+            )
+
+        mock_complete.assert_called_once_with("123456")
+        assert seen == {
+            "impersonate": impersonate,
+            "cookies": {("SESSIONID", "s1", "sso.garmin.com", "/sso")},
+            "csrf_token": "tok123",
+            "flow": "widget",
+            "login_params": {"id": "gauth-widget"},
+            "post_headers": {"Referer": "https://sso.garmin.com/sso/signin"},
+        }
+        assert c._mfa_pending is False
+        assert c._mfa_session is None
+
+    @pytest.mark.parametrize(
+        "make_session",
+        [lambda: client_mod.cffi_requests.Session(impersonate="chrome"), Session],
+        ids=["curl_cffi", "requests"],
+    )
+    def test_mfa_state_keeps_cookie_attributes(self, make_session: Any):
+        """Restored cookies keep their Secure flag, expiry and host-only scope."""
+        src = client_mod.Client(verify_login=False)
+        src._mfa_session = make_session()
+        src_jar = getattr(src._mfa_session.cookies, "jar", src._mfa_session.cookies)
+        host_only = create_cookie(
+            "__Host-sso", "h", domain="sso.garmin.com", path="/", secure=True
+        )
+        host_only.domain_specified = False
+        src_jar.set_cookie(host_only)
+        src_jar.set_cookie(
+            create_cookie(
+                "GARMIN-SSO",
+                "d",
+                domain=".garmin.com",
+                path="/",
+                expires=int(time.time()) + 3600,
+            )
+        )
+        src._mfa_flow = "widget"
+
+        dst = client_mod.Client(verify_login=False)
+        dst._restore_mfa_state(json.loads(json.dumps(src._mfa_client_state())))
+        dst_jar = getattr(dst._mfa_session.cookies, "jar", dst._mfa_session.cookies)
+
+        def attrs(jar):
+            return {
+                (
+                    c.name,
+                    c.value,
+                    c.domain,
+                    c.path,
+                    c.secure,
+                    c.expires,
+                    c.domain_specified,
+                )
+                for c in jar
+            }
+
+        assert attrs(dst_jar) == attrs(src_jar)
+
+    def test_client_resume_login_prefers_the_live_pending_session(self):
+        """The instance that started the login ignores the passed state."""
+        c = client_mod.Client(verify_login=False)
+        live = object()
+        c._mfa_pending = True
+        c._mfa_session = live
+        seen = []
+        with patch.object(
+            c, "_complete_mfa", side_effect=lambda _code: seen.append(c._mfa_session)
+        ):
+            c.resume_login({"flow": "portal", "impersonate": None}, "123456")
+        assert seen == [live]
+
+    def test_client_resume_login_rejects_state_from_the_other_region(self):
+        """A garmin.com state must not be sent to sso.garmin.cn, or vice versa."""
+        c = client_mod.Client(domain="garmin.cn", verify_login=False)
+        with (
+            patch.object(c, "_complete_mfa") as mock_complete,
+            pytest.raises(
+                garminconnect.GarminConnectAuthenticationError,
+                match="same is_cn setting",
+            ),
+        ):
+            c.resume_login(_widget_mfa_state(None), "123456")
+        mock_complete.assert_not_called()
+        assert c._mfa_pending is False
+
+    @pytest.mark.parametrize(
+        "change",
+        [
+            # Missing a field read after the others have been restored.
+            lambda s: s.pop("csrf_token"),
+            lambda s: s.update(flow=123),
+            lambda s: s["cookies"][0].update(domain=123),
+        ],
+        ids=["missing-field", "unknown-flow", "bad-cookie"],
+    )
+    def test_client_resume_login_rejects_invalid_state(self, change: Any):
+        """A bad state raises a clear error and leaves no partial login."""
+        state = _widget_mfa_state(None)
+        change(state)
+        c = client_mod.Client(verify_login=False)
+        with (
+            patch.object(c, "_complete_mfa") as mock_complete,
+            pytest.raises(
+                garminconnect.GarminConnectAuthenticationError,
+                match="start the login again",
+            ),
+        ):
+            c.resume_login(state, "123456")
+        mock_complete.assert_not_called()
+        assert c._mfa_pending is False
+        assert c._mfa_flow is None
+
     def test_garmin_resume_login_propagates_profile_load_failure(self):
         g = garminconnect.Garmin("user@example.com", "secret")
         with (
@@ -900,6 +1069,40 @@ class TestLoginMFA:
             status, _ = c.login("e@x.com", "pw", return_on_mfa=True)
 
         assert status == "needs_mfa"
+
+    @pytest.mark.parametrize(
+        ("make_session", "impersonate"),
+        [
+            (
+                lambda: client_mod.cffi_requests.Session(impersonate="safari15_5"),
+                "safari15_5",
+            ),
+            (Session, None),
+        ],
+        ids=["curl_cffi", "requests"],
+    )
+    def test_return_on_mfa_returns_json_serializable_state(
+        self, make_session: Any, impersonate: str | None
+    ):
+        """login() returns everything resume_login() needs, as plain JSON."""
+        c = client_mod.Client(verify_login=False)
+        sess = make_session()
+        sess.cookies.set("SESSIONID", "s1", domain="sso.garmin.com", path="/sso")
+
+        def mfa_strategy(_email, _password):
+            c._mfa_session = sess
+            c._mfa_login_params = {"id": "gauth-widget"}
+            c._mfa_post_headers = {"Referer": "https://sso.garmin.com/sso/signin"}
+            c._mfa_flow = "widget"
+            c._mfa_method = "email"
+            c._widget_csrf_token = "tok123"  # noqa: S105
+            raise client_mod._MFARequired()
+
+        with patch.object(c, "_widget_web_login", side_effect=mfa_strategy):
+            status, state = c.login("e@x.com", "pw", return_on_mfa=True)
+
+        assert status == "needs_mfa"
+        assert json.loads(json.dumps(state)) == _widget_mfa_state(impersonate)
 
     def test_mfa_without_prompt_raises(self):
         c = client_mod.Client(verify_login=False)
@@ -1298,13 +1501,13 @@ class TestLogout:
         g = garminconnect.Garmin("user@example.com", "secret")
         g.client._mfa_session = object()
         g.client._mfa_login_params = {"x": 1}
-        g.client._widget_last_resp = object()
+        g.client._widget_csrf_token = "tok"
 
         g.logout()
 
         assert g.client._mfa_session is None
         assert g.client._mfa_login_params is None
-        assert g.client._widget_last_resp is None
+        assert g.client._widget_csrf_token is None
 
     def test_logout_clears_garmin_wrapper_state(self):
         g = garminconnect.Garmin("user@example.com", "secret")
@@ -3091,7 +3294,9 @@ class TestMenstrualCycle:
                 "post",
                 return_value={"calendarDate": "2026-09-01"},
             ) as mock_post,
-            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch(
+                "garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS
+            ),
         ):
             garmin.update_menstrual_daily_log(
                 "2026-09-01",
@@ -3130,7 +3335,9 @@ class TestMenstrualCycle:
     ):
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch(
+                "garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS
+            ),
         ):
             garmin.update_menstrual_daily_log(
                 "2026-09-01",
@@ -3173,7 +3380,9 @@ class TestMenstrualCycle:
         garmin.profile_id = 99
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch(
+                "garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS
+            ),
         ):
             garmin.update_menstrual_calendar(
                 "2026-09-01",
@@ -3219,7 +3428,9 @@ class TestMenstrualCycle:
         garmin.profile_id = 99
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch(
+                "garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS
+            ),
         ):
             garmin.init_menstrual_cycle_setup("2026-08-01", 5, 28)
 
@@ -3239,7 +3450,9 @@ class TestMenstrualCycle:
     ):
         with (
             patch.object(garmin.client, "post", return_value={}) as mock_post,
-            patch("garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS),
+            patch(
+                "garminconnect.api.womens_health._fmt_ts_utc", return_value=MENSTRUAL_TS
+            ),
         ):
             garmin.confirm_menstrual_period_start(
                 "2026-09-08",

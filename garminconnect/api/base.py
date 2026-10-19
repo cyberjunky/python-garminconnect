@@ -432,12 +432,13 @@ class GarminBase:
         """Download raw bytes from a Connect API path."""
         return self.client.download(path, **kwargs)
 
-    def login(self, /, tokenstore: str | None = None) -> tuple[str | None, str | None]:
+    def login(self, /, tokenstore: str | None = None) -> tuple[str | None, Any]:
         """Log in with saved tokens or credentials and load the user profile.
 
         Returns:
-            Tuple[str | None, str | None]: (needs_mfa, None) when MFA is required;
-            (None, None) on clean successful login.
+            Tuple[str | None, Any]: ("needs_mfa", client_state) when MFA is
+            required and return_on_mfa is set; (None, None) on clean
+            successful login. client_state is JSON-serializable.
 
         """
         tokenstore = tokenstore or os.getenv("GARMINTOKENS")
@@ -687,7 +688,13 @@ class GarminBase:
     def resume_login(
         self, client_state: dict[str, Any], mfa_code: str
     ) -> tuple[Any, Any]:
-        """Finish a login that is waiting for an MFA code."""
+        """Finish a login that is waiting for an MFA code.
+
+        ``client_state`` is the second value ``login()`` returned with
+        "needs_mfa". It lets a different ``Garmin`` instance, for example in
+        another process, finish the login; it holds session cookies, so store
+        it as securely as a password.
+        """
         mfa_status, _legacy_token = self.client.resume_login(client_state, mfa_code)
 
         # The client already verifies the token against the API tier; if we reach
