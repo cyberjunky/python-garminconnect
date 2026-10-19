@@ -6,8 +6,8 @@ Proyecto IES-OS. Reglas minimas (detalle en archivos canonicos):
 
 1. Ninguna accion sin task valida (`memory/mid/tasks.md`).
 2. Prompts solo via `ies prompt <rol> --task T-XXXX`.
-3. Contratos canonicos: `/Users/alarcondiegof/ies-projects/ies-framework/contracts/roles/`.
-4. Skills canonicas: `/Users/alarcondiegof/ies-projects/ies-framework/skills/`.
+3. Contratos canonicos: `ies contract <rol>`.
+4. Skills canonicas: `ies contract --skill <id>`.
 5. Entregas en `deliverables/T-XXXX.md`.
 6. Usa workspace isolation, sandbox y worktrees; pide review antes de
    aplicar cambios. NO habilites 'Always Proceed'.
@@ -18,7 +18,7 @@ Proyecto IES-OS. Reglas minimas (detalle en archivos canonicos):
    (verificar/revisar -> viewer; implementar/corregir/configurar -> implementer;
    especificar/planificar -> planner). Los especialistas (researcher, worker-local,
    finance, ...) solo si estan habilitados en .ies/environment.yaml o con
-   --specialist-reason. Metodologia: `/Users/alarcondiegof/ies-projects/ies-framework/docs/SDD.md`. Un agente por task y worktree.
+   --specialist-reason. Metodologia: `ies contract --doc sdd`. Un agente por task y worktree.
    Tasks paralelas con --allowlist; `ies git verify --task` antes del viewer (DRIFT = BLOCKING).
    Toda entrega declara `sdlc:` por bloque del rol (cubierto|parcial|no-aplica) y lo justifica en `## SDLC`.
 9. Comandos como `IES_ACTOR=<rol> ies ...`; `ies doctor` confirma la raiz; `ies gate --task`
@@ -26,7 +26,8 @@ Proyecto IES-OS. Reglas minimas (detalle en archivos canonicos):
 
 ## Disciplina human-in-the-loop
 
-Contrato canonico: `/Users/alarcondiegof/ies-projects/ies-framework/docs/WORKING_DISCIPLINE.md`.
+Contrato canonico: `ies contract --doc working-discipline`
+(docs/WORKING_DISCIPLINE.md del framework).
 
 Aprobaciones conversacionales (`Ok`, `Acepto`, `De una`, `Adelante`,
 `Continua`, `De acuerdo`, `Run`, `Correr`, `Ejecutar`): cubren solo la
@@ -44,3 +45,8 @@ Toda ejecucion requiere una propuesta o prompt cerrado generado con
 `ies prompt <rol> --task T-XXXX` y aprobacion humana explicita antes de
 actuar. Si la propuesta reserva transporte externo, la aprobacion genera el
 paquete; en caso contrario permite ejecutar a la ventana designada.
+
+Las respuestas de la ventana HITL y del coordinator se entregan en una unica
+caja copiable (`Copia y pega solo esta caja en este chat:` o
+`Pega esto en <agente>:`) cuando la herramienta no hace el handoff
+automatico (Articulo II.4 de la constitucion).
