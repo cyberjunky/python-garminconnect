@@ -4,8 +4,8 @@
 
 Proyecto gestionado por IES-OS. El contexto canonico es:
 
-- Contratos: `/Users/alarcondiegof/ies-projects/ies-framework/contracts/roles/`
-- Skills: `/Users/alarcondiegof/ies-projects/ies-framework/skills/`
+- Contratos: `ies contract <rol>`
+- Skills: `ies contract --skill <id>`
 - Memoria: `memory/` (usa solo la seleccionada por el prompt)
 - Tasks: `memory/mid/tasks.md`
 
@@ -13,10 +13,12 @@ Proyecto gestionado por IES-OS. El contexto canonico es:
 
 1. Ninguna ejecucion sin una task valida del ledger `memory/mid/tasks.md`.
 2. El prompt operativo se genera SOLO con `ies prompt <rol> --task T-XXXX`.
-3. Los contratos de rol canonicos viven en `/Users/alarcondiegof/ies-projects/ies-framework/contracts/roles/`.
-4. Las skills canonicas viven en `/Users/alarcondiegof/ies-projects/ies-framework/skills/`.
-5. Los bindings de modelo viven SOLO en `/Users/alarcondiegof/ies-projects/ies-framework/config/models.yaml` (o el
-   override del proyecto `.ies/models.yaml`); nunca fijes modelos aqui.
+3. Los contratos de rol canonicos viven en el framework: `ies contract <rol>`
+   los imprime.
+4. Las skills canonicas: `ies contract --skill <id>`.
+5. Los modelos se heredan de `config/team.yaml` del framework para la
+   herramienta del proyecto (`ies env show`); una excepcion de rol solo con
+   ADR en `.ies/models.yaml`. Nunca fijes modelos aqui.
 6. Memoria por capas en `memory/` (immediate/mid/long); usa unicamente la
    memoria seleccionada por el prompt.
 7. Toda entrega va a `deliverables/T-XXXX.md` con el envelope requerido.
@@ -30,7 +32,8 @@ Proyecto gestionado por IES-OS. El contexto canonico es:
 
 ## Disciplina human-in-the-loop
 
-Contrato canonico: `/Users/alarcondiegof/ies-projects/ies-framework/docs/WORKING_DISCIPLINE.md`.
+Contrato canonico: `ies contract --doc working-discipline`
+(docs/WORKING_DISCIPLINE.md del framework).
 
 Aprobaciones conversacionales (`Ok`, `Acepto`, `De una`, `Adelante`,
 `Continua`, `De acuerdo`, `Run`, `Correr`, `Ejecutar`): cubren solo la
@@ -49,10 +52,17 @@ Toda ejecucion requiere una propuesta o prompt cerrado generado con
 actuar. Si la propuesta reserva transporte externo, la aprobacion genera el
 paquete; en caso contrario permite ejecutar a la ventana designada.
 
+Las respuestas de la ventana HITL y del coordinator se entregan en una unica
+caja copiable (`Copia y pega solo esta caja en este chat:` o
+`Pega esto en <agente>:`) cuando la herramienta no hace el handoff
+automatico (Articulo II.4 de la constitucion).
+
 ## Sistema multi-agente SDD
 
-Metodologia canonica: `/Users/alarcondiegof/ies-projects/ies-framework/docs/SDD.md` (HITL + Spec-Driven Development +
-EARS). Constitucion del proyecto: `memory/long/constitution.md`.
+Metodologia canonica: `ies contract --doc sdd` (HITL + Spec-Driven
+Development + EARS). Constitucion: Articulos I-VII heredados del framework
+(`ies contract --doc constitution`) mas las enmiendas de
+`memory/long/constitution.md` (ADR-019).
 
 - Destino de toda task: SOLO el equipo SDD (coordinator, planner, implementer,
   viewer). Mapeo: especificar/planificar -> planner; implementar, corregir,
@@ -83,7 +93,7 @@ EARS). Constitucion del proyecto: `memory/long/constitution.md`.
   allowlist nombra de forma explicita (task documental de `ies update
   --create-stale-doc-task`), siempre en su worktree y sin sellar el
   frontmatter (`--sync-doc` es de human o coordinator) (ADR-017).
-- Bloques SDLC (`/Users/alarcondiegof/ies-projects/ies-framework/src/ies/sdlc.py`): requisitos, diseno, implementacion,
+- Bloques SDLC: requisitos, diseno, implementacion,
   pruebas, release, despliegue, operacion-mantenimiento, seguridad. Cada
   contrato declara los suyos (`sdlc_blocks`) y cada entrega declara en su
   frontmatter `sdlc:` el estado por bloque (`cubierto | parcial | no-aplica`)

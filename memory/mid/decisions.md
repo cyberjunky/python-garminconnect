@@ -2,7 +2,7 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: mid
-last_updated: '2026-10-17T17:18:30Z'
+last_updated: '2026-10-19T20:00:00Z'
 source: coordinator
 confidence: alta
 ---
@@ -118,3 +118,15 @@ confidence: alta
   1. ADR-002 (`memory/long/adr/ADR-002-clean-architecture-regla-de-dependencia.md`) aceptado: `clean-architecture`, `tiene_ui: si`, `patron_presentacion: n/a` (se mantiene la justificacion de ADR-001 y DEC-006), capas Python (`garmin_coaching` dominio) y web (`apps/web/lib` dominio, `app` y `components` presentacion).
   2. Task T-0020 (gate arquitectura: import-linter y dependency-cruiser) autorizada; depende de T-0017.
 - **Verificacion**: `ies constitution check`: 0 BLOCKING, 1 NON_BLOCKING (VII-08), VII-06 en INFO por ADR.
+
+## DEC-008: Migracion a ies-os 0.5.0, equipo heredado en Antigravity
+
+- **Fecha**: 2026-10-19
+- **Contexto**: ADR-019 del framework (harness heredado). Instruccion de Diego (chat, 2026-10-19): "Mezclé #5 y creé v0.5.0, migra los cinco proyectos". Registrada por el agente en su nombre.
+- **Decision**:
+  1. El proyecto declara `antigravity` y hereda de `config/team.yaml` el equipo completo: ventana HITL gemini-4-argon (Medium), coordinator, subagentes y especialistas gemini-3.8-flash (High).
+  2. Se retira la copia local de bindings `.ies/models.yaml` (ignorada por git; backup en `.ies/backups/`). Los especialistas que usaban el modelo local MLX, gemini-3.5-flash o claude-fable-5 pasan a gemini-3.8-flash.
+  3. La constitucion hereda los Articulos I-VII del framework (incluido el II.4, respuestas en caja copiable); sin enmiendas.
+  4. Adaptadores solo de Antigravity (`GEMINI.md`, `.agents/`); se eliminan los de otras herramientas generados por IES. El `CLAUDE.md` y el `.vscode/settings.json` propios se conservan.
+- **Verificacion**: `ies update`: Equipo HEREDADO, adaptadores al dia; `ies constitution check` sigue con VII-08 NON_BLOCKING hasta T-0020.
+

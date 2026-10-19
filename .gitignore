@@ -165,3 +165,21 @@ dmypy.json
 # Ignore folder for local testing
 ignore/
 apps/web/supabase/.temp/
+
+# >>> ies-os (entradas anadidas por ies; ADR-015)
+.env.*
+*.key
+*.pem
+secrets.yaml
+secrets.yml
+credentials.json
+.gemini/settings.json
+logs/*.log
+.ies/backups/
+.ies/audit.jsonl
+.ies/session.yaml
+.ies/checkpoints.yaml
+.ies/worktrees/
+.ies/gates/
+*.lock
+# <<< ies-os
