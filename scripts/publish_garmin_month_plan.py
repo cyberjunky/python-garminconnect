@@ -309,7 +309,9 @@ def build_workouts() -> dict[str, Any]:
     }
 
 
-def upload_templates(api: Garmin, templates: dict[str, Any], dry_run: bool) -> dict[str, int]:
+def upload_templates(
+    api: Garmin, templates: dict[str, Any], dry_run: bool
+) -> dict[str, int]:
     uploaded_ids: dict[str, int] = {}
     upload_method = {
         "gym_a": api.upload_strength_workout,

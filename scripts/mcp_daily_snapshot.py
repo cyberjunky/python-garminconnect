@@ -31,7 +31,9 @@ def _payload(result: object) -> dict[str, Any]:
     return {"ok": False, "error": "Missing structuredContent"}
 
 
-def _extract_metrics(summary: dict[str, Any], heart_rates: dict[str, Any]) -> dict[str, Any]:
+def _extract_metrics(
+    summary: dict[str, Any], heart_rates: dict[str, Any]
+) -> dict[str, Any]:
     data = summary.get("data") or {}
     hr_data = heart_rates.get("data") or {}
     return {
@@ -188,7 +190,9 @@ def _baseline_compare(
     rhr_values = [_to_float(item.get("restingHeartRate")) for item in recent_summaries]
     rhr_values = [v for v in rhr_values if v is not None]
 
-    stress_values = [_to_float(item.get("averageStressLevel")) for item in recent_summaries]
+    stress_values = [
+        _to_float(item.get("averageStressLevel")) for item in recent_summaries
+    ]
     stress_values = [v for v in stress_values if v is not None]
 
     baseline = {
@@ -207,24 +211,28 @@ def _baseline_compare(
             (_to_float(current_metrics.get("steps")) or 0.0)
             - (baseline["steps_avg_7d"] or 0.0)
         )
-        if baseline["steps_avg_7d"] is not None and _to_float(current_metrics.get("steps")) is not None
+        if baseline["steps_avg_7d"] is not None
+        and _to_float(current_metrics.get("steps")) is not None
         else None,
         "sleep_hours_delta": _round_or_none(
             (current_sleep_hours or 0.0) - (baseline["sleep_hours_avg_7d"] or 0.0)
         )
-        if baseline["sleep_hours_avg_7d"] is not None and current_sleep_hours is not None
+        if baseline["sleep_hours_avg_7d"] is not None
+        and current_sleep_hours is not None
         else None,
         "resting_hr_delta": _round_or_none(
             (_to_float(current_metrics.get("resting_hr")) or 0.0)
             - (baseline["resting_hr_avg_7d"] or 0.0)
         )
-        if baseline["resting_hr_avg_7d"] is not None and _to_float(current_metrics.get("resting_hr")) is not None
+        if baseline["resting_hr_avg_7d"] is not None
+        and _to_float(current_metrics.get("resting_hr")) is not None
         else None,
         "avg_stress_delta": _round_or_none(
             (_to_float(current_metrics.get("avg_stress")) or 0.0)
             - (baseline["avg_stress_avg_7d"] or 0.0)
         )
-        if baseline["avg_stress_avg_7d"] is not None and _to_float(current_metrics.get("avg_stress")) is not None
+        if baseline["avg_stress_avg_7d"] is not None
+        and _to_float(current_metrics.get("avg_stress")) is not None
         else None,
         "health_score": health_score.get("score_0_100"),
     }
@@ -236,7 +244,9 @@ def _baseline_compare(
     }
 
 
-def _benchmark_bogota_male_adult(summary: dict[str, Any], metrics: dict[str, Any]) -> dict[str, Any]:
+def _benchmark_bogota_male_adult(
+    summary: dict[str, Any], metrics: dict[str, Any]
+) -> dict[str, Any]:
     data = summary.get("data") or {}
     resting_hr = _to_float(metrics.get("resting_hr"))
     steps = _to_float(metrics.get("steps"))
@@ -296,7 +306,9 @@ async def _run(
     output: str | None,
     allow_env_credentials: bool,
 ) -> int:
-    params = StdioServerParameters(command="python", args=["-m", "garmin_mcp.server"], cwd=".")
+    params = StdioServerParameters(
+        command="python", args=["-m", "garmin_mcp.server"], cwd="."
+    )
 
     async with (
         stdio_client(params) as (read_stream, write_stream),
@@ -331,11 +343,19 @@ async def _run(
                 )
                 return 2
 
-        summary = _payload(await session.call_tool("get_user_summary", {"date": target_day}))
-        heart_rates = _payload(await session.call_tool("get_heart_rates", {"date": target_day}))
-        sleep = _payload(await session.call_tool("get_sleep_data", {"date": target_day}))
+        summary = _payload(
+            await session.call_tool("get_user_summary", {"date": target_day})
+        )
+        heart_rates = _payload(
+            await session.call_tool("get_heart_rates", {"date": target_day})
+        )
+        sleep = _payload(
+            await session.call_tool("get_sleep_data", {"date": target_day})
+        )
         activities = _payload(
-            await session.call_tool("get_activities", {"start": 0, "limit": activity_limit})
+            await session.call_tool(
+                "get_activities", {"start": 0, "limit": activity_limit}
+            )
         )
 
         metrics = _extract_metrics(summary, heart_rates)
@@ -347,8 +367,7 @@ async def _run(
         response = {
             "date": target_day,
             "ok": all(
-                call.get("ok")
-                for call in (summary, heart_rates, sleep, activities)
+                call.get("ok") for call in (summary, heart_rates, sleep, activities)
             ),
             "metrics": metrics,
             "health_score": health_score,

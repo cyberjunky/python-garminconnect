@@ -243,4 +243,3 @@ def login_client(
     except Exception:  # noqa: S110 - best effort; T-0040 replaces with logging
         pass
     return client
-

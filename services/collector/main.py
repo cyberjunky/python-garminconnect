@@ -44,7 +44,8 @@ def health() -> HealthResponse:
     return HealthResponse(
         status="ok",
         supabase_configured=bool(
-            os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+            os.environ.get("SUPABASE_URL")
+            and os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
         ),
     )
 
@@ -59,12 +60,16 @@ def collect(
         try:
             date.fromisoformat(target_date)
         except ValueError as exc:
-            raise HTTPException(status_code=400, detail="Invalid date format YYYY-MM-DD") from exc
+            raise HTTPException(
+                status_code=400, detail="Invalid date format YYYY-MM-DD"
+            ) from exc
 
     try:
         client = login_client(prompt=False)
     except Exception as exc:
-        raise HTTPException(status_code=401, detail=f"Garmin auth failed: {exc}") from exc
+        raise HTTPException(
+            status_code=401, detail=f"Garmin auth failed: {exc}"
+        ) from exc
 
     try:
         payload = build_daily_payload(
@@ -73,7 +78,9 @@ def collect(
             auto_thresholds=auto_thresholds,
         )
     except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Garmin collect failed: {exc}") from exc
+        raise HTTPException(
+            status_code=502, detail=f"Garmin collect failed: {exc}"
+        ) from exc
 
     supabase_result = None
     if write_supabase:
@@ -82,7 +89,9 @@ def collect(
         except RuntimeError:
             supabase_result = {"status": "skipped", "reason": "supabase not configured"}
         except Exception as exc:
-            raise HTTPException(status_code=500, detail=f"Supabase upsert failed: {exc}") from exc
+            raise HTTPException(
+                status_code=500, detail=f"Supabase upsert failed: {exc}"
+            ) from exc
 
     session = payload.get("session") or {}
     readiness = payload.get("readiness") or {}
@@ -92,7 +101,8 @@ def collect(
         zone=readiness.get("zone"),
         session_action=session.get("action"),
         guard_flags=session.get("guard_flags") or [],
-        whatsapp_preview=payload.get("whatsapp_message") or format_whatsapp_message(payload),
+        whatsapp_preview=payload.get("whatsapp_message")
+        or format_whatsapp_message(payload),
         supabase=supabase_result,
     )
 
@@ -102,8 +112,13 @@ def publish_session(body: dict[str, Any]) -> dict[str, Any]:
     """Optional: publish confirmed session to Garmin (phase 2 hook)."""
     zone = body.get("zone")
     if zone != "VERDE":
-        raise HTTPException(status_code=400, detail="Only VERDE sessions can be auto-published")
-    return {"status": "not_implemented", "message": "Use publish_weekend_readiness_plan.py manually for now"}
+        raise HTTPException(
+            status_code=400, detail="Only VERDE sessions can be auto-published"
+        )
+    return {
+        "status": "not_implemented",
+        "message": "Use publish_weekend_readiness_plan.py manually for now",
+    }
 
 
 def run() -> None:

@@ -19,8 +19,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 # Disable system/IDE-injected proxies so requests reach Garmin directly.
-for _v in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy",
-           "ALL_PROXY", "all_proxy", "FTP_PROXY", "ftp_proxy"):
+for _v in (
+    "HTTP_PROXY",
+    "HTTPS_PROXY",
+    "http_proxy",
+    "https_proxy",
+    "ALL_PROXY",
+    "all_proxy",
+    "FTP_PROXY",
+    "ftp_proxy",
+):
     os.environ.pop(_v, None)
 os.environ["no_proxy"] = "*"
 os.environ["NO_PROXY"] = "*"
@@ -28,9 +36,13 @@ os.environ["NO_PROXY"] = "*"
 import requests as _requests  # noqa: E402 - after proxy/sys.path setup
 
 _orig_session_init = _requests.Session.__init__
+
+
 def _no_proxy_session_init(self, *a, **kw):
     _orig_session_init(self, *a, **kw)
     self.trust_env = False
+
+
 _requests.Session.__init__ = _no_proxy_session_init
 
 from garmin_auth import login_client  # noqa: E402 - after proxy/sys.path setup
@@ -43,7 +55,9 @@ def parse_args() -> argparse.Namespace:
     today = date.today()
     default_month = f"{today.year}-{today.month:02d}"
     parser = argparse.ArgumentParser(description="Monthly Garmin health indicators")
-    parser.add_argument("--month", default=default_month, help="Month YYYY-MM (default: current)")
+    parser.add_argument(
+        "--month", default=default_month, help="Month YYYY-MM (default: current)"
+    )
     return parser.parse_args()
 
 

@@ -21,7 +21,9 @@ from garmin_auth import (
 def main() -> int:
     print("Garmin credential setup")
     print("-----------------------")
-    print(f"Credentials will be stored in macOS Keychain (service: {KEYCHAIN_SERVICE}).")
+    print(
+        f"Credentials will be stored in macOS Keychain (service: {KEYCHAIN_SERVICE})."
+    )
     print("They are never written to git.")
 
     email = input("Garmin email: ").strip()

@@ -18,7 +18,9 @@ from garmin_coaching.collector import build_daily_payload
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Collect daily coaching JSON")
-    parser.add_argument("--date", default=None, help="Target date YYYY-MM-DD (default: today)")
+    parser.add_argument(
+        "--date", default=None, help="Target date YYYY-MM-DD (default: today)"
+    )
     parser.add_argument("--json", action="store_true", help="Print JSON to stdout")
     parser.add_argument("--output", default=None, help="Write JSON to file")
     parser.add_argument(
@@ -26,7 +28,9 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use fixed thresholds instead of personal medians",
     )
-    parser.add_argument("--auto-days", type=int, default=60, help="Days for auto thresholds")
+    parser.add_argument(
+        "--auto-days", type=int, default=60, help="Days for auto thresholds"
+    )
     return parser.parse_args()
 
 

@@ -143,6 +143,10 @@ exclude = [
     "dist",
     "tests",
     "test_data",
+    # IES artifacts (historical records, not code): ruff must not rewrite them
+    "deliverables",
+    "specs",
+    "memory",
 ]
 
 [tool.ruff.lint]

@@ -19,7 +19,9 @@ def apply_guards(
 
     if zone == "ROJO":
         flags.append("readiness_rojo")
-        adjusted = _force_rest(session, "Readiness ROJO — descanso total o caminata <=30 min FC<110")
+        adjusted = _force_rest(
+            session, "Readiness ROJO — descanso total o caminata <=30 min FC<110"
+        )
 
     if acwr is not None and acwr > 1.5:
         flags.append("acwr_very_high")
@@ -31,7 +33,9 @@ def apply_guards(
     if "OVERREACHING" in status.upper():
         flags.append("overreaching")
         if zone != "ROJO":
-            adjusted = _force_rest(session, f"Training status {status} — solo recuperacion")
+            adjusted = _force_rest(
+                session, f"Training status {status} — solo recuperacion"
+            )
 
     if zone == "AMARILLO" and adjusted.get("action") != "rest":
         flags.append("readiness_amarillo")
@@ -64,7 +68,9 @@ def _force_rest(session: dict[str, Any], reason: str) -> dict[str, Any]:
     }
 
 
-def _cut_volume(session: dict[str, Any], fraction: float, reason: str) -> dict[str, Any]:
+def _cut_volume(
+    session: dict[str, Any], fraction: float, reason: str
+) -> dict[str, Any]:
     if session.get("action") == "rest":
         return session
     duration = session.get("duration_min") or 0

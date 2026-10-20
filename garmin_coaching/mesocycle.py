@@ -77,7 +77,9 @@ def _daily_non_monday_budget(weekly: dict[str, float]) -> dict[str, float]:
     walk = out.get("walk", 0)
     out["walk"] = max(0.0, walk - _MONDAY_WALK_MIN)
     days = 6
-    return {k: (v / days if k != "swim" else v / max(3, days // 2)) for k, v in out.items()}
+    return {
+        k: (v / days if k != "swim" else v / max(3, days // 2)) for k, v in out.items()
+    }
 
 
 def planned_daily_sports(on_day: date) -> dict[str, float]:

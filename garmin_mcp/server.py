@@ -123,7 +123,9 @@ def login_with_tokens(tokenstore: str | None = None) -> dict[str, Any]:
             "ok": True,
             "authenticated": SESSION.is_authenticated,
             "tokenstore": SESSION.tokenstore,
-            "mfa_status": result["data"][0] if isinstance(result["data"], tuple) else None,
+            "mfa_status": result["data"][0]
+            if isinstance(result["data"], tuple)
+            else None,
         }
     return result
 
@@ -141,13 +143,17 @@ def login_with_credentials(
     SESSION.tokenstore = _normalize_tokenstore(tokenstore)
     SESSION.client = Garmin(email=email, password=password)
     assert SESSION.client is not None  # noqa: S101 - type narrowing for mypy
-    result = _api_call("login_with_credentials", SESSION.client.login, SESSION.tokenstore)
+    result = _api_call(
+        "login_with_credentials", SESSION.client.login, SESSION.tokenstore
+    )
     if result["ok"]:
         return {
             "ok": True,
             "authenticated": SESSION.is_authenticated,
             "tokenstore": SESSION.tokenstore,
-            "mfa_status": result["data"][0] if isinstance(result["data"], tuple) else None,
+            "mfa_status": result["data"][0]
+            if isinstance(result["data"], tuple)
+            else None,
         }
     return result
 

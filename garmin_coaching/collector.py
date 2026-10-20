@@ -76,7 +76,9 @@ def get_sleep_bb_for_day(client: Any, ds: str) -> dict[str, Any]:
 def _first_device_entry(data: dict[str, Any] | None) -> dict[str, Any] | None:
     if not isinstance(data, dict):
         return None
-    latest = data.get("latestTrainingStatusData") or data.get("metricsTrainingLoadBalanceDTOMap")
+    latest = data.get("latestTrainingStatusData") or data.get(
+        "metricsTrainingLoadBalanceDTOMap"
+    )
     if isinstance(latest, dict) and latest:
         return next(iter(latest.values()))
     return None
@@ -100,8 +102,12 @@ def fetch_training_load(client: Any, cdate: str | None = None) -> dict[str, Any]
             vo2_block = status.get("mostRecentVO2Max") or {}
             generic = vo2_block.get("generic") or {}
             cycling = vo2_block.get("cycling") or {}
-            out["vo2max"] = generic.get("vo2MaxPreciseValue") or generic.get("vo2MaxValue")
-            out["vo2max_cycling"] = cycling.get("vo2MaxPreciseValue") or cycling.get("vo2MaxValue")
+            out["vo2max"] = generic.get("vo2MaxPreciseValue") or generic.get(
+                "vo2MaxValue"
+            )
+            out["vo2max_cycling"] = cycling.get("vo2MaxPreciseValue") or cycling.get(
+                "vo2MaxValue"
+            )
             out["load_balance"] = status.get("mostRecentTrainingLoadBalance")
             out["raw"] = status
     except Exception as exc:
@@ -168,7 +174,9 @@ def build_daily_payload(
     daily_plan = build_daily_plan(readiness_raw)
 
     mesocycle_week = plan_week(on_day)
-    weekly_sport_load = build_weekly_sport_rows(client, through=on_day, lookback_days=120)
+    weekly_sport_load = build_weekly_sport_rows(
+        client, through=on_day, lookback_days=120
+    )
     last_activity = fetch_last_activity(client)
 
     return {

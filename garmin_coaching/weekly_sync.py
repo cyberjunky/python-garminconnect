@@ -54,5 +54,7 @@ def build_weekly_sport_rows(
     return rows
 
 
-def sync_weekly_sport_load(client: Any, through: date | None = None) -> list[dict[str, Any]]:
+def sync_weekly_sport_load(
+    client: Any, through: date | None = None
+) -> list[dict[str, Any]]:
     return build_weekly_sport_rows(client, through=through)

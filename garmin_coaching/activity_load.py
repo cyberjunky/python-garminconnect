@@ -89,7 +89,9 @@ def aggregate_activities_by_week(
     return {k: dict(v) for k, v in buckets.items()}
 
 
-def fetch_activities_in_range(client: Any, start: date, end: date) -> list[dict[str, Any]]:
+def fetch_activities_in_range(
+    client: Any, start: date, end: date
+) -> list[dict[str, Any]]:
     try:
         rows = client.get_activities_by_date(start.isoformat(), end.isoformat())
     except Exception:

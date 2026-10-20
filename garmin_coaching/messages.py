@@ -16,7 +16,9 @@ RULE_ROTATION = [
 ]
 
 
-def format_whatsapp_message(payload: dict[str, Any], athlete_name: str = "Diego") -> str:
+def format_whatsapp_message(
+    payload: dict[str, Any], athlete_name: str = "Diego"
+) -> str:
     today = payload.get("date") or date.today().isoformat()
     readiness = payload.get("readiness") or {}
     session = payload.get("session") or {}

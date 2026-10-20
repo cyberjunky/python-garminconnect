@@ -33,7 +33,9 @@ def _payload(result: object) -> dict:
 
 
 async def _run(day: str, allow_env_credentials: bool) -> int:
-    params = StdioServerParameters(command="python", args=["-m", "garmin_mcp.server"], cwd=".")
+    params = StdioServerParameters(
+        command="python", args=["-m", "garmin_mcp.server"], cwd="."
+    )
 
     async with (
         stdio_client(params) as (read_stream, write_stream),

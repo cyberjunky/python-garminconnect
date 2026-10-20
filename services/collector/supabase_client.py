@@ -19,7 +19,9 @@ def get_supabase():
     return create_client(url, key)
 
 
-def upsert_daily_payload(payload: dict[str, Any], user_id: str = DEFAULT_USER_ID) -> dict[str, str]:
+def upsert_daily_payload(
+    payload: dict[str, Any], user_id: str = DEFAULT_USER_ID
+) -> dict[str, str]:
     client = get_supabase()
     ds = payload["date"]
     readiness = payload.get("readiness") or {}
@@ -151,7 +153,9 @@ def upsert_garmin_tokens_to_supabase(
     di_token = token_data.get("di_token")
     di_refresh = token_data.get("di_refresh_token")
     has_token = bool(di_token and (not isinstance(di_token, str) or di_token.strip()))
-    has_refresh = bool(di_refresh and (not isinstance(di_refresh, str) or di_refresh.strip()))
+    has_refresh = bool(
+        di_refresh and (not isinstance(di_refresh, str) or di_refresh.strip())
+    )
     if not (has_token or has_refresh):
         return None
 
@@ -173,4 +177,3 @@ def upsert_garmin_tokens_to_supabase(
     if res and hasattr(res, "data") and res.data:
         return res.data[0] if isinstance(res.data, list) else res.data
     return {"status": "ok", "user_id": user_id, "token_data": token_data}
-

@@ -50,7 +50,9 @@ def summarize_last_activity(raw: dict[str, Any] | None) -> dict[str, Any] | None
         "elevation_gain_m": raw.get("elevationGain"),
         "avg_hr": int(avg_hr) if isinstance(avg_hr, (int, float)) else None,
         "max_hr": int(max_hr) if isinstance(max_hr, (int, float)) else None,
-        "calories": int(raw["calories"]) if isinstance(raw.get("calories"), (int, float)) else None,
+        "calories": int(raw["calories"])
+        if isinstance(raw.get("calories"), (int, float))
+        else None,
         "training_load": round(float(training_load), 1)
         if isinstance(training_load, (int, float))
         else None,
