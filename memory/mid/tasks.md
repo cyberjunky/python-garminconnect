@@ -3,7 +3,7 @@ schema_version: 1
 project_id: python-garminconnect
 next_id: 42
 source: ies-cli
-last_updated: '2026-10-20T18:44:04Z'
+last_updated: '2026-10-20T18:58:41Z'
 ---
 
 # Task Ledger
@@ -2602,7 +2602,7 @@ title: Resolución de los errores de ruff y formato heredados de master (sucesor
 project_id: python-garminconnect
 origin: human
 destination: implementer
-status: ready
+status: done
 input: 'Sucesora de T-0011 (el CLI no permite backlog->ready). Aprobado por Diego
   en la ventana HITL: ''Ok, adelante con T-0011'' y ''Ok, adelante con A''. Dejar
   limpio ruff 0.17.1 (107 errores en garmin_coaching, services, scripts, garmin_mcp)
@@ -2639,20 +2639,32 @@ allowlist:
 - apps/web/CHANGELOG.md
 - apps/web/package.json
 - apps/web/package-lock.json
+- apps/web/lib/version.test.mjs
+- apps/web/README.md
+- deliverables/T-0039.md
 created_at: '2026-10-20T18:43:41Z'
-started_at: null
-completed_at: null
+started_at: '2026-10-20T18:58:41Z'
+completed_at: '2026-10-20T18:58:41Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
 terminal_status: null
-output_ref: null
+output_ref: deliverables/T-0039.md
 approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
-edits: []
+metrics:
+  git_before: 735694d7614903028eb83f9e165c05c0e2112cb6
+  git_after: 735694d7614903028eb83f9e165c05c0e2112cb6
+  result: success
+edits:
+- at: '2026-10-20T18:49:19Z'
+  actor: coordinator
+  reason: La version 0.5.2 aprobada exige actualizar la prueba que fija la version
+    (lib/version.test.mjs) y el README de apps/web; y la entrega.
+  fields:
+  - allowlist
 ```
 
 ## T-0040 — Privacidad de logs CI, logging en login_client, origen del restore y deploy script (pendiente de T-0017)
