@@ -130,3 +130,15 @@ confidence: alta
   4. Adaptadores solo de Antigravity (`GEMINI.md`, `.agents/`); se eliminan los de otras herramientas generados por IES. El `CLAUDE.md` y el `.vscode/settings.json` propios se conservan.
 - **Verificacion**: `ies update`: Equipo HEREDADO, adaptadores al dia; `ies constitution check` sigue con VII-08 NON_BLOCKING hasta T-0020.
 
+
+## DEC-009: Lint heredado de master primero; replanificacion de T-0011, T-0017, T-0018 y T-0020
+
+- **Fecha**: 2026-10-20
+- **Contexto**: CI de `master` en rojo desde 2026-09-22: ruff 0.17.1 reporta 107 errores (todos en `garmin_coaching/`, `services/`, `scripts/`, `garmin_mcp/`) y `ruff format --check` 25 archivos, asi que pytest no llega a correr. T-0011 (backlog) cubria el trabajo, pero el CLI no permite `backlog -> ready`, y su sucesora solapaba con T-0017 (ready, rama local `task/T-0017` f3fc13a sin subir, version 0.3.1 caducada) y T-0020 (ready, depende de T-0017). Instrucciones de Diego (chat, 2026-10-20): "Ok, adelante con T-0011 y quita el pie de los PR" y, ante el solape, "Ok, adelante con A". Registrada por el agente en su nombre.
+- **Decision**:
+  1. Se cancelan T-0011, T-0017, T-0018 (viewer de T-0017) y T-0020, con razon.
+  2. T-0039 (sucesora de T-0011): ruff y formato limpios sin cambio de comportamiento, per-file-ignores D101/D103 para el codigo de la app, version 0.5.2 PATCH.
+  3. T-0040 recoge lo pendiente de T-0017 (logging en `login_client`, aviso de persistencia, origen del restore, deploy script, DEC-004, pruebas web sin skips); depende de T-0039. La rama `task/T-0017` se conserva como referencia.
+  4. T-0041 recrea T-0020 identica; depende de T-0040 (ambas tocan `apps/web/package.json`).
+  5. Commits y PR sin atribucion a IA (CLAUDE.md del repo); se retiro el pie "Generated with Claude Code" de los PR #3, #4 y #5. Los trailers ya mezclados en `master` (e406900, 546d94e, 0b57777) no se reescriben.
+- **Verificacion**: `ies task list`: T-0039, T-0040 y T-0041 en ready, encadenadas; T-0011, T-0017, T-0018 y T-0020 canceladas.
