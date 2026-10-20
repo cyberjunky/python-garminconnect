@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from garmin_auth import login_client
+
 from garminconnect import (
     Garmin,
     GarminConnectAuthenticationError,
@@ -132,7 +133,9 @@ def weekend_schedule(start: date) -> list[ScheduledWorkout]:
     ]
 
 
-def upload_and_schedule(api: Garmin, start: date, dry_run: bool) -> list[tuple[str, str, int]]:
+def upload_and_schedule(
+    api: Garmin, start: date, dry_run: bool
+) -> list[tuple[str, str, int]]:
     workouts = build_workouts()
     upload_methods = {
         "walk": api.upload_walking_workout,
@@ -146,7 +149,9 @@ def upload_and_schedule(api: Garmin, start: date, dry_run: bool) -> list[tuple[s
         day_str = item.day.isoformat()
 
         if dry_run:
-            print(f"[DRY-RUN] Would upload and schedule {workout.workoutName} on {day_str}")
+            print(
+                f"[DRY-RUN] Would upload and schedule {workout.workoutName} on {day_str}"
+            )
             log.append((day_str, workout.workoutName, -1))
             continue
 
@@ -181,7 +186,9 @@ def parse_args() -> argparse.Namespace:
         default=date.today().isoformat(),
         help="Reference date; schedules Fri-Sun of that week (default: today)",
     )
-    parser.add_argument("--dry-run", action="store_true", help="Preview without uploading")
+    parser.add_argument(
+        "--dry-run", action="store_true", help="Preview without uploading"
+    )
     parser.add_argument("--skip-push", action="store_true", help="Do not push to watch")
     return parser.parse_args()
 

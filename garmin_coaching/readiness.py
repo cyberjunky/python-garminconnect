@@ -23,12 +23,18 @@ def classify(m: dict[str, Any], th: dict[str, float]) -> tuple[str, int, str]:
     ]
     score_ok = sum(checks)
 
-    red_flag = m.get("hrv_status") == "UNBALANCED" and (m.get("sleep_h") or 0) < th["sleep_h"]
+    red_flag = (
+        m.get("hrv_status") == "UNBALANCED" and (m.get("sleep_h") or 0) < th["sleep_h"]
+    )
 
     if red_flag or score_ok <= 2:
         return "ROJO", score_ok, "Solo recuperacion/Z1-Z2 30-60 min o descanso."
     if score_ok == 3:
-        return "AMARILLO", score_ok, "Mantener entrenamiento pero recortar 15-25% o bajar intensidad."
+        return (
+            "AMARILLO",
+            score_ok,
+            "Mantener entrenamiento pero recortar 15-25% o bajar intensidad.",
+        )
     return "VERDE", score_ok, "Apto para calidad (tempo/VO2) o fondo >2h segun agenda."
 
 

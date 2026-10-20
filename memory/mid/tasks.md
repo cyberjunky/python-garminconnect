@@ -1,9 +1,9 @@
 ---
 schema_version: 1
 project_id: python-garminconnect
-next_id: 39
+next_id: 42
 source: ies-cli
-last_updated: '2026-10-17T17:49:19Z'
+last_updated: '2026-10-20T18:44:04Z'
 ---
 
 # Task Ledger
@@ -498,7 +498,7 @@ title: Estrategia y resolución de 97 errores de linter heredados de master
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: backlog
+status: cancelled
 input: Analizar y definir la estrategia para subsanar los 97 errores de ruff heredados
   de master en scripts y servicios historicos (evaluar correccion en codigo vs configuracion
   de per-file-ignores en pyproject.toml), de modo que los jobs test (3.12) y test
@@ -520,7 +520,7 @@ acceptance_criteria:
 allowlist: []
 created_at: '2026-10-13T19:00:15Z'
 started_at: null
-completed_at: null
+completed_at: '2026-10-20T18:43:32Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
@@ -530,7 +530,10 @@ approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  cancel_reason: 'Decision de Diego en la ventana HITL (2026-10-20): ''Ok, adelante
+    con A''. El CLI no permite backlog->ready; se sustituye por una task sucesora
+    en ready con el mismo alcance (lint heredado de master).'
 edits: []
 ```
 
@@ -852,7 +855,7 @@ title: Saneamiento linter SPEC-001, privacidad logs CI, deploy script y SemVer 0
 project_id: python-garminconnect
 origin: coordinator
 destination: implementer
-status: ready
+status: cancelled
 input: 'Trabajar en el worktree .ies/worktrees/T-0017 creado desde master (despues
   del merge del PR #2). El implementer no hace push ni abre PR; el humano empuja la
   rama y abre el PR. 1. Corregir los 10 errores de ruff en el alcance de SPEC-001/UX
@@ -901,7 +904,7 @@ allowlist:
 - apps/web/package-lock.json
 created_at: '2026-10-14T15:19:18Z'
 started_at: null
-completed_at: null
+completed_at: '2026-10-20T18:43:32Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
@@ -911,7 +914,12 @@ approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  cancel_reason: 'Decision de Diego en la ventana HITL (2026-10-20): ''Ok, adelante
+    con A''. Caducada (version 0.3.1, rama task/T-0017 f3fc13a sin subir, conservada
+    como referencia). Su parte de ruff la cubre la sucesora de T-0011; lo pendiente
+    (logging en login_client, origen del restore, deploy script, DEC-004) pasa a una
+    task nueva que depende de ella.'
 edits: []
 ```
 
@@ -923,7 +931,7 @@ title: Verificacion viewer independiente de T-0017 sobre commit f3fc13a
 project_id: python-garminconnect
 origin: coordinator
 destination: viewer
-status: ready
+status: cancelled
 input: 'Auditar en modo solo lectura el commit exacto f3fc13a1bf5aa0490687882c1d89e04be176ca91
   en .ies/worktrees/T-0017 (referenciando la entrega deliverables/T-0017.md de T-0017
   sin marcarla done). Revisar todos los criterios de T-0017 y reproducir rigurosamente:
@@ -966,7 +974,7 @@ acceptance_criteria:
 allowlist: []
 created_at: '2026-10-14T16:44:27Z'
 started_at: null
-completed_at: null
+completed_at: '2026-10-20T18:43:32Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
@@ -976,7 +984,10 @@ approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  cancel_reason: 'Decision de Diego en la ventana HITL (2026-10-20): ''Ok, adelante
+    con A''. Verificaba T-0017 sobre f3fc13a, que se cancela; sus hallazgos pasan
+    al input de la task que recoge lo pendiente de T-0017.'
 edits: []
 ```
 
@@ -1052,7 +1063,7 @@ title: 'Gate arquitectura: import-linter y dependency-cruiser (ADR-002)'
 project_id: python-garminconnect
 origin: human
 destination: implementer
-status: ready
+status: cancelled
 input: 'Python: anadir import-linter a las dependencias de desarrollo en pyproject.toml
   y un archivo .importlinter con el contrato ''garmin_coaching independiente de garminconnect,
   services, supabase, fastapi, requests'' (ADR-002 §2 y §5). Web: anadir dependency-cruiser
@@ -1091,7 +1102,7 @@ allowlist:
 - .ies/gate.yaml
 created_at: '2026-10-15T10:07:27Z'
 started_at: null
-completed_at: null
+completed_at: '2026-10-20T18:43:32Z'
 blocked_reason: null
 superseded_by: null
 superseded_reason: null
@@ -1101,7 +1112,11 @@ approval:
   required: true
   approved_by: null
   approved_at: null
-metrics: {}
+metrics:
+  cancel_reason: 'Decision de Diego en la ventana HITL (2026-10-20): ''Ok, adelante
+    con A''. Se recrea identica dependiendo de la task que recoge lo pendiente de
+    T-0017 (ambas tocan apps/web/package.json), que a su vez depende de la sucesora
+    de T-0011.'
 edits: []
 ```
 
@@ -2575,5 +2590,201 @@ metrics:
   git_before: 7b173861c16619dc83f88a6edcf2c236a7246f48
   git_after: 7b173861c16619dc83f88a6edcf2c236a7246f48
   result: success
+edits: []
+```
+
+## T-0039 — Resolución de los errores de ruff y formato heredados de master (sucesora de T-0011)
+
+```yaml
+id: T-0039
+title: Resolución de los errores de ruff y formato heredados de master (sucesora de
+  T-0011)
+project_id: python-garminconnect
+origin: human
+destination: implementer
+status: ready
+input: 'Sucesora de T-0011 (el CLI no permite backlog->ready). Aprobado por Diego
+  en la ventana HITL: ''Ok, adelante con T-0011'' y ''Ok, adelante con A''. Dejar
+  limpio ruff 0.17.1 (107 errores en garmin_coaching, services, scripts, garmin_mcp)
+  y ruff format (25 archivos) para que CI llegue a pytest. Estrategia: ruff --fix
+  solo seguros; per-file-ignores D101/D103 para codigo de la app (garmin_coaching,
+  services, garmin_mcp) y D101 en scripts; resto con arreglo sin cambio de comportamiento
+  o noqa con motivo; ruff format en commit aparte; version 0.5.2 PATCH en apps/web/package.json
+  y lock + apps/web/CHANGELOG.md (ADR-009). Sin atribucion a IA en commits ni PR (CLAUDE.md).
+  Fuera: logging/privacidad/deploy (task que recoge lo pendiente de T-0017), prueba
+  de /var que solo falla en macOS, apps/web salvo version.'
+expected_output: deliverables/<task>.md con estrategia ejecutada; ruff check, ruff
+  format --check y mypy limpios; CI test (3.12) y (3.13) en verde
+parent_task: null
+dependencies: []
+priority: high
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- ruff check . y ruff format --check . sin hallazgos con ruff 0.17.1
+- Jobs test (3.12) y test (3.13) de GitHub Actions ejecutan pytest en verde
+- 'Ningun cambio de comportamiento: solo imports, formato, docstrings, noqa con motivo
+  o refactors equivalentes'
+- Version 0.5.2 y entrada en apps/web/CHANGELOG.md (ADR-009)
+allowlist:
+- pyproject.toml
+- garmin_coaching
+- garmin_mcp
+- services
+- scripts
+- apps/web/CHANGELOG.md
+- apps/web/package.json
+- apps/web/package-lock.json
+created_at: '2026-10-20T18:43:41Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+edits: []
+```
+
+## T-0040 — Privacidad de logs CI, logging en login_client, origen del restore y deploy script (pendiente de T-0017)
+
+```yaml
+id: T-0040
+title: Privacidad de logs CI, logging en login_client, origen del restore y deploy
+  script (pendiente de T-0017)
+project_id: python-garminconnect
+origin: human
+destination: implementer
+status: ready
+input: 'Recoge lo pendiente de T-0017 (cancelada por decision de Diego, ''Ok, adelante
+  con A''); el ruff lo cubre T-0039. Partir de master tras T-0039; la rama local task/T-0017
+  (f3fc13a) sirve de referencia, no se mezcla tal cual. 1. Sustituir los except Exception:
+  pass de scripts/garmin_auth.py:login_client por _LOGGER.warning sin volcar la excepcion
+  sin sanitizar (REQ-005). 2. persist_tokens_to_supabase: un fallo de persistencia
+  debe avisar (hoy retorna False sin warning). 3. Registrar en el log del workflow
+  la fuente de restauracion del token (supabase | b64_fallback). 4. Ajustar scripts/deploy_web_vercel.sh
+  para Root Directory = apps/web de Vercel. 5. DEC-004: en coaching-daily-collect.yml
+  el JSON final solo incluye upsert ok/fallo, tokens_persisted y fuente del restore;
+  quitar zone, acwr, guards y last_activity; ningun print/log del collector (garmin_coaching/,
+  services/collector/, scripts/garmin_auth.py) emite metricas, nombres de actividad
+  ni coordenadas en Actions. 6. Pruebas web: sin --test-skip-pattern ni fallos de
+  node --test lib/*.test.mjs (hallazgos de T-0018). 7. Version PATCH siguiente a la
+  de T-0039 en apps/web/package.json y lock + apps/web/CHANGELOG.md (ADR-009).'
+expected_output: deliverables/<task>.md con logging, trazabilidad de restore, sanitizacion
+  de logs de Actions, deploy script validado y version PATCH
+parent_task: null
+dependencies:
+- T-0039
+priority: high
+profile: fast-track
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills: []
+memory_refs: []
+acceptance_criteria:
+- Excepciones en login_client logueadas con _LOGGER.warning sin datos sensibles
+- Un fallo de persist_tokens_to_supabase deja un warning
+- Workflow reporta en log la fuente de restauracion del token (supabase | b64_fallback)
+- scripts/deploy_web_vercel.sh verificado con Root Directory de Vercel
+- El log de un run de Coaching Daily Collect no contiene metricas de salud, nombres
+  de actividad ni ubicacion; verificado en un run real despues del merge
+- ruff check . y ruff format --check . siguen limpios; pruebas web sin skips
+- Version PATCH con entrada en apps/web/CHANGELOG.md (ADR-009)
+allowlist:
+- scripts/garmin_auth.py
+- scripts/deploy_web_vercel.sh
+- services/collector
+- garmin_coaching
+- .github/workflows/coaching-daily-collect.yml
+- tests
+- apps/web/CHANGELOG.md
+- apps/web/package.json
+- apps/web/package-lock.json
+created_at: '2026-10-20T18:43:53Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
+edits: []
+```
+
+## T-0041 — Gate arquitectura: import-linter y dependency-cruiser (ADR-002)
+
+```yaml
+id: T-0041
+title: 'Gate arquitectura: import-linter y dependency-cruiser (ADR-002)'
+project_id: python-garminconnect
+origin: human
+destination: implementer
+status: ready
+input: 'Recreacion de T-0020 (cancelada por decision de Diego, ''Ok, adelante con
+  A'') con la dependencia actualizada. Python: anadir import-linter a las dependencias
+  de desarrollo en pyproject.toml y un archivo .importlinter con el contrato ''garmin_coaching
+  independiente de garminconnect, services, supabase, fastapi, requests'' (ADR-002
+  §2 y §5). Web: anadir dependency-cruiser en apps/web/package.json con apps/web/.dependency-cruiser.cjs
+  que prohiba que lib/** (salvo lib/infra/**) importe @supabase/* u openai (ADR-002
+  §3). Registrar en .ies/gate.yaml dos comandos cuyo nombre contenga ''arquitectura''
+  (lint-imports; npx depcruise en apps/web), sdlc: pruebas. No mover supabase.ts ni
+  openaiModels.ts: si hoy violan la regla, el contrato web los exime por ruta y se
+  anota como deuda en el deliverable. Depende de T-0040 (ambas tocan apps/web/package.json),
+  que depende de T-0039 (pyproject.toml).'
+expected_output: Ambos linters en verde, comandos de arquitectura en .ies/gate.yaml,
+  ies constitution check sin VII-08 y deliverable con la salida del gate y la deuda
+  registrada.
+parent_task: null
+dependencies:
+- T-0040
+priority: medium
+profile: riguroso
+autonomy: hitl
+execution_mode: null
+requested_iterations: null
+skills:
+- verification-gates
+memory_refs:
+- long/adr/ADR-002-clean-architecture-regla-de-dependencia.md
+- long/standards.md
+acceptance_criteria:
+- ies gate --task T-XXXX en PASS con los comandos de arquitectura ejecutados
+- ies constitution check no reporta VII-08
+- un import sintetico de garminconnect dentro de garmin_coaching hace fallar lint-imports
+allowlist:
+- pyproject.toml
+- .importlinter
+- apps/web/package.json
+- apps/web/package-lock.json
+- apps/web/.dependency-cruiser.cjs
+- .ies/gate.yaml
+created_at: '2026-10-20T18:44:04Z'
+started_at: null
+completed_at: null
+blocked_reason: null
+superseded_by: null
+superseded_reason: null
+terminal_status: null
+output_ref: null
+approval:
+  required: true
+  approved_by: null
+  approved_at: null
+metrics: {}
 edits: []
 ```

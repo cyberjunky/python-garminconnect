@@ -9,7 +9,6 @@ from garmin_coaching.activity_load import (
     aggregate_activities_by_week,
     executed_week_payload,
     fetch_activities_in_range,
-    monday_of,
 )
 from garmin_coaching.mesocycle import MESOCYCLE_ANCHOR, iter_weeks, plan_week
 
@@ -55,5 +54,7 @@ def build_weekly_sport_rows(
     return rows
 
 
-def sync_weekly_sport_load(client: Any, through: date | None = None) -> list[dict[str, Any]]:
+def sync_weekly_sport_load(
+    client: Any, through: date | None = None
+) -> list[dict[str, Any]]:
     return build_weekly_sport_rows(client, through=through)

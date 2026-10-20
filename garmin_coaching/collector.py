@@ -6,7 +6,9 @@ from datetime import date, timedelta
 from typing import Any
 
 from garmin_coaching.guards import apply_guards
+from garmin_coaching.last_activity import fetch_last_activity
 from garmin_coaching.macrocycle import active_phase, milestones_as_dict, phase_as_dict
+from garmin_coaching.mesocycle import plan_week
 from garmin_coaching.messages import format_whatsapp_message
 from garmin_coaching.readiness import (
     DEFAULT_THRESHOLDS,
@@ -14,8 +16,6 @@ from garmin_coaching.readiness import (
     classify,
     derive_thresholds_from_history,
 )
-from garmin_coaching.last_activity import fetch_last_activity
-from garmin_coaching.mesocycle import plan_week
 from garmin_coaching.session_planner import plan_session
 from garmin_coaching.weekly_sync import build_weekly_sport_rows
 
@@ -76,7 +76,9 @@ def get_sleep_bb_for_day(client: Any, ds: str) -> dict[str, Any]:
 def _first_device_entry(data: dict[str, Any] | None) -> dict[str, Any] | None:
     if not isinstance(data, dict):
         return None
-    latest = data.get("latestTrainingStatusData") or data.get("metricsTrainingLoadBalanceDTOMap")
+    latest = data.get("latestTrainingStatusData") or data.get(
+        "metricsTrainingLoadBalanceDTOMap"
+    )
     if isinstance(latest, dict) and latest:
         return next(iter(latest.values()))
     return None
@@ -100,8 +102,12 @@ def fetch_training_load(client: Any, cdate: str | None = None) -> dict[str, Any]
             vo2_block = status.get("mostRecentVO2Max") or {}
             generic = vo2_block.get("generic") or {}
             cycling = vo2_block.get("cycling") or {}
-            out["vo2max"] = generic.get("vo2MaxPreciseValue") or generic.get("vo2MaxValue")
-            out["vo2max_cycling"] = cycling.get("vo2MaxPreciseValue") or cycling.get("vo2MaxValue")
+            out["vo2max"] = generic.get("vo2MaxPreciseValue") or generic.get(
+                "vo2MaxValue"
+            )
+            out["vo2max_cycling"] = cycling.get("vo2MaxPreciseValue") or cycling.get(
+                "vo2MaxValue"
+            )
             out["load_balance"] = status.get("mostRecentTrainingLoadBalance")
             out["raw"] = status
     except Exception as exc:
@@ -123,7 +129,7 @@ def collect_recent_metrics(client: Any, days: int) -> list[dict[str, Any]]:
         ds = (date.today() - timedelta(days=i)).isoformat()
         try:
             rows.append(day_metrics(client, ds))
-        except Exception:
+        except Exception:  # noqa: S112 - best effort: a day without Garmin data is skipped
             continue
     return rows
 
@@ -150,7 +156,7 @@ def build_daily_payload(
             m.update({"score_ok": score_ok, "zone": zone, "recommendation": rec})
             readiness_raw = m
             break
-        except Exception:
+        except Exception:  # noqa: S112 - best effort: a day without Garmin data is skipped
             continue
 
     sleep_bb = None
@@ -158,7 +164,7 @@ def build_daily_payload(
         try:
             sleep_bb = get_sleep_bb_for_day(client, candidate)
             break
-        except Exception:
+        except Exception:  # noqa: S112 - best effort: a day without Garmin data is skipped
             continue
 
     phase = active_phase(on_day)
@@ -168,10 +174,12 @@ def build_daily_payload(
     daily_plan = build_daily_plan(readiness_raw)
 
     mesocycle_week = plan_week(on_day)
-    weekly_sport_load = build_weekly_sport_rows(client, through=on_day, lookback_days=120)
+    weekly_sport_load = build_weekly_sport_rows(
+        client, through=on_day, lookback_days=120
+    )
     last_activity = fetch_last_activity(client)
 
-    payload = {
+    return {
         "date": ds,
         "mesocycle_week": mesocycle_week,
         "weekly_sport_load": weekly_sport_load,
@@ -195,4 +203,3 @@ def build_daily_payload(
             }
         ),
     }
-    return payload

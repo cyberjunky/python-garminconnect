@@ -27,7 +27,11 @@ def main() -> int:
         return 0
     except Exception as exc:
         msg = str(exc).lower()
-        if "weekly_sport_load" not in msg and "relation" not in msg and "schema cache" not in msg:
+        if (
+            "weekly_sport_load" not in msg
+            and "relation" not in msg
+            and "schema cache" not in msg
+        ):
             print(f"check failed: {exc}", file=sys.stderr)
             return 1
 

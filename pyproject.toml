@@ -143,6 +143,10 @@ exclude = [
     "dist",
     "tests",
     "test_data",
+    # IES artifacts (historical records, not code): ruff must not rewrite them
+    "deliverables",
+    "specs",
+    "memory",
 ]
 
 [tool.ruff.lint]
@@ -217,7 +221,11 @@ unfixable = []  # Allow all fixes, including unsafe ones
 "demo.py" = ["T20", "S101", "ERA", "RUF001", "PTH", "PERF401", "PERF203", "PLR0911", "D103"]  # Demo script - various user-facing patterns
 "example.py" = ["S110", "PLR0911", "T20", "PERF203"]  # Example script - simple error handling is intentional
 "test_strategy.py" = ["T20", "D103"]  # Interactive login-strategy diagnostic script
-"scripts/*" = ["T20", "D103"]  # Maintainer CLI utilities - printing is intentional
+"scripts/*" = ["T20", "D101", "D103"]  # Maintainer CLI utilities - printing is intentional
+# Tri-Coach app code (collector, coaching, MCP): docstrings adopted gradually, as D102
+"garmin_coaching/*" = ["D101", "D103"]
+"services/*" = ["D101", "D103"]
+"garmin_mcp/*" = ["D101", "D103"]
 "tests/test_token_permissions.py" = ["S105"]  # synthetic token literals in fixtures
 
 [tool.coverage.run]

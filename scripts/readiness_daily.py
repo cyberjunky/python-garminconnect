@@ -14,34 +14,48 @@ import json
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from garmin_auth import login_client
-from garmin_coaching.collector import collect_recent_metrics, day_metrics, get_sleep_bb_for_day
+
+from garmin_coaching.collector import (
+    collect_recent_metrics,
+    day_metrics,
+    get_sleep_bb_for_day,
+)
 from garmin_coaching.readiness import (
-    DEFAULT_THRESHOLDS,
     build_daily_plan,
     classify,
     derive_thresholds_from_history,
 )
-from garminconnect import Garmin
+
+if TYPE_CHECKING:
+    from garminconnect import Garmin
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Garmin daily readiness report")
-    parser.add_argument("--days", type=int, default=14, help="Days to include in history")
+    parser.add_argument(
+        "--days", type=int, default=14, help="Days to include in history"
+    )
     parser.add_argument(
         "--json",
         action="store_true",
         help="Print raw JSON output instead of human summary",
     )
-    parser.add_argument("--sleep-hours", type=float, default=7.5, help="Sleep hours threshold")
-    parser.add_argument("--sleep-score", type=float, default=84, help="Sleep score threshold")
+    parser.add_argument(
+        "--sleep-hours", type=float, default=7.5, help="Sleep hours threshold"
+    )
+    parser.add_argument(
+        "--sleep-score", type=float, default=84, help="Sleep score threshold"
+    )
     parser.add_argument("--hrv", type=float, default=45, help="Overnight HRV threshold")
-    parser.add_argument("--stress-max", type=float, default=27, help="Max average stress threshold")
+    parser.add_argument(
+        "--stress-max", type=float, default=27, help="Max average stress threshold"
+    )
     parser.add_argument(
         "--bb-change",
         type=float,
@@ -88,11 +102,14 @@ def get_client() -> Garmin:
 
 def build_summary(client: Garmin, days: int, th: dict[str, float]) -> dict[str, Any]:
     sleep_bb_today = None
-    for ds in [date.today().isoformat(), (date.today() - timedelta(days=1)).isoformat()]:
+    for ds in [
+        date.today().isoformat(),
+        (date.today() - timedelta(days=1)).isoformat(),
+    ]:
         try:
             sleep_bb_today = get_sleep_bb_for_day(client, ds)
             break
-        except Exception:
+        except Exception:  # noqa: S112 - best effort: a day without Garmin data is skipped
             continue
 
     rows: list[dict[str, Any]] = []
@@ -103,18 +120,21 @@ def build_summary(client: Garmin, days: int, th: dict[str, float]) -> dict[str, 
             zone, n, rec = classify(m, th)
             m.update({"score_ok": n, "zone": zone, "recommendation": rec})
             rows.append(m)
-        except Exception:
+        except Exception:  # noqa: S112 - best effort: a day without Garmin data is skipped
             continue
 
     today_readiness = None
-    for ds in [date.today().isoformat(), (date.today() - timedelta(days=1)).isoformat()]:
+    for ds in [
+        date.today().isoformat(),
+        (date.today() - timedelta(days=1)).isoformat(),
+    ]:
         try:
             m = day_metrics(client, ds)
             zone, n, rec = classify(m, th)
             m.update({"score_ok": n, "zone": zone, "recommendation": rec})
             today_readiness = m
             break
-        except Exception:
+        except Exception:  # noqa: S112 - best effort: a day without Garmin data is skipped
             continue
 
     return {

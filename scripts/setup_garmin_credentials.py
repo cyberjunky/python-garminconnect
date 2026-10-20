@@ -10,13 +10,20 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from garmin_auth import KEYCHAIN_SERVICE, login_client, save_credentials, tokenstore_path
+from garmin_auth import (
+    KEYCHAIN_SERVICE,
+    login_client,
+    save_credentials,
+    tokenstore_path,
+)
 
 
 def main() -> int:
     print("Garmin credential setup")
     print("-----------------------")
-    print(f"Credentials will be stored in macOS Keychain (service: {KEYCHAIN_SERVICE}).")
+    print(
+        f"Credentials will be stored in macOS Keychain (service: {KEYCHAIN_SERVICE})."
+    )
     print("They are never written to git.")
 
     email = input("Garmin email: ").strip()

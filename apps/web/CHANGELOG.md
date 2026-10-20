@@ -14,6 +14,17 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/
 
 ---
 
+## [0.5.2] - 2026-10-20
+
+Versión de parche de `T-0039` (`DEC-009`): el CI de `master` vuelve a llegar a pytest. Sin cambios de comportamiento en la app web ni en el recolector.
+
+### Corregido
+- **Lint del código Python de Tri-Coach (`garmin_coaching/`, `services/`, `scripts/`, `garmin_mcp/`)**: `ruff check` (0.17.1) pasa de 107 hallazgos a 0 con arreglos automáticos seguros (orden de imports, imports sin usar, `datetime.UTC`), refactors equivalentes y `noqa` con motivo donde el patrón es intencional. Los `except Exception: pass` de `login_client` se mantienen hasta `T-0040`, que los sustituye por logging.
+- **Docstrings (`pyproject.toml`)**: `D101` y `D103` se ignoran en el código de la app (adopción gradual, como `D102`); la librería `garminconnect/` sigue con la regla completa.
+- **Formato**: `ruff format` en 25 archivos. `deliverables/`, `specs/` y `memory/` (artefactos IES) quedan fuera de ruff para no reescribir registros históricos.
+
+---
+
 ## [0.5.1] - 2026-10-17
 
 Versión de parche de `SPEC-004` (`PLAN-004`, `DEC-011`, `ADR-002`, `ADR-003`, `ADR-008`), corrigiendo el desborde geométrico en la tarjeta de Hoy, reposicionando el chat del coach al inicio de forma compacta y sincronizando reactivamente el historial de conversaciones:
