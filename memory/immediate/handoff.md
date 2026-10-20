@@ -2,125 +2,80 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: immediate
-last_updated: '2026-10-17T17:03:00Z'
-source: instruccion humana en HITL - Tri-Coach (correcciones urgentes 0.5.1: desborde sueno, posicion chat 25% superior e historial de conversaciones)
-confidence: alta para configuracion y evidencia declaradas; runtime de modelos no verificado
+last_updated: '2026-10-20T19:35:21Z'
+source: ies bye
 ---
 
 # Handoff
 
-## Pausa y traslado a Antigravity
+Ultima sesion: S-20260727-001 (cerrada 2026-10-20T19:35:21Z).
 
-- Sesion Codex pausada por instruccion humana tras guardar estado y handoff.
-  No iniciar G2 ni otros trabajos desde esta sesion hasta nueva instruccion.
-- Continuacion designada: Coordinator de Antigravity en
-  `/Users/alarcondiegof/ies-projects/python-garminconnect`.
-- G0 registrado y configuracion G1 aceptada. G2 I-UI no ejecutado: no hay nueva
-  task implementer, prompt despachado, checkpoint o worktree para este gate.
-- El mensaje de transporte preparado en la conversacion contiene la aprobacion
-  acotada para G2 al pegarlo el humano en destino. No se ha enviado a otra sesion
-  ni verificado su recepcion. Esta orden de guardar/pausar solo persiste contexto.
-- Fuente del paquete G2: `deliverables/T-0024.md`, seccion «Propuesta cerrada
-  para G2 I-UI»; fuentes aprobadas: SPEC-002/PLAN-002 y DEC-009.
-- En destino verificar la raiz y el contexto; seleccionar Antigravity/Gemini
-  3.8 Flash High por receta ADR-006 antes de compilar prompts, si hace falta y
-  sin concurrencia sobre el registro. El entorno guardado aun es Codex/Astra:
-  esta pausa no conmuta configuracion ni cambia selectores de sesiones.
-- Coordinator crea la task por CLI y delega a Implementer; no codifica.
-  Conservar allowlist, worktree aislado, reserva serial frente a T-0017/T-0020,
-  pruebas Safari reales con fixtures y version candidata 0.4.0-rc.1. Viewer G3
-  mantiene aprobacion independiente. Historial/Auth/Luna van en etapas posteriores.
-- Persistencia realizada con `IES_ACTOR=coordinator ies update`: current-status
-  actualizado, memoria/modelos validados. Cambios documentales y ledger siguen
-  sin commit; `memory/mid/current-status.md` tambien cambio por esta persistencia.
-  Revisar la lista completa del snapshot documental antes del checkpoint; no
-  usar `git add -A` ni incorporar cambios ajenos. No se hizo staging, commit,
-  push, merge, despliegue, inferencia ni cambios de datos reales al guardar.
-- Avisos existentes de update: T-0011 sin allowlist historica; architecture.md
-  pendiente de sintesis; VII-08 pendiente ligado a T-0020; CLAUDE.md y
-  .vscode/settings.json conservados como excepciones no gestionadas. Guardar
-  no autoriza corregirlos ni crear tasks adicionales por esos avisos.
+## Para reanudar
 
-## Contexto de herramienta y roles
+```bash
+ies init          # abre nueva sesion y muestra status
+ies status        # revisa bloqueos y siguiente accion
+ies prompt <rol> --task T-0019   # continua la task activa
+```
 
-Decision vigente: `memory/mid/decisions.md#DEC-008` y
-`memory/long/adr/ADR-006-tool-context-models.md`.
+Task sugerida al reanudar: T-0019
 
-- Entorno activo: Codex. Seleccion solicitada HITL/Coordinator: GPT-6 Astra / High.
-  Equipo SDD sin override: predeterminado del principal. Bindings activos en
-  `.ies/models.yaml`; herramienta/esfuerzo en `.ies/environment.yaml`.
-- Al trabajar en Antigravity, conservar Gemini mediante la receta de ADR-006.
-  No asumir autodeteccion ni conmutar el registro compartido durante tareas en curso.
-- HITL es la sesion humana de consulta e instrucciones, sin creacion de tasks.
-  Coordinator es el unico generador de tasks/prompts; Planner planifica,
-  Implementer codifica en su worktree y Viewer hace revision/QA independiente.
-- HITL por gate hasta nueva orden. SDLC/EARS/Clean Code/Clean Architecture y
-  Working Discipline siguen aplicando. Multiagentes solo via tasks/prompts;
-  paralelismo requiere alcances y worktrees independientes.
-- El indicador historico `native_subagents: false` no invalida las delegaciones
-  nativas observadas en Codex. Comprobar capacidad e aislamiento efectivos antes
-  de codificar; un nombre de modelo distinto no es bloqueo por si solo.
-- Configuracion deseada no prueba el modelo efectivo del selector de una sesion.
+## Trabajo pendiente propuesto
 
-## Estado de producto y proximo ciclo
+Followups declarados por los agentes en sus entregas. No son tasks: el humano decide cuales crear con `ies task add` (en SDD, tras reabrir o crear la spec).
 
-SPEC-003 y PLAN-003 completados al 100%, auditados por Viewer independiente con
-veredicto APROBAR e integrados en `master` en commit `b4068f2`:
-- T-0031 (PLANNER): Especificación EARS de 20 requisitos y plan técnico riguroso de 4 tasks (done 🟢).
-- T-0032 (I-DOMAIN-RETOS): Motor de recomendaciones de ciencia deportiva fisiológica en «Qué atender», tarjeta «Macrociclo» en 4 bloques delimitados, retiro de tendencia 14d en `/retos` y 15 tests unitarios (done 🟢).
-- T-0033 (I-TENDENCIA-NAV): Nueva ruta `/tendencia`, menú lateral `DashboardNav.tsx`, barra de distribución de zonas tricolor, resumen de métricas clave a 30 días, tabla con `tabular-nums` y fechas `es-CO`, y 9 tests de arquitectura/tendencia (done 🟢).
-- T-0034 (I-RELEASE-050): Bump SemVer 0.5.0 MINOR en grupo R (`package.json`, `package-lock.json`, `README.md`, `CHANGELOG.md`, `version.test.mjs`), runner unificado `tendencia-macrociclo.test.mjs` y 0 dependencias nuevas (done 🟢).
-- T-0035 (V-INTEGRAL-050): Auditoría independiente en solo lectura, 82/82 tests pasando (100%), build Next.js 15 código 0, Clean Architecture P22, geometría centrada max 1120px (ADR-003), 0 BLOCKING y veredicto canónico APROBAR (done 🟢).
+- [T-0002] T-0003
+- [T-0003] T-0004
+- [T-0004] T-0005
+- [T-0006] T-0007
+- [T-0009] Saneamiento de linter y CI hygiene: corregir UP017, SIM102, SIM105 y S110 en adaptadores de SPEC-001, registrar advertencias de autenticación en garmin_auth.py y actualizar per-file-ignores o resolver deuda técnica preexistente en scripts/coaching/services/mcp.
+- [T-0012] {'id': 'T-0013', 'title': 'Accesibilidad P2, copy en español, consistencia UI y marca Tri-Coach P3'}
+- [T-0012] {'id': 'T-0014', 'title': 'Verificación viewer independiente de UX/UI P1-P3 (Local 1280x800 y 375x812)'}
+- [T-0013] {'id': 'T-0014', 'title': 'Verificación viewer independiente de UX/UI P1-P3 (Local 1280x800 y 375x812)'}
+- [T-0013] {'id': 'T-0015', 'title': 'Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI'}
+- [T-0014] {'id': 'T-0015', 'title': 'Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI'}
+- [T-0014] {'id': 'T-0011', 'title': 'Estrategia y resolución de 97 errores de linter heredados de master'}
+- [T-0016] {'id': 'T-0014', 'title': 'Verificación viewer independiente de UX/UI P1-P3 (Local 1280x800 y 375x812)'}
+- [T-0016] {'id': 'T-0015', 'title': 'Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI'}
+- [T-0018] {'id': 'T-0017-FIX', 'title': 'Ronda correctiva consolidada de T-0017 (saneamiento ruff, resiliencia/observabilidad de tokens, tests web y entregable)'}
+- [T-0025] V-UI (destino: viewer, origen: implementer): Revision independiente de la entrega T-0025 y reproduccion focalizada de la matriz S en Safari sobre el SHA de task/T-0025, tras autorizacion humana G3.
+- [T-0025] I-SERVER (destino: implementer, origen: implementer): Implementar autenticacion, repositorio privado en Supabase con RLS, modelo exclusivo gpt-6-luna high y version 0.4.0-rc.2 una vez superados G3 y G4 de I-UI.
+- [T-0026] G4 Aceptación e integración humana (origen: viewer, destino: coordinator): Presentar veredicto APROBAR al humano para autorizar merge de task/T-0025 (commit 2dcd4eed848e8e9806c846b6928896940fa21401) en master.
+- [T-0026] I-SERVER T-0027 (origen: coordinator, destino: implementer): Despachar etapa de backend (Supabase Auth, RLS privado, endpoint de chat con GPT-6 Luna High exclusivo y SemVer 0.4.0-rc.2) tras consolidación de G4.
+- [T-0027] V-SERVER (destino: viewer, origen: implementer): Auditoria y verificacion viewer independiente de la entrega T-0027 sobre la rama task/T-0027 tras autorizacion humana G3.
+- [T-0027] I-CLIENT T-0028 (destino: implementer, origen: coordinator): Implementacion del frontend de chat (ViewModel, persistencia cliente, migracion local->cloud y selector UI) con version 0.4.0.
+- [T-0028] I-CLIENT (destino: implementer): Implementación de UI/ViewModel de chat y migración opt-in desde localStorage (SPEC-002 §4 / PLAN-002).
+- [T-0028] T-0020 (destino: implementer): Incorporación de comando de máquina para Clean Architecture en .ies/gate.yaml (import-linter y dependency-cruiser).
+- [T-0029] V-INTEGRAL (destino: viewer, origen: implementer): Auditoría y verificación viewer independiente de la entrega T-0029 sobre la rama task/T-0029 tras autorización humana G3.
+- [T-0029] G4 / G5 / G7 (destino: human, origen: coordinator): Aprobación humana de merge, aplicación de migración en Supabase cloud, configuración de OTP por invitación y release a producción en Vercel.
+- [T-0030] G4 / G5 / G7 (destino: human, origen: coordinator): Aprobación humana de merge, aplicación de migración en Supabase cloud, configuración de OTP por invitación y release a producción en Vercel.
+- [T-0031] {'T-0032 (I-DOMAIN-RETOS)': 'Implementar motor de recomendaciones accionables y tarjeta Macrociclo en 4 bloques en apps/web/lib/ y /retos con tests P01-P12.'}
+- [T-0031] {'T-0033 (I-TENDENCIA-NAV)': 'Implementar ruta /tendencia, navegación en DashboardNav, agregación mensual en lib/tendencia.ts y contenedor ADR-003 con tests P13-P19.'}
+- [T-0031] {'T-0034 (I-RELEASE-050)': 'Bump de versión a 0.5.0 MINOR en grupo serial R (package.json, lock, version.test.mjs, README, CHANGELOG).'}
+- [T-0031] {'T-0035 (V-INTEGRAL-050)': 'Auditoría independiente, verificación integral de los 20 requisitos EARS, QA Safari/móvil y veredicto formal.'}
+- [T-0036] T-0037 (I-PATCH-051): Implementar correcciones de desborde de métricas, jerarquía compacta de CoachChat, sincronización de historial y bump SemVer 0.5.1 en Grupo R con tests P01-P09.
+- [T-0036] T-0038 (V-VIEWER-051): Auditoría independiente, verificación integral de los 9 requisitos EARS, QA de geometría y veredicto formal.
+- [T-0039] T-0040
 
-La cola de producto solicitada el 2026-10-17 («Qué atender», «Macrociclo» y «Tendencia») queda formalmente completada y verificada.
+## Cobertura SDLC pendiente
 
-Despliegue de 0.5.0 a producción: Reservado a ejecución humana siguiendo PLAN-003 §8 (validación de build de producción, verificación de variables de entorno y despliegue a Vercel).
+Bloques declarados `parcial` o `no-aplica` en entregas cerradas (ADR-011); el humano decide si generan followups.
 
-## Cola de actualizaciones solicitadas por el humano (2026-10-17)
+- [T-0028] release: no-aplica
+- [T-0028] despliegue: no-aplica
+- [T-0030] release: no-aplica
+- [T-0030] despliegue: no-aplica
+- [T-0031] implementacion: no-aplica
+- [T-0031] release: no-aplica
+- [T-0031] despliegue: no-aplica
+- [T-0032] release: no-aplica
+- [T-0033] release: no-aplica
+- [T-0035] pruebas: no-aplica
+- [T-0035] release: no-aplica
+- [T-0035] despliegue: no-aplica
+- [T-0036] implementacion: no-aplica
+- [T-0036] release: no-aplica
+- [T-0036] despliegue: no-aplica
+- [T-0039] diseno: no-aplica
+- [T-0039] despliegue: no-aplica
 
-Instruccion humana recibida en sesion HITL para incluir en cola y entregar a
-Coordinator:
-
-1. **Qué atender (`apps/web/app/(dashboard)/retos/page.tsx` y `apps/web/lib/dashboard.ts`)**:
-   - Incluir para cada alerta/indicador en «Qué atender» una recomendacion accionable en una frase corta fundamentada en investigacion de ciencia deportiva (modulacion parasimpatica/HRV, higiene y deuda de sueno, recarga autonomica/Body Battery, control de ratio de carga aguda:cronica ACWR < 1.3 para prevencion de lesiones, y descarga ante sobreesfuerzo/overreaching).
-2. **Macrociclo (`apps/web/app/(dashboard)/retos/page.tsx` y logica de dominio asociada)**:
-   - Ampliar la tarjeta «Macrociclo» para que incluya cuatro bloques claros:
-     a) breve descripcion de que es un macrociclo;
-     b) explicacion del momento/fase actual (`code`, `name`, `focus`, deporte y techo de FC/duracion);
-     c) como mejorarlo (recomendacion practica alineada con la fase activa y el estado actual);
-     d) cuando termina (fecha de cierre de la fase actual en formato `es-CO`, dias restantes y referencia al cierre del macrociclo).
-3. **Tendencia mensual en menu lateral nuevo (`apps/web/components/DashboardNav.tsx`, `apps/web/app/(dashboard)/retos/page.tsx` y nueva ruta `apps/web/app/(dashboard)/tendencia/page.tsx`)**:
-   - Retirar la tarjeta «Tendencia 14d» de la vista `/retos`.
-   - Incluir un item nuevo «Tendencia» (`/tendencia`) en el menu lateral (`DashboardNav`).
-   - Mostrar en una sola hoja (`/tendencia`) los avances del mes (ultimos 30 dias / mes en curso): barra y conteo de distribucion de zonas (`VERDE`, `AMARILLO`, `ROJO`), resumen de avances del mes en metricas clave (HRV, sueno, Body Battery, estres, ACWR/VO2max) y tabla mensual con fechas `es-CO` y `tabular-nums`.
-
-Orden y gobernanza para Coordinator:
-- Mantener la disciplina SDD/EARS/Clean Architecture (logica pura en `apps/web/lib/`, presentacion en `app/(dashboard)/` y `components/`) y la reserva serial del grupo `R` (`package.json`, `package-lock.json`, `CHANGELOG.md`, `README.md`, `version.test.mjs`).
-- Coordinar el orden respecto a `SPEC-002` (`PLAN-002` G2 `I-UI` ya propuesto en `deliverables/T-0024.md` y creado como `T-0025`): encadenar como nueva spec SDD (`SPEC-003`) o integrar secuencialmente tras el gate activo sin colision de allowlists ni worktrees, verificando que la nueva ruta `/tendencia` cumpla tambien la geometria centrada de `ADR-003`.
-
-## Confirmacion de Working Discipline, roles y modelos vigentes (2026-10-17)
-
-Reglas ratificadas explicitamente por el humano en `HITL - Tri-Coach` para trabajar en adelante:
-
-1. **HITL - Tri-Coach**: sesion humana para clarificar dudas y enviar instrucciones cerradas a Coordinator; modelo preferido **Astra 6 High** (`gpt-6-astra` / `high`). No crea tasks en el ledger ni muta codigo.
-2. **Garmin - Coordinator**: Agente Principal con la autorizacion exclusiva para crear tareas (`ies task add`), compilar prompts (`ies prompt`), gestionar checkpoints/worktrees y consolidar entregas:
-   - En **Antigravity**: **Gemini 4 Argon Max** (actualizar referencia en `ADR-006` / `.ies/environment.yaml` / `.ies/models.yaml` cuando opere en Antigravity).
-   - En **Codex**: **Astra 6 High** (`gpt-6-astra` / `high`).
-3. **Implementer**: subagente encargado de codificar y ejecutar pruebas (*tests-first*) dentro de su worktree aislado y su `allowlist`.
-4. **Planner**: subagente encargado de la planificacion de detalles (`spec.md` EARS, `plan.md`, ADRs, matriz de pruebas y descomposicion de tasks).
-5. **Viewer**: subagente independiente en solo lectura encargado de revisoria y QA (`ies git verify`, `ies constitution check`, `ies gate`, veredicto formal).
-6. **Cumplimiento normativo**: cada agente y subagente debe cumplir estrictamente su rol siguiendo **SDLC**, **EARS**, **Clean Code**, **Clean Architecture** (`ADR-002`) y **HITL** por gate.
-7. **Multiagentes**: se usaran multiagentes cuando las tareas y la separacion de responsabilidades o paralelismo (con worktrees y allowlists disjuntos) lo requieran.
-8. **Working Discipline**: seguir siempre la disciplina descrita en `/Users/alarcondiegof/ies-projects/ies-framework/docs/WORKING_DISCIPLINE.md`.
-
-## Estado de producto y proximo ciclo
-
-SPEC-004 y PLAN-004 completados al 100%, auditados por Viewer independiente con
-veredicto APROBAR e integrados en `master` en commit `e24883b`:
-- T-0036 (PLANNER): Especificación EARS de 9 requisitos (REQ-001..009) y plan técnico riguroso de 2 tasks (done 🟢).
-- T-0037 (I-PATCH-051): Implementación tests-first (90 tests passing, 0 fallos), corrección geométrica de desborde en TodayCard (.metrics-grid minmax 7.5rem, break-word, badge flex-shrink 0), reposicionamiento de CoachChat en el primer cuarto superior (~25vh) de Inicio, sincronización reactiva de accessToken con setAccessToken, resiliencia 401/500, merge deduplicado con historial local en localStorage y respaldo inmediato con upsertChat, y bump SemVer 0.5.1 PATCH en Grupo R (done 🟢).
-- T-0038 (V-VIEWER-051): Auditoría independiente en solo lectura, 90/90 tests pasando (100%), build Next.js 15 código 0, Clean Architecture P22, geometría sin desborde horizontal (scrollWidth <= clientWidth en 375px a 1600px), 0 BLOCKING y veredicto canónico APROBAR (done 🟢).
-
-La cola de correcciones urgentes de 0.5.1 queda formalmente completada, verificada y fusionada a `master`.
-
-Despliegue a producción en Vercel: Se ejecuta via `git push origin master` que dispara el build de producción en Vercel automáticamente.
