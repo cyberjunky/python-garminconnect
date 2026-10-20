@@ -2,7 +2,7 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: mid
-last_updated: '2026-10-20T16:59:23Z'
+last_updated: '2026-10-20T19:35:16Z'
 source: ies update
 confidence: alta (generado mecanicamente del ledger)
 ---
@@ -10,20 +10,15 @@ confidence: alta (generado mecanicamente del ledger)
 # Current status
 
 
-## ⚪ backlog
-
-- T-0011 — Estrategia y resolución de 97 errores de linter heredados de master (destino: implementer, perfil: riguroso)
-
 ## 🔵 ready
 
-- T-0017 — Saneamiento linter SPEC-001, privacidad logs CI, deploy script y SemVer 0.3.1 (destino: implementer, perfil: fast-track)
-- T-0018 — Verificacion viewer independiente de T-0017 sobre commit f3fc13a (destino: viewer, perfil: riguroso)
 - T-0019 — Sincronización de adaptadores canónicos a IES 0.2.0 y actualización de manifiesto (destino: implementer, perfil: fast-track)
-- T-0020 — Gate arquitectura: import-linter y dependency-cruiser (ADR-002) (destino: implementer, perfil: riguroso)
 - T-0021 — Especificar correccion visual y responsive de Tri-Coach (SPEC-002) (destino: planner, perfil: riguroso)
 - T-0022 — Plan integral de centrado Safari, historial sincronizado y GPT-6 Luna High (SPEC-002) (destino: planner, perfil: riguroso)
 - T-0023 — Alinear contexto Codex y conservar seleccion Gemini para Antigravity (destino: coordinator, perfil: riguroso)
 - T-0024 — Materializar aprobacion G0 de SPEC-002 y PLAN-002 (destino: coordinator, perfil: riguroso)
+- T-0040 — Privacidad de logs CI, logging en login_client, origen del restore y deploy script (pendiente de T-0017) (destino: implementer, perfil: fast-track)
+- T-0041 — Gate arquitectura: import-linter y dependency-cruiser (ADR-002) (destino: implementer, perfil: riguroso)
 
 ## 🟢 done
 
@@ -54,8 +49,13 @@ confidence: alta (generado mecanicamente del ledger)
 - T-0036 — Especificar y planificar correcciones 0.5.1 (SPEC-004) (destino: planner, perfil: fast-track)
 - T-0037 — I-PATCH-051: Corrección de desborde métricas, jerarquía de chat, historial y SemVer 0.5.1 (destino: implementer, perfil: fast-track)
 - T-0038 — V-VIEWER-051: Auditoría viewer integral independiente de SPEC-004 (SemVer 0.5.1) (destino: viewer, perfil: riguroso)
+- T-0039 — Resolución de los errores de ruff y formato heredados de master (sucesora de T-0011) (destino: implementer, perfil: riguroso)
 
 ## ⚫ cancelled
 
 - T-0010 — Saneamiento linter SPEC-001, observabilidad REQ-005, trazabilidad de restore y ajuste deploy script (destino: implementer, perfil: fast-track)
+- T-0011 — Estrategia y resolución de 97 errores de linter heredados de master (destino: implementer, perfil: riguroso)
 - T-0015 — Saneamiento linter SPEC-001, observabilidad REQ-005, deploy script y privacidad de logs CI (destino: implementer, perfil: fast-track)
+- T-0017 — Saneamiento linter SPEC-001, privacidad logs CI, deploy script y SemVer 0.3.1 (destino: implementer, perfil: fast-track)
+- T-0018 — Verificacion viewer independiente de T-0017 sobre commit f3fc13a (destino: viewer, perfil: riguroso)
+- T-0020 — Gate arquitectura: import-linter y dependency-cruiser (ADR-002) (destino: implementer, perfil: riguroso)
