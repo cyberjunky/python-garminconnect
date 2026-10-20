@@ -2,7 +2,7 @@
 schema_version: 1
 project_id: python-garminconnect
 layer: mid
-last_updated: '2026-10-19T18:29:09Z'
+last_updated: '2026-10-20T12:53:49Z'
 source: ies update
 confidence: alta (generado mecanicamente del ledger)
 ---
