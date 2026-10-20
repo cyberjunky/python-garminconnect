@@ -35,56 +35,58 @@ def _payload(result: object) -> dict:
 async def _run(day: str, allow_env_credentials: bool) -> int:
     params = StdioServerParameters(command="python", args=["-m", "garmin_mcp.server"], cwd=".")
 
-    async with stdio_client(params) as (read_stream, write_stream):
-        async with ClientSession(read_stream, write_stream) as session:
-            await session.initialize()
+    async with (
+        stdio_client(params) as (read_stream, write_stream),
+        ClientSession(read_stream, write_stream) as session,
+    ):
+        await session.initialize()
 
-            tools = await session.list_tools()
-            tool_names = [t.name for t in tools.tools]
-            print("MCP_E2E_TOOLS", tool_names)
+        tools = await session.list_tools()
+        tool_names = [t.name for t in tools.tools]
+        print("MCP_E2E_TOOLS", tool_names)
 
-            status_result = await session.call_tool("auth_status", {})
-            status = _payload(status_result)
-            print("MCP_E2E_AUTH_STATUS", status)
+        status_result = await session.call_tool("auth_status", {})
+        status = _payload(status_result)
+        print("MCP_E2E_AUTH_STATUS", status)
 
-            login_result = await session.call_tool("login_with_tokens", {})
-            login = _payload(login_result)
-            print("MCP_E2E_LOGIN_WITH_TOKENS", login)
+        login_result = await session.call_tool("login_with_tokens", {})
+        login = _payload(login_result)
+        print("MCP_E2E_LOGIN_WITH_TOKENS", login)
+
+        if not login.get("ok") or not login.get("authenticated"):
+            if allow_env_credentials:
+                email = os.getenv("GARMIN_EMAIL")
+                password = os.getenv("GARMIN_PASSWORD")
+                if email and password:
+                    cred_result = await session.call_tool(
+                        "login_with_credentials",
+                        {"email": email, "password": password},
+                    )
+                    login = _payload(cred_result)
+                    print("MCP_E2E_LOGIN_WITH_CREDENTIALS", login)
+                else:
+                    print(
+                        "MCP_E2E_NO_ENV_CREDS: --allow-env-credentials enabled, "
+                        "but GARMIN_EMAIL or GARMIN_PASSWORD is missing."
+                    )
 
             if not login.get("ok") or not login.get("authenticated"):
-                if allow_env_credentials:
-                    email = os.getenv("GARMIN_EMAIL")
-                    password = os.getenv("GARMIN_PASSWORD")
-                    if email and password:
-                        cred_result = await session.call_tool(
-                            "login_with_credentials",
-                            {"email": email, "password": password},
-                        )
-                        login = _payload(cred_result)
-                        print("MCP_E2E_LOGIN_WITH_CREDENTIALS", login)
-                    else:
-                        print(
-                            "MCP_E2E_NO_ENV_CREDS: --allow-env-credentials enabled, "
-                            "but GARMIN_EMAIL or GARMIN_PASSWORD is missing."
-                        )
+                print(
+                    "MCP_E2E_NEEDS_TOKENS: login_with_tokens did not authenticate. "
+                    "Run credential login once to create ~/.garminconnect/garmin_tokens.json."
+                )
+                return 2
 
-                if not login.get("ok") or not login.get("authenticated"):
-                    print(
-                        "MCP_E2E_NEEDS_TOKENS: login_with_tokens did not authenticate. "
-                        "Run credential login once to create ~/.garminconnect/garmin_tokens.json."
-                    )
-                    return 2
+        summary_result = await session.call_tool("get_user_summary", {"date": day})
+        summary = _payload(summary_result)
+        print("MCP_E2E_SUMMARY", summary)
 
-            summary_result = await session.call_tool("get_user_summary", {"date": day})
-            summary = _payload(summary_result)
-            print("MCP_E2E_SUMMARY", summary)
+        if not summary.get("ok"):
+            print("MCP_E2E_FAIL: summary call failed")
+            return 3
 
-            if not summary.get("ok"):
-                print("MCP_E2E_FAIL: summary call failed")
-                return 3
-
-            print("MCP_E2E_OK")
-            return 0
+        print("MCP_E2E_OK")
+        return 0
 
 
 def main() -> int:

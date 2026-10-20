@@ -9,7 +9,6 @@ from garmin_coaching.activity_load import (
     aggregate_activities_by_week,
     executed_week_payload,
     fetch_activities_in_range,
-    monday_of,
 )
 from garmin_coaching.mesocycle import MESOCYCLE_ANCHOR, iter_weeks, plan_week
 

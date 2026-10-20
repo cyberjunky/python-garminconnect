@@ -15,11 +15,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from garmin_auth import login_client
-from garmin_coaching.collector import build_daily_payload
-from garmin_coaching.messages import format_whatsapp_message
+from garmin_auth import login_client  # noqa: E402 - after sys.path setup
 
-from services.collector.supabase_client import upsert_daily_payload
+from garmin_coaching.collector import build_daily_payload  # noqa: E402 - after sys.path setup
+from garmin_coaching.messages import format_whatsapp_message  # noqa: E402 - after sys.path setup
+from services.collector.supabase_client import upsert_daily_payload  # noqa: E402 - after sys.path setup
 
 app = FastAPI(title="Garmin Coaching Collector", version="0.1.0")
 
@@ -110,7 +110,7 @@ def run() -> None:
     import uvicorn
 
     port = int(os.environ.get("COLLECTOR_PORT", "8080"))
-    uvicorn.run("services.collector.main:app", host="0.0.0.0", port=port, reload=False)
+    uvicorn.run("services.collector.main:app", host="0.0.0.0", port=port, reload=False)  # noqa: S104 - container worker listens on all interfaces
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001"
@@ -25,7 +25,7 @@ def upsert_daily_payload(payload: dict[str, Any], user_id: str = DEFAULT_USER_ID
     readiness = payload.get("readiness") or {}
     training = payload.get("training_load") or {}
     session = payload.get("session") or {}
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
 
     client.table("readiness_daily").upsert(
         {
@@ -156,7 +156,7 @@ def upsert_garmin_tokens_to_supabase(
         return None
 
     client = get_supabase()
-    now_iso = datetime.now(timezone.utc).isoformat()
+    now_iso = datetime.now(UTC).isoformat()
     res = (
         client.table("garmin_tokens")
         .upsert(

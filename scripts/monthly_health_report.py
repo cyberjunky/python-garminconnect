@@ -11,9 +11,9 @@ from __future__ import annotations
 import argparse
 import os
 import sys
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -25,15 +25,18 @@ for _v in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy",
 os.environ["no_proxy"] = "*"
 os.environ["NO_PROXY"] = "*"
 
-import requests as _requests
+import requests as _requests  # noqa: E402 - after proxy/sys.path setup
+
 _orig_session_init = _requests.Session.__init__
 def _no_proxy_session_init(self, *a, **kw):
     _orig_session_init(self, *a, **kw)
     self.trust_env = False
 _requests.Session.__init__ = _no_proxy_session_init
 
-from garmin_auth import login_client
-from garminconnect import Garmin
+from garmin_auth import login_client  # noqa: E402 - after proxy/sys.path setup
+
+if TYPE_CHECKING:
+    from garminconnect import Garmin
 
 
 def parse_args() -> argparse.Namespace:
@@ -232,7 +235,7 @@ def main() -> int:
         end_of_month = date(year, month + 1, 1) - timedelta(days=1)
     end = min(end_of_month, date.today())
 
-    print(f"Conectando a Garmin Connect…")
+    print("Conectando a Garmin Connect…")
     try:
         client = get_client()
     except Exception as e:

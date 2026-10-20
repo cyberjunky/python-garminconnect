@@ -8,12 +8,14 @@ import csv
 import sys
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from garmin_auth import login_client
-from garminconnect import Garmin
+
+if TYPE_CHECKING:
+    from garminconnect import Garmin
 
 
 def _parse_date(value: str) -> date:

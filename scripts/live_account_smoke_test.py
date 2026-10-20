@@ -11,6 +11,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from garmin_auth import login_client
+
 from garminconnect import (
     GarminConnectAuthenticationError,
     GarminConnectConnectionError,

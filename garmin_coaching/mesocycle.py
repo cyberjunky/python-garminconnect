@@ -72,7 +72,7 @@ def planned_weekly_sports(week_start: date) -> dict[str, float]:
 
 
 def _daily_non_monday_budget(weekly: dict[str, float]) -> dict[str, float]:
-    """Reserve Monday walk; spread remaining planned minutes Tue–Sun."""
+    """Reserve Monday walk; spread remaining planned minutes Tue-Sun."""
     out = dict(weekly)
     walk = out.get("walk", 0)
     out["walk"] = max(0.0, walk - _MONDAY_WALK_MIN)

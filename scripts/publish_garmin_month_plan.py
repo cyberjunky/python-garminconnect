@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import argparse
 import calendar
-import os
 import sys
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -30,6 +29,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from garmin_auth import login_client
+
 from garminconnect import (
     Garmin,
     GarminConnectAuthenticationError,
@@ -98,7 +98,7 @@ def parse_iso_date(value: str) -> date:
     try:
         yyyy, mm, dd = value.split("-")
         return date(int(yyyy), int(mm), int(dd))
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         raise ValueError(f"Invalid date '{value}', expected YYYY-MM-DD") from exc
 
 

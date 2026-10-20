@@ -62,7 +62,7 @@ def _round_or_none(value: float | None, digits: int = 2) -> float | None:
     return round(value, digits)
 
 
-def _score_resting_hr(resting_hr: float | None) -> float | None:
+def _score_resting_hr(resting_hr: float | None) -> float | None:  # noqa: PLR0911 - piecewise score
     if resting_hr is None:
         return None
     if resting_hr < 38:
@@ -245,7 +245,9 @@ def _benchmark_bogota_male_adult(summary: dict[str, Any], metrics: dict[str, Any
         sleep_hours /= 3600.0
     spo2 = _to_float(data.get("averageSpo2"))
 
-    def _label(value: float | None, low: float, high: float, inverse: bool = False) -> str:
+    def _label(  # noqa: PLR0911 - one return per band
+        value: float | None, low: float, high: float, inverse: bool = False
+    ) -> str:
         if value is None:
             return "unknown"
         if not inverse:
@@ -296,79 +298,81 @@ async def _run(
 ) -> int:
     params = StdioServerParameters(command="python", args=["-m", "garmin_mcp.server"], cwd=".")
 
-    async with stdio_client(params) as (read_stream, write_stream):
-        async with ClientSession(read_stream, write_stream) as session:
-            await session.initialize()
+    async with (
+        stdio_client(params) as (read_stream, write_stream),
+        ClientSession(read_stream, write_stream) as session,
+    ):
+        await session.initialize()
 
-            login = _payload(await session.call_tool("login_with_tokens", {}))
-            if not login.get("ok") or not login.get("authenticated"):
-                if allow_env_credentials:
-                    email = os.getenv("GARMIN_EMAIL")
-                    password = os.getenv("GARMIN_PASSWORD")
-                    if email and password:
-                        cred_login = _payload(
-                            await session.call_tool(
-                                "login_with_credentials",
-                                {"email": email, "password": password},
-                            )
+        login = _payload(await session.call_tool("login_with_tokens", {}))
+        if not login.get("ok") or not login.get("authenticated"):
+            if allow_env_credentials:
+                email = os.getenv("GARMIN_EMAIL")
+                password = os.getenv("GARMIN_PASSWORD")
+                if email and password:
+                    cred_login = _payload(
+                        await session.call_tool(
+                            "login_with_credentials",
+                            {"email": email, "password": password},
                         )
-                        login = cred_login
-                        print("MCP_DAILY_SNAPSHOT_LOGIN_WITH_CREDENTIALS", cred_login)
-                    else:
-                        print(
-                            "MCP_DAILY_SNAPSHOT_NO_ENV_CREDS: --allow-env-credentials enabled, "
-                            "but GARMIN_EMAIL or GARMIN_PASSWORD is missing."
-                        )
-
-                if not login.get("ok") or not login.get("authenticated"):
-                    print(
-                        "MCP_DAILY_SNAPSHOT_NEEDS_TOKENS: token login failed. "
-                        "Create tokens first with the e2e script in credential mode."
                     )
-                    return 2
+                    login = cred_login
+                    print("MCP_DAILY_SNAPSHOT_LOGIN_WITH_CREDENTIALS", cred_login)
+                else:
+                    print(
+                        "MCP_DAILY_SNAPSHOT_NO_ENV_CREDS: --allow-env-credentials enabled, "
+                        "but GARMIN_EMAIL or GARMIN_PASSWORD is missing."
+                    )
 
-            summary = _payload(await session.call_tool("get_user_summary", {"date": target_day}))
-            heart_rates = _payload(await session.call_tool("get_heart_rates", {"date": target_day}))
-            sleep = _payload(await session.call_tool("get_sleep_data", {"date": target_day}))
-            activities = _payload(
-                await session.call_tool("get_activities", {"start": 0, "limit": activity_limit})
-            )
+            if not login.get("ok") or not login.get("authenticated"):
+                print(
+                    "MCP_DAILY_SNAPSHOT_NEEDS_TOKENS: token login failed. "
+                    "Create tokens first with the e2e script in credential mode."
+                )
+                return 2
 
-            metrics = _extract_metrics(summary, heart_rates)
-            health_score = _health_score(summary, metrics)
-            recent_summaries = await _load_recent_summaries(session, target_day, days=7)
-            baseline = _baseline_compare(summary, metrics, recent_summaries, health_score)
-            bogota_benchmark = _benchmark_bogota_male_adult(summary, metrics)
+        summary = _payload(await session.call_tool("get_user_summary", {"date": target_day}))
+        heart_rates = _payload(await session.call_tool("get_heart_rates", {"date": target_day}))
+        sleep = _payload(await session.call_tool("get_sleep_data", {"date": target_day}))
+        activities = _payload(
+            await session.call_tool("get_activities", {"start": 0, "limit": activity_limit})
+        )
 
-            response = {
-                "date": target_day,
-                "ok": all(
-                    call.get("ok")
-                    for call in (summary, heart_rates, sleep, activities)
-                ),
-                "metrics": metrics,
-                "health_score": health_score,
-                "vs_7day_baseline": baseline,
-                "vs_bogota_male_adult_reference": bogota_benchmark,
-                "sleep": sleep.get("data"),
-                "activities_count": len(activities.get("data") or []),
-                "activities_sample": (activities.get("data") or [])[:3],
-                "errors": {
-                    "summary": None if summary.get("ok") else summary,
-                    "heart_rates": None if heart_rates.get("ok") else heart_rates,
-                    "sleep": None if sleep.get("ok") else sleep,
-                    "activities": None if activities.get("ok") else activities,
-                },
-            }
+        metrics = _extract_metrics(summary, heart_rates)
+        health_score = _health_score(summary, metrics)
+        recent_summaries = await _load_recent_summaries(session, target_day, days=7)
+        baseline = _baseline_compare(summary, metrics, recent_summaries, health_score)
+        bogota_benchmark = _benchmark_bogota_male_adult(summary, metrics)
 
-            rendered = json.dumps(response, ensure_ascii=True, indent=2)
-            print(rendered)
-            if output:
-                out_path = Path(output).expanduser()
-                out_path.parent.mkdir(parents=True, exist_ok=True)
-                out_path.write_text(rendered + "\n", encoding="utf-8")
-                print(f"MCP_DAILY_SNAPSHOT_WRITTEN {out_path}")
-            return 0 if response["ok"] else 3
+        response = {
+            "date": target_day,
+            "ok": all(
+                call.get("ok")
+                for call in (summary, heart_rates, sleep, activities)
+            ),
+            "metrics": metrics,
+            "health_score": health_score,
+            "vs_7day_baseline": baseline,
+            "vs_bogota_male_adult_reference": bogota_benchmark,
+            "sleep": sleep.get("data"),
+            "activities_count": len(activities.get("data") or []),
+            "activities_sample": (activities.get("data") or [])[:3],
+            "errors": {
+                "summary": None if summary.get("ok") else summary,
+                "heart_rates": None if heart_rates.get("ok") else heart_rates,
+                "sleep": None if sleep.get("ok") else sleep,
+                "activities": None if activities.get("ok") else activities,
+            },
+        }
+
+        rendered = json.dumps(response, ensure_ascii=True, indent=2)
+        print(rendered)
+        if output:
+            out_path = Path(output).expanduser()
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            out_path.write_text(rendered + "\n", encoding="utf-8")
+            print(f"MCP_DAILY_SNAPSHOT_WRITTEN {out_path}")
+        return 0 if response["ok"] else 3
 
 
 def main() -> int:

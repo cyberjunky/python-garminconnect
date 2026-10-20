@@ -10,7 +10,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from garmin_auth import KEYCHAIN_SERVICE, login_client, save_credentials, tokenstore_path
+from garmin_auth import (
+    KEYCHAIN_SERVICE,
+    login_client,
+    save_credentials,
+    tokenstore_path,
+)
 
 
 def main() -> int:

@@ -4,7 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from garmin_coaching.activity_load import _type_key, activity_duration_min, classify_sport
+from garmin_coaching.activity_load import (
+    _type_key,
+    activity_duration_min,
+    classify_sport,
+)
 
 
 def summarize_last_activity(raw: dict[str, Any] | None) -> dict[str, Any] | None:

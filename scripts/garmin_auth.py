@@ -17,12 +17,15 @@ import subprocess
 import sys
 from getpass import getpass
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from garminconnect import Garmin, GarminConnectAuthenticationError
 from garminconnect.client import Client, token_file_path
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,14 +50,14 @@ def _load_env_local() -> dict[str, str]:
 
 def _load_keychain() -> tuple[str | None, str | None]:
     try:
-        password_proc = subprocess.run(
-            ["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"],
+        password_proc = subprocess.run(  # noqa: S603 - fixed argv, no shell
+            ["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"],  # noqa: S607 - macOS Keychain CLI
             capture_output=True,
             text=True,
             check=True,
         )
-        account_proc = subprocess.run(
-            ["security", "find-generic-password", "-s", KEYCHAIN_SERVICE],
+        account_proc = subprocess.run(  # noqa: S603 - fixed argv, no shell
+            ["security", "find-generic-password", "-s", KEYCHAIN_SERVICE],  # noqa: S607 - macOS Keychain CLI
             capture_output=True,
             text=True,
             check=True,
@@ -83,8 +86,8 @@ def save_credentials(email: str, password: str) -> None:
         raise ValueError("Email and password are required.")
 
     try:
-        subprocess.run(
-            [
+        subprocess.run(  # noqa: S603 - fixed argv, no shell
+            [  # noqa: S607 - macOS Keychain CLI
                 "security",
                 "add-generic-password",
                 "-a",
@@ -143,7 +146,7 @@ def get_credentials(*, prompt: bool = True) -> tuple[str, str]:
 
 
 def tokenstore_path() -> str:
-    return os.path.expanduser(os.getenv("GARMINTOKENS", "~/.garminconnect"))
+    return str(Path(os.getenv("GARMINTOKENS", "~/.garminconnect")).expanduser())
 
 
 def _ensure_env_local_in_os_environ() -> None:
@@ -212,33 +215,32 @@ def login_client(
     client = Garmin()
     try:
         client.login(store)
-        try:
+        try:  # noqa: SIM105 - kept explicit; T-0040 replaces with logging
             persist_tokens_to_supabase(store)
-        except Exception:
+        except Exception:  # noqa: S110 - best effort; T-0040 replaces with logging
             pass
         return client
-    except Exception:
+    except Exception:  # noqa: S110 - best effort; T-0040 replaces with logging
         pass
 
-    if token_file.is_file():
-        if restore_tokens_from_supabase(store):
-            try:
-                client = Garmin()
-                client.login(store)
-                try:
-                    persist_tokens_to_supabase(store)
-                except Exception:
-                    pass
-                return client
-            except Exception:
+    if token_file.is_file() and restore_tokens_from_supabase(store):
+        try:
+            client = Garmin()
+            client.login(store)
+            try:  # noqa: SIM105 - kept explicit; T-0040 replaces with logging
+                persist_tokens_to_supabase(store)
+            except Exception:  # noqa: S110 - best effort; T-0040 replaces with logging
                 pass
+            return client
+        except Exception:  # noqa: S110 - best effort; T-0040 replaces with logging
+            pass
 
     email, password = get_credentials(prompt=prompt)
     client = Garmin(email=email, password=password, prompt_mfa=mfa)
     client.login(store)
-    try:
+    try:  # noqa: SIM105 - kept explicit; T-0040 replaces with logging
         persist_tokens_to_supabase(store)
-    except Exception:
+    except Exception:  # noqa: S110 - best effort; T-0040 replaces with logging
         pass
     return client
 

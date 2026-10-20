@@ -65,7 +65,7 @@ class GarminSession:
             raise GarminConnectAuthenticationError(
                 "Not authenticated. Call login_with_tokens or login_with_credentials first."
             )
-        assert self.client is not None
+        assert self.client is not None  # noqa: S101 - type narrowing for mypy
         return self.client
 
 
@@ -140,7 +140,7 @@ def login_with_credentials(
     """
     SESSION.tokenstore = _normalize_tokenstore(tokenstore)
     SESSION.client = Garmin(email=email, password=password)
-    assert SESSION.client is not None
+    assert SESSION.client is not None  # noqa: S101 - type narrowing for mypy
     result = _api_call("login_with_credentials", SESSION.client.login, SESSION.tokenstore)
     if result["ok"]:
         return {
