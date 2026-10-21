@@ -309,7 +309,7 @@ class ActivitiesMixin(GarminBase):
         url = f"{self.garmin_connect_upload}/{file_extension}"
         headers = {
             "NK": "NT",
-            "origin": "https://sso.garmin.com",
+            "origin": self.client._sso,
             "User-Agent": "GCM-iOS-5.7.2.1",
         }
 

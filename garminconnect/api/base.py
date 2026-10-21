@@ -595,7 +595,7 @@ class GarminBase:
                     "Authentication failed (401 Unauthorized). "
                     "Possible causes:\n"
                     "  • Incorrect email or password\n"
-                    "  • Account locked — check https://sso.garmin.com\n"
+                    f"  • Account locked — check {self.client._sso}\n"
                     "  • Garmin SSO service is temporarily unavailable\n"
                     f"Original error: {e}"
                 ) from e
