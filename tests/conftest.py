@@ -7,6 +7,39 @@ from typing import Any
 import pytest
 
 
+class NetworkAccessInTestsError(RuntimeError):
+    """A unit test tried to reach the network."""
+
+
+@pytest.fixture(autouse=True)
+def _block_network(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch):
+    """Fail any real network access from tests not marked ``integration``.
+
+    Login tests that patch only some strategies used to let the others run
+    for real, so every test run sent login attempts to sso.garmin.com from
+    the developer's IP. Block requests (at the transport adapter, so tests
+    that patch Session.request still work), curl_cffi sessions and raw
+    sockets.
+    """
+    if request.node.get_closest_marker("integration"):
+        return
+
+    def refuse(*args: Any, **kwargs: Any) -> Any:
+        target = next((a for a in args if isinstance(a, (str, tuple))), "?")
+        raise NetworkAccessInTestsError(f"network access in a unit test: {target}")
+
+    import socket
+
+    import requests.adapters
+
+    monkeypatch.setattr(requests.adapters.HTTPAdapter, "send", refuse)
+    monkeypatch.setattr(socket.socket, "connect", refuse)
+    monkeypatch.setattr(socket, "create_connection", refuse)
+    try:
+        from curl_cffi import requests as cffi_requests
+    except ImportError:
+        return
+    monkeypatch.setattr(cffi_requests.Session, "request", refuse)
 SENSITIVE_FIELDS = {
     "access_token",
     "activityId",
