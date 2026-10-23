@@ -15,6 +15,7 @@ page.
 
 ### Fixed
 
+- **The mobile login works again instead of always returning 429**: since April it posted the credentials straight to `/mobile/api/login`, without first loading the sign-in page as the iOS app's web view does. Without that page's cookies and Referer, Garmin answers with 429 even when nothing is rate limited; the same request after loading the page is processed normally. The page is loaded first again, with a short pause before the credentials are sent.
 - **A login blocked with HTTP 427 is reported as a rate limit**: Garmin's widget login page has started answering blocked attempts with the non-standard status 427 alongside 429s from the other strategies. It counted as an ordinary failure, so the "all strategies rate limited" error was missed and, when the widget ran last, callers got a generic connection error instead of `GarminConnectTooManyRequestsError`. 427 is now treated like 429 throughout the login.
 
 ## [0.3.19] - 2026-10-16

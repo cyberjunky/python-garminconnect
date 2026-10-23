@@ -46,6 +46,9 @@ LOGIN_DELAY_MAX_S = 20.0
 # Widget flow uses a shorter delay (different rate-limit bucket).
 WIDGET_DELAY_MIN_S = 3.0
 WIDGET_DELAY_MAX_S = 8.0
+# Mobile flow: the pause between loading the sign-in page and submitting it.
+MOBILE_DELAY_MIN_S = 2.0
+MOBILE_DELAY_MAX_S = 5.0
 
 # -- TLS impersonation profiles --
 MOBILE_IMPERSONATIONS: tuple[str, ...] = ("safari_ios", "safari", "chrome120")

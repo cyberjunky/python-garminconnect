@@ -1442,12 +1442,20 @@ class TestSanitizedLoginErrors:
             "serviceUrl": "https://internal-sso.garmin.com/secret",
         }
         sess = type(
-            "Sess", (), {"post": lambda *a, **k: self._json_response(200, sensitive)}
+            "Sess",
+            (),
+            {
+                "get": lambda *a, **k: self._json_response(200, {}),
+                "post": lambda *a, **k: self._json_response(200, sensitive),
+            },
         )()
         c = client_mod.Client(verify_login=False)
-        with pytest.raises(
-            garminconnect.GarminConnectConnectionError, match="responseStatus=LOCKED"
-        ) as exc:
+        with (
+            patch("garminconnect.client.sso.time.sleep"),
+            pytest.raises(
+                garminconnect.GarminConnectConnectionError, match="responseStatus=LOCKED"
+            ) as exc,
+        ):
             c._do_mobile_login(sess, "e@x.com", "pw")
 
         msg = str(exc.value)
