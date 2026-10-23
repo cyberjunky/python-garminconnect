@@ -585,7 +585,8 @@ class GarminBase:
             # traceback for expected failures (rate limits, bot challenges).
             logger.debug("Login failed: %s (status=%s)", e, status)
 
-            if status == 429 or "429" in error_str:
+            # 427 is the non-standard status the SSO also uses to block logins.
+            if status in (427, 429) or "429" in error_str or "427" in error_str:
                 raise GarminConnectTooManyRequestsError(
                     "Too many login attempts. Please wait a few minutes "
                     "before trying again."
