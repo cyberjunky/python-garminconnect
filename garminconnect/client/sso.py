@@ -18,6 +18,7 @@ import random
 import time
 from collections.abc import Callable
 from typing import Any, cast
+from urllib.parse import urlencode
 
 import requests
 from requests.cookies import create_cookie
@@ -38,6 +39,8 @@ from .constants import (
     IOS_SSO_CLIENT_ID,
     LOGIN_DELAY_MAX_S,
     LOGIN_DELAY_MIN_S,
+    MOBILE_DELAY_MAX_S,
+    MOBILE_DELAY_MIN_S,
     MOBILE_IMPERSONATIONS,
     PORTAL_IMPERSONATIONS,
     PORTAL_SSO_CLIENT_ID,
@@ -538,7 +541,39 @@ class LoginMixin(_ClientState):
         self._do_mobile_login(requests.Session(), email, password)
 
     def _do_mobile_login(self, sess: Any, email: str, password: str) -> None:
-        """Login via sso.garmin.com/mobile/api/login (iOS app flow)."""
+        """Login via sso.garmin.com/mobile/api/login (iOS app flow).
+
+        Loads the mobile sign-in page first, as the app's web view does: a
+        credential POST without the cookies it sets (SESSION, __cf_bm, ...)
+        and without its Referer is answered with 429, while the same POST
+        after the page load is processed normally.
+        """
+        signin_url = f"{self._sso}/mobile/sso/en_US/sign-in"
+        signin_params = {
+            "clientId": IOS_SSO_CLIENT_ID,
+            "service": self._ios_service_url,
+        }
+        r = sess.get(
+            signin_url,
+            params=signin_params,
+            headers={
+                "User-Agent": IOS_LOGIN_UA,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+            },
+            timeout=30,
+        )
+        _raise_if_rate_limited(r, "Mobile sign-in page GET")
+        if r.status_code == 403:
+            raise GarminConnectConnectionError(
+                "Mobile sign-in page: HTTP 403 (Cloudflare bot challenge) — "
+                "falling through to next strategy"
+            )
+
+        delay_s = random.uniform(MOBILE_DELAY_MIN_S, MOBILE_DELAY_MAX_S)  # noqa: S311
+        _LOGGER.debug("Mobile login: waiting %.0fs before submitting...", delay_s)
+        time.sleep(delay_s)
+
         self._post_credentials(
             sess,
             "Mobile login",
@@ -551,8 +586,10 @@ class LoginMixin(_ClientState):
             {
                 "User-Agent": IOS_LOGIN_UA,
                 "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "en-US,en;q=0.9",
                 "Content-Type": "application/json",
                 "Origin": self._sso,
+                "Referer": f"{signin_url}?{urlencode(signin_params)}",
             },
             service_url=self._ios_service_url,
             flow="ios",
