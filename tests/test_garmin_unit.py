@@ -935,6 +935,8 @@ class TestResumeLogin:
             )
         )
         src._mfa_flow = "widget"
+        src._mfa_login_params = {}
+        src._mfa_post_headers = {}
 
         dst = client_mod.Client(verify_login=False)
         dst._restore_mfa_state(json.loads(json.dumps(src._mfa_client_state())))
@@ -969,6 +971,24 @@ class TestResumeLogin:
             c.resume_login({"flow": "portal", "impersonate": None}, "123456")
         assert seen == [live]
 
+    @pytest.mark.parametrize(
+        "service_url",
+        [
+            None,
+            "https://connect.garmin.com/app",
+            "https://mobile.integration.garmin.com/gcm/ios",
+            "https://sso.garmin.com/sso/embed",
+        ],
+    )
+    def test_client_resume_login_accepts_garmin_service_urls(self, service_url):
+        """Every service URL the login flows set itself is accepted."""
+        state = _widget_mfa_state(None)
+        state["service_url"] = service_url
+        c = client_mod.Client(verify_login=False)
+        c._restore_mfa_state(state)
+        assert c._mfa_service_url == service_url
+        assert c._mfa_pending is True
+
     def test_client_resume_login_rejects_state_from_the_other_region(self):
         """A garmin.com state must not be sent to sso.garmin.cn, or vice versa."""
         c = client_mod.Client(domain="garmin.cn", verify_login=False)
@@ -990,8 +1010,21 @@ class TestResumeLogin:
             lambda s: s.pop("csrf_token"),
             lambda s: s.update(flow=123),
             lambda s: s["cookies"][0].update(domain=123),
+            # The service ticket must never be sent to a host from the state.
+            lambda s: s.update(service_url="https://attacker.example/steal"),
+            lambda s: s.update(service_url="https://connect.garmin.cn/app"),
+            lambda s: s.update(login_params={"service": 1}),
+            lambda s: s.update(post_headers=["Referer"]),
         ],
-        ids=["missing-field", "unknown-flow", "bad-cookie"],
+        ids=[
+            "missing-field",
+            "unknown-flow",
+            "bad-cookie",
+            "foreign-service-url",
+            "other-region-service-url",
+            "non-string-login-param",
+            "non-dict-post-headers",
+        ],
     )
     def test_client_resume_login_rejects_invalid_state(self, change: Any):
         """A bad state raises a clear error and leaves no partial login."""

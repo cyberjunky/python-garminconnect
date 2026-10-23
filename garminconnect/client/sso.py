@@ -315,6 +315,23 @@ class LoginMixin(_ClientState):
                 )
             if state["flow"] not in ("ios", "portal", "widget"):
                 raise ValueError("unknown MFA flow")
+            # The ticket from the MFA step is sent to service_url when the
+            # DI exchange falls back to JWT_WEB, so a stored state must not be
+            # able to point it anywhere but this client's own Garmin services.
+            allowed_service_urls = {
+                self._ios_service_url,
+                self._mobile_sso_service_url,
+                self._portal_service_url,
+                f"{self._sso}/sso/embed",
+            }
+            if state["service_url"] not in (None, *allowed_service_urls):
+                raise ValueError("service_url is not a Garmin service URL")
+            for key in ("login_params", "post_headers"):
+                value = state[key]
+                if not isinstance(value, dict) or not all(
+                    isinstance(k, str) and isinstance(v, str) for k, v in value.items()
+                ):
+                    raise ValueError(f"{key} must map strings to strings")
             impersonate = state["impersonate"]
             if impersonate is None:
                 sess: Any = requests.Session()
