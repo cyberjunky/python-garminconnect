@@ -650,6 +650,30 @@ library transparently falls through to the next strategy. Set
 `Garmin(..., verify_login=False)` to restore the legacy "first token wins"
 behavior.
 
+**MFA in a web app or service:** with `return_on_mfa=True`, `login()` returns
+`("needs_mfa", client_state)` instead of prompting. `client_state` is
+JSON-serializable, so you can store it while the user fetches the code and
+finish the login later, on a new `Garmin` instance, after a restart or on
+another server:
+
+```python
+import json
+
+from garminconnect import Garmin
+
+garmin = Garmin(email, password, return_on_mfa=True)
+status, client_state = garmin.login()
+if status == "needs_mfa":
+    saved = json.dumps(client_state)  # keep until the user enters the code
+
+# Later, possibly in another process (use the same is_cn setting):
+garmin = Garmin()
+garmin.resume_login(json.loads(saved), mfa_code)
+```
+
+`client_state` contains Garmin session cookies, so store it as securely as a
+password and delete it once the login finishes.
+
 **Cached-token gotcha & self-healing:** when a `tokenstore` is supplied,
 `login()` loads those tokens *before* the strategy chain and short-circuits if
 they load — so stale/poisoned cached tokens used to fail every run. The library

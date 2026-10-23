@@ -7,6 +7,12 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
+## [Unreleased]
+
+### Added
+
+- **Two-step MFA can finish in another process**: with `return_on_mfa=True`, `login()` now returns `("needs_mfa", client_state)`, where `client_state` is JSON-serializable data describing the pending login (session cookies, login flow, browser fingerprint and region). Passing it to `resume_login()` on a new `Garmin` instance finishes the login there, so a web app can complete it across requests, restarts or servers without asking Garmin for another code. The instance that started the login still uses its own session, so existing callers are unaffected. `client_state` contains session cookies; store it as securely as a password.
+
 ## [0.3.19] - 2026-10-16
 
 ### Added

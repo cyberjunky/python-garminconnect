@@ -20,6 +20,7 @@ from collections.abc import Callable
 from typing import Any, cast
 
 import requests
+from requests.cookies import create_cookie
 
 from ..exceptions import (
     GarminConnectAuthenticationError,
@@ -118,11 +119,13 @@ class LoginMixin(_ClientState):
             email: Garmin account email.
             password: Garmin account password.
             prompt_mfa: Callable that returns an MFA code string when invoked.
-            return_on_mfa: When True, return ("needs_mfa", None) instead of
-                           calling prompt_mfa; caller must call resume_login().
+            return_on_mfa: When True, return ("needs_mfa", client_state)
+                           instead of calling prompt_mfa; caller must call
+                           resume_login().
 
         Returns:
-            (None, None) on success; ("needs_mfa", None) when return_on_mfa=True.
+            (None, None) on success; ("needs_mfa", client_state) when
+            return_on_mfa=True. client_state is JSON-serializable.
 
         """
         if self._mfa_pending:
@@ -169,7 +172,7 @@ class LoginMixin(_ClientState):
         def resolve_mfa(name: str) -> tuple[str | None, Any]:
             if return_on_mfa:
                 self._mfa_pending = True
-                return "needs_mfa", None
+                return "needs_mfa", self._mfa_client_state()
             if prompt_mfa:
                 mfa_code = prompt_mfa()
                 self._complete_mfa(mfa_code)
@@ -245,14 +248,21 @@ class LoginMixin(_ClientState):
             )
         )
 
-    def resume_login(self, _client_state: Any, mfa_code: str) -> tuple[str | None, Any]:
+    def resume_login(self, client_state: Any, mfa_code: str) -> tuple[str | None, Any]:
         """Complete a previously initiated MFA login.
+
+        ``client_state`` is what ``login(return_on_mfa=True)`` returned. The
+        instance that started the login uses its own pending session and
+        ignores it; any other instance (in another process, for example)
+        rebuilds the pending login from it.
 
         A failed verification code (or a rate-limited attempt) leaves the
         pending MFA session intact so the caller can retry with a corrected
         code on the same instance. Only success, or a non-retryable failure
         after MFA itself succeeded, clears the pending state.
         """
+        if not self._mfa_pending and client_state:
+            self._restore_mfa_state(client_state)
         self._complete_mfa(mfa_code)
         if self.verify_login and not self._verify_token():
             self._clear_auth_state()
@@ -261,6 +271,108 @@ class LoginMixin(_ClientState):
             )
         self._clear_mfa_pending_state()
         return None, None
+
+    def _mfa_client_state(self) -> dict[str, Any]:
+        """Return the pending MFA login as JSON-serializable data.
+
+        It holds the SSO session cookies, so it must be stored as securely as
+        a password until resume_login() has used it.
+        """
+        sess = self._mfa_session
+        # curl_cffi wraps its jar (``cookies.jar``); requests' jar is the cookies.
+        cookies = getattr(sess, "cookies", [])
+        return {
+            "domain": self.domain,
+            "flow": self._mfa_flow,
+            "method": self._mfa_method,
+            "login_params": self._mfa_login_params,
+            "post_headers": self._mfa_post_headers,
+            "service_url": self._mfa_service_url,
+            "csrf_token": self._widget_csrf_token,
+            # None means a plain requests session.
+            "impersonate": getattr(sess, "impersonate", None),
+            "cookies": [
+                {
+                    "name": c.name,
+                    "value": c.value,
+                    "domain": c.domain,
+                    "path": c.path,
+                    "secure": c.secure,
+                    "expires": c.expires,
+                    "domain_specified": c.domain_specified,
+                }
+                for c in getattr(cookies, "jar", cookies)
+            ],
+        }
+
+    def _restore_mfa_state(self, state: dict[str, Any]) -> None:
+        """Rebuild a pending MFA login from ``_mfa_client_state()`` output."""
+        try:
+            if state["domain"] != self.domain:
+                raise GarminConnectAuthenticationError(
+                    f"MFA client_state is for {state['domain']}; resume it on a "
+                    "Garmin created with the same is_cn setting"
+                )
+            if state["flow"] not in ("ios", "portal", "widget"):
+                raise ValueError("unknown MFA flow")
+            # The widget verify step needs the CSRF token; without it the
+            # restored login could never complete, but would stay pending.
+            if state["flow"] == "widget" and not (
+                isinstance(state["csrf_token"], str) and state["csrf_token"]
+            ):
+                raise ValueError("widget MFA state has no CSRF token")
+            # The ticket from the MFA step is sent to service_url when the
+            # DI exchange falls back to JWT_WEB, so a stored state must not be
+            # able to point it anywhere but this client's own Garmin services.
+            allowed_service_urls = {
+                self._ios_service_url,
+                self._mobile_sso_service_url,
+                self._portal_service_url,
+                f"{self._sso}/sso/embed",
+            }
+            if state["service_url"] not in (None, *allowed_service_urls):
+                raise ValueError("service_url is not a Garmin service URL")
+            for key in ("login_params", "post_headers"):
+                value = state[key]
+                if not isinstance(value, dict) or not all(
+                    isinstance(k, str) and isinstance(v, str) for k, v in value.items()
+                ):
+                    raise ValueError(f"{key} must map strings to strings")
+            impersonate = state["impersonate"]
+            if impersonate is None:
+                sess: Any = requests.Session()
+            else:
+                pkg = _pkg()
+                if not pkg.HAS_CFFI:
+                    raise GarminConnectConnectionError("curl_cffi not available")
+                sess = pkg.cffi_requests.Session(impersonate=impersonate)
+            # Add cookies to the jar directly: curl_cffi's cookies.set() would
+            # widen host-only and __Host- cookies to other hosts.
+            jar = getattr(sess.cookies, "jar", sess.cookies)
+            for c in state["cookies"]:
+                cookie = create_cookie(
+                    c["name"],
+                    c["value"],
+                    domain=c["domain"],
+                    path=c["path"],
+                    secure=c["secure"],
+                    expires=c["expires"],
+                )
+                cookie.domain_specified = c["domain_specified"]
+                jar.set_cookie(cookie)
+            self._mfa_login_params = state["login_params"]
+            self._mfa_post_headers = state["post_headers"]
+            self._mfa_service_url = state["service_url"]
+            self._mfa_flow = state["flow"]
+            self._mfa_method = state["method"]
+            self._widget_csrf_token = state["csrf_token"]
+        except (AttributeError, KeyError, TypeError, ValueError) as e:
+            self._clear_mfa_pending_state()
+            raise GarminConnectAuthenticationError(
+                "Invalid MFA client_state; start the login again"
+            ) from e
+        self._mfa_session = sess
+        self._mfa_pending = True
 
     # ------------------------------------------------------------------ #
     #  Shared pieces of the mobile and portal JSON login flows            #
@@ -565,7 +677,8 @@ class LoginMixin(_ClientState):
             self._mfa_post_headers = {"Referer": r.url}
             self._mfa_flow = "widget"
             self._mfa_method = mfa_vars.get("mfaMethod", "")
-            self._widget_last_resp = r
+            csrf_match = _CSRF_RE.search(r.text)
+            self._widget_csrf_token = csrf_match.group(1) if csrf_match else None
             raise _MFARequired()
 
         if title != "Success":
@@ -583,12 +696,11 @@ class LoginMixin(_ClientState):
     def _complete_mfa_widget(self, mfa_code: str) -> None:
         """Complete MFA for widget flow."""
         sess = getattr(self, "_mfa_session", None)
-        r = getattr(self, "_widget_last_resp", None)
-        if not sess or not r:
+        if not sess:
             raise GarminConnectAuthenticationError("Missing widget MFA context")
 
-        csrf_match = _CSRF_RE.search(r.text)
-        if not csrf_match:
+        csrf_token = getattr(self, "_widget_csrf_token", None)
+        if not csrf_token:
             raise GarminConnectAuthenticationError("Widget MFA: missing CSRF token")
 
         r = sess.post(
@@ -598,7 +710,7 @@ class LoginMixin(_ClientState):
             data={
                 "mfa-code": mfa_code,
                 "embed": "true",
-                "_csrf": csrf_match.group(1),
+                "_csrf": csrf_token,
                 "fromPage": "setupEnterMfaCode",
             },
             timeout=30,
