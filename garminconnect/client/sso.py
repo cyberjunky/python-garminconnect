@@ -315,6 +315,12 @@ class LoginMixin(_ClientState):
                 )
             if state["flow"] not in ("ios", "portal", "widget"):
                 raise ValueError("unknown MFA flow")
+            # The widget verify step needs the CSRF token; without it the
+            # restored login could never complete, but would stay pending.
+            if state["flow"] == "widget" and not (
+                isinstance(state["csrf_token"], str) and state["csrf_token"]
+            ):
+                raise ValueError("widget MFA state has no CSRF token")
             # The ticket from the MFA step is sent to service_url when the
             # DI exchange falls back to JWT_WEB, so a stored state must not be
             # able to point it anywhere but this client's own Garmin services.

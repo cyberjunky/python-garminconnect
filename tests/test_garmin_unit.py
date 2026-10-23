@@ -937,6 +937,7 @@ class TestResumeLogin:
         src._mfa_flow = "widget"
         src._mfa_login_params = {}
         src._mfa_post_headers = {}
+        src._widget_csrf_token = "tok123"  # noqa: S105
 
         dst = client_mod.Client(verify_login=False)
         dst._restore_mfa_state(json.loads(json.dumps(src._mfa_client_state())))
@@ -1015,6 +1016,7 @@ class TestResumeLogin:
             lambda s: s.update(service_url="https://connect.garmin.cn/app"),
             lambda s: s.update(login_params={"service": 1}),
             lambda s: s.update(post_headers=["Referer"]),
+            lambda s: s.update(csrf_token=None),
         ],
         ids=[
             "missing-field",
@@ -1024,6 +1026,7 @@ class TestResumeLogin:
             "other-region-service-url",
             "non-string-login-param",
             "non-dict-post-headers",
+            "widget-without-csrf-token",
         ],
     )
     def test_client_resume_login_rejects_invalid_state(self, change: Any):
