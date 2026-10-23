@@ -13,6 +13,10 @@ page.
 
 - **Two-step MFA can finish in another process**: with `return_on_mfa=True`, `login()` now returns `("needs_mfa", client_state)`, where `client_state` is JSON-serializable data describing the pending login (session cookies, login flow, browser fingerprint and region). Passing it to `resume_login()` on a new `Garmin` instance finishes the login there, so a web app can complete it across requests, restarts or servers without asking Garmin for another code. The instance that started the login still uses its own session, so existing callers are unaffected. `client_state` contains session cookies; store it as securely as a password.
 
+### Fixed
+
+- **A login blocked with HTTP 427 is reported as a rate limit**: Garmin's widget login page has started answering blocked attempts with the non-standard status 427 alongside 429s from the other strategies. It counted as an ordinary failure, so the "all strategies rate limited" error was missed and, when the widget ran last, callers got a generic connection error instead of `GarminConnectTooManyRequestsError`. 427 is now treated like 429 throughout the login.
+
 ## [0.3.19] - 2026-10-16
 
 ### Added

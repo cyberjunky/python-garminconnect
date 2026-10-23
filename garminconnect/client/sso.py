@@ -92,9 +92,15 @@ def _page_title(html: str) -> str:
     return match.group(1) if match else ""
 
 
+# Statuses the SSO answers with when it blocks a login attempt: 429, and the
+# non-standard 427 the widget embed page has been seen returning alongside
+# 429s from every other strategy.
+_BLOCKED_STATUSES = frozenset({427, 429})
+
+
 def _raise_if_rate_limited(resp: Any, what: str) -> None:
-    if resp.status_code == 429:
-        raise GarminConnectTooManyRequestsError(f"{what} returned 429")
+    if resp.status_code in _BLOCKED_STATUSES:
+        raise GarminConnectTooManyRequestsError(f"{what} returned {resp.status_code}")
 
 
 class LoginMixin(_ClientState):
@@ -233,7 +239,7 @@ class LoginMixin(_ClientState):
 
         if rate_limited_count == len(strategies):
             raise GarminConnectTooManyRequestsError(
-                "All login strategies rate limited (429). "
+                "All login strategies rate limited or blocked (HTTP 429/427). "
                 "Garmin may be blocking this client or network rather than "
                 "rate limiting; try again later or from another network."
             )
@@ -452,9 +458,9 @@ class LoginMixin(_ClientState):
             timeout=30,
         )
 
-        if r.status_code == 429:
+        if r.status_code in _BLOCKED_STATUSES:
             raise GarminConnectTooManyRequestsError(
-                f"{label} returned 429 — rate limited or blocked by Garmin "
+                f"{label} returned {r.status_code} — rate limited or blocked by Garmin "
                 "(can be triggered by the client fingerprint, not only the IP)"
             )
 
@@ -814,9 +820,10 @@ class LoginMixin(_ClientState):
             },
             timeout=30,
         )
-        if get_resp.status_code == 429:
+        if get_resp.status_code in _BLOCKED_STATUSES:
             raise GarminConnectTooManyRequestsError(
-                "Portal login GET returned 429 — Cloudflare blocking this request."
+                f"Portal login GET returned {get_resp.status_code} — "
+                "Cloudflare blocking this request."
             )
 
         # Anti-WAF delay: 10-20s mimics real browser "read then type" behaviour.
@@ -927,8 +934,8 @@ class LoginMixin(_ClientState):
                 failures.append(f"{mfa_url}: connection error {e}")
                 continue
 
-            if r.status_code == 429:
-                failures.append(f"{mfa_url}: HTTP 429")
+            if r.status_code in _BLOCKED_STATUSES:
+                failures.append(f"{mfa_url}: HTTP {r.status_code}")
                 rate_limited_count += 1
                 continue
 
