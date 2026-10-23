@@ -7,16 +7,20 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
-## [Unreleased]
+## [0.3.20] - 2026-10-23
 
 ### Added
 
-- **Two-step MFA can finish in another process**: with `return_on_mfa=True`, `login()` now returns `("needs_mfa", client_state)`, where `client_state` is JSON-serializable data describing the pending login (session cookies, login flow, browser fingerprint and region). Passing it to `resume_login()` on a new `Garmin` instance finishes the login there, so a web app can complete it across requests, restarts or servers without asking Garmin for another code. The instance that started the login still uses its own session, so existing callers are unaffected. `client_state` contains session cookies; store it as securely as a password.
+- **Two-step MFA can finish in another process**: with `return_on_mfa=True`, `login()` now returns `("needs_mfa", client_state)`, where `client_state` is JSON-serializable data describing the pending login (session cookies, login flow, browser fingerprint and region). Passing it to `resume_login()` on a new `Garmin` instance finishes the login there, so a web app can complete it across requests, restarts or servers without asking Garmin for another code. The instance that started the login still uses its own session, so existing callers are unaffected. `client_state` contains session cookies; store it as securely as a password. (#473)
 
 ### Fixed
 
-- **The mobile login works again instead of always returning 429**: since April it posted the credentials straight to `/mobile/api/login`, without first loading the sign-in page as the iOS app's web view does. Without that page's cookies and Referer, Garmin answers with 429 even when nothing is rate limited; the same request after loading the page is processed normally. The page is loaded first again, with a short pause before the credentials are sent.
-- **A login blocked with HTTP 427 is reported as a rate limit**: Garmin's widget login page has started answering blocked attempts with the non-standard status 427 alongside 429s from the other strategies. It counted as an ordinary failure, so the "all strategies rate limited" error was missed and, when the widget ran last, callers got a generic connection error instead of `GarminConnectTooManyRequestsError`. 427 is now treated like 429 throughout the login.
+- **The mobile login works again instead of always returning 429**: since April it posted the credentials straight to `/mobile/api/login`, without first loading the sign-in page as the iOS app's web view does. Without that page's cookies and Referer, Garmin answers with 429 even when nothing is rate limited; the same request after loading the page is processed normally. The page is loaded first again, with a short pause before the credentials are sent. (#479)
+- **A login blocked with HTTP 427 is reported as a rate limit**: Garmin's widget login page has started answering blocked attempts with the non-standard status 427 alongside 429s from the other strategies. It counted as an ordinary failure, so the "all strategies rate limited" error was missed and, when the widget ran last, callers got a generic connection error instead of `GarminConnectTooManyRequestsError`. 427 is now treated like 429 throughout the login. (#477)
+
+### Development
+
+- **The unit tests no longer contact Garmin**: login tests that patched only some strategies let the others run for real, so every full test run sent about 40 login requests with fake credentials to sso.garmin.com from the developer's IP. All network access is now blocked in unit tests. (#478)
 
 ## [0.3.19] - 2026-10-16
 
@@ -243,6 +247,8 @@ This release is primarily a security-hardening pass covering authentication, tok
 - Exception messages and debug logs no longer include raw server response bodies, CAS service tickets, or token contents.
 - Hardened the VCR cassette sanitizer (JSON bodies, MFA codes, tickets) and the exercise-catalog generator script against recording or publishing session/account data.
 
+[0.3.20]: https://github.com/cyberjunky/python-garminconnect/releases/tag/0.3.20
+[0.3.19]: https://github.com/cyberjunky/python-garminconnect/releases/tag/0.3.19
 [0.3.18]: https://github.com/cyberjunky/python-garminconnect/releases/tag/0.3.18
 [0.3.17]: https://github.com/cyberjunky/python-garminconnect/releases/tag/0.3.17
 [0.3.16]: https://github.com/cyberjunky/python-garminconnect/releases/tag/0.3.16
