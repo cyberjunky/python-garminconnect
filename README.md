@@ -1073,11 +1073,6 @@ If you find this library useful for your projects, please consider supporting it
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg?style=for-the-badge&logo=paypal)](https://www.paypal.me/cyberjunkynl/)
 [![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-red.svg?style=for-the-badge&logo=github)](https://github.com/sponsors/cyberjunky)
 
-<a href="https://discord.gg/hUBQxRhJCU">
-  <img src="https://raw.githubusercontent.com/cyberjunky/cyberjunky/main/assets/junkyard-discord.svg"
-       alt="Join The Junkyard on Discord" width="600">
-</a>
-
 **Why Support?**
 - Keeps the project actively maintained
 - Enables faster bug fixes and new features
@@ -1085,6 +1080,15 @@ If you find this library useful for your projects, please consider supporting it
 - Shows appreciation for hundreds of hours of development
 
 Every contribution, no matter the size, makes a difference and is greatly appreciated! 🙏
+
+## Community
+
+Questions, ideas or just want to chat? Join The Junkyard on Discord:
+
+<a href="https://discord.gg/hUBQxRhJCU">
+  <img src="https://raw.githubusercontent.com/cyberjunky/cyberjunky/main/assets/junkyard-discord.svg"
+       alt="Join The Junkyard on Discord" width="600">
+</a>
 
 [releases-shield]: https://img.shields.io/github/release/cyberjunky/python-garminconnect.svg?style=for-the-badge
 [releases]: https://github.com/cyberjunky/python-garminconnect/releases
