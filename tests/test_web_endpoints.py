@@ -436,3 +436,59 @@ def test_update_activity_partial_put(writer):
     }
     with pytest.raises(ValueError):
         g.update_activity(987654, {})
+
+
+IMAGE_ID = "7f66cc3cb7214e4195097d5478e852ba"
+
+
+def test_upload_activity_image_posts_multipart_file(writer, tmp_path):
+    g, calls = writer
+    jpg = tmp_path / "summit.JPG"
+    jpg.write_bytes(b"\xff\xd8\xff jpeg")
+    png = tmp_path / "card.png"
+    png.write_bytes(b"\x89PNG png")
+
+    g.upload_activity_image(987654, jpg)
+    method, url, kw = calls[-1]
+    assert (method, url) == ("POST", "/activity-service/activity/987654/image")
+    assert kw["files"] == {"file": ("summit.JPG", b"\xff\xd8\xff jpeg", "image/jpeg")}
+    assert kw["api"] is True
+
+    g.upload_activity_image("987654", str(png))
+    assert calls[-1][2]["files"]["file"] == ("card.png", b"\x89PNG png", "image/png")
+
+
+def test_upload_activity_image_rejects_bad_input(writer, tmp_path):
+    from garminconnect import GarminConnectInvalidFileFormatError
+
+    g, calls = writer
+    gif = tmp_path / "anim.gif"
+    gif.write_bytes(b"GIF89a")
+    with pytest.raises(GarminConnectInvalidFileFormatError):
+        g.upload_activity_image(987654, gif)
+    with pytest.raises(FileNotFoundError):
+        g.upload_activity_image(987654, tmp_path / "missing.jpg")
+    with pytest.raises(ValueError):
+        g.upload_activity_image(987654, "")
+    with pytest.raises(ValueError):
+        g.upload_activity_image(1.5, tmp_path / "x.jpg")
+    with pytest.raises(ValueError):
+        g.upload_activity_image("../1", tmp_path / "x.jpg")
+    assert calls == []
+
+
+def test_delete_activity_image(writer):
+    g, calls = writer
+    assert g.delete_activity_image(987654, IMAGE_ID) is None
+    assert calls[-1][:2] == (
+        "DELETE",
+        f"/activity-service/activity/987654/image/{IMAGE_ID}",
+    )
+
+
+@pytest.mark.parametrize("image_id", ["", "abc", "../x", f"{IMAGE_ID}/x", None])
+def test_delete_activity_image_rejects_bad_image_id(writer, image_id):
+    g, calls = writer
+    with pytest.raises(ValueError):
+        g.delete_activity_image(987654, image_id)
+    assert calls == []

@@ -199,6 +199,8 @@ feature get a 404.
 | `get_favorite_activities(limit=5)` | `GET /activitylist-service/activities/favorite/{displayName}?limit` | | yes (empty) |
 | `set_activity_favorite(activity_id, favorite=True)` | `PUT /activity-service/activity/{id}` `{"activityId", "metadataDTO": {"favorite"}}` | Same partial update as `set_activity_name`. Read back via `metadataDTO.favorite` and `get_favorite_activities()`. | yes |
 | `update_activity(activity_id, fields)` | `PUT /activity-service/activity/{id}` `{"activityId", **fields}` | Generic partial update (`activityName`, `description`, `activityTypeDTO`, `eventTypeDTO`, `metadataDTO`, `accessControlRuleDTO`). | yes |
+| `upload_activity_image(activity_id, image_path)` | `POST /activity-service/activity/{id}/image` (multipart, field `file`) | JPEG or PNG. Returns `imageId` plus presigned `url`/`smallUrl`/`mediumUrl` (24 h). Read back via `get_activity_images()`. | no |
+| `delete_activity_image(activity_id, image_id)` | `DELETE /activity-service/activity/{id}/image/{imageId}` | HTTP 204. `imageId` is a 32-hex-digit id. | no |
 | `get_activity_laps(activity_id)` | `GET /activity-service/activity/{id}/laps` | `lapDTOs`. | yes |
 | `get_activity_rounds(activity_id)` | `GET /activity-service/activity/{id}/rounds` | HIIT/boxing rounds with sets. | yes (empty) |
 | `get_activity_step_details(activity_id)` | `GET /activity-service/activity/{id}/stepdetails` | Structured-workout steps. | yes (empty) |

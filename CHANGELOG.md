@@ -7,6 +7,12 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
+## [Unreleased]
+
+### Added
+
+- **Photos can be added to and removed from an activity**: new `upload_activity_image(activity_id, image_path)` adds a JPEG or PNG the way the Garmin Connect web app does (a multipart `POST` to `activity-service/activity/{id}/image`) and returns the new image, including its `imageId`; `delete_activity_image(activity_id, image_id)` removes one (`DELETE …/image/{imageId}`). Until now photos could only be read with `get_activity_images()`. Both are in `demo.py` (Activities & Workouts, options E and F).
+
 ## [0.3.20] - 2026-10-23
 
 ### Added

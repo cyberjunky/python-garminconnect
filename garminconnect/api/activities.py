@@ -18,12 +18,20 @@ from ._common import (
     _validate_date_range,
     _validate_non_negative_integer,
     _validate_positive_integer,
+    _validate_uuid,
     logger,
 )
 from .base import GarminBase
 
 # Nested enum of GarminBase, aliased for the default argument of download_activity.
 ActivityDownloadFormat = GarminBase.ActivityDownloadFormat
+
+# Photo file types accepted by upload_activity_image, with their content types.
+ACTIVITY_IMAGE_TYPES = {
+    ".jpeg": "image/jpeg",
+    ".jpg": "image/jpeg",
+    ".png": "image/png",
+}
 
 
 class ActivitiesMixin(GarminBase):
@@ -598,7 +606,7 @@ class ActivitiesMixin(GarminBase):
         """Return the photos attached to an activity.
 
         Photos are surfaced in ``metadataDTO.activityImages`` of the
-        `get_activity` response; there is no separate images endpoint.
+        `get_activity` response; there is no endpoint that only lists them.
         Each entry contains ``imageId``, ``url``, and ``photoDate``.
 
         Note: the ``url`` values are presigned S3 links
@@ -609,6 +617,56 @@ class ActivitiesMixin(GarminBase):
         """
         activity = self.get_activity(str(activity_id)) or {}
         return (activity.get("metadataDTO") or {}).get("activityImages") or []
+
+    def upload_activity_image(
+        self, activity_id: int | str, image_path: str | Path
+    ) -> dict[str, Any]:
+        """Add a photo (JPEG or PNG file) to an activity.
+
+        POST /activity-service/activity/{id}/image with the file as multipart
+        form field ``file``, as the Garmin Connect web app sends it. Returns
+        the new image: ``imageId``, ``url``, ``smallUrl``, ``mediumUrl`` and
+        ``expirationTimestamp``. Keep ``imageId`` to remove the photo later
+        with :meth:`delete_activity_image`; the URLs are presigned S3 links
+        that expire after 24 hours. Verified live.
+        """
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
+        if not isinstance(image_path, str | Path) or not str(image_path):
+            raise ValueError("image_path must be a non-empty path")
+        p = Path(image_path)
+        content_type = ACTIVITY_IMAGE_TYPES.get(p.suffix.lower())
+        if content_type is None:
+            allowed = ", ".join(sorted(ACTIVITY_IMAGE_TYPES))
+            raise GarminConnectInvalidFileFormatError(
+                f"Invalid image file type '{p.suffix}'. Allowed: {allowed}"
+            )
+        if not p.is_file():
+            raise FileNotFoundError(f"Image file not found: {image_path}")
+        try:
+            data = p.read_bytes()
+        except OSError as e:
+            raise GarminConnectConnectionError(
+                f"Failed to read image file {image_path}: {e}"
+            ) from e
+        url = f"{self.garmin_connect_activity}/{activity_id}/image"
+        logger.debug("Uploading image to activity %s", activity_id)
+        return self.client.post(
+            "connectapi", url, files={"file": (p.name, data, content_type)}, api=True
+        )
+
+    def delete_activity_image(self, activity_id: int | str, image_id: str) -> Any:
+        """Remove a photo from an activity.
+
+        DELETE /activity-service/activity/{id}/image/{imageId}, as the Garmin
+        Connect web app sends it. ``image_id`` is the ``imageId`` from
+        :meth:`upload_activity_image` or :meth:`get_activity_images`. Garmin
+        answers 204, so this returns None. Verified live.
+        """
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
+        image_id = _validate_uuid(image_id, "image_id")
+        url = f"{self.garmin_connect_activity}/{activity_id}/image/{image_id}"
+        logger.debug("Deleting image %s from activity %s", image_id, activity_id)
+        return self._json_or_none(self.client.delete("connectapi", url))
 
     def get_activity_exercise_sets(self, activity_id: int | str) -> dict[str, Any]:
         """Return activity exercise sets."""

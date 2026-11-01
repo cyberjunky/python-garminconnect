@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **270 API methods** organized into **15 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **272 API methods** organized into **15 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -51,14 +51,14 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 348 methods; every method with a one-line description is listed in the [Method Reference](#-method-reference)
+- **Total API Methods**: 350 methods; every method with a one-line description is listed in the [Method Reference](#-method-reference)
 - **Categories**: 15 organized sections
 - **Web-app endpoint map**: the endpoints the Garmin Connect web app uses documented with the exact request it sends and whether it was verified live, in [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md); the dashboard's GraphQL operations are in [docs/graphql_operations.md](docs/graphql_operations.md)
 - **User & Profile**: 8 methods (basic user info, settings)
 - **Daily Health & Activity**: 21 methods (today's health data plus daily calories, resting HR and sleep ranges)
 - **Advanced Health Metrics**: 35 methods (fitness metrics, HRV, VO2, FTP range, training readiness, training zones, running tolerance, training load balance, daily training status, activity training load)
 - **Historical Data & Trends**: 29 methods (date range queries, weekly aggregates)
-- **Activities & Workouts**: 37 methods (comprehensive activity, workout management, typed workout uploads including strength and swim CSS targets, in-place edit, scheduling, push to device, import, activity type/subtype filtering, earliest-upcoming-workout lookup, activity photos)
+- **Activities & Workouts**: 39 methods (comprehensive activity, workout management, typed workout uploads including strength and swim CSS targets, in-place edit, scheduling, push to device, import, activity type/subtype filtering, earliest-upcoming-workout lookup, activity photos: list, add and remove)
 - **Body Composition & Weight**: 11 methods (weight tracking, body composition)
 - **Goals & Achievements**: 24 methods (challenges, badges, goals)
 - **Device & Technical**: 13 methods (device info, settings)
@@ -131,13 +131,13 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[example]"
 
 python3 ./example.py   # simple getting-started example
-python3 ./demo.py      # comprehensive demo (270 API methods)
+python3 ./demo.py      # comprehensive demo (272 API methods)
 ```
 
 ## 📚 Method Reference
 
 <!-- METHODS:START -->
-348 public methods on `Garmin`, generated from the code by `scripts/gen_method_reference.py`. Click a section to expand it.
+350 public methods on `Garmin`, generated from the code by `scripts/gen_method_reference.py`. Click a section to expand it.
 
 <details><summary><b>Login, profile & account</b> (21)</summary>
 
@@ -331,7 +331,7 @@ python3 ./demo.py      # comprehensive demo (270 API methods)
 
 </details>
 
-<details><summary><b>Activities</b> (46)</summary>
+<details><summary><b>Activities</b> (48)</summary>
 
 | Method | Description |
 | --- | --- |
@@ -339,6 +339,7 @@ python3 ./demo.py      # comprehensive demo (270 API methods)
 | `create_manual_activity(start_datetime, time_zone, type_key, distance_km, duration_min, activity_name)` | Create a private activity manually with a few basic parameters. |
 | `create_manual_activity_from_json(payload)` | Create a manual activity from a complete activity payload. |
 | `delete_activity(activity_id)` | Delete activity with specified id. |
+| `delete_activity_image(activity_id, image_id)` | Remove a photo from an activity. |
 | `download_activity(activity_id, dl_fmt=<ActivityDownloadFormat.TCX: 2>)` | Download an activity as the original file (zip), TCX, GPX, KML or CSV. |
 | `get_activities(start=0, limit=20, activitytype=None, …)` | Return a page of activities, newest first, optionally filtered by type. |
 | `get_activities_by_date(startdate, enddate=None, activitytype=None, sortorder=None)` | Return activities between two dates, optionally filtered by type. |
@@ -381,6 +382,7 @@ python3 ./demo.py      # comprehensive demo (270 API methods)
 | `set_activity_type(activity_id, type_id, type_key, parent_type_id)` | Change the activity type of an activity. |
 | `update_activity(activity_id, fields)` | Change one or more fields of an activity in a single call. |
 | `upload_activity(activity_path)` | Upload an activity file (FIT, GPX or TCX). |
+| `upload_activity_image(activity_id, image_path)` | Add a photo (JPEG or PNG file) to an activity. |
 
 </details>
 
@@ -1042,7 +1044,7 @@ activity has photos attached.
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 270 API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 272 API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 
