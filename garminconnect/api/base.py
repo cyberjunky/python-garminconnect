@@ -849,6 +849,29 @@ class GarminBase:
             self.client.put("connectapi", url, json={"deviceId": device_id})
         )
 
+    def set_primary_activity_tracker(self, device_id: int | str) -> Any:
+        """Choose which device Garmin treats as the primary wearable.
+
+        The primary wearable (the web app's "Primary Wearable", called primary
+        activity tracker in the API) is the source of daily health metrics such
+        as steps, stress and sleep. PUT
+        /device-service/deviceservice/device-info/{id}/primary-activity-tracker,
+        the request the web app's Device Priority page sends; the device ID is
+        part of the URL and no body is needed. Garmin answers 204, so the
+        method returns ``None``.
+        ``get_primary_training_device()`` shows the result: the chosen device
+        carries ``primaryWearableDevice: true`` under ``WearableDevices``. The
+        primary training device is a separate setting and stays unchanged.
+        Verified live by switching between two devices and reading back.
+        """
+        device_id = _coerce_positive_id(device_id, "device_id")
+        url = (
+            f"{self.garmin_connect_device_url}/device-info/{device_id}"
+            "/primary-activity-tracker"
+        )
+        logger.debug("Setting primary activity tracker %s", device_id)
+        return self._json_or_none(self.client.put("connectapi", url))
+
     def request_reload(
         self, cdate: str, device_id: int | str | None = None
     ) -> dict[str, Any]:

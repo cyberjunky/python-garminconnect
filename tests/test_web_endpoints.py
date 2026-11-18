@@ -404,6 +404,19 @@ def test_user_settings_merge_and_primary_device(writer, monkeypatch):
     assert calls[-1][2]["json"] == {"deviceId": 123}
 
 
+def test_primary_activity_tracker(writer):
+    g, calls = writer
+    g.set_primary_activity_tracker("123")
+    assert calls[-1][:2] == (
+        "PUT",
+        "/device-service/deviceservice/device-info/123/primary-activity-tracker",
+    )
+    assert calls[-1][2] == {}  # no body of any kind
+    for bad in (0, -1, "abc", 1.9, None):
+        with pytest.raises(ValueError):
+            g.set_primary_activity_tracker(bad)
+
+
 def test_calendar_notes(writer):
     g, calls = writer
     g.create_calendar_note("2026-10-20", "Race day", "Easy jog in the morning")

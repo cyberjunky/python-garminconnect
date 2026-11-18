@@ -7,6 +7,12 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
+## [Unreleased]
+
+### Added
+
+- **The primary wearable can be set**: new `set_primary_activity_tracker(device_id)` chooses the device Garmin uses for daily health metrics such as steps, stress and sleep (the web app's "Primary Wearable"), next to the existing `set_primary_training_device()`. It sends the request the web app's Device Priority page sends, a `PUT` to `device-service/deviceservice/device-info/{id}/primary-activity-tracker`; the device ID is in the URL and no body is needed. Tested live by switching the primary wearable from one device to another and back: Garmin answers 204, `get_primary_training_device()` shows the new device with `primaryWearableDevice: true`, and the primary training device stays unchanged. The two roles are independent: `set_primary_training_device()` alone leaves the primary wearable where it was.
+
 ## [0.3.20] - 2026-10-23
 
 ### Added
