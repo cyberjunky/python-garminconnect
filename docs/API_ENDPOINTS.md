@@ -111,6 +111,7 @@ Not added: `/metrics-service/metrics/eventracetimeprojections/{eventId}/{d1}/{d2
 | `get_weekly_activity_stats(start, end, group_by_activity_type=True)` | `GET /userstats-service/activities/weekly/{displayName}?fromWeekStartDate&untilWeekStartDate&grpActType` | | yes |
 | `get_user_statistics()` | `GET /userstats-service/statistics/{displayName}` | Totals per activity type. | yes |
 | `get_daily_sleep(cdate=None, non_sleep_buffer_minutes=60)` | `GET /sleep-service/sleep/dailySleepData?date[&nonSleepBufferMinutes]` | The Sleep page's current call; `get_sleep_data` keeps the wellness-service variant. | yes |
+| `set_sleep_window(cdate, sleep_start, sleep_end)` | `GET /sleep-service/sleep/dailySleep?date`, then `PUT /sleep-service/sleep/dailySleep/{id}` with the whole record | The web app's "Edit sleep" dialog. Only the four start/end timestamps change (`…GMT` in UTC milliseconds, `…Local` as the wall-clock time encoded as UTC); URL and method from the web app's code; the record is sent back with the four timestamps replaced. Garmin answers 200 with a JSON body and recalculates the night. Returns the record read back. | yes (end time moved with the same request; this method verified writing an unchanged window) |
 | `get_naps(cdate=None, include_overlaps=True)` | `GET /sleep-service/sleep/naps/{date}?includeOverlaps` | | yes (empty) |
 | `get_sleep_stats_weekly(end=None, weeks=52)` | `GET /sleep-service/stats/sleep/weekly/{end}/{weeks}` | | yes |
 | `get_sleep_stats_overall(start, end)` | `GET /sleep-service/stats/sleep/overall/{start}/{end}` | | yes |
