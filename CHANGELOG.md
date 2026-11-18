@@ -7,6 +7,12 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
+## [Unreleased]
+
+### Added
+
+- **The start and end of a night's sleep can be changed**: new `set_sleep_window(cdate, sleep_start, sleep_end)` moves when the sleep recorded for a day began and ended, like the web app's "Edit sleep" dialog on the Sleep page. It reads the day's sleep record with `GET sleep-service/sleep/dailySleep?date`, replaces the four start and end timestamps and sends the whole record back with `PUT sleep-service/sleep/dailySleep/{id}`, the URL and method the web app uses. Start and end must be timezone-aware datetimes, so a night is never shifted by guessing the timezone; the method returns the record read back after the write and raises `ValueError` when the day has no sleep record. (#484)
+
 ## [0.3.20] - 2026-10-23
 
 ### Added

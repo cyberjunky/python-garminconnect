@@ -262,6 +262,10 @@ menu_categories = {
                 "key": "get_week_average_resting_hr",
             },
             "k": {"desc": "Fitness age details (v2)", "key": "get_fitness_age_details"},
+            "l": {
+                "desc": "Change sleep start and end of a night (interactive)",
+                "key": "set_sleep_window",
+            },
         },
     },
     "3": {
@@ -5265,6 +5269,52 @@ def set_daily_goal_data(api: Garmin) -> None:
         print(f"❌ Error setting goal: {e}")
 
 
+def set_sleep_window_data(api: Garmin) -> None:
+    """Change when a night's sleep started and ended."""
+    try:
+        cdate = input(f"Sleep date, the day you woke up (default {_today()}): ")
+        cdate = cdate.strip() or _today()
+        dto = (api.get_daily_sleep(cdate) or {}).get("dailySleepDTO") or {}
+        tz = api.now().tzinfo
+        current = {}
+        for side in ("Start", "End"):
+            ms = dto.get(f"sleep{side}TimestampGMT")
+            if ms:
+                current[side] = datetime.datetime.fromtimestamp(ms / 1000, tz)
+        if len(current) < 2:
+            print(f"❌ No sleep recorded for {cdate}")
+            return
+        print(
+            f"Times are in {tz}. Current window: {current['Start']} - {current['End']}"
+        )
+        new = {}
+        for side in ("Start", "End"):
+            value = input(
+                f"New sleep {side.lower()} (YYYY-MM-DD HH:MM, Enter to keep): "
+            )
+            value = value.strip()
+            new[side] = (
+                datetime.datetime.strptime(value, "%Y-%m-%d %H:%M").replace(tzinfo=tz)
+                if value
+                else current[side]
+            )
+        if new == current:
+            print("Cancelled")
+            return
+        call_and_display(
+            api.set_sleep_window,
+            cdate,
+            new["Start"],
+            new["End"],
+            method_name="set_sleep_window",
+            api_call_desc=(
+                f"api.set_sleep_window('{cdate}', {new['Start']!r}, {new['End']!r})"
+            ),
+        )
+    except Exception as e:
+        print(f"❌ Error changing sleep window: {e}")
+
+
 def calendar_note_data(api: Garmin) -> None:
     """Add a calendar note for today and optionally delete it again."""
     try:
@@ -6005,6 +6055,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "delete_gear": lambda: delete_gear_data(api),
             "set_steps_goal": lambda: set_steps_goal_data(api),
             "set_daily_goal": lambda: set_daily_goal_data(api),
+            "set_sleep_window": lambda: set_sleep_window_data(api),
             "calendar_note": lambda: calendar_note_data(api),
             "update_blood_pressure": lambda: update_blood_pressure_note_data(api),
             "set_primary_training_device": lambda: set_primary_training_device_data(

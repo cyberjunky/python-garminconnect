@@ -5,7 +5,7 @@ path and query parameters each method sends, which is what matters for
 compatibility with Garmin's undocumented API.
 """
 
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
@@ -402,6 +402,81 @@ def test_user_settings_merge_and_primary_device(writer, monkeypatch):
     g.set_primary_training_device("123")
     assert calls[-1][1].endswith("/user-settings/primary-training-device")
     assert calls[-1][2]["json"] == {"deviceId": 123}
+
+
+def test_set_sleep_window(writer, monkeypatch):
+    g, calls = writer
+    record = {
+        "id": 1000001,
+        "calendarDate": "2026-01-15",
+        "sleepStartTimestampGMT": 1768428900000,
+        "sleepEndTimestampGMT": 1768455000000,
+        "sleepStartTimestampLocal": 1768432500000,
+        "sleepEndTimestampLocal": 1768458600000,
+        "sleepTimeSeconds": 26100,
+        "sleepWindowConfirmed": True,
+        "sleepWindowConfirmationType": "enhanced_confirmed_final",
+    }
+    original = dict(record)
+    reads = []
+
+    def fake_get(path, **kw):
+        reads.append((path, kw))
+        return record if len(reads) == 1 else {"id": 1000001, "read": "back"}
+
+    monkeypatch.setattr(g, "connectapi", fake_get)
+    cet = timezone(timedelta(hours=1))
+    out = g.set_sleep_window(
+        "2026-01-15",
+        datetime(2026, 1, 14, 23, 30, tzinfo=cet),
+        datetime(2026, 1, 15, 7, 0, tzinfo=cet),
+    )
+    assert reads[0] == (
+        "/sleep-service/sleep/dailySleep",
+        {"params": {"date": "2026-01-15"}},
+    )
+    method, url, kw = calls[-1]
+    assert (method, url) == ("PUT", "/sleep-service/sleep/dailySleep/1000001")
+    assert kw["json"] == original | {
+        "sleepStartTimestampGMT": 1768429800000,  # 22:30 UTC
+        "sleepEndTimestampGMT": 1768456800000,  # 06:00 UTC
+        "sleepStartTimestampLocal": 1768433400000,  # 23:30 wall clock
+        "sleepEndTimestampLocal": 1768460400000,  # 07:00 wall clock
+    }
+    assert record == original  # the record that was read stays untouched
+    assert reads[1] == reads[0]  # read back after the write
+    assert out == {"id": 1000001, "read": "back"}
+
+
+def test_set_sleep_window_rejects_bad_input(writer, monkeypatch):
+    g, calls = writer
+    cet = timezone(timedelta(hours=1))
+    start = datetime(2026, 1, 14, 23, 30, tzinfo=cet)
+    end = datetime(2026, 1, 15, 7, 0, tzinfo=cet)
+    monkeypatch.setattr(g, "connectapi", lambda path, **kw: {"id": 1})
+    bad_calls = [
+        ("15.01.2026", start, end),
+        ("2026-01-15", start.replace(tzinfo=None), end),
+        ("2026-01-15", start, end.replace(tzinfo=None)),
+        ("2026-01-15", "2026-01-14T23:30:00+01:00", end),
+        ("2026-01-15", end, start),
+        ("2026-01-15", start, start),
+    ]
+    for args in bad_calls:
+        with pytest.raises(ValueError):
+            g.set_sleep_window(*args)
+    for bad_record in (
+        {},
+        None,
+        {"calendarDate": "2026-01-15"},
+        {"id": 0},
+        {"id": 1.9},
+        {"id": "1/../2"},
+    ):
+        monkeypatch.setattr(g, "connectapi", lambda path, _r=bad_record, **kw: _r)
+        with pytest.raises(ValueError):
+            g.set_sleep_window("2026-01-15", start, end)
+    assert calls == []
 
 
 def test_calendar_notes(writer):

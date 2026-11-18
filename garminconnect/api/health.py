@@ -3,7 +3,7 @@
 import math
 import numbers
 import re
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from ..exceptions import GarminConnectAuthenticationError, GarminConnectConnectionError
@@ -22,6 +22,9 @@ from ._common import (
     logger,
 )
 from .base import GarminBase
+
+_EPOCH_UTC = datetime(1970, 1, 1, tzinfo=UTC)
+_EPOCH_NAIVE = datetime(1970, 1, 1)
 
 
 class HealthMixin(GarminBase):
@@ -1035,6 +1038,58 @@ class HealthMixin(GarminBase):
                 non_sleep_buffer_minutes, "non_sleep_buffer_minutes"
             )
         logger.debug("Requesting daily sleep")
+        return self.connectapi(url, params=params)
+
+    def set_sleep_window(
+        self, cdate: str, sleep_start: datetime, sleep_end: datetime
+    ) -> dict[str, Any]:
+        """Change when the night recorded for a day started and ended.
+
+        ``cdate`` is the sleep's calendar date (the day you woke up), as in
+        :meth:`get_daily_sleep`. ``sleep_start`` and ``sleep_end`` must be
+        timezone-aware datetimes; the wall-clock time in their timezone is
+        what Garmin shows as the local sleep time. URL and method are the ones
+        the web app's "Edit sleep" dialog uses: the method reads the day's sleep
+        record with GET /sleep-service/sleep/dailySleep?date, replaces the
+        four timestamps (``sleepStartTimestampGMT``/``Local`` and
+        ``sleepEndTimestampGMT``/``Local``, epoch milliseconds; the local
+        ones are the wall-clock time encoded as if it were UTC) and sends the
+        whole record back with PUT /sleep-service/sleep/dailySleep/{id}.
+        Garmin recalculates the night (sleep time and stages) for the new window.
+        Returns the sleep record read back after the write. Raises
+        ``ValueError`` when the day has no sleep record.
+        """
+        cdate = _validate_date_format(cdate, "cdate")
+        for name, value in (("sleep_start", sleep_start), ("sleep_end", sleep_end)):
+            if not isinstance(value, datetime):
+                raise ValueError(f"{name} must be a datetime")
+            if value.tzinfo is None or value.utcoffset() is None:
+                raise ValueError(f"{name} must be timezone-aware")
+        if sleep_end <= sleep_start:
+            raise ValueError("sleep_end must be after sleep_start")
+
+        url = f"{self.garmin_connect_sleep_service_url}/sleep/dailySleep"
+        params = {"date": cdate}
+        current = self.connectapi(url, params=params)
+        if not isinstance(current, dict) or not current.get("id"):
+            raise ValueError(f"no sleep record found for {cdate}")
+        sleep_id = _coerce_positive_id(current["id"], "sleep id")
+
+        def gmt_ms(dt: datetime) -> int:
+            return (dt - _EPOCH_UTC) // timedelta(milliseconds=1)
+
+        def local_ms(dt: datetime) -> int:
+            return (dt.replace(tzinfo=None) - _EPOCH_NAIVE) // timedelta(milliseconds=1)
+
+        payload = {
+            **current,
+            "sleepStartTimestampGMT": gmt_ms(sleep_start),
+            "sleepEndTimestampGMT": gmt_ms(sleep_end),
+            "sleepStartTimestampLocal": local_ms(sleep_start),
+            "sleepEndTimestampLocal": local_ms(sleep_end),
+        }
+        logger.debug("Updating sleep window for %s", cdate)
+        self.client.put("connectapi", f"{url}/{sleep_id}", json=payload)
         return self.connectapi(url, params=params)
 
     def get_naps(
