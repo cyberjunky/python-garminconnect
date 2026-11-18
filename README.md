@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **270 API methods** organized into **15 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **271 API methods** organized into **15 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -51,7 +51,7 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 348 methods; every method with a one-line description is listed in the [Method Reference](#-method-reference)
+- **Total API Methods**: 349 methods; every method with a one-line description is listed in the [Method Reference](#-method-reference)
 - **Categories**: 15 organized sections
 - **Web-app endpoint map**: the endpoints the Garmin Connect web app uses documented with the exact request it sends and whether it was verified live, in [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md); the dashboard's GraphQL operations are in [docs/graphql_operations.md](docs/graphql_operations.md)
 - **User & Profile**: 8 methods (basic user info, settings)
@@ -61,7 +61,7 @@ Make your selection:
 - **Activities & Workouts**: 37 methods (comprehensive activity, workout management, typed workout uploads including strength and swim CSS targets, in-place edit, scheduling, push to device, import, activity type/subtype filtering, earliest-upcoming-workout lookup, activity photos)
 - **Body Composition & Weight**: 11 methods (weight tracking, body composition)
 - **Goals & Achievements**: 24 methods (challenges, badges, goals)
-- **Device & Technical**: 13 methods (device info, settings)
+- **Device & Technical**: 14 methods (device info, settings)
 - **Gear & Equipment**: 13 methods (gear management, tracking, creation)
 - **Hydration & Wellness**: 30 methods (hydration, nutrition, blood pressure, menstrual reads and writes, Jet Lag Adviser trips)
 - **System & Export**: 5 methods (reporting, logout, GraphQL, health snapshot download)
@@ -131,15 +131,15 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[example]"
 
 python3 ./example.py   # simple getting-started example
-python3 ./demo.py      # comprehensive demo (270 API methods)
+python3 ./demo.py      # comprehensive demo (271 API methods)
 ```
 
 ## 📚 Method Reference
 
 <!-- METHODS:START -->
-348 public methods on `Garmin`, generated from the code by `scripts/gen_method_reference.py`. Click a section to expand it.
+349 public methods on `Garmin`, generated from the code by `scripts/gen_method_reference.py`. Click a section to expand it.
 
-<details><summary><b>Login, profile & account</b> (21)</summary>
+<details><summary><b>Login, profile & account</b> (22)</summary>
 
 | Method | Description |
 | --- | --- |
@@ -161,6 +161,7 @@ python3 ./demo.py      # comprehensive demo (270 API methods)
 | `query_garmin_graphql(query)` | Run a query against Garmin's GraphQL gateway. |
 | `request_reload(cdate, device_id=None)` | Request reload of data for a specific date. |
 | `resume_login(client_state, mfa_code)` | Finish a login that is waiting for an MFA code. |
+| `set_primary_activity_tracker(device_id)` | Choose which device Garmin treats as the primary wearable. |
 | `set_primary_training_device(device_id)` | Choose which device Garmin treats as the primary training device. |
 | `today()` | Return today's calendar date in the user's Garmin timezone. |
 | `update_user_settings(settings)` | Write user settings (units, formats, sleep times, training days, ...). |
@@ -1042,7 +1043,7 @@ activity has photos attached.
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 270 API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 271 API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 

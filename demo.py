@@ -735,6 +735,10 @@ menu_categories = {
                 "desc": "Set primary training device (interactive)",
                 "key": "set_primary_training_device",
             },
+            "d": {
+                "desc": "Set primary wearable (interactive)",
+                "key": "set_primary_activity_tracker",
+            },
         },
     },
     "9": {
@@ -5339,6 +5343,26 @@ def set_primary_training_device_data(api: Garmin) -> None:
         print(f"❌ Error setting primary training device: {e}")
 
 
+def set_primary_activity_tracker_data(api: Garmin) -> None:
+    """Choose the primary wearable (source of steps, stress and sleep)."""
+    try:
+        device = _pick(
+            api.get_devices(),
+            "device",
+            lambda d: f"{d.get('productDisplayName')} (id {d.get('deviceId')})",
+        )
+        if not device:
+            return
+        call_and_display(
+            api.set_primary_activity_tracker,
+            device["deviceId"],
+            method_name="set_primary_activity_tracker",
+            api_call_desc=f"api.set_primary_activity_tracker({device['deviceId']})",
+        )
+    except Exception as e:
+        print(f"❌ Error setting primary wearable: {e}")
+
+
 def update_activity_name_data(api: Garmin) -> None:
     """Rename the latest activity through the generic update call."""
     try:
@@ -6008,6 +6032,9 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "calendar_note": lambda: calendar_note_data(api),
             "update_blood_pressure": lambda: update_blood_pressure_note_data(api),
             "set_primary_training_device": lambda: set_primary_training_device_data(
+                api
+            ),
+            "set_primary_activity_tracker": lambda: set_primary_activity_tracker_data(
                 api
             ),
             "update_activity": lambda: update_activity_name_data(api),

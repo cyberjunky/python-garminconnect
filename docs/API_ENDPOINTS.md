@@ -188,6 +188,7 @@ feature get a 404.
 | `get_usage_indicators()` | `GET /web-gateway/snapshot/usageIndicators` | Which features the account's devices support. | yes |
 | `update_user_settings(settings)` | `PUT /userprofile-service/userprofile/user-settings/` with the settings object | Overlaid on `get_user_profile()`; `userData` merged one level deep. | yes (unchanged object) |
 | `set_primary_training_device(device_id)` | `PUT /userprofile-service/userprofile/user-settings/primary-training-device` `{"deviceId"}` | | yes |
+| `set_primary_activity_tracker(device_id)` | `PUT /device-service/deviceservice/device-info/{deviceId}/primary-activity-tracker` (no body needed) | The web app's "Primary Wearable": source of steps, stress and sleep. Independent of the primary training device. Read back with `get_primary_training_device()` (`primaryWearableDevice`). | yes |
 | `get_jetlag_status(cdate=None)` | `GET /jetlag-service/jetlag/status/daily/{date}` | Empty without a trip. | yes (empty) |
 
 ## Activities (`activitylist-service`, `activity-service`, `segment-service`)
