@@ -37,6 +37,7 @@ SECTIONS = {
     "gear": "Gear",
     "womens_health": "Women's health",
     "golf": "Golf",
+    "dogs": "Dogs",
 }
 
 MAX_OPTIONAL_SHOWN = 3

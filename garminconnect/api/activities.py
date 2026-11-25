@@ -760,6 +760,33 @@ class ActivitiesMixin(GarminBase):
         logger.debug("Setting favorite=%s on activity %s", favorite, activity_id)
         return self.client.put("connectapi", url, json=payload, api=True)
 
+    def set_activity_dogs(
+        self, activity_id: int | str, dog_ids: list[int | str]
+    ) -> Any:
+        """Set which dogs joined an activity (``[]`` removes them all).
+
+        Replaces the whole list; repeated ids are sent once.
+
+        PUT /activity-service/activity/{activityId} with ``{"activityId": ...,
+        "metadataDTO": {"hasDog": bool, "dogProfileIds": [...]}}``. Garmin
+        answers 204 with no body, so this returns None. Verified live: the
+        other activity fields stay unchanged.
+        """
+        activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
+        if not isinstance(dog_ids, list):
+            raise ValueError("dog_ids must be a list")
+        # dict.fromkeys drops repeated ids and keeps the order.
+        ids = list(
+            dict.fromkeys(_coerce_positive_id(dog_id, "dog_id") for dog_id in dog_ids)
+        )
+        url = f"{self.garmin_connect_activity}/{activity_id}"
+        payload = {
+            "activityId": activity_id,
+            "metadataDTO": {"hasDog": bool(ids), "dogProfileIds": ids},
+        }
+        logger.debug("Setting %d dog(s) on activity %s", len(ids), activity_id)
+        return self._json_or_none(self.client.put("connectapi", url, json=payload))
+
     def _activity_subresource(
         self, activity_id: int | str, sub: str, **kwargs: Any
     ) -> Any:

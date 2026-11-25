@@ -11,7 +11,7 @@
 The Garmin Connect API library comes with two examples:
 
 - **`example.py`** - Simple getting-started example showing authentication, token storage, and basic API calls
-- **`demo.py`** - Comprehensive demo providing access to **270 API methods** organized into **15 categories** for easy navigation
+- **`demo.py`** - Comprehensive demo providing access to **282 API methods** organized into **16 categories** for easy navigation
 
 ```bash
 $ ./demo.py
@@ -43,6 +43,7 @@ Select a category:
   [c] ⛳ Golf
   [d] ✏️ Activity Editing
   [e] 🏃 Activity Details & Courses
+  [f] 🐕 Dogs
 
   [q] Exit program
 
@@ -51,8 +52,8 @@ Make your selection:
 
 ## API Coverage Statistics
 
-- **Total API Methods**: 348 methods; every method with a one-line description is listed in the [Method Reference](#-method-reference)
-- **Categories**: 15 organized sections
+- **Total API Methods**: 360 methods; every method with a one-line description is listed in the [Method Reference](#-method-reference)
+- **Categories**: 16 organized sections
 - **Web-app endpoint map**: the endpoints the Garmin Connect web app uses documented with the exact request it sends and whether it was verified live, in [docs/API_ENDPOINTS.md](docs/API_ENDPOINTS.md); the dashboard's GraphQL operations are in [docs/graphql_operations.md](docs/graphql_operations.md)
 - **User & Profile**: 8 methods (basic user info, settings)
 - **Daily Health & Activity**: 21 methods (today's health data plus daily calories, resting HR and sleep ranges)
@@ -69,6 +70,7 @@ Make your selection:
 - **Golf**: 5 methods (scorecard summary, scorecard detail, shot data, club stats, user stats)
 - **Activity Editing**: 3 methods (set activity description, set strength-activity exercise sets)
 - **Activity Details & Courses**: 13 methods (laps, rounds, step/jump/swim details, map and polyline, activity search, courses)
+- **Dogs**: 12 methods (dog profiles, breeds, stats, create/edit/retire/delete, photo upload, dogs on activities)
 
 ### Interactive Features
 
@@ -131,13 +133,13 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e ".[example]"
 
 python3 ./example.py   # simple getting-started example
-python3 ./demo.py      # comprehensive demo (270 API methods)
+python3 ./demo.py      # comprehensive demo (282 API methods)
 ```
 
 ## 📚 Method Reference
 
 <!-- METHODS:START -->
-348 public methods on `Garmin`, generated from the code by `scripts/gen_method_reference.py`. Click a section to expand it.
+360 public methods on `Garmin`, generated from the code by `scripts/gen_method_reference.py`. Click a section to expand it.
 
 <details><summary><b>Login, profile & account</b> (21)</summary>
 
@@ -331,7 +333,7 @@ python3 ./demo.py      # comprehensive demo (270 API methods)
 
 </details>
 
-<details><summary><b>Activities</b> (46)</summary>
+<details><summary><b>Activities</b> (47)</summary>
 
 | Method | Description |
 | --- | --- |
@@ -375,6 +377,7 @@ python3 ./demo.py      # comprehensive demo (270 API methods)
 | `import_activity(activity_path)` | Upload activity as an import (not re-exported to third parties like Strava). |
 | `search_activities(start=0, limit=20, **filters)` | Search activities with the full filter set of the web app's activity list. |
 | `set_activity_description(activity_id, description)` | Set the description of an activity. |
+| `set_activity_dogs(activity_id, dog_ids)` | Set which dogs joined an activity (`[]` removes them all). |
 | `set_activity_exercise_sets(activity_id, payload)` | Replace the exercise sets of a strength activity. |
 | `set_activity_favorite(activity_id, favorite=True)` | Mark or unmark an activity as favorite. |
 | `set_activity_name(activity_id, title)` | Set the name of an activity. |
@@ -568,6 +571,24 @@ python3 ./demo.py      # comprehensive demo (270 API methods)
 | `get_golf_shot_data(scorecard_id, hole_numbers=None)` | Return golf shot data for a scorecard and specific holes. |
 | `get_golf_summary(start=0, limit=100)` | Return golf scorecard summary. |
 | `get_golf_user_stats()` | Return an overview of the user's golf statistics. |
+
+</details>
+
+<details><summary><b>Dogs</b> (11)</summary>
+
+| Method | Description |
+| --- | --- |
+| `create_dog(name, primary_breed_id=None, secondary_breed_ids=None, gender=None, …)` | Create a dog profile and return it. |
+| `delete_dog(dog_id)` | Delete a dog profile. |
+| `get_dog(dog_id)` | Return one dog profile. |
+| `get_dog_activities_enabled()` | Return whether the dog activities feature is enabled. |
+| `get_dog_breeds()` | Return the dog breeds as a map of breed id to breed key. |
+| `get_dog_lifetime_stats(metrics=None)` | Return lifetime totals of activities with dogs. |
+| `get_dog_stats(dog_ids, start, end)` | Return per-day activity stats for dogs over a date range. |
+| `get_dogs(status=None)` | Return the dog profiles on the account (weight in grams). |
+| `set_dog_status(dog_id, status)` | Retire or re-activate a dog. |
+| `update_dog(dog_id, *, name=None, primary_breed_id=None, secondary_breed_ids=None, …)` | Edit a dog profile and return the updated dog. |
+| `upload_dog_photo(dog_id, photo_path)` | Upload or replace a dog's profile photo (PNG, JPEG or GIF). |
 
 </details>
 <!-- METHODS:END -->
@@ -1042,7 +1063,7 @@ activity has photos attached.
 
 ### Additional Resources
 - **Simple Example**: [example.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/example.py) - Getting started guide
-- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 270 API methods
+- **Comprehensive Demo**: [demo.py](https://raw.githubusercontent.com/cyberjunky/python-garminconnect/master/demo.py) - All 282 API methods
 - **API Documentation**: Comprehensive method documentation in source code
 - **Test Cases**: Real-world usage examples in `tests/` directory
 

@@ -7,6 +7,12 @@ Numbers in parentheses refer to GitHub issues and pull requests. Releases before
 0.3.10 are described on the [GitHub Releases](https://github.com/cyberjunky/python-garminconnect/releases)
 page.
 
+## [Unreleased]
+
+### Added
+
+- **Dog profiles can be read, created, edited and deleted**: as in the Garmin Connect web app, including the dog's photo, dog activity stats and `set_activity_dogs()` for the dogs on an activity. Weight is in grams whatever the unit setting. Tested live; the China host is untested.
+
 ## [0.3.20] - 2026-10-23
 
 ### Added

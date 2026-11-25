@@ -5,6 +5,7 @@ from .activities import ActivitiesMixin
 from .base import GarminBase
 from .body import BodyMixin
 from .devices import DevicesMixin
+from .dogs import DogsMixin
 from .gear import GearMixin
 from .golf import GolfMixin
 from .health import HealthMixin
@@ -26,6 +27,7 @@ class Garmin(
     TrainingMixin,
     WomensHealthMixin,
     GolfMixin,
+    DogsMixin,
     GarminBase,
 ):
     """Class for fetching data from Garmin Connect."""
