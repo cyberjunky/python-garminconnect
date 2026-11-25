@@ -11,7 +11,7 @@ page.
 
 ### Added
 
-- **Dog profiles can be read, created, edited and deleted**: new dog methods list, create, edit, retire and delete the dog profiles of the Garmin Connect web app, upload a dog's photo, read lifetime and per-day dog activity stats, and set which dogs joined an activity. Dog weight is in grams whatever the account's unit setting. The requests match what the web app sends but are not yet verified against a live account.
+- **Dog profiles can be read, created, edited and deleted**: new dog methods list, create, edit, retire and delete the dog profiles of the Garmin Connect web app, upload a dog's photo, read lifetime and per-day dog activity stats, and set which dogs joined an activity. Dog weight is in grams whatever the account's unit setting. Verified against a live account (China host untested).
 
 ## [0.3.20] - 2026-10-23
 

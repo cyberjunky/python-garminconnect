@@ -769,8 +769,8 @@ class ActivitiesMixin(GarminBase):
         "metadataDTO": {"hasDog": bool, "dogProfileIds": [...]}}`` — the same
         partial-update call :meth:`set_activity_favorite` uses. The web app was
         captured sending the whole activity through POST with
-        ``X-HTTP-Method-Override: PUT``; that the partial body leaves the other
-        fields untouched is not verified against a live account.
+        ``X-HTTP-Method-Override: PUT``. Verified live: the partial body leaves
+        the other activity fields, including ``favorite``, untouched.
         """
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         if not isinstance(dog_ids, list):

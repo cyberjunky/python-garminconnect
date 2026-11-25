@@ -74,7 +74,6 @@ class DogsMixin(GarminBase):
         """Return the dog profiles on the account (weight in grams).
 
         GET https://gcx.<domain>/family-api/profile-service/profile/pets[?status=active|retired].
-        Not verified against a live account.
         """
         params: dict[str, str] = {}
         if status is not None:
@@ -92,7 +91,6 @@ class DogsMixin(GarminBase):
         """Return one dog profile.
 
         GET https://gcx.<domain>/family-api/profile-service/profile/pets/{dogId}.
-        Not verified against a live account.
         """
         dog_id = _coerce_positive_id(dog_id, "dog_id")
         url = f"{self.garmin_connect_pet_profile_url}/{dog_id}"
@@ -103,7 +101,6 @@ class DogsMixin(GarminBase):
         """Return the dog breeds as a map of breed id to breed key.
 
         GET https://gcx.<domain>/family-api/profile-service/profile/pets/dog/breeds.
-        Not verified against a live account.
         """
         url = f"{self.garmin_connect_pet_profile_url}/dog/breeds"
         logger.debug("Requesting dog breeds")
@@ -114,7 +111,7 @@ class DogsMixin(GarminBase):
 
         GET /fitnessstats-service/activity-animal/dog/stats/lifetime?metric&metric.
         ``metrics`` defaults to ``["distance", "duration"]``, the only ones the
-        web app sends. Not verified against a live account.
+        web app sends.
         """
         if metrics is None:
             metrics = ["distance", "duration"]
@@ -142,8 +139,7 @@ class DogsMixin(GarminBase):
 
         POST /fitnessstats-service/activity-animal/dog/stats/bulk?startDate&endDate
         with a list of dog ids as the body; the call only reads. Like the other
-        read-only POSTs, errors are not mapped to the library's error types. Not
-        verified against a live account.
+        read-only POSTs, errors are not mapped to the library's error types.
         """
         if not isinstance(dog_ids, list) or not dog_ids:
             raise ValueError("dog_ids must be a non-empty list")
@@ -166,7 +162,6 @@ class DogsMixin(GarminBase):
         """Return whether the dog activities feature is enabled.
 
         GET /userprofile-service/userprofile/optional-feature/dog-activities.
-        Not verified against a live account.
         """
         url = f"{self.garmin_connect_userprofile_url}/optional-feature/dog-activities"
         logger.debug("Requesting dog activities feature")
@@ -188,8 +183,7 @@ class DogsMixin(GarminBase):
         the body the web app's "Add Dog" form sends. Breed ids come from
         :meth:`get_dog_breeds`, ``gender`` is ``female`` or ``male``,
         ``weight_grams`` is in grams whatever the account's unit setting, and
-        ``birthdate`` is sent with day precision. Not verified against a live
-        account.
+        ``birthdate`` is sent with day precision. Verified live.
         """
         if not isinstance(name, str) or not name.strip():
             raise ValueError("name must be a non-empty string")
@@ -237,8 +231,8 @@ class DogsMixin(GarminBase):
         the whole body is sent back. Only the given keyword arguments change;
         ``secondary_breed_ids=[]`` clears the secondary breeds. Units are as in
         :meth:`create_dog`. Like the web app, a retired dog cannot be edited;
-        re-activate it with :meth:`set_dog_status` first. Not verified against
-        a live account.
+        re-activate it with :meth:`set_dog_status` first. Verified live: only
+        the given fields change.
         """
         dog_id = _coerce_positive_id(dog_id, "dog_id")
         changes = _dog_fields(
@@ -282,8 +276,8 @@ class DogsMixin(GarminBase):
         """Retire or re-activate a dog.
 
         PUT https://gcx.<domain>/family-api/profile-service/profile/pets/{dogId}/status
-        with ``{"status": "retired"|"active"}``; Garmin answers 204. Not
-        verified against a live account.
+        with ``{"status": "retired"|"active"}``; Garmin answers 204. Verified
+        live in both directions.
         """
         dog_id = _coerce_positive_id(dog_id, "dog_id")
         if not isinstance(status, str):
@@ -302,8 +296,7 @@ class DogsMixin(GarminBase):
         """Delete a dog profile.
 
         DELETE https://gcx.<domain>/family-api/profile-service/profile/pets/{dogId}
-        (the web app's "Delete dog"); a missing dog gives a 404. Not verified
-        against a live account.
+        (the web app's "Delete dog"); a missing dog gives a 404. Verified live.
         """
         dog_id = _coerce_positive_id(dog_id, "dog_id")
         url = f"{self.garmin_connect_pet_profile_url}/{dog_id}"
@@ -316,8 +309,7 @@ class DogsMixin(GarminBase):
         POST https://gcx.<domain>/family-api/profile-service/profile/pet/{dogId}/photo
         (``pet``, singular) as multipart with one ``photo`` part, as the web
         app sends it. Returns ``mediaUuid`` and ``photoAccessList``, whose URLs
-        are presigned and expire after about 24 hours. Not verified against a
-        live account.
+        are presigned and expire after about 24 hours. Verified live.
         """
         dog_id = _coerce_positive_id(dog_id, "dog_id")
         if not photo_path:
