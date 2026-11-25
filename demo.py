@@ -2736,42 +2736,6 @@ def get_golf_shot_data_entry(api: Garmin) -> None:
         print(f"❌ Error getting golf shot data: {e}")
 
 
-def get_dog_stats_data(api: Garmin) -> None:
-    """Get per-day stats for all dogs over the last 30 days."""
-    dog_ids = [dog["id"] for dog in api.get_dogs() or []]
-    if not dog_ids:
-        print("❌ No dogs found")
-        return
-    _web(api, "get_dog_stats", lambda: (dog_ids, _month_ago(), _today()))()
-
-
-def get_dog_data(api: Garmin) -> None:
-    """Get one dog profile by ID."""
-    try:
-        dogs = api.get_dogs()
-        if not dogs:
-            print("❌ No dogs found")
-            return
-
-        print("\n🐕 Dogs:")
-        for i, dog in enumerate(dogs, 1):
-            print(f"  [{i}] ID={dog.get('id', '?')} - {dog.get('name', 'Unknown')}")
-
-        dog_id = input("\nEnter dog ID: ").strip()
-        if not dog_id:
-            print("❌ No dog ID provided")
-            return
-
-        call_and_display(
-            api.get_dog,
-            dog_id,
-            method_name="get_dog",
-            api_call_desc=f"api.get_dog({dog_id})",
-        )
-    except Exception as e:
-        print(f"❌ Error getting dog: {e}")
-
-
 def get_training_plan_by_id_data(api: Garmin) -> None:
     """Get training plan details by ID (routes FBT_ADAPTIVE plans to the adaptive endpoint)."""
     resp = api.get_training_plans() or {}
@@ -5307,6 +5271,34 @@ def _dog_label(dog: dict) -> str:
     return f"{dog.get('name')} (ID={dog.get('id')}, {dog.get('status')})"
 
 
+def get_dog_data(api: Garmin) -> None:
+    """Get one dog profile."""
+    try:
+        dog = _pick(api.get_dogs(), "dog", _dog_label)
+        if not dog:
+            return
+        call_and_display(
+            api.get_dog,
+            dog["id"],
+            method_name="get_dog",
+            api_call_desc=f"api.get_dog({dog['id']})",
+        )
+    except Exception as e:
+        print(f"❌ Error getting dog: {e}")
+
+
+def get_dog_stats_data(api: Garmin) -> None:
+    """Get per-day stats for all dogs over the last 30 days."""
+    try:
+        dog_ids = [dog["id"] for dog in api.get_dogs() or []]
+        if not dog_ids:
+            print("❌ No dogs found")
+            return
+        _web(api, "get_dog_stats", lambda: (dog_ids, _month_ago(), _today()))()
+    except Exception as e:
+        print(f"❌ Error getting dog stats: {e}")
+
+
 def create_dog_data(api: Garmin) -> None:
     """Create a dog profile."""
     try:
@@ -5321,25 +5313,26 @@ def create_dog_data(api: Garmin) -> None:
 
         try:
             weight_grams = float(weight) if weight else None
-
-            success, _ = call_and_display(
-                api.create_dog,
-                name,
-                primary_breed_id=breed or None,
-                gender=gender,
-                weight_grams=weight_grams,
-                birthdate=birthdate,
-                method_name="create_dog",
-                api_call_desc=(
-                    f"api.create_dog('{name}', primary_breed_id={breed or None!r}, "
-                    f"gender={gender!r}, weight_grams={weight_grams}, "
-                    f"birthdate={birthdate!r})"
-                ),
-            )
-            if success:
-                print("✅ Dog created!")
         except ValueError:
             print("❌ Invalid numeric input")
+            return
+
+        success, _ = call_and_display(
+            api.create_dog,
+            name,
+            primary_breed_id=breed or None,
+            gender=gender,
+            weight_grams=weight_grams,
+            birthdate=birthdate,
+            method_name="create_dog",
+            api_call_desc=(
+                f"api.create_dog('{name}', primary_breed_id={breed or None!r}, "
+                f"gender={gender!r}, weight_grams={weight_grams}, "
+                f"birthdate={birthdate!r})"
+            ),
+        )
+        if success:
+            print("✅ Dog created!")
     except Exception as e:
         print(f"❌ Error creating dog: {e}")
 

@@ -766,11 +766,9 @@ class ActivitiesMixin(GarminBase):
         """Set which dogs joined an activity (``[]`` removes them all).
 
         PUT /activity-service/activity/{activityId} with ``{"activityId": ...,
-        "metadataDTO": {"hasDog": bool, "dogProfileIds": [...]}}`` — the same
-        partial-update call :meth:`set_activity_favorite` uses. The web app was
-        captured sending the whole activity through POST with
-        ``X-HTTP-Method-Override: PUT``. Verified live: the partial body leaves
-        the other activity fields, including ``favorite``, untouched.
+        "metadataDTO": {"hasDog": bool, "dogProfileIds": [...]}}``. Garmin
+        answers 204 with no body, so this returns None. Verified live: the
+        other activity fields stay unchanged.
         """
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         if not isinstance(dog_ids, list):

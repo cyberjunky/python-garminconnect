@@ -8,17 +8,25 @@ from ..exceptions import (
     GarminConnectInvalidFileFormatError,
 )
 from ._common import (
-    DOG_PHOTO_CONTENT_TYPES,
     VALID_DOG_GENDERS,
     VALID_DOG_STATS_METRICS,
     VALID_DOG_STATUSES,
     _coerce_positive_id,
+    _validate_choice,
     _validate_date_format,
     _validate_date_range,
     _validate_positive_number,
     logger,
 )
 from .base import GarminBase
+
+# Photo types the web app accepts for a dog, by file extension.
+_DOG_PHOTO_CONTENT_TYPES = {
+    "png": "image/png",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "gif": "image/gif",
+}
 
 
 def _dog_fields(
@@ -48,13 +56,7 @@ def _dog_fields(
             _coerce_positive_id(b, "secondary_breed_id") for b in secondary_breed_ids
         ]
     if gender is not None:
-        if not isinstance(gender, str):
-            raise ValueError("gender must be a string")
-        if gender not in VALID_DOG_GENDERS:
-            raise ValueError(
-                f"gender must be one of {sorted(VALID_DOG_GENDERS)}, got: {gender}"
-            )
-        fields["gender"] = gender
+        fields["gender"] = _validate_choice(gender, VALID_DOG_GENDERS, "gender")
     if is_neutered is not None:
         if not isinstance(is_neutered, bool):
             raise ValueError("is_neutered must be a boolean")
@@ -77,13 +79,7 @@ class DogsMixin(GarminBase):
         """
         params: dict[str, str] = {}
         if status is not None:
-            if not isinstance(status, str):
-                raise ValueError("status must be a string")
-            if status not in VALID_DOG_STATUSES:
-                raise ValueError(
-                    f"status must be one of {sorted(VALID_DOG_STATUSES)}, got: {status}"
-                )
-            params["status"] = status
+            params["status"] = _validate_choice(status, VALID_DOG_STATUSES, "status")
         logger.debug("Requesting dogs")
         return self.connectapi(self.garmin_connect_pet_profile_url, params=params)
 
@@ -118,13 +114,7 @@ class DogsMixin(GarminBase):
         if not isinstance(metrics, list) or not metrics:
             raise ValueError("metrics must be a non-empty list")
         for metric in metrics:
-            if not isinstance(metric, str):
-                raise ValueError("metrics must be strings")
-            if metric not in VALID_DOG_STATS_METRICS:
-                raise ValueError(
-                    f"metrics must be one of {sorted(VALID_DOG_STATS_METRICS)}, "
-                    f"got: {metric}"
-                )
+            _validate_choice(metric, VALID_DOG_STATS_METRICS, "metric")
         url = (
             f"{self.garmin_connect_fitnessstats_service_url}"
             "/activity-animal/dog/stats/lifetime"
@@ -138,8 +128,7 @@ class DogsMixin(GarminBase):
         """Return per-day activity stats for dogs over a date range.
 
         POST /fitnessstats-service/activity-animal/dog/stats/bulk?startDate&endDate
-        with a list of dog ids as the body; the call only reads. Like the other
-        read-only POSTs, errors are not mapped to the library's error types.
+        with a list of dog ids as the body (a read, not a write).
         """
         if not isinstance(dog_ids, list) or not dog_ids:
             raise ValueError("dog_ids must be a non-empty list")
@@ -187,24 +176,24 @@ class DogsMixin(GarminBase):
         """
         if not isinstance(name, str) or not name.strip():
             raise ValueError("name must be a non-empty string")
-        fields = _dog_fields(
-            name=name,
-            primary_breed_id=primary_breed_id,
-            secondary_breed_ids=secondary_breed_ids,
-            gender=gender,
-            is_neutered=is_neutered,
-            weight_grams=weight_grams,
-            birthdate=birthdate,
-        )
         payload = {
-            "name": fields["name"],
-            "primaryBreedId": fields.get("primaryBreedId"),
-            "secondaryBreedIds": fields.get("secondaryBreedIds"),
-            "gender": fields.get("gender"),
-            "isNeutered": fields.get("isNeutered"),
-            "weight": fields.get("weight"),
-            "birthdate": fields.get("birthdate"),
-            "birthdatePrecision": fields.get("birthdatePrecision"),
+            "name": name,
+            "primaryBreedId": None,
+            "secondaryBreedIds": None,
+            "gender": None,
+            "isNeutered": None,
+            "weight": None,
+            "birthdate": None,
+            "birthdatePrecision": None,
+            **_dog_fields(
+                name=None,
+                primary_breed_id=primary_breed_id,
+                secondary_breed_ids=secondary_breed_ids,
+                gender=gender,
+                is_neutered=is_neutered,
+                weight_grams=weight_grams,
+                birthdate=birthdate,
+            ),
         }
         logger.debug("Creating dog")
         return self.client.post(
@@ -280,12 +269,7 @@ class DogsMixin(GarminBase):
         live in both directions.
         """
         dog_id = _coerce_positive_id(dog_id, "dog_id")
-        if not isinstance(status, str):
-            raise ValueError("status must be a string")
-        if status not in VALID_DOG_STATUSES:
-            raise ValueError(
-                f"status must be one of {sorted(VALID_DOG_STATUSES)}, got: {status}"
-            )
+        status = _validate_choice(status, VALID_DOG_STATUSES, "status")
         url = f"{self.garmin_connect_pet_profile_url}/{dog_id}/status"
         logger.debug("Setting dog %s status %s", dog_id, status)
         return self._json_or_none(
@@ -322,9 +306,9 @@ class DogsMixin(GarminBase):
         if not p.is_file():
             raise ValueError(f"path is not a file: {p.name}")
         extension = p.suffix.lstrip(".").lower()
-        content_type = DOG_PHOTO_CONTENT_TYPES.get(extension)
+        content_type = _DOG_PHOTO_CONTENT_TYPES.get(extension)
         if content_type is None:
-            allowed_formats = ", ".join(sorted(DOG_PHOTO_CONTENT_TYPES))
+            allowed_formats = ", ".join(sorted(_DOG_PHOTO_CONTENT_TYPES))
             raise GarminConnectInvalidFileFormatError(
                 f"Invalid file format '{extension}'. Allowed formats: {allowed_formats}"
             )

@@ -365,14 +365,12 @@ class GarminBase:
         self.garmin_connect_ecg_url = (
             f"https://ghs.{'garmin.cn' if is_cn else 'garmin.com'}/ghs/ecg/v1/ecg"
         )
-        self.garmin_connect_pet_profile_url = (
+        pet_profile_service = (
             f"https://gcx.{'garmin.cn' if is_cn else 'garmin.com'}"
-            "/family-api/profile-service/profile/pets"
+            "/family-api/profile-service/profile"
         )
-        self.garmin_connect_pet_photo_url = (
-            f"https://gcx.{'garmin.cn' if is_cn else 'garmin.com'}"
-            "/family-api/profile-service/profile/pet"
-        )
+        self.garmin_connect_pet_profile_url = f"{pet_profile_service}/pets"
+        self.garmin_connect_pet_photo_url = f"{pet_profile_service}/pet"
         self.garmin_connect_activitylist_url = "/activitylist-service/activities"
         self.garmin_connect_gear_service_url = "/gear-service"
         self.garmin_connect_device_service_url = "/device-service"

@@ -66,14 +66,8 @@ VALID_DAILY_STATS_TYPES = frozenset({"STEPS", "PUSHES", "CALORIES"})
 VALID_DOG_STATUSES = frozenset({"active", "retired"})
 # Metrics the web app requests from the dog lifetime stats (?metric=)
 VALID_DOG_STATS_METRICS = frozenset({"distance", "duration"})
+# Dog profile genders (profile-service/profile/pets body ``gender``)
 VALID_DOG_GENDERS = frozenset({"female", "male"})
-# Photo types the web app accepts for a dog, by file extension
-DOG_PHOTO_CONTENT_TYPES = {
-    "png": "image/png",
-    "jpg": "image/jpeg",
-    "jpeg": "image/jpeg",
-    "gif": "image/gif",
-}
 VALID_MENSTRUAL_FLOW = frozenset({"LIGHT", "MEDIUM", "HEAVY"})
 VALID_MENSTRUAL_SYMPTOMS = frozenset(
     {
@@ -302,6 +296,17 @@ def _validate_menstrual_enum(
             f"{param_name} must be one of {sorted(valid_values)}, got: {value}"
         )
     return normalized
+
+
+def _validate_choice(value: str, valid_values: frozenset[str], param_name: str) -> str:
+    """Validate that a string is one of ``valid_values`` (matched exactly)."""
+    if not isinstance(value, str):
+        raise ValueError(f"{param_name} must be a string")
+    if value not in valid_values:
+        raise ValueError(
+            f"{param_name} must be one of {sorted(valid_values)}, got: {value}"
+        )
+    return value
 
 
 def _validate_menstrual_enum_list(
