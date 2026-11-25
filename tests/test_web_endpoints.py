@@ -211,6 +211,8 @@ def test_dog_reads(api):
     _, path, kw = _last(rec)
     assert path == "/fitnessstats-service/activity-animal/dog/stats/lifetime"
     assert kw["params"] == {"metric": ["distance", "duration"]}
+    g.get_dog_lifetime_stats(["duration", "duration"])
+    assert _last(rec)[2]["params"] == {"metric": ["duration"]}
     g.get_dog_activities_enabled()
     assert _last(rec)[1] == (
         "/userprofile-service/userprofile/optional-feature/dog-activities"
@@ -488,7 +490,7 @@ def test_set_activity_dogs_partial_put(writer):
         with pytest.raises(ValueError):
             g.set_activity_dogs(987654, bad)
     assert not calls
-    g.set_activity_dogs(987654, [11, "12"])
+    g.set_activity_dogs(987654, [11, "12", 11])
     method, url, kw = calls[-1]
     assert (method, url) == ("PUT", "/activity-service/activity/987654")
     assert kw["json"] == {

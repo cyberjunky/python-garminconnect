@@ -357,7 +357,9 @@ where useful.
 Social and account-administration endpoints of the web app are left out on
 purpose: comments, likes, image flags, connections and followers, groups,
 leaderboards, inbox/newsfeed, ad-hoc challenge invites, profile image upload,
-Office 365 calendar sync, Fitbit import, dive/golf specifics, the
+Office 365 calendar sync, Fitbit import, dive/golf specifics, device-synced
+animals (`animal-service/animal`, empty on an account without a dog-capable
+watch, so unverified), the
 Index scale set-up (`weightscale-service`), nutrition food search/favourites/
 recipes/custom foods, dashboard layout (`userfocus-service`) and UI
 preferences (`userpreference-service`). Open an issue if you need one of them.

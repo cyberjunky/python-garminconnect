@@ -765,6 +765,8 @@ class ActivitiesMixin(GarminBase):
     ) -> Any:
         """Set which dogs joined an activity (``[]`` removes them all).
 
+        Replaces the whole list; repeated ids are sent once.
+
         PUT /activity-service/activity/{activityId} with ``{"activityId": ...,
         "metadataDTO": {"hasDog": bool, "dogProfileIds": [...]}}``. Garmin
         answers 204 with no body, so this returns None. Verified live: the
@@ -773,7 +775,10 @@ class ActivitiesMixin(GarminBase):
         activity_id = str(_coerce_positive_id(activity_id, "activity_id"))
         if not isinstance(dog_ids, list):
             raise ValueError("dog_ids must be a list")
-        ids = [_coerce_positive_id(dog_id, "dog_id") for dog_id in dog_ids]
+        # dict.fromkeys drops repeated ids and keeps the order.
+        ids = list(
+            dict.fromkeys(_coerce_positive_id(dog_id, "dog_id") for dog_id in dog_ids)
+        )
         url = f"{self.garmin_connect_activity}/{activity_id}"
         payload = {
             "activityId": activity_id,

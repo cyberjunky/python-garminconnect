@@ -113,8 +113,12 @@ class DogsMixin(GarminBase):
             metrics = ["distance", "duration"]
         if not isinstance(metrics, list) or not metrics:
             raise ValueError("metrics must be a non-empty list")
-        for metric in metrics:
-            _validate_choice(metric, VALID_DOG_STATS_METRICS, "metric")
+        metrics = list(
+            dict.fromkeys(
+                _validate_choice(metric, VALID_DOG_STATS_METRICS, "metric")
+                for metric in metrics
+            )
+        )
         url = (
             f"{self.garmin_connect_fitnessstats_service_url}"
             "/activity-animal/dog/stats/lifetime"
@@ -219,8 +223,8 @@ class DogsMixin(GarminBase):
         dog is fetched with :meth:`get_dog`, the given fields are replaced and
         the whole body is sent back. Only the given keyword arguments change;
         ``secondary_breed_ids=[]`` clears the secondary breeds. Units are as in
-        :meth:`create_dog`. Like the web app, a retired dog cannot be edited;
-        re-activate it with :meth:`set_dog_status` first. Verified live: only
+        :meth:`create_dog`. Like the web app, a retired dog cannot be edited
+        (``ValueError``); re-activate it with :meth:`set_dog_status` first. Verified live: only
         the given fields change.
         """
         dog_id = _coerce_positive_id(dog_id, "dog_id")
