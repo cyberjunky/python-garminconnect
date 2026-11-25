@@ -8,6 +8,7 @@ compatibility with Garmin's undocumented API.
 from datetime import date
 
 import pytest
+import requests
 
 from garminconnect import Garmin, GarminConnectInvalidFileFormatError
 
@@ -509,7 +510,7 @@ def test_dog_writes(writer, monkeypatch, tmp_path):
     assert calls[-1][2]["json"] == {
         "name": "Rex",
         "primaryBreedId": 177,
-        "secondaryBreedIds": [],
+        "secondaryBreedIds": None,
         "gender": None,
         "isNeutered": None,
         "weight": 9979.03,
@@ -536,8 +537,15 @@ def test_dog_writes(writer, monkeypatch, tmp_path):
     g.upload_dog_photo(4242, str(photo))
     method, url, kw = calls[-1]
     assert (method, url) == ("POST", f"{_PETS[:-1]}/4242/photo")  # singular "pet"
-    assert kw["files"]["photo"][::2] == ("pet-profile-photo.jpg", "image/jpeg")
+    assert kw["files"]["photo"] == ("pet-profile-photo.jpg", b"fake", "image/jpeg")
+    with pytest.raises(FileNotFoundError, match=r"File not found: missing\.png$"):
+        g.upload_dog_photo(4242, str(tmp_path / "missing.png"))
     sent = len(calls)
+    with pytest.raises(ValueError, match="no fields to update"):
+        g.update_dog(4242)
+    current["status"] = "retired"
+    with pytest.raises(ValueError, match="unretire"):
+        g.update_dog(4242, name="Rex")
     for call, args in (
         (g.get_dog_stats, ([], "2026-10-01", "2026-10-16")),
         (g.get_dog_stats, ([11], "2026-10-17", "2026-10-16")),
@@ -556,3 +564,16 @@ def test_dog_writes(writer, monkeypatch, tmp_path):
     with pytest.raises(GarminConnectInvalidFileFormatError):
         g.upload_dog_photo(4242, str(bmp))
     assert len(calls) == sent
+
+
+def test_upload_dog_photo_network_error_is_not_a_file_error(monkeypatch, tmp_path):
+    g = Garmin()
+    photo = tmp_path / "dog.png"
+    photo.write_bytes(b"fake")
+
+    def fail(*args, **kwargs):
+        raise requests.ConnectionError("connection reset")
+
+    monkeypatch.setattr(g.client, "post", fail)
+    with pytest.raises(requests.ConnectionError):
+        g.upload_dog_photo(4242, str(photo))

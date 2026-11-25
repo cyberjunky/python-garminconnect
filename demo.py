@@ -2736,6 +2736,15 @@ def get_golf_shot_data_entry(api: Garmin) -> None:
         print(f"❌ Error getting golf shot data: {e}")
 
 
+def get_dog_stats_data(api: Garmin) -> None:
+    """Get per-day stats for all dogs over the last 30 days."""
+    dog_ids = [dog["id"] for dog in api.get_dogs() or []]
+    if not dog_ids:
+        print("❌ No dogs found")
+        return
+    _web(api, "get_dog_stats", lambda: (dog_ids, _month_ago(), _today()))()
+
+
 def get_dog_data(api: Garmin) -> None:
     """Get one dog profile by ID."""
     try:
@@ -6471,11 +6480,7 @@ def execute_api_call(api: Garmin, key: str) -> None:
             "get_dog": lambda: get_dog_data(api),
             "get_dog_breeds": _web(api, "get_dog_breeds"),
             "get_dog_lifetime_stats": _web(api, "get_dog_lifetime_stats"),
-            "get_dog_stats": _web(
-                api,
-                "get_dog_stats",
-                lambda: ([d["id"] for d in api.get_dogs()], _month_ago(), _today()),
-            ),
+            "get_dog_stats": lambda: get_dog_stats_data(api),
             "get_dog_activities_enabled": _web(api, "get_dog_activities_enabled"),
             "create_dog": lambda: create_dog_data(api),
             "update_dog": lambda: update_dog_data(api),

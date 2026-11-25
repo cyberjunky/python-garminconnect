@@ -141,8 +141,9 @@ class DogsMixin(GarminBase):
         """Return per-day activity stats for dogs over a date range.
 
         POST /fitnessstats-service/activity-animal/dog/stats/bulk?startDate&endDate
-        with a list of dog ids as the body; the call only reads. Not verified
-        against a live account.
+        with a list of dog ids as the body; the call only reads. Like the other
+        read-only POSTs, errors are not mapped to the library's error types. Not
+        verified against a live account.
         """
         if not isinstance(dog_ids, list) or not dog_ids:
             raise ValueError("dog_ids must be a non-empty list")
@@ -204,7 +205,7 @@ class DogsMixin(GarminBase):
         payload = {
             "name": fields["name"],
             "primaryBreedId": fields.get("primaryBreedId"),
-            "secondaryBreedIds": fields.get("secondaryBreedIds", []),
+            "secondaryBreedIds": fields.get("secondaryBreedIds"),
             "gender": fields.get("gender"),
             "isNeutered": fields.get("isNeutered"),
             "weight": fields.get("weight"),
@@ -235,7 +236,9 @@ class DogsMixin(GarminBase):
         dog is fetched with :meth:`get_dog`, the given fields are replaced and
         the whole body is sent back. Only the given keyword arguments change;
         ``secondary_breed_ids=[]`` clears the secondary breeds. Units are as in
-        :meth:`create_dog`. Not verified against a live account.
+        :meth:`create_dog`. Like the web app, a retired dog cannot be edited;
+        re-activate it with :meth:`set_dog_status` first. Not verified against
+        a live account.
         """
         dog_id = _coerce_positive_id(dog_id, "dog_id")
         changes = _dog_fields(
@@ -247,9 +250,16 @@ class DogsMixin(GarminBase):
             weight_grams=weight_grams,
             birthdate=birthdate,
         )
+        if not changes:
+            raise ValueError("no fields to update")
         current = self.get_dog(dog_id)
         if not isinstance(current, dict) or not current:
             raise GarminConnectConnectionError(f"Dog {dog_id} not found")
+        if current.get("status") == "retired":
+            raise ValueError(
+                "You must unretire this dog before you can edit its profile "
+                "(set_dog_status(dog_id, 'active'))"
+            )
         primary = current.get("primaryBreed") or {}
         payload = {
             "name": current.get("name"),
@@ -316,9 +326,9 @@ class DogsMixin(GarminBase):
             raise ValueError("photo_path must be a string")
         p = Path(photo_path)
         if not p.exists():
-            raise FileNotFoundError(f"File not found: {photo_path}")
+            raise FileNotFoundError(f"File not found: {p.name}")
         if not p.is_file():
-            raise ValueError(f"path is not a file: {photo_path}")
+            raise ValueError(f"path is not a file: {p.name}")
         extension = p.suffix.lstrip(".").lower()
         content_type = DOG_PHOTO_CONTENT_TYPES.get(extension)
         if content_type is None:
@@ -326,19 +336,13 @@ class DogsMixin(GarminBase):
             raise GarminConnectInvalidFileFormatError(
                 f"Invalid file format '{extension}'. Allowed formats: {allowed_formats}"
             )
-        url = f"{self.garmin_connect_pet_photo_url}/{dog_id}/photo"
-        logger.debug("Uploading photo for dog %s", dog_id)
         try:
-            with p.open("rb") as file_handle:
-                files = {
-                    "photo": (
-                        f"pet-profile-photo.{extension}",
-                        file_handle,
-                        content_type,
-                    )
-                }
-                return self.client.post("connectapi", url, files=files, api=True)
+            data = p.read_bytes()
         except OSError as e:
             raise GarminConnectConnectionError(
                 f"Failed to read file {p.name}: {e}"
             ) from e
+        url = f"{self.garmin_connect_pet_photo_url}/{dog_id}/photo"
+        files = {"photo": (f"pet-profile-photo.{extension}", data, content_type)}
+        logger.debug("Uploading photo for dog %s", dog_id)
+        return self.client.post("connectapi", url, files=files, api=True)
