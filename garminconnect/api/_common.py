@@ -62,6 +62,18 @@ VALID_WORKOUT_ORDER_BY = frozenset(
 )
 # Series accepted by usersummary-service/stats/daily?statsType=
 VALID_DAILY_STATS_TYPES = frozenset({"STEPS", "PUSHES", "CALORIES"})
+# Dog profile statuses (profile-service/profile/pets?status=)
+VALID_DOG_STATUSES = frozenset({"active", "retired"})
+# Metrics the web app requests from the dog lifetime stats (?metric=)
+VALID_DOG_STATS_METRICS = frozenset({"distance", "duration"})
+VALID_DOG_GENDERS = frozenset({"female", "male"})
+# Photo types the web app accepts for a dog, by file extension
+DOG_PHOTO_CONTENT_TYPES = {
+    "png": "image/png",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "gif": "image/gif",
+}
 VALID_MENSTRUAL_FLOW = frozenset({"LIGHT", "MEDIUM", "HEAVY"})
 VALID_MENSTRUAL_SYMPTOMS = frozenset(
     {

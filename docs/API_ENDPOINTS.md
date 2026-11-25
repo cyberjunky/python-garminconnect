@@ -226,6 +226,27 @@ feature get a 404.
 | `get_gear_make_models(keywords)` | `GET /gear-service/gear/makemodels?keywords` | Autocomplete for the gear form. | yes |
 | `get_activity_gear_v2(activity_id)` | `GET /gear-service/activity/v2/{activityId}` | `get_activity_gear` keeps the legacy `filterGear?activityId` call. | yes (empty) |
 
+## Dogs (`https://gcx.garmin.com/family-api/profile-service`, `fitnessstats-service`)
+
+Dog profiles live on the `gcx` sibling host; the stats are on `connectapi`.
+Dog `weight` is in grams; `profileImageUrl` is a presigned link that expires
+after about 24 hours.
+
+| Method | Request | Notes | Verified |
+|---|---|---|---|
+| `get_dogs(status=None)` | `GET https://gcx.<domain>/family-api/profile-service/profile/pets[?status=]` | `active` or `retired`; all dogs without it. | no |
+| `get_dog(dog_id)` | `GET https://gcx.<domain>/family-api/profile-service/profile/pets/{dogId}` | 404 for a missing dog. | no |
+| `get_dog_breeds()` | `GET https://gcx.<domain>/family-api/profile-service/profile/pets/dog/breeds` | Map of breed id (text) to key, e.g. `{"177": "DOG_BREED_AFFENPINSCHER"}`. | no |
+| `get_dog_lifetime_stats(metrics=None)` | `GET /fitnessstats-service/activity-animal/dog/stats/lifetime?metric=distance&metric=duration` | `metric` defaults to `distance` and `duration`, the only ones seen. | no |
+| `get_dog_stats(dog_ids, start, end)` | `POST /fitnessstats-service/activity-animal/dog/stats/bulk?startDate&endDate` with a JSON list of dog ids | Reads only. Per-day `countOfActivities` and `stats`. | no |
+| `get_dog_activities_enabled()` | `GET /userprofile-service/userprofile/optional-feature/dog-activities` | Whether the dog-activities feature is on. | no |
+| `create_dog(name, primary_breed_id=None, secondary_breed_ids=None, gender=None, is_neutered=None, weight_grams=None, birthdate=None)` | `POST https://gcx.<domain>/family-api/profile-service/profile/pets` with `name, primaryBreedId, secondaryBreedIds, gender, isNeutered, weight, birthdate, birthdatePrecision` | `weight` in grams whatever the unit setting; `birthdatePrecision` is `day`. | no |
+| `update_dog(dog_id, *, name, primary_breed_id, secondary_breed_ids, gender, is_neutered, weight_grams, birthdate)` | `PUT https://gcx.<domain>/family-api/profile-service/profile/pets/{dogId}` with every field | The web app always sends every field; the current dog is read and sent back with the changes. | no |
+| `set_dog_status(dog_id, status)` | `PUT https://gcx.<domain>/family-api/profile-service/profile/pets/{dogId}/status` with `{"status": "retired"\|"active"}` | 204. | no |
+| `delete_dog(dog_id)` | `DELETE https://gcx.<domain>/family-api/profile-service/profile/pets/{dogId}` | 204; 404 for a missing dog. | no |
+| `upload_dog_photo(dog_id, photo_path)` | `POST https://gcx.<domain>/family-api/profile-service/profile/pet/{dogId}/photo`, multipart part `photo` | `pet` is singular. PNG, JPEG or GIF. Replaces the photo; there is no delete. | no |
+| `set_activity_dogs(activity_id, dog_ids)` | `PUT /activity-service/activity/{activityId}` with `{activityId, metadataDTO: {hasDog, dogProfileIds}}` | `[]` removes all dogs. The web app sends the whole activity via POST with `X-HTTP-Method-Override: PUT`; this uses the partial update of `set_activity_favorite`. | no |
+
 ## Devices (`device-service`, `devicesettings-service`)
 
 | Method | Request | Notes | Verified |
@@ -336,7 +357,7 @@ where useful.
 Social and account-administration endpoints of the web app are left out on
 purpose: comments, likes, image flags, connections and followers, groups,
 leaderboards, inbox/newsfeed, ad-hoc challenge invites, profile image upload,
-Office 365 calendar sync, Fitbit import, dive/golf/animal (dog) specifics, the
+Office 365 calendar sync, Fitbit import, dive/golf specifics, the
 Index scale set-up (`weightscale-service`), nutrition food search/favourites/
 recipes/custom foods, dashboard layout (`userfocus-service`) and UI
 preferences (`userpreference-service`). Open an issue if you need one of them.

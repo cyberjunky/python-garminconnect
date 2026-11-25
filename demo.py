@@ -1032,6 +1032,47 @@ menu_categories = {
             },
         },
     },
+    "f": {
+        "name": "🐕 Dogs",
+        "options": {
+            "1": {"desc": "Dog profiles", "key": "get_dogs"},
+            "2": {"desc": "One dog profile (interactive)", "key": "get_dog"},
+            "3": {"desc": "Dog breeds", "key": "get_dog_breeds"},
+            "4": {
+                "desc": "Lifetime dog stats (distance, duration)",
+                "key": "get_dog_lifetime_stats",
+            },
+            "5": {
+                "desc": "Stats for all dogs, last 30 days",
+                "key": "get_dog_stats",
+            },
+            "6": {
+                "desc": "Dog activities feature flag",
+                "key": "get_dog_activities_enabled",
+            },
+            "7": {"desc": "Create a dog (interactive)", "key": "create_dog"},
+            "8": {
+                "desc": "Edit a dog's name or weight (interactive)",
+                "key": "update_dog",
+            },
+            "9": {
+                "desc": "Retire or re-activate a dog (interactive)",
+                "key": "set_dog_status",
+            },
+            "0": {
+                "desc": "Delete a dog (interactive, confirms by name)",
+                "key": "delete_dog",
+            },
+            "a": {
+                "desc": "Upload a dog photo (interactive)",
+                "key": "upload_dog_photo",
+            },
+            "b": {
+                "desc": "Set dogs on latest activity (interactive)",
+                "key": "set_activity_dogs",
+            },
+        },
+    },
 }
 
 current_category = None
@@ -2693,6 +2734,33 @@ def get_golf_shot_data_entry(api: Garmin) -> None:
         )
     except Exception as e:
         print(f"❌ Error getting golf shot data: {e}")
+
+
+def get_dog_data(api: Garmin) -> None:
+    """Get one dog profile by ID."""
+    try:
+        dogs = api.get_dogs()
+        if not dogs:
+            print("❌ No dogs found")
+            return
+
+        print("\n🐕 Dogs:")
+        for i, dog in enumerate(dogs, 1):
+            print(f"  [{i}] ID={dog.get('id', '?')} - {dog.get('name', 'Unknown')}")
+
+        dog_id = input("\nEnter dog ID: ").strip()
+        if not dog_id:
+            print("❌ No dog ID provided")
+            return
+
+        call_and_display(
+            api.get_dog,
+            dog_id,
+            method_name="get_dog",
+            api_call_desc=f"api.get_dog({dog_id})",
+        )
+    except Exception as e:
+        print(f"❌ Error getting dog: {e}")
 
 
 def get_training_plan_by_id_data(api: Garmin) -> None:
@@ -5225,6 +5293,185 @@ def delete_gear_data(api: Garmin) -> None:
         print(f"❌ Error deleting gear: {e}")
 
 
+def _dog_label(dog: dict) -> str:
+    """Describe a dog for a pick list."""
+    return f"{dog.get('name')} (ID={dog.get('id')}, {dog.get('status')})"
+
+
+def create_dog_data(api: Garmin) -> None:
+    """Create a dog profile."""
+    try:
+        print("Creating new dog...")
+        print("Enter dog details (press Enter for defaults):")
+
+        name = input("Name [Test]: ").strip() or "Test"
+        breed = input("Primary breed ID (blank for none, see Dog breeds): ").strip()
+        gender = input("Gender [female|male, blank for none]: ").strip() or None
+        weight = input("Weight in grams (blank for none): ").strip()
+        birthdate = input("Birthdate YYYY-MM-DD (blank for none): ").strip() or None
+
+        try:
+            weight_grams = float(weight) if weight else None
+
+            success, _ = call_and_display(
+                api.create_dog,
+                name,
+                primary_breed_id=breed or None,
+                gender=gender,
+                weight_grams=weight_grams,
+                birthdate=birthdate,
+                method_name="create_dog",
+                api_call_desc=(
+                    f"api.create_dog('{name}', primary_breed_id={breed or None!r}, "
+                    f"gender={gender!r}, weight_grams={weight_grams}, "
+                    f"birthdate={birthdate!r})"
+                ),
+            )
+            if success:
+                print("✅ Dog created!")
+        except ValueError:
+            print("❌ Invalid numeric input")
+    except Exception as e:
+        print(f"❌ Error creating dog: {e}")
+
+
+def update_dog_data(api: Garmin) -> None:
+    """Edit the name and weight of a dog."""
+    try:
+        dog = _pick(api.get_dogs(), "dog", _dog_label)
+        if not dog:
+            return
+        name = input(f"New name [{dog.get('name')}]: ").strip() or None
+        weight = input(f"New weight in grams [{dog.get('weight')}]: ").strip()
+        if not name and not weight:
+            print("Cancelled")
+            return
+        try:
+            weight_grams = float(weight) if weight else None
+        except ValueError:
+            print("❌ Invalid numeric input")
+            return
+        call_and_display(
+            api.update_dog,
+            dog["id"],
+            name=name,
+            weight_grams=weight_grams,
+            method_name="update_dog",
+            api_call_desc=(
+                f"api.update_dog({dog['id']}, name={name!r}, "
+                f"weight_grams={weight_grams})"
+            ),
+        )
+    except Exception as e:
+        print(f"❌ Error updating dog: {e}")
+
+
+def set_dog_status_data(api: Garmin) -> None:
+    """Retire an active dog or re-activate a retired one."""
+    try:
+        dog = _pick(api.get_dogs(), "dog", _dog_label)
+        if not dog:
+            return
+        status = "active" if dog.get("status") == "retired" else "retired"
+        confirm = input(f"Set '{dog.get('name')}' to {status}? (yes/no): ")
+        if confirm.strip().lower() != "yes":
+            print("Cancelled")
+            return
+        call_and_display(
+            api.set_dog_status,
+            dog["id"],
+            status,
+            method_name="set_dog_status",
+            api_call_desc=f"api.set_dog_status({dog['id']}, '{status}')",
+        )
+    except Exception as e:
+        print(f"❌ Error setting dog status: {e}")
+
+
+def delete_dog_data(api: Garmin) -> None:
+    """Delete a dog after typing its name to confirm."""
+    try:
+        dog = _pick(api.get_dogs(), "dog", _dog_label)
+        if not dog:
+            return
+        if (
+            input(f"Type the dog name '{dog['name']}' to delete it: ").strip()
+            != dog["name"]
+        ):
+            print("Cancelled")
+            return
+        call_and_display(
+            api.delete_dog,
+            dog["id"],
+            method_name="delete_dog",
+            api_call_desc=f"api.delete_dog({dog['id']})",
+        )
+    except Exception as e:
+        print(f"❌ Error deleting dog: {e}")
+
+
+def upload_dog_photo_data(api: Garmin) -> None:
+    """Upload a PNG, JPEG or GIF as a dog's profile photo."""
+    try:
+        dog = _pick(api.get_dogs(), "dog", _dog_label)
+        if not dog:
+            return
+        photo_path = input("Photo file path (PNG, JPEG or GIF): ").strip()
+        if not photo_path:
+            print("❌ No photo path provided")
+            return
+        success, _ = call_and_display(
+            api.upload_dog_photo,
+            dog["id"],
+            photo_path,
+            method_name="upload_dog_photo",
+            api_call_desc=f"api.upload_dog_photo({dog['id']}, '{photo_path}')",
+        )
+        if success:
+            print("ℹ️ Photo URLs are presigned and expire after 24 hours")
+    except Exception as e:
+        print(f"❌ Error uploading dog photo: {e}")
+
+
+def set_activity_dogs_data(api: Garmin) -> None:
+    """Set which dogs joined the latest activity."""
+    try:
+        activity_id = _latest_activity_id(api)
+        activity = api.get_activity(activity_id) or {}
+        metadata = activity.get("metadataDTO") or {}
+        print(
+            f"Activity {activity_id} '{activity.get('activityName')}' "
+            f"has dogs: {metadata.get('dogProfileIds') or 'none'}"
+        )
+        print("Active dogs:")
+        for dog in api.get_dogs("active"):
+            print(f"  {_dog_label(dog)}")
+        ids_input = input(
+            "Dog IDs, comma-separated ('-' removes all, Enter to cancel): "
+        ).strip()
+        if not ids_input:
+            print("Cancelled")
+            return
+        dog_ids = (
+            []
+            if ids_input == "-"
+            else [i.strip() for i in ids_input.split(",") if i.strip()]
+        )
+        confirm = input(f"Set dogs {dog_ids} on activity {activity_id}? (yes/no): ")
+        if confirm.strip().lower() != "yes":
+            print("Cancelled")
+            return
+        call_and_display(
+            api.set_activity_dogs,
+            activity_id,
+            dog_ids,
+            method_name="set_activity_dogs",
+            api_call_desc=f"api.set_activity_dogs({activity_id}, {dog_ids})",
+        )
+    except Exception as e:
+        print(f"❌ Error setting activity dogs: {e}")
+
+
 def set_steps_goal_data(api: Garmin) -> None:
     """Set a manual step goal or return to the automatic one."""
     try:
@@ -6219,6 +6466,23 @@ def execute_api_call(api: Garmin, key: str) -> None:
                 "get_personal_records_for_activity",
                 lambda: (_latest_activity_id(api),),
             ),
+            # Dogs
+            "get_dogs": _web(api, "get_dogs"),
+            "get_dog": lambda: get_dog_data(api),
+            "get_dog_breeds": _web(api, "get_dog_breeds"),
+            "get_dog_lifetime_stats": _web(api, "get_dog_lifetime_stats"),
+            "get_dog_stats": _web(
+                api,
+                "get_dog_stats",
+                lambda: ([d["id"] for d in api.get_dogs()], _month_ago(), _today()),
+            ),
+            "get_dog_activities_enabled": _web(api, "get_dog_activities_enabled"),
+            "create_dog": lambda: create_dog_data(api),
+            "update_dog": lambda: update_dog_data(api),
+            "set_dog_status": lambda: set_dog_status_data(api),
+            "delete_dog": lambda: delete_dog_data(api),
+            "upload_dog_photo": lambda: upload_dog_photo_data(api),
+            "set_activity_dogs": lambda: set_activity_dogs_data(api),
         }
 
         if key in api_methods:

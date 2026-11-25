@@ -9,7 +9,7 @@ from datetime import date
 
 import pytest
 
-from garminconnect import Garmin
+from garminconnect import Garmin, GarminConnectInvalidFileFormatError
 
 
 class _Recorder:
@@ -190,6 +190,44 @@ def test_ecg_uses_ghs_host(api):
     assert kw["params"] == {"firstDay": "2026-10-01", "lastDay": "2026-10-16"}
     with pytest.raises(ValueError):
         g.get_ecg("../etc")
+
+
+_PETS = "https://gcx.garmin.com/family-api/profile-service/profile/pets"
+
+
+def test_dog_reads(api):
+    g, rec = api
+    g.get_dogs()
+    assert _last(rec)[1:] == (_PETS, {"params": {}})
+    g.get_dogs("retired")
+    assert _last(rec)[2] == {"params": {"status": "retired"}}
+    g.get_dog("4242")
+    assert _last(rec)[1] == f"{_PETS}/4242"
+    g.get_dog_breeds()
+    assert _last(rec)[1] == f"{_PETS}/dog/breeds"
+    g.get_dog_lifetime_stats()
+    _, path, kw = _last(rec)
+    assert path == "/fitnessstats-service/activity-animal/dog/stats/lifetime"
+    assert kw["params"] == {"metric": ["distance", "duration"]}
+    g.get_dog_activities_enabled()
+    assert _last(rec)[1].endswith("/optional-feature/dog-activities")
+    for call, bad in (
+        (g.get_dogs, "ACTIVE"),
+        (g.get_dogs, {}),
+        (g.get_dog, "../1"),
+        (g.get_dog_lifetime_stats, ["steps"]),
+        (g.get_dog_lifetime_stats, [["distance"]]),
+    ):
+        with pytest.raises(ValueError):
+            call(bad)
+
+
+def test_dog_urls_use_gcx_cn_host_for_china():
+    g = Garmin(is_cn=True)
+    profile = "https://gcx.garmin.cn/family-api/profile-service/profile"
+    assert g.garmin_connect_pet_profile_url == f"{profile}/pets"
+    assert g.garmin_connect_pet_photo_url == f"{profile}/pet"
+    assert g.client._resolve_url(f"{profile}/pets/1") == f"{profile}/pets/1"
 
 
 def test_client_accepts_only_garmin_hosts_for_absolute_urls():
@@ -436,3 +474,85 @@ def test_update_activity_partial_put(writer):
     }
     with pytest.raises(ValueError):
         g.update_activity(987654, {})
+
+
+def test_set_activity_dogs_partial_put(writer):
+    g, calls = writer
+    g.set_activity_dogs(987654, [11, "12"])
+    method, url, kw = calls[-1]
+    assert (method, url) == ("PUT", "/activity-service/activity/987654")
+    assert kw["json"] == {
+        "activityId": "987654",
+        "metadataDTO": {"hasDog": True, "dogProfileIds": [11, 12]},
+    }
+    g.set_activity_dogs(987654, [])
+    assert calls[-1][2]["json"]["metadataDTO"] == {"hasDog": False, "dogProfileIds": []}
+    for bad in (11, [0]):
+        with pytest.raises(ValueError):
+            g.set_activity_dogs(987654, bad)
+
+
+def test_dog_writes(writer, monkeypatch, tmp_path):
+    g, calls = writer
+    g.get_dog_stats([11, "12"], "2026-10-01", "2026-10-16")
+    assert calls[-1] == (
+        "POST",
+        "/fitnessstats-service/activity-animal/dog/stats/bulk",
+        {
+            "params": {"startDate": "2026-10-01", "endDate": "2026-10-16"},
+            "json": [11, 12],
+            "api": True,
+        },
+    )
+    g.create_dog("Rex", primary_breed_id="177", weight_grams=9979.03)
+    assert calls[-1][:2] == ("POST", _PETS)
+    assert calls[-1][2]["json"] == {
+        "name": "Rex",
+        "primaryBreedId": 177,
+        "secondaryBreedIds": [],
+        "gender": None,
+        "isNeutered": None,
+        "weight": 9979.03,
+        "birthdate": None,
+        "birthdatePrecision": None,
+    }
+    current = {"primaryBreed": {"id": 177}, "secondaryBreeds": [{"id": 12}]}
+    monkeypatch.setattr(g, "get_dog", lambda dog_id: current)
+    g.update_dog(4242, gender="female", birthdate="2020-05-01")
+    assert calls[-1][:2] == ("PUT", f"{_PETS}/4242")
+    body = calls[-1][2]["json"]
+    assert (body["primaryBreedId"], body["secondaryBreedIds"]) == (177, [12])
+    assert (body["gender"], body["birthdatePrecision"]) == ("female", "day")
+    g.set_dog_status("4242", "retired")
+    assert calls[-1][:3] == (
+        "PUT",
+        f"{_PETS}/4242/status",
+        {"json": {"status": "retired"}},
+    )
+    g.delete_dog(4242)
+    assert calls[-1][:2] == ("DELETE", f"{_PETS}/4242")
+    photo = tmp_path / "my-dog.JPG"
+    photo.write_bytes(b"fake")
+    g.upload_dog_photo(4242, str(photo))
+    method, url, kw = calls[-1]
+    assert (method, url) == ("POST", f"{_PETS[:-1]}/4242/photo")  # singular "pet"
+    assert kw["files"]["photo"][::2] == ("pet-profile-photo.jpg", "image/jpeg")
+    sent = len(calls)
+    for call, args in (
+        (g.get_dog_stats, ([], "2026-10-01", "2026-10-16")),
+        (g.get_dog_stats, ([11], "2026-10-17", "2026-10-16")),
+        (g.create_dog, (" ",)),
+        (g.create_dog, ("Rex", None, None, "MALE")),
+        (g.create_dog, ("Rex", None, None, None, "yes")),
+        (g.create_dog, ("Rex", None, None, None, None, 0)),
+        (g.create_dog, ("Rex", None, None, None, None, None, "2020-02-30")),
+        (g.set_dog_status, (4242, "RETIRED")),
+        (g.delete_dog, (0,)),
+    ):
+        with pytest.raises(ValueError):
+            call(*args)
+    bmp = tmp_path / "dog.bmp"
+    bmp.write_bytes(b"BM")
+    with pytest.raises(GarminConnectInvalidFileFormatError):
+        g.upload_dog_photo(4242, str(bmp))
+    assert len(calls) == sent
